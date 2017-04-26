@@ -49,7 +49,16 @@ Inductive Conj : Type :=
   Associative : (Prop -> Prop -> Prop) -> Conj |
   EitherOr : Conj.
 
-Definition A : Type := (object -> Prop) -> (object -> Prop).
+
+Inductive A : Type  :=
+  mkA : forall (measure : (object -> Prop) -> object -> nat)
+               (threshold : nat)
+               (property : (object -> Prop) -> (object -> Prop)), A.
+
+Add Printing Let A.
+
+Definition apA : A -> (object -> Prop) -> (object -> Prop)
+  := fun a cn x => let (measure,threshold,p) := a in (threshold <= measure cn x) /\ p cn x.
 
 Definition A2 := object -> A.
 
@@ -58,11 +67,11 @@ Inductive IntersectiveA : Type :=
 
 Add Printing Let IntersectiveA.
 
-Definition appIntersectiveA : IntersectiveA -> A
- := fun a cn (x:object) => let (measure,threshold) := a in
-      (threshold <= measure x) /\ cn x.
+Definition apIntersectiveA : IntersectiveA -> A
+ := fun a => let (measure,threshold) := a in
+      mkA (fun _ => measure) threshold (fun cn (x:object) => cn x).
 
-Coercion appIntersectiveA : IntersectiveA >-> A.
+Coercion apIntersectiveA : IntersectiveA >-> A.
 
 Inductive SubsectiveA : Type :=
   mkSubsective : forall (measure : (object -> Prop) -> object -> nat) (threshold : nat), SubsectiveA.
@@ -70,35 +79,42 @@ Add Printing Let SubsectiveA.
 
 Definition apSubsectiveA
             : SubsectiveA -> A
-            := fun a cn (x:object) => let (measure, threshold) := a in
-                 (threshold <= measure cn x) /\ cn x .
+            := fun a => let (measure, threshold) := a in
+               mkA measure threshold (fun cn (x:object) => cn x) .
 (* Definition getSubsectiveA : SubsectiveA -> A. *)
 (* intro. destruct X. exact P. Defined. *)
 Coercion apSubsectiveA : SubsectiveA >-> A.
 
 Inductive ExtensionalSubsectiveA : Type :=
-  mkExtensionalSubsective : forall (a : (object -> Prop) -> (object -> Prop)),
-     (forall (p q:object -> Prop), (forall x, p x -> q x) -> (forall x, q x -> p x) ->  forall x, a p x -> a q x)
+  mkExtensionalSubsective :
+     forall
+     (measure : (object -> Prop) -> object -> nat)
+     (threshold : nat),
+     (let a := fun cn x => (threshold <= measure cn x)
+     in (forall (p q:object -> Prop), (forall x, p x -> q x) -> (forall x, q x -> p x) ->  forall x, a p x -> a q x))
      -> ExtensionalSubsectiveA.
 
 Add Printing Let ExtensionalSubsectiveA.
 
 Definition apExtensionalSubsectiveA
-            : ExtensionalSubsectiveA -> A
-            := fun a cn (x:object) => let (aa,_) := a in
-                 aa cn x /\ cn x .
-Coercion apExtensionalSubsectiveA : ExtensionalSubsectiveA >-> A.
+            : ExtensionalSubsectiveA -> SubsectiveA
+            := fun a => let (measure,threshold,_) := a in
+                 mkSubsective measure threshold.
+Coercion apExtensionalSubsectiveA : ExtensionalSubsectiveA >-> SubsectiveA.
 
 Inductive PrivativeA : Type :=
-  mkPrivativeA : ((object -> Prop) -> (object -> Prop)) -> PrivativeA.
+  mkPrivativeA : forall (measure : (object -> Prop) -> object -> nat) (threshold : nat), PrivativeA.
 Add Printing Let PrivativeA.
-Definition wkPrivativeA : PrivativeA -> A
-            := fun aa cn (x:object) => let (a) := aa in a cn x /\ not (cn x).
-Coercion wkPrivativeA : PrivativeA >-> A.
+
+Definition apPrivativeA : PrivativeA -> A
+            := fun a => let (measure, threshold) := a in
+               mkA measure threshold (fun cn (x:object) =>  not (cn x)) .
+Coercion apPrivativeA : PrivativeA >-> A.
+
 Definition NonCommitalA := A.
 
 
-Definition AP:= A.
+Definition AP:= (object -> Prop) -> (object -> Prop).
 Definition N:= object->Prop.
 Definition N2 := object -> object -> Prop.
 Inductive Num : Type :=
@@ -305,30 +321,30 @@ Definition RelNPa : NP -> RS -> NP
 (* Parameter SelfNP : NP -> NP . *)
 Definition UsePron : Pron -> NP := fun pron => pron.
 (* AP *)
-Definition PositA: A -> A := fun x:A=>x.
+Definition PositA: A -> AP := apA.
 
-(* In GF this is PositA : A -> AP; however this type does the conversion from the adjectival subclass to generic adjectives, which is wrong *)
-Definition AdAP:AdA->AP->AP:= fun ad a => ad a.
+Parameter AdAP:AdA->AP->AP.
 
-Parameter AdvAP0 : AP -> Adv -> object -> Prop . (* We want to ignore the class here *)
+Parameter AdvAP0 : AP -> Adv -> (object -> Prop) . (* We want to ignore the class here *) 
+
 Definition AdvAP : AP -> Adv -> AP
   := fun adj adv cn x => AdvAP0 adj adv x.
 
-(*FIXME: all adjectives should have a measure so that we can compare them.*)
 Definition ComparA : A -> NP -> AP
- := fun a np cn x => apNP np (fun _class y =>    (a cn y -> a cn x)
-                                              /\ (not (a cn x) -> not (a cn y))).
+ := fun a np cn x => let (measure,_,_) := a in 
+    apNP np (fun _class y => (measure cn y <= measure cn x)).
 (* Remark: most of the time, the comparatives are used in a copula, and in that case the category comes from the NP.  *)
  (* x is faster than y  *)
  
 Definition ComparAsAs : A -> NP -> AP
- := fun a np cn x => apNP np (fun _class y => a cn x <-> a cn y).
-Definition ComplA2 : A2 -> NP -> AP := fun a2 np cn x => apNP np (fun yClass y => a2 y cn x).
+ := fun a np cn x => let (measure,_,_) := a in
+    apNP np (fun _class y => measure cn x = measure cn y).
+Definition ComplA2 : A2 -> NP -> AP := fun a2 np cn x => apNP np (fun yClass y => apA (a2 y) cn x).
 Parameter PartVP : VP -> AP .
 Definition SentAP : AP -> SC -> AP
   := fun ap clause cn x => ap (fun y => clause cn y /\ cn y) x.
 Parameter UseComparA : A -> AP.
-Definition UseComparA_prefix : A -> AP := fun adj cn x => adj cn x.
+Definition UseComparA_prefix : A -> AP := fun adj cn x => apA adj cn x.
 (* Parameter UseA2 : A2 -> AP . *)
 (* Parameter ConjAP : Conj -> ListAP -> AP . *)
 (* Parameter ReflA2 : A2 -> AP . *)
@@ -1310,15 +1326,23 @@ firstorder.
 assert (oops := special_trans disj (ineqAdd H0 H)).
 (* coq fixme *)
 
-Variable fast_and_fast_opposite_K :
+Variable fast_and_slow_opposite_K :
   let (mSmall,threshSmall) := fast_A in
   let (mLarge,threshLarge) := slow_A in
-  forall cn o, (   (mSmall cn o = 0 - mLarge cn o)
-                /\ (threshLarge + threshSmall > 0)).
+  forall cn o, (   (0 - mSmall cn o = mLarge cn o) /\
+                (mLarge cn o + mSmall cn o > 0) ).
 
 Theorem FraCas229: s_229_1_p -> not s_229_3_h.
+assert (H' := fast_and_slow_opposite_K).
 cbv.
-
+destruct fast_A as [fastness fastThres].
+destruct slow_A as [slowness slowThres].
+destruct (H' computer_N PC6082) as [neg disj].
+destruct (H' computer_N ITEL_XZ) as [neg' disj'].
+intros P1 H.
+rewrite <- neg in H.
+rewrite -> P1 in H.
+(* H incompatible with disj' *)
 
 (** Treebank **)
 Definition s_001_1_p := (Sentence (UseCl (Past) (PPos) (PredVP (DetCN (DetQuant (IndefArt) (NumSg)) (UseN (italian_N))) (ComplSlash (SlashV2a (become_V2)) (DetCN (DetQuantOrd (GenNP (DetCN (DetQuant (DefArt) (NumSg)) (UseN (world_N)))) (NumSg) (OrdSuperl (great_A))) (UseN (tenor_N))))))).
