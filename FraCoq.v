@@ -48,24 +48,32 @@ Parameter RP : Set.
 Inductive Conj : Type :=
   Associative : (Prop -> Prop -> Prop) -> Conj |
   EitherOr : Conj.
-Definition A := (object -> Prop) -> (object -> Prop).
+
+Definition A : Type := (object -> Prop) -> (object -> Prop).
+
 Definition A2 := object -> A.
-Definition IntersectiveA := object -> Prop.
-Definition wkIntersectiveA
-            : IntersectiveA -> A
-            := fun a cn (x:object) => a x /\ cn x.
-Coercion wkIntersectiveA : IntersectiveA >-> A.
+
+Inductive IntersectiveA : Type :=
+  mkIntersectiveA : forall (measure : object -> nat) (threshold : nat), IntersectiveA.
+
+Add Printing Let IntersectiveA.
+
+Definition appIntersectiveA : IntersectiveA -> A
+ := fun a cn (x:object) => let (measure,threshold) := a in
+      (threshold <= measure x) /\ cn x.
+
+Coercion appIntersectiveA : IntersectiveA >-> A.
 
 Inductive SubsectiveA : Type :=
-  mkSubsective : ((object -> Prop) -> (object -> Prop)) -> SubsectiveA.
+  mkSubsective : forall (measure : (object -> Prop) -> object -> nat) (threshold : nat), SubsectiveA.
 Add Printing Let SubsectiveA.
 
 Definition apSubsectiveA
             : SubsectiveA -> A
-            := fun a cn (x:object) => let (aa) := a in
-                 aa cn x /\ cn x .
-Definition getSubsectiveA : SubsectiveA -> A.
-intro. destruct X. exact P. Defined.
+            := fun a cn (x:object) => let (measure, threshold) := a in
+                 (threshold <= measure cn x) /\ cn x .
+(* Definition getSubsectiveA : SubsectiveA -> A. *)
+(* intro. destruct X. exact P. Defined. *)
 Coercion apSubsectiveA : SubsectiveA >-> A.
 
 Inductive ExtensionalSubsectiveA : Type :=
@@ -306,6 +314,7 @@ Parameter AdvAP0 : AP -> Adv -> object -> Prop . (* We want to ignore the class 
 Definition AdvAP : AP -> Adv -> AP
   := fun adj adv cn x => AdvAP0 adj adv x.
 
+(*FIXME: all adjectives should have a measure so that we can compare them.*)
 Definition ComparA : A -> NP -> AP
  := fun a np cn x => apNP np (fun _class y =>    (a cn y -> a cn x)
                                               /\ (not (a cn x) -> not (a cn y))).
@@ -1275,7 +1284,41 @@ Variable  committee_member_person_K : forall x, committee_member_N x -> person_N
 
 Variable Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False.
 
-Variable small_and_large_disjoint_K : forall cn o, getSubsectiveA small_A cn o /\ getSubsectiveA large_A cn o -> False.
+Variable small_and_large_opposite_K :
+  let (mSmall,threshSmall) := small_A in
+  let (mLarge,threshLarge) := large_A in
+  forall cn o, (   (mSmall cn o = 0 - mLarge cn o)
+                /\ (threshLarge + threshSmall > 0)).
+
+Definition s_204_1_p := (Sentence (UseCl (Present) (PPos) (PredVP (UsePN (mickey_PN)) (UseComp (CompCN (AdjCN (PositA (small_A)) (UseN (animal_N)))))))).
+Definition s_204_3_h := (Sentence (UseCl (Present) (PPos) (PredVP (UsePN (mickey_PN)) (UseComp (CompCN (AdjCN (PositA (large_A)) (UseN (animal_N)))))))).
+Definition s_224_1_p := (Sentence (UseCl (Present) (PPos) (PredVP the_pc6082_NP (UseComp (CompAP (ComparAsAs (fast_A) the_itel_xz_NP)))))).
+Definition s_229_1_p := s_224_1_p.
+Definition s_229_3_h := (Sentence (UseCl (Present) (PPos) (PredVP the_pc6082_NP (UseComp (CompAP (ComparA (slow_A) the_itel_xz_NP)))))).
+
+Variable ineqAdd : forall {a b c d}, (a <= b) -> (c <= d) -> (a + c <= b + d).
+Variable special_trans : forall {a b c}, (a > b) -> (a <= c) -> (b < c).
+
+Theorem FraCas204:s_204_1_p -> not s_204_3_h. cbv. intros.
+assert (H' := small_and_large_opposite_K).
+destruct small_A as [smallness smallThres].
+destruct large_A as [largeness largeThres].
+assert (H'' := H' animal_N MICKEY).
+destruct H'' as [neg disj].
+rewrite -> neg in H.
+firstorder.
+assert (oops := special_trans disj (ineqAdd H0 H)).
+(* coq fixme *)
+
+Variable fast_and_fast_opposite_K :
+  let (mSmall,threshSmall) := fast_A in
+  let (mLarge,threshLarge) := slow_A in
+  forall cn o, (   (mSmall cn o = 0 - mLarge cn o)
+                /\ (threshLarge + threshSmall > 0)).
+
+Theorem FraCas229: s_229_1_p -> not s_229_3_h.
+cbv.
+
 
 (** Treebank **)
 Definition s_001_1_p := (Sentence (UseCl (Past) (PPos) (PredVP (DetCN (DetQuant (IndefArt) (NumSg)) (UseN (italian_N))) (ComplSlash (SlashV2a (become_V2)) (DetCN (DetQuantOrd (GenNP (DetCN (DetQuant (DefArt) (NumSg)) (UseN (world_N)))) (NumSg) (OrdSuperl (great_A))) (UseN (tenor_N))))))).
@@ -2172,9 +2215,10 @@ Theorem FraCaS002: (s_002_1_p/\s_002_2_p)->s_002_4_h.
 cbv.
 firstorder.
 exists x.
-destruct great_A as [great].
+destruct great_A as [greatness  greatLimit].
+destruct italian_A as [italianess itLimit].
 firstorder.
-assert (H' := H x (conj H0 H2)).
+assert (H' := H x (conj H0 H3)).
 generalize H'.
 apply wantCovariant_K.
 intros tenor' t gt.
