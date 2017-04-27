@@ -332,7 +332,7 @@ Definition AdvAP : AP -> Adv -> AP
 
 Definition ComparA : A -> NP -> AP
  := fun a np cn x => let (measure,_,_) := a in 
-    apNP np (fun _class y => (measure cn y <= measure cn x)).
+    apNP np (fun _class y => (measure cn y < measure cn x)).
 (* Remark: most of the time, the comparatives are used in a copula, and in that case the category comes from the NP.  *)
  (* x is faster than y  *)
  
@@ -1329,20 +1329,20 @@ assert (oops := special_trans disj (ineqAdd H0 H)).
 Variable fast_and_slow_opposite_K :
   let (mSmall,threshSmall) := fast_A in
   let (mLarge,threshLarge) := slow_A in
-  forall cn o, (   (0 - mSmall cn o = mLarge cn o) /\
-                (mLarge cn o + mSmall cn o > 0) ).
+  forall cn o, (   (0 - mSmall cn o = mLarge cn o) ).
 
 Theorem FraCas229: s_229_1_p -> not s_229_3_h.
 assert (H' := fast_and_slow_opposite_K).
 cbv.
 destruct fast_A as [fastness fastThres].
 destruct slow_A as [slowness slowThres].
-destruct (H' computer_N PC6082) as [neg disj].
-destruct (H' computer_N ITEL_XZ) as [neg' disj'].
+assert (neg := H' computer_N PC6082).
+assert (neg' := H' computer_N ITEL_XZ).
 intros P1 H.
 rewrite <- neg in H.
 rewrite -> P1 in H.
-(* H incompatible with disj' *)
+rewrite <- neg' in H.
+(* H -> False *)
 
 (** Treebank **)
 Definition s_001_1_p := (Sentence (UseCl (Past) (PPos) (PredVP (DetCN (DetQuant (IndefArt) (NumSg)) (UseN (italian_N))) (ComplSlash (SlashV2a (become_V2)) (DetCN (DetQuantOrd (GenNP (DetCN (DetQuant (DefArt) (NumSg)) (UseN (world_N)))) (NumSg) (OrdSuperl (great_A))) (UseN (tenor_N))))))).
