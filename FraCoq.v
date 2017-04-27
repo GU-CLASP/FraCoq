@@ -1300,11 +1300,15 @@ Variable  committee_member_person_K : forall x, committee_member_N x -> person_N
 
 Variable Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False.
 
-Variable small_and_large_opposite_K :
-  let (mSmall,threshSmall) := small_A in
-  let (mLarge,threshLarge) := large_A in
+Definition opposite_adjectives : A -> A -> Prop
+  := fun a1 a2 =>
+  let (mSmall,threshSmall,_) := a1 in
+  let (mLarge,threshLarge,_) := a2 in
   forall cn o, (   (mSmall cn o = 0 - mLarge cn o)
                 /\ (threshLarge + threshSmall > 0)).
+
+Variable small_and_large_opposite_K : opposite_adjectives small_A large_A.
+Variable fast_and_slow_opposite_K   : opposite_adjectives slow_A  fast_A.
 
 Definition s_204_1_p := (Sentence (UseCl (Present) (PPos) (PredVP (UsePN (mickey_PN)) (UseComp (CompCN (AdjCN (PositA (small_A)) (UseN (animal_N)))))))).
 Definition s_204_3_h := (Sentence (UseCl (Present) (PPos) (PredVP (UsePN (mickey_PN)) (UseComp (CompCN (AdjCN (PositA (large_A)) (UseN (animal_N)))))))).
@@ -1319,30 +1323,24 @@ Theorem FraCas204:s_204_1_p -> not s_204_3_h. cbv. intros.
 assert (H' := small_and_large_opposite_K).
 destruct small_A as [smallness smallThres].
 destruct large_A as [largeness largeThres].
-assert (H'' := H' animal_N MICKEY).
-destruct H'' as [neg disj].
+destruct (H' animal_N MICKEY) as [neg disj].
 rewrite -> neg in H.
 firstorder.
 assert (oops := special_trans disj (ineqAdd H0 H)).
-(* coq fixme *)
-
-Variable fast_and_slow_opposite_K :
-  let (mSmall,threshSmall) := fast_A in
-  let (mLarge,threshLarge) := slow_A in
-  forall cn o, (   (0 - mSmall cn o = mLarge cn o) ).
+(* Coq: opps -> False  *)
 
 Theorem FraCas229: s_229_1_p -> not s_229_3_h.
 assert (H' := fast_and_slow_opposite_K).
 cbv.
 destruct fast_A as [fastness fastThres].
 destruct slow_A as [slowness slowThres].
-assert (neg := H' computer_N PC6082).
-assert (neg' := H' computer_N ITEL_XZ).
+destruct (H' computer_N PC6082) as [neg disj].
+destruct (H' computer_N ITEL_XZ) as [neg' disj'].
 intros P1 H.
-rewrite <- neg in H.
+rewrite -> neg in H.
 rewrite -> P1 in H.
-rewrite <- neg' in H.
-(* H -> False *)
+rewrite -> neg' in H.
+(* Coq: H -> False *)
 
 (** Treebank **)
 Definition s_001_1_p := (Sentence (UseCl (Past) (PPos) (PredVP (DetCN (DetQuant (IndefArt) (NumSg)) (UseN (italian_N))) (ComplSlash (SlashV2a (become_V2)) (DetCN (DetQuantOrd (GenNP (DetCN (DetQuant (DefArt) (NumSg)) (UseN (world_N)))) (NumSg) (OrdSuperl (great_A))) (UseN (tenor_N))))))).
