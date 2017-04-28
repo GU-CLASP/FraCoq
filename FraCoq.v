@@ -1319,6 +1319,7 @@ Variable ineqAdd : forall {a b c d}, (a <= b) -> (c <= d) -> (a + c <= b + d).
 
 Parameter le_trans' : forall {x y z:Z}, x <= y -> y <= z -> x <= z.
 
+
 Opaque Z.le.
 Lemma small_and_large_disjoint_K : forall cn o, apA small_A cn o -> apA large_A cn o -> False.
 cbv.
@@ -2312,6 +2313,22 @@ apply le_trans with (y := CARD p).
 apply CARD_monotonous.
 assumption.
 assumption.
+Qed.
+
+Opaque Z.gt.
+Opaque Z.lt.
+Opaque Z.add.
+Opaque Z.sub.
+
+
+Theorem FraCas208:s_208_1_p -> s_208_2_p -> s_208_4_h.
+assert (slK := small_and_large_opposite_K).
+cbv.
+destruct small_A as [small].
+destruct large_A as [large].
+intros P1 P2.
+destruct (slK animal_N DUMBO) as [neg disj].
+lia.
 Qed.
 
 Variable CARD_exists : forall P:(object -> Prop), 1 <= CARD P -> exists x, P x.
