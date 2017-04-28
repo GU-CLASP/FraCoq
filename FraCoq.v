@@ -1,7 +1,6 @@
-(* Require Import ZArith. *)
-(* Open Scope Z_scope. *)
-
-Definition Z := nat.
+Close Scope nat_scope.
+Require Import ZArith.
+Open Scope Z_scope.
 
 (** Basic concepts **)
 Parameter object : Type.
@@ -126,17 +125,17 @@ Inductive Num : Type :=
   plural   : Num |
   unknownNum : Num |
   moreThan : Num -> Num |
-  cardinal : nat -> Num.
+  cardinal : Z -> Num.
 Definition Card := Num.
 Definition AdN : Type := Num -> Num.
 
 Parameter LOTS_OF : CN -> CN. (* "lots of" is treated like an adjective *)
-Parameter MANY : nat.
-Parameter A_FEW : nat.
-Parameter SOME : nat. (* the plural number *)
-Parameter SEVERAL : nat.
+Parameter MANY : Z.
+Parameter A_FEW : Z.
+Parameter SOME : Z. (* the plural number *)
+Parameter SEVERAL : Z.
 
-Fixpoint interpAtLeast (num:Num) (x:nat) :=
+Fixpoint interpAtLeast (num:Num) (x:Z) :=
   match num with
   | singular => x >= 1
   | plural   => x >= SOME
@@ -145,7 +144,7 @@ Fixpoint interpAtLeast (num:Num) (x:nat) :=
   | cardinal n => x >= n
   end.
 
-Definition interpAtMost : Num -> nat -> Prop :=
+Definition interpAtMost : Num -> Z -> Prop :=
   fun num x => match num with
   | singular => x <= 1
   | plural   => x <= SOME
@@ -154,7 +153,7 @@ Definition interpAtMost : Num -> nat -> Prop :=
   | cardinal n => x <= n
   end.
 
-Definition interpExactly : Num -> nat -> Prop :=
+Definition interpExactly : Num -> Z -> Prop :=
   fun num x => match num with
   | singular => x = 1
   | plural   => True
@@ -163,7 +162,7 @@ Definition interpExactly : Num -> nat -> Prop :=
   | cardinal n => x = n
   end.
 
-Definition Numeral := nat.
+Definition Numeral := Z.
 Definition NP0 := VP ->Prop.
 Definition NP1 := (object -> Prop) ->Prop.
 
@@ -336,7 +335,7 @@ Definition AdvAP : AP -> Adv -> AP
 
 Definition ComparA : A -> NP -> AP
  := fun a np cn x => let (measure,_,_) := a in
-    apNP np (fun _class y => (measure cn y < measure cn x)).
+    apNP np (fun _class y => (1 <= measure cn x - measure cn y)).
 (* Remark: most of the time, the comparatives are used in a copula, and in that case the category comes from the NP.  *)
  (* x is faster than y  *)
  
@@ -364,13 +363,13 @@ Definition GenNP: NP -> Quant := (* Genitive *)
     in vp cn o /\ OF owner o /\ cn o).
 
 
-Parameter CARD: CN -> nat.
-Parameter MOSTPART: nat -> nat.
+Parameter CARD: CN -> Z.
+Parameter MOSTPART: Z -> Z.
 Definition CARD_MOST := fun x => MOSTPART (CARD x).
 
 Variable MOST_ineq : forall x, MOSTPART x <= x.
 Variable CARD_monotonous : forall a b:CN, (forall x, a x -> b x) -> CARD a <= CARD b.
-Parameter le_trans : forall x y z, x <= y -> y <= z -> x <= z.
+Parameter le_trans : forall (x y z:Z), x <= y -> y <= z -> x <= z.
 Lemma most_card_mono1 : forall a b:CN, (forall x, a x -> b x) -> MOSTPART (CARD a) <= CARD b.
 intros. cbv. apply le_trans with (y := CARD a). apply MOST_ineq. apply CARD_monotonous. assumption.
 Qed.
@@ -1309,13 +1308,34 @@ Definition opposite_adjectives : A -> A -> Prop
   forall cn o,  let (mSmall,threshSmall,_) := a1 in
                 let (mLarge,threshLarge,_) := a2 in
                (   (mSmall cn o = 0 - mLarge cn o)
-                /\ (threshLarge + threshSmall > 0)).
+                /\ (1 <= threshLarge + threshSmall)).
 
 Variable small_and_large_opposite_K : opposite_adjectives small_A large_A.
 Variable fast_and_slow_opposite_K   : opposite_adjectives slow_A  fast_A.
 
+Require Import Psatz.
+
 Variable ineqAdd : forall {a b c d}, (a <= b) -> (c <= d) -> (a + c <= b + d).
-Variable special_trans : forall {a b c}, (a > b) -> (a <= c) -> (b < c).
+
+Parameter le_trans' : forall {x y z:Z}, x <= y -> y <= z -> x <= z.
+
+Opaque Z.le.
+Lemma small_and_large_disjoint_K : forall cn o, apA small_A cn o -> apA large_A cn o -> False.
+cbv.
+assert (SLK := small_and_large_opposite_K).
+destruct small_A as [smallness smallThres].
+destruct large_A as [largeness largeThres].
+intros cn o [small cno] [large _].
+destruct (SLK cn o) as [neg disj].
+(*rewrite -> neg in small.
+assert (oops := le_trans' disj (ineqAdd large small)).
+ring_simplify in oops.
+*)
+lia.
+Qed.
+(* Coq: opps -> False  *)
+
+
 
 (** Treebank **)
 Definition s_001_1_p := (Sentence (UseCl (Past) (PPos) (PredVP (DetCN (DetQuant (IndefArt) (NumSg)) (UseN (italian_N))) (ComplSlash (SlashV2a (become_V2)) (DetCN (DetQuantOrd (GenNP (DetCN (DetQuant (DefArt) (NumSg)) (UseN (world_N)))) (NumSg) (OrdSuperl (great_A))) (UseN (tenor_N))))))).
@@ -2205,15 +2225,16 @@ Definition s_346_3_h := (Sentence (PredVPS (UsePN (smith_PN)) (ConjVPS2 (either7
 
 Theorem FraCaS001: s_001_1_p->s_001_3_h.
 cbv.
+intros.
 firstorder.
 Qed.
 
 Theorem FraCaS002: (s_002_1_p/\s_002_2_p)->s_002_4_h.
 cbv.
-firstorder.
-exists x.
 destruct great_A as [greatness  greatLimit].
 destruct italian_A as [italianess itLimit].
+firstorder.
+exists x.
 firstorder.
 assert (H' := H x (conj H0 H3)).
 generalize H'.
@@ -2295,10 +2316,11 @@ Qed.
 
 Variable CARD_exists : forall P:(object -> Prop), 1 <= CARD P -> exists x, P x.
 Theorem FraCaS015: s_015_1_p->s_015_3_h.
-cbv. intro P1.
+cbv.
+intro P1.
 apply CARD_exists.
 apply le_trans with (y := 3).
-firstorder.
+lia.
 generalize P1.
 apply le_mono.
 firstorder. Qed.
