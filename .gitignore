@@ -1,3 +1,4 @@
+.lia.cache
 *.vo
 *.glob
 *.v.d
