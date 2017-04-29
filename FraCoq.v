@@ -2,6 +2,13 @@ Close Scope nat_scope.
 Require Import ZArith.
 Open Scope Z_scope.
 
+Opaque Z.gt.
+Opaque Z.lt.
+Opaque Z.add.
+Opaque Z.sub.
+Opaque Z.ge.
+Opaque Z.le.
+
 (** Basic concepts **)
 Parameter object : Type.
 (** Categories **)
@@ -137,11 +144,11 @@ Parameter SEVERAL : Z.
 
 Fixpoint interpAtLeast (num:Num) (x:Z) :=
   match num with
-  | singular => x >= 1
-  | plural   => x >= SOME
+  | singular => 1 <= x
+  | plural   => SOME <= x
   | unknownNum => True
   | moreThan n => interpAtLeast n x
-  | cardinal n => x >= n
+  | cardinal n => n <= x
   end.
 
 Definition interpAtMost : Num -> Z -> Prop :=
@@ -666,7 +673,7 @@ Definition few_Det : Det:= (cardinal A_FEW, fun num P Q => CARD (fun x => P x /\
 (* DOUBLE NUM: Note that we ignore the cardinality in the Quantifier part, because "a few three men" make no sense. *)
 Set Implicit Arguments. 
 
-Definition  many_Det : Det:= (cardinal MANY, fun num P Q=> (exists x, P x /\ Q P x) /\ (CARD (fun x => P x /\ Q P x) >= MANY)). (* See DOUBLE NUM: above *)
+Definition  many_Det : Det:= (cardinal MANY, fun num P Q=> (exists x, P x /\ Q P x) /\ (MANY <= CARD (fun x => P x /\ Q P x))). (* See DOUBLE NUM: above *)
 Parameter much_Det : Det .
 Definition neither_Det :  Det:= (cardinal 2, fun num P Q=> exists x y, P x /\ not (Q P x) /\ P y /\ not (Q P y) /\ not (x = y)). 
 Parameter one_or_more_Det : Det.
@@ -676,7 +683,7 @@ Definition somePl_Det : Det:= (plural, fun num P Q=> (exists x,  P x /\ Q P x)) 
   This information is tested in 109. But then again, 107 contradicts this interpretation, so we leave the simplest definition for the time being.
 *)
 Definition someSg_Det : Det:= (singular, fun num P Q=> exists x,  P x /\ Q P x ).
-Definition several_Det: Det:= (cardinal SEVERAL, fun num P Q=> (exists x,  P x /\ Q P x) /\ (CARD (fun x => P x /\ Q P x) >= SEVERAL)). (* See DOUBLE NUM: above *)
+Definition several_Det: Det:= (cardinal SEVERAL, fun num P Q=> (exists x,  P x /\ Q P x) /\ (SEVERAL <= CARD (fun x => P x /\ Q P x))). (* See DOUBLE NUM: above *)
 Parameter twice_as_many_Det : Det .
 
 Parameter elliptic_NP_Pl : NP .
@@ -731,7 +738,7 @@ Definition exactly_Predet : Predet := fun np => let (num,qIGNORED,cn) := np
 Definition just_Predet : Predet := exactly_Predet.
 
 Definition MOST_Quant : Quant :=
-    fun num (cn : CN) (vp : VP) => CARD (fun x => cn x /\ vp cn x) >= CARD_MOST cn /\ exists x, cn x /\ vp cn x.
+    fun num (cn : CN) (vp : VP) => CARD_MOST cn <= CARD (fun x => cn x /\ vp cn x) /\ exists x, cn x /\ vp cn x.
 
 Definition  most_Predet : Predet
   := fun np => let (num,qIGNORED,cn0) := np
@@ -1307,7 +1314,7 @@ Definition opposite_adjectives : A -> A -> Prop
   := fun a1 a2 =>
   forall cn o,  let (mSmall,threshSmall,_) := a1 in
                 let (mLarge,threshLarge,_) := a2 in
-               (   (mSmall cn o = 0 - mLarge cn o)
+               (   (mSmall cn o = - mLarge cn o)
                 /\ (1 <= threshLarge + threshSmall)).
 
 Variable small_and_large_opposite_K : opposite_adjectives small_A large_A.
@@ -1320,7 +1327,6 @@ Variable ineqAdd : forall {a b c d}, (a <= b) -> (c <= d) -> (a + c <= b + d).
 Parameter le_trans' : forall {x y z:Z}, x <= y -> y <= z -> x <= z.
 
 
-Opaque Z.le.
 Lemma small_and_large_disjoint_K : forall cn o, apA small_A cn o -> apA large_A cn o -> False.
 cbv.
 assert (SLK := small_and_large_opposite_K).
@@ -2288,7 +2294,6 @@ cbv.
 destruct leading_A as [leading].
 destruct indispensable_A as [indispensable].
 destruct excellent_A as [excellent].
-firstorder. exists x. exists x0. firstorder.
 
 (* FIXME: we're missing indispensable (excellent x) => indispensable x.
 RelCN works at the CN level, not at the NP, so it is difficult to fix.
@@ -2315,21 +2320,8 @@ assumption.
 assumption.
 Qed.
 
-Opaque Z.gt.
-Opaque Z.lt.
-Opaque Z.add.
-Opaque Z.sub.
 
 
-Theorem FraCas208:s_208_1_p -> s_208_2_p -> s_208_4_h.
-assert (slK := small_and_large_opposite_K).
-cbv.
-destruct small_A as [small].
-destruct large_A as [large].
-intros P1 P2.
-destruct (slK animal_N DUMBO) as [neg disj].
-lia.
-Qed.
 
 Variable CARD_exists : forall P:(object -> Prop), 1 <= CARD P -> exists x, P x.
 Theorem FraCaS015: s_015_1_p->s_015_3_h.
@@ -2524,8 +2516,7 @@ Qed.
 
 
 
-Theorem FraCaS030: s_030_1_p->(s_030_3_h).  cbv. intros. destruct at_home_Adv. firstorder.
-exists x0. exists x1. firstorder. apply H0. (* UNK *)  Abort All.
+Theorem FraCaS030: s_030_1_p->(s_030_3_h).  cbv. intros. destruct at_home_Adv.  (* UNK *)  Abort All.
 
 Theorem FraCaS031: s_031_1_p->(s_031_3_h).  cbv. firstorder.
 
@@ -2549,26 +2540,26 @@ Theorem FraCaS032: s_032_1_p->(s_032_3_h). cbv. destruct at_home_Adv. firstorder
  Theorem FraCaS034: s_034_1_p/\ s_034_2_p/\ s_034_3_p->(s_034_5_h). cbv. 
 destruct in_Prep as [inPrep inVerid].
 destruct in_Prep as [within withinVerid].
-firstorder. Abort all. (*UNK*)
+Abort all. (*UNK*)
 
  Theorem FraCaS035: s_035_1_p/\ s_035_2_p/\ s_035_3_p->(s_035_5_h). cbv. 
 destruct in_Prep as [inPrep inVerid].
 destruct in_Prep as [within withinVerid].
-firstorder. Abort all. (*UNK*)
+ Abort all. (*UNK*)
 
  Theorem FraCaS036: s_036_1_p/\ s_036_2_p/\ s_036_3_p->(s_036_5_h). cbv. 
 destruct in_Prep as [inPrep inVerid].
 destruct in_Prep as [within withinVerid].
-firstorder. Abort all. (*UNK*)
+ Abort all. (*UNK*)
 
   Theorem FraCaS037: s_037_1_p/\ s_037_2_p/\ s_037_3_p->(s_037_5_h). cbv. 
 destruct in_Prep as [inPrep inVerid].
 destruct in_Prep as [within withinVerid].
-firstorder. Abort all. (*UNK*)
+ Abort all. (*UNK*)
 
 Theorem FraCaS038: s_038_1_p->not(s_038_3_h).  cbv. destruct on_time_Adv. firstorder. Qed.
 
-Theorem FraCaS039: s_039_1_p->(s_039_3_h).  cbv. destruct on_time_Adv. firstorder. Abort all. (**UNK**)
+Theorem FraCaS039: s_039_1_p->(s_039_3_h).  cbv. destruct on_time_Adv.  Abort all. (**UNK**)
 
 Theorem FraCaS040: s_040_1_p->s_040_3_h. cbv.
 firstorder.
@@ -2584,9 +2575,9 @@ Theorem FraCaS041: s_041_1_p->s_041_3_h. cbv.  firstorder. destruct in_Prep as [
 Theorem FraCaS042: (s_042_1_p/\s_042_2_p/\s_042_3_p)->(s_042_5_h).  cbv. destruct in_Prep as [inPrep inVerid].
 destruct in_Prep as [within withinVerid].
 
-firstorder. Abort All.  (**UNK**)
+Abort All.  (**UNK**)
 
-Theorem FraCaS043: (s_043_1_p/\s_043_2_p/\s_043_3_p)->(s_043_5_h). cbv. destruct in_Prep as [inPrep inVerid]. destruct in_Prep as [within withinVerid]. firstorder. 
+Theorem FraCaS043: (s_043_1_p/\s_043_2_p/\s_043_3_p)->(s_043_5_h). cbv. destruct in_Prep as [inPrep inVerid]. destruct in_Prep as [within withinVerid]. 
 (**UNK**) Abort All.
 
 
@@ -2604,17 +2595,16 @@ Qed.
 Theorem FraCaS045: s_045_1_p->(s_045_3_h).
 cbv.
 destruct leading_A.
-firstorder.
 (* UNK *) Abort All. 
 
 Theorem FraCaS046: s_046_1_p->not(s_046_3_h).
 cbv. destruct at_home_Adv as [atHome atHomeVerid].
 destruct atHomeVerid as [atHomeVerid atHomeVeridCov].  
-firstorder. (**cannot prove this, FIXME: One anaphora**)Abort all. 
+(**cannot prove this, FIXME: One anaphora**)Abort all. 
 
 Theorem FraCaS047: s_047_1_p->s_047_3_h.
 cbv. intros P1.
-generalize P1. apply le_mono. firstorder.
+generalize P1. apply le_mono. 
 (* UNK *) Abort All.
 
 Theorem FraCaS048: s_048_1_p->(s_048_3_h). cbv. 
@@ -2638,19 +2628,17 @@ cbv.  destruct within_Prep as [withinPrep inVerid]. firstorder.
 
 Theorem FraCaS051: (s_051_1_p/\s_051_2_p)->(s_051_4_h).
 cbv. destruct within_Prep as [withinPrep inVerid].
-firstorder. 
 (*UNK*) Abort all. 
 
 Theorem FraCaS052: (s_052_1_p/\s_052_2_p)->(s_052_4_h).
 cbv. destruct within_Prep as [withinPrep inVerid].
-firstorder. 
 (*UNK*) Abort all.
 
 
 Theorem FraCaS053: (s_053_1_p/\s_053_2_p)->(s_053_4_h).
 cbv.
 destruct in_Prep as [inPrep inVerid].
-firstorder. (*UNK*)
+(*UNK*) Abort All.
 
 Theorem FraCaS054: s_054_1_p->(s_054_3_h).
 cbv. 
@@ -2680,7 +2668,7 @@ Qed.
 
 Theorem FraCaS058: (s_058_1_p)->(s_058_3_h).  cbv. destruct in_Prep as [inPrep inVerid].
 destruct in_Prep as [within withinVerid].
-firstorder. Abort All. (* 058 UNK *)
+Abort All. (* 058 UNK *)
 
 Theorem FraCaS059: (s_059_1_p)->(s_059_3_h).
 cbv.
@@ -2709,7 +2697,7 @@ Theorem FraCaS062: (s_062_1_p)->not (s_062_3_h).
 cbv.
 destruct female_A as [female].
 destruct part_Prep as [part partVerid partCov].
-firstorder. (* FIXME: check the definition of 'neither' *) Abort All.
+ (* FIXME: check the definition of 'neither' *) Abort All.
 
 
 Theorem FraCaS063: (s_063_1_p)->(s_063_3_h).
@@ -2779,12 +2767,14 @@ Theorem FraCaS071: (s_071_1_p)->(s_071_3_h).  cbv. destruct on_time_Adv. firstor
 Theorem FraCaS072: (s_072_1_p)->(s_072_3_h).  cbv. firstorder. (* UNK *)
 
 Theorem FraCaS073: (s_073_1_p)->(s_073_3_h).  cbv. destruct major_A as [major].
-destruct in_Prep as [inPrep inVerid inVeridCov]. firstorder. (* UNK *)
+destruct in_Prep as [inPrep inVerid inVeridCov].
+Abort All.
+(* UNK *)
 
 Theorem FraCaS074: s_074_1_p->not(s_074_3_h). cbv.
 destruct outside_Prep as [outside outsideVerid].
 destruct within_Prep as [within withinVerid].
-firstorder. Abort All. (**UNK**)
+Abort All. (**UNK**)
 
 Theorem FraCaS075: s_075_1_p->(s_075_3_h). cbv.
 destruct from_Prep as [from fromVerid fromCov].
@@ -2792,7 +2782,6 @@ intro P1.
 destruct P1.
 rewrite -> H.
 apply CARD_monotonous.
-firstorder.
 (* UNK *)
 Abort All.
 
@@ -2810,19 +2799,17 @@ destruct female_A as [female].
 intro.
 firstorder.
 exists x. exists x0.
-firstorder.
 Abort All.
 
 Theorem FraCaS078: s_078_1_p-> not(s_078_3_h). cbv.
 destruct part_Prep as [inPrep inVerid inVeridCov].
 intro.
-firstorder.
 Abort All.
 
 Theorem FraCaS079: s_079_1_p-> (s_079_3_h).
 cbv.
 intro P.
-generalize P. apply le_mono. firstorder.
+generalize P. apply le_mono.
 (* UNK *)
 Abort All.
 
@@ -2853,7 +2840,6 @@ firstorder. Qed.
 Theorem FraCaS083: (s_083_1_p)-> (s_083_3_h).
 cbv.
 destruct anderson_PN as [anderson person''].
-firstorder.
 Abort All. 
 (* UNK *)
 
@@ -2864,7 +2850,6 @@ destruct smith_PN.
 destruct anderson_PN as [andersson].
 intros P1 subj.
 destruct P1 as [[S [nJ nA]] | H].
-firstorder.
 (* FIXME: The reading of 'and' in the subjunctive clause is dual to what we need. *)
 Abort All.
 
@@ -2884,7 +2869,8 @@ rewrite -> H in Q.
 Focus 2.
 apply CARD_monotonous.
 firstorder.
-(* FIXME: Coq *)
+lia.
+Qed.
 
 Theorem FraCaS086: (s_086_1_p)-> not(s_086_3_h). cbv.
 intros P1 H.
@@ -2902,7 +2888,8 @@ rewrite -> H in Q.
 Focus 2.
 apply CARD_monotonous.
 firstorder.
-(* FIXME: Coq *)
+lia.
+Qed.
 
 Theorem FraCaS087: (s_087_1_p)-> (s_087_3_h). cbv.
 destruct at_Prep as [atPrep atVerid].
@@ -3175,44 +3162,25 @@ Theorem FraCas203:s_203_1_p -> s_203_3_h. cbv. firstorder. Qed.
 
 (* End of Sec 5.2 2/2 *)
 
-Variable small_and_large_disjoint_K : forall cn o, apA small_A cn o -> apA large_A cn o -> False.
-(*
-cbv.
-intros.
-assert (SLK := small_and_large_opposite_K).
-destruct small_A as [smallness smallThres].
-destruct large_A as [largeness largeThres].
-firstorder.
-destruct (SLK cn x) as [neg disj].
-rewrite -> neg in H.
-assert (oops := special_trans disj (ineqAdd H0 H)).
-(* Coq: opps -> False  *)
-*)
-
 Theorem FraCas204:s_204_1_p -> not s_204_3_h. cbv. intros.
 assert (H' := small_and_large_opposite_K).
 destruct small_A as [smallness smallThres].
 destruct large_A as [largeness largeThres].
 destruct (H' animal_N MICKEY) as [neg disj].
-rewrite -> neg in H.
-firstorder.
-assert (oops := special_trans disj (ineqAdd H0 H)).
-(* Coq: opps -> False  *)
+lia.
+Qed.
 
 Theorem FraCas205:s_205_1_p -> not s_205_3_h. cbv. intros.
 assert (H' := small_and_large_opposite_K).
 destruct small_A as [smallness smallThres].
 destruct large_A as [largeness largeThres].
 destruct (H' animal_N DUMBO) as [neg disj].
-firstorder.
-rewrite -> neg in H0.
-assert (oops := (ineqAdd H0 H)).
-(*Coq: disj and oops -> False*)
+lia.
+Qed.
 
 Theorem FraCas206:s_206_1_p -> s_206_3_h. cbv. intros. Abort All. (* UNK *)
 
 Theorem FraCas207:s_207_1_p -> s_207_3_h. cbv. intros. Abort All. (* UNK *)
-
 
 Theorem FraCas208:s_208_1_p -> s_208_2_p -> s_208_4_h.
 assert (slK := small_and_large_opposite_K).
@@ -3221,11 +3189,8 @@ destruct small_A as [small].
 destruct large_A as [large].
 intros P1 P2.
 destruct (slK animal_N DUMBO) as [neg disj].
-firstorder.
-rewrite -> neg.
-(* Coq : Ring tactic *)
-(*Morally Qed. *)
-
+lia.
+Qed.
 
 Theorem FraCas209:s_209_1_p -> s_209_2_p -> not s_209_4_h.
 assert (slK := small_and_large_opposite_K).
@@ -3235,24 +3200,8 @@ destruct large_A as [large].
 intros P1 P2 NH.
 destruct (slK animal_N DUMBO) as [neg disj].
 destruct (slK animal_N MICKEY) as [neg' disj'].
-firstorder.
-(*
-  NH : large animal_N DUMBO < large animal_N MICKEY
-  neg : small animal_N DUMBO = 0 - large animal_N DUMBO
-  disj : threshold0 + threshold > 0
-  neg' : small animal_N MICKEY = 0 - large animal_N MICKEY
-  disj' : threshold0 + threshold > 0
-  H : threshold0 <= large animal_N DUMBO
-  H1 : threshold <= small animal_N MICKEY
-  -------------------------------------------
-  NH'                   : 0 < large animal_N MICKEY - large animal_N DUMBO
-  (1) = H1+H            : threshold0 + threshold <=  small animal_N MICKEY + large animal_N DUMBO
-  (2) = disj ∘ (1)      : 0 <  small animal_N MICKEY + large animal_N DUMBO
-  (3) = (2)+NH'         : 0 <  small animal_N MICKEY + large animal_N MICKEY
-  (3) rewr. neg'        : 0 < 0
-*)
-(*Morally Qed. *)
-
+lia.
+Qed.
 
 (* End of Sec 5.3 6/6 *)
 
@@ -3289,21 +3238,13 @@ cbv.
 assert (slK := small_and_large_opposite_K).
 destruct small_A as [small].
 destruct large_A as [large].
-intros.
+intros P1 P2  [largeM mouse] [smallD eleph].
 destruct (slK animal_N DUMBO) as [neg disj].
 destruct (slK animal_N MICKEY) as [neg' disj'].
-firstorder.
-destruct (H MICKEY H4 ).
-destruct (H0 DUMBO H3 ).
-
-(*
-  disj' : 0 < threshold0 + threshold
-  H5 : threshold <= small animal_N MICKEY
-  H7 : threshold0 <= large animal_N DUMBO
-*)
-
-
-(*Morally Qed.*)
+destruct (P1 _ mouse) as [X Y].
+destruct (P2 _ eleph) as [Z W].
+lia.
+Qed.
 
 Theorem FraCas213:s_213_1_p -> s_213_2_p -> s_213_4_h.
 cbv.
@@ -3326,7 +3267,6 @@ Theorem FraCas215:s_215_1_p -> s_215_2_p -> s_215_4_h.
 cbv.
 intros P1 P2.
 destruct competent_A as [competent].
-firstorder.
 (* UNK *)
 Abort All.
 
@@ -3337,7 +3277,6 @@ destruct fat_A as [fat fatP].
 destruct bill_PN as [bill].
 destruct john_PN as [john].
 destruct than_Prep as [than].
-firstorder.
 (* FIXME: syntax wrong: should be
    john is (fatter politician than bill)
  not
@@ -3371,19 +3310,19 @@ Abort All. (* UNK *)
 Theorem FraCas220: s_220_1_p -> s_220_2_p -> s_220_4_h.
 cbv.
 destruct fast_A as [fast].
-firstorder.
-(* Transitivity *)
-(* Morally Qed. *)
+intros P1 [P2a].
+split.
+lia.
+exact PC6082_COMPY.
+Qed.
 
 Theorem FraCas221:s_221_1_p -> s_221_3_h. cbv.
 destruct fast_A as [fast].
-firstorder.
 Abort All. (* UNK *)
 
 Theorem FraCas222: s_222_1_p -> s_222_2_p -> s_222_4_h.
 cbv.
 destruct fast_A as [fast].
-firstorder.
 Abort All. (* UNK *)
 
 Variable slow_and_fast_disjoint_K : forall cn o, apA slow_A cn o /\ apA fast_A cn o -> False.
@@ -3396,30 +3335,16 @@ destruct slow_A as [slowness slowThres].
 destruct (H' computer_N PC6082) as [neg disj].
 destruct (H' computer_N ITEL_XZ) as [neg' disj'].
 intros.
-firstorder.
-
-(*
-  neg : slowness computer_N PC6082 = - fastness computer_N PC6082
-  disj : 0 < fastThres + slowThres
-  neg' : slowness computer_N ITEL_XZ = - fastness computer_N ITEL_XZ
-  H : 0 < fastness computer_N PC6082 - fastness computer_N ITEL_XZ
-  H1 : fastThres <= fastness computer_N ITEL_XZ
-  H0 : slowThres <= slowness computer_N PC6082
-  ----------------------------------------------------
-  H1+H0  : slowThres+fastThres <= slowness computer_N PC6082 + fastness computer_N ITEL_XZ
-  ... ∘ disj : 0 < slowness computer_N PC6082 + fastness computer_N ITEL_XZ
-  ... + H :  0 < slowness computer_N PC6082 + fastness computer_N PC6082
-  ... rew. neg : 0 < 0
-*)
-(*Morally Qed.*)
+lia.
+Qed.
 
 Theorem FraCas224: s_224_1_p -> s_224_2_p -> s_224_4_h.
 cbv.
 destruct fast_A as [fast].
-firstorder.
-rewrite -> H.
-firstorder.
-apply PC6082_COMPY.
+intros P1 [P2a].
+split.
+lia.
+exact PC6082_COMPY.
 Qed.
 
 Theorem FraCas225: s_225_1_p -> s_225_3_h.
@@ -3431,7 +3356,6 @@ Abort All. (* UNK *)
 Theorem FraCas226: s_226_1_p -> s_226_2_p -> s_226_4_h.
 cbv.
 destruct fast_A as [fast].
-firstorder.
 Abort All. (* UNK *)
 
 Theorem FraCas227: s_227_1_p -> s_227_2_p -> not s_227_4_h.
@@ -3442,28 +3366,13 @@ destruct slow_A as [slowness slowThres].
 destruct (H' computer_N PC6082) as [neg disj].
 destruct (H' computer_N ITEL_XZ) as [neg' disj'].
 intros.
-firstorder.
-(*
-  neg' : slowness computer_N ITEL_XZ = 0 - fastness computer_N ITEL_XZ
-  neg : slowness computer_N PC6082 = 0 - fastness computer_N PC6082
-  disj : 0 < fastThres + slowThres
-  H : fastness computer_N PC6082 = fastness computer_N ITEL_XZ
-  H1 : fastThres <= fastness computer_N ITEL_XZ
-  H0 : slowThres <= slowness computer_N PC6082
-  -----------------------------------
-  H0+H1 : fastThres + slowThres <= fastness computer_N ITEL_XZ + slowness computer_N PC6082
-  ... disj : 0 < fastness computer_N ITEL_XZ + slowness computer_N PC6082
-  ... H  :  0 < fastness computer_N PC6082 + slowness computer_N PC6082
-  ... neg :  0 < 0
-*)
-  
-(*Morally Qed.*)
+lia.
+Qed.
 
 Theorem FraCas228: s_228_1_p -> s_228_3_h.
 cbv.
 destruct fast_A as [fast].
 intro P1.
-firstorder.
 Abort All. (* UNK *)
 
 
@@ -3475,11 +3384,8 @@ destruct slow_A as [slowness slowThres].
 destruct (H' computer_N PC6082) as [neg disj].
 destruct (H' computer_N ITEL_XZ) as [neg' disj'].
 intros P1 H.
-rewrite -> neg in H.
-rewrite -> P1 in H.
-rewrite -> neg' in H.
-(* Coq: H -> False *)
-
+lia.
+Qed.
 
 Theorem FraCaS230: s_230_1_p -> s_230_3_h.
 cbv.
@@ -3585,7 +3491,7 @@ intro.
 (* FIXME: syntax of "more than " not precise enough *)
 Abort All.
 
-(* End of sec 6.1 13/19 *)
+(* End of sec 6.1 14/19 *)
 
 Theorem FraCaS239: s_239_1_p -> s_239_3_h.
 cbv.
@@ -3667,7 +3573,6 @@ Qed.
 Theorem FraCaS247: s_247_1_p -> s_247_2_p -> s_247_4_h.
 cbv.
 destruct fast_A as [fast] eqn:fst.
-firstorder.
 Abort All. (* UNK *)
 
 Theorem FraCaS248: s_248_1_p -> s_248_2_p -> s_248_4_h.
@@ -3682,14 +3587,12 @@ cbv.
 intros.
 destruct fast_A as [fast] eqn:fst.
 destruct H as [zx zy].
-firstorder.
 Abort All.
 (* FIXME: wrong semantics for 'and' in combination with 'the' *)
 
 Theorem FraCaS250: s_250_1_p -> s_250_3_h.
 cbv.
 destruct fast_A as [fast] eqn:fst.
-firstorder.
 (* FIXME: wrong semantics for "the" *)
 
 (* End of sec 6.6 3/5 *)
