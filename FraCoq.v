@@ -59,7 +59,9 @@ Inductive Conj : Type :=
   Associative : (Prop -> Prop -> Prop) -> Conj |
   EitherOr : Conj.
 
-
+(* For this project we assume that all adjectives are 'gradable'. This
+is not true in general; in this case we should refine the subtyping
+relation. *)
 Inductive A : Type  :=
   mkA : forall (measure : (object -> Prop) -> object -> Z)
                (threshold : Z)
