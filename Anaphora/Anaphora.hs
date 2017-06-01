@@ -4,7 +4,7 @@ import Prelude hiding (pred)
 type Object = String
 type Prop = String
 
-_MARY, _JOHN :: Object
+_MARY, _JOHN, _BILL :: Object
 _MARY = "MARY"
 _JOHN = "JOHN"
 _BILL = "BILL"
@@ -14,7 +14,13 @@ data Gender where
    Female :: Gender
    Unknown :: Gender
 
-type Descriptor = Gender
+data Number where
+  Singular :: Number
+  Plural :: Number
+  deriving (Eq,Show)
+
+  
+type Descriptor = (Gender,Number)
 
 type ObjQuery = Descriptor -> Bool
 type ObjEnv = ObjQuery -> NP
@@ -46,17 +52,24 @@ _TRUE = \x -> let (x',_) = x assumed in x'
 
 type S = Effect
 type VP = Object -> Effect
+type CN = Object -> Effect
 type NP = VP -> Effect
 
-isMale :: Gender -> Bool
-isMale = \x -> case x of
+isMale :: Descriptor -> Bool
+isMale = \(x,_) -> case x of
   Male -> True
   _ -> False
 
-isFemale :: Gender -> Bool
-isFemale = \x -> case x of
+isFemale :: Descriptor -> Bool
+isFemale = \(x,_) -> case x of
   Female -> True
   _ -> False
+
+isSingular :: Descriptor -> Bool
+isSingular = (==Singular) . snd
+
+isPlural :: Descriptor -> Bool
+isPlural = (== Plural) . snd
 
 
 pushNP :: Descriptor -> NP -> Env -> Env
@@ -74,22 +87,25 @@ getNP = \env descr -> let Env{..} = env in objEnv descr
 
 
 maryNP :: NP
-maryNP = \vp ρ -> vp _MARY (pushNP Female maryNP ρ)
+maryNP = \vp ρ -> vp _MARY (pushNP (Female,Singular) maryNP ρ)
 
 johnNP :: NP
-johnNP = \vp ρ -> vp _JOHN (pushNP Male johnNP ρ)
+johnNP = \vp ρ -> vp _JOHN (pushNP (Male,Singular) johnNP ρ)
 
 billNP :: NP
-billNP = \vp ρ -> vp _BILL (pushNP Male billNP ρ)
+billNP = \vp ρ -> vp _BILL (pushNP (Male,Singular) billNP ρ)
 
 sheNP :: NP
-sheNP = \vp ρ -> (getNP ρ isFemale) vp ρ
+sheNP = \vp ρ -> (getNP ρ ((&&) <$> isFemale <*> isSingular)) vp ρ
 
 heNP :: NP
-heNP = \vp ρ -> (getNP ρ isMale) vp ρ
+heNP = \vp ρ -> (getNP ρ ((&&) <$> isMale <*> isSingular)) vp ρ
 
 theySingNP :: NP -- as in everyone owns their book 
-theySingNP = \vp ρ -> (getNP ρ (\_ -> True)) vp ρ
+theySingNP = \vp ρ -> (getNP ρ isSingular) vp ρ
+
+theyPlNP :: NP -- as in everyone owns their book 
+theyPlNP = \vp ρ -> (getNP ρ isPlural) vp ρ
 
 
 lift2 :: (Prop -> Prop -> Prop) -> Effect -> Effect -> Effect
@@ -104,6 +120,8 @@ a <== b = lift2 (\x y -> y --> x) a b
 (==>) = flip (<==)
 (-->) :: Prop -> Prop -> Prop
 x --> y = x ++ " → " ++ y
+x ~~> y = x ++ " ∼> " ++ y
+
 
 (###) :: Effect -> Effect -> Effect
 a ### b = lift2 (\x y -> x ++" ∧ "++ y) a b
@@ -116,6 +134,10 @@ _LEAVE_V = mkPred "LEAVES"
 pureVP :: (Object -> Prop) -> VP
 pureVP = \v x rho -> (v x, pushVP (pureVP v) rho)
 -- pushes itself in the env for reference
+
+pureCN :: (Object -> Prop) -> CN
+pureCN = \v x rho -> (v x, rho)
+-- CN leave the env as is. The quantifiers may update it.
 
 leavesVP :: VP
 leavesVP = pureVP _LEAVE_V
@@ -156,10 +178,6 @@ admitVP = \p x rho0 -> let (p',rho1) = p rho0 in
 
 _PERSON :: Object -> Prop
 _PERSON = mkPred "PERSON"
-_CONGRESSMAN :: Object -> Prop
-_CONGRESSMAN = mkPred "CONGRESSMAN"
-_ADMIRE_KENNEDY :: Object -> Prop
-_ADMIRE_KENNEDY = mkPred "ADMIRE_K"
 
 _FORALL :: (Object -> Prop) -> Prop
 _FORALL f = "(∀ x. " ++ f "x" ++")"
@@ -170,17 +188,16 @@ _THE f = "(THE x. " ++ f "x" ++")"
 pureObj :: Object -> NP
 pureObj x vp ρ = vp x ρ
 everyOne :: NP
-everyOne = \vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP Unknown (pureObj x) ρ)),
+everyOne = \vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP (Unknown,Singular) (pureObj x) ρ)),
                       pushVP vp ρ)
 
 -- EXAMPLE:: everyone admits that they are tired
 example2 :: Prop
 example2 = _TRUE (everyOne (admitVP (theySingNP isTiredVP)))
 
-{-> example2
+{-> putStrLn example2
 
-
-<interactive>:1621:1: error: Variable not in scope: example2
+(∀ x. PERSON(x) → ADMIT(IS_TIRED(x),x))
 -}
 
 
@@ -190,7 +207,7 @@ example3 = _TRUE ((everyOne (admitVP (theySingNP isTiredVP))) ### (maryNP doesTo
 
 {-> putStrLn example3
 
-(∀ x. PERSON x -> ADMIT(IS TIRED x,x))/\ADMIT(IS TIRED MARY,MARY)
+(∀ x. PERSON(x) → ADMIT(IS_TIRED(x),x)) ∧ ADMIT(IS_TIRED(MARY),MARY)
 -}
 
 
@@ -219,6 +236,8 @@ LOVE((THE x. MARRIED(JOHN,x)),JOHN)/\LOVE((THE x. MARRIED(JOHN,x)),BILL)
 lovesVP' :: NP -> VP
 lovesVP' directObject subject rho = (fst (directObject (\y rho'  -> (mkRel2 "LOVE" y subject,rho')) rho),
                                       pushVP (lovesVP' directObject) rho)
+-- fixme: the above isn't even fully correct: the objects introduced
+-- in the directObject should be pushed onto the env.
 
 example5 :: Prop
 example5 = _TRUE (johnNP (lovesVP' hisSpouseNP) ### (billNP doesTooVP) )
@@ -233,7 +252,48 @@ example6 :: Prop
 example6 = _TRUE (johnNP (lovesVP' hisSpouseNP) ### (maryNP doesTooVP) )
 -- Because "his" is looking for a masculine object, the re-evaluation
 -- in the "does too" points back to John anyway.
+
 {-> putStrLn example6
 
 LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(JOHN,x)),MARY)
+-}
+
+
+that :: CN -> VP -> CN
+that cn vp x = cn x ### vp x
+
+the :: CN -> NP
+the cn vp rho = vp (_THE $ \x -> fst (cn x rho)) rho
+-- FIXME: the CN won't update the environment in this situation.
+
+few :: CN -> NP
+few cn = \vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (vp x) ρ),
+                   pushVP vp
+                    (pushNP (Unknown,Plural) (the (cn `that` vp)) -- "e-type" referent
+                      (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
+                       ρ)))
+
+envModOf :: Effect -> Env -> Env
+envModOf f rho = snd (f rho)
+
+congressmen = pureCN (mkPred "CONGRESSMAN")
+admireKennedy :: VP
+admireKennedy = pureVP (mkPred "ADMIRE_K")
+
+example7 :: Prop
+example7 = _TRUE (few congressmen (lovesVP billNP) ### theyPlNP isTiredVP)
+
+
+{-> putStrLn example7
+
+(∀ x. CONGRESSMAN(x) ∼> LOVE(BILL,x)) ∧ IS_TIRED((THE x. CONGRESSMAN(x) ∧ LOVE(BILL,x)))
+-}
+
+
+example8 :: Prop
+example8 = _TRUE (few congressmen (lovesVP billNP) ### heNP isTiredVP)
+
+{-> putStrLn example8
+
+(∀ x. CONGRESSMAN(x) ∼> LOVE(BILL,x)) ∧ IS_TIRED(BILL)
 -}
