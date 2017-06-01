@@ -131,7 +131,15 @@ Eval cbv in TRUE ((everyOne (admitVP (theySingNP isTiredVP))) [.] (maryNP doesTo
 (*Attn: we push the VP after resolution of anaphora. This means that
 the "does too" picks the (unbound!) "they" which is evaluated when
 pushing the "admits that they are tired" in the invokation of
-Everyone. *)
+Everyone.
+
+Unfortunately, Coq is not to friendly environment to fix this
+problem. Indeed, if the things looked up in the environment need
+themselves to lookup in the environment we may have infinite
+recursion. One would need to prove to Coq that this process is bound
+in some way --- which is an annoyance.
+
+*)
 
 
 
