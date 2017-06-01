@@ -233,23 +233,22 @@ LOVE((THE x. MARRIED(JOHN,x)),JOHN)/\LOVE((THE x. MARRIED(JOHN,x)),BILL)
 -}
 
 
-lovesVP' :: NP -> VP
-lovesVP' directObject subject rho = (fst (directObject (\y rho'  -> (mkRel2 "LOVE" y subject,rho')) rho),
-                                      pushVP (lovesVP' directObject) rho)
--- fixme: the above isn't even fully correct: the objects introduced
--- in the directObject should be pushed onto the env.
+lovesVP'' :: NP -> VP
+lovesVP'' directObject subject = directObject (\x rho ->
+                                                (mkRel2 "LOVE" x subject,pushVP (lovesVP'' directObject) rho))
 
-example5 :: Prop
-example5 = _TRUE (johnNP (lovesVP' hisSpouseNP) ### (billNP doesTooVP) )
+example5b :: Prop
+example5b = _TRUE (johnNP (lovesVP'' hisSpouseNP) ### (billNP doesTooVP) )
 -- With the above version of "love", the direct object is re-evaluated after it is being referred to.
-{-> putStrLn example5
 
-LOVE((THE x. MARRIED(JOHN,x)),JOHN)/\LOVE((THE x. MARRIED(BILL,x)),BILL)
+{-> putStrLn example5b
+
+LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(BILL,x)),BILL)
 -}
 
 
 example6 :: Prop
-example6 = _TRUE (johnNP (lovesVP' hisSpouseNP) ### (maryNP doesTooVP) )
+example6 = _TRUE (johnNP (lovesVP'' hisSpouseNP) ### (maryNP doesTooVP) )
 -- Because "his" is looking for a masculine object, the re-evaluation
 -- in the "does too" points back to John anyway.
 
