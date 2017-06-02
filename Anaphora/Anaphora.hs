@@ -8,6 +8,7 @@ type Prop = String
 data Gender where
    Male :: Gender
    Female :: Gender
+   Neutral :: Gender
    Unknown :: Gender
   deriving (Eq,Show)
 
@@ -62,6 +63,9 @@ type VP = Object -> Effect
 type CN = Object -> Effect
 type CN2 = Object -> Object -> Effect
 type NP = Role -> VP -> Effect
+
+isNeutral :: Descriptor -> Bool
+isNeutral = (== Neutral) . dGender
 
 isMale :: Descriptor -> Bool
 isMale = (== Male) . dGender
@@ -119,6 +123,8 @@ theySingNP = \role vp ρ -> (getNP ρ isSingular) role vp ρ
 
 themSingNP :: NP -- as in everyone owns their book 
 themSingNP = \role vp ρ -> (getNP ρ (all' [isSingular, isNotSubject])) role vp ρ
+
+itNP = \role vp ρ -> (getNP ρ (all' [isNeutral, isSingular])) role vp ρ
 
 theyPlNP :: NP -- as in everyone owns their book 
 theyPlNP = \role vp ρ -> (getNP ρ isPlural) role vp ρ
@@ -222,6 +228,9 @@ _PERSON = mkPred "PERSON"
 _FORALL :: (Object -> Prop) -> Prop
 _FORALL f = "(∀ x. " ++ f "x" ++")"
 
+_EXISTS :: (Object -> Prop) -> Prop
+_EXISTS f = "(∃ z. " ++ f "z" ++")"
+
 pureObj :: Object -> NP
 pureObj x role vp ρ = vp x ρ
 
@@ -236,16 +245,25 @@ everyOne = \role vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP (Desc
 few :: CN -> NP
 few cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (not' (vp x) ) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
                    pushVP vp
-                    (pushNP (Descriptor Unknown Plural Other) (the (cn `that` vp)) -- "e-type" referent
+                    (pushNP (Descriptor Unknown Plural Other) (every (cn `that` vp)) -- "e-type" referent
                       (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
                        ρ)))
 
 every :: CN -> NP
-every cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (-->) (cn x)  (vp x) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
+every cn = \role vp ρ -> (_FORALL $ \x -> fst ((cn x ==> vp x) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
                    pushVP vp
-                    (pushNP (Descriptor Unknown Plural Other) (the (cn `that` vp)) -- "e-type" referent
+                    (pushNP (Descriptor Unknown Plural Other) (every (cn `that` vp)) -- "e-type" referent
                       (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
                        ρ)))
+
+some :: CN -> NP
+some cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
+                   pushVP vp
+                    (pushNP (Descriptor Unknown Plural Other) (the (cn `that` vp)) -- "e-type" referent {- this one can done better because existential quantifiers are "positive" -}
+                      (envModOf (vp "<unbound>") -- {- same: can use positiveness -}
+                       ρ)))
+
+{- in fact, it seems that all quantifiers have an existential component.  -}
 
 envModOf :: Effect -> Env -> Env
 envModOf f rho = snd (f rho)
@@ -345,7 +363,7 @@ example7 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (theyPlNP ! isTiredVP
 
 {-> putStrLn example7
 
-(∀ x. CONGRESSMAN(x) ∼> LOVE(BILL,x)) ∧ IS_TIRED((THE x. CONGRESSMAN(x) ∧ LOVE(BILL,x)))
+(∀ x. CONGRESSMAN(x) ∼> NOT(LOVE(BILL,x))) ∧ (∀ x. CONGRESSMAN(x) ∧ LOVE(BILL,x) → IS_TIRED(x))
 -}
 
 
@@ -371,12 +389,6 @@ IS_TIRED(JOHN) ∧ LOVE(JOHN,BILL)
 man :: CN
 man = pureCN (mkPred "MAN")
 
-hisDonkeyNP :: NP
-hisDonkeyNP = his (pureCN2 (mkRel2 "OWNED_DONKEY"))
-
-
-notBeatV2 = pureV2' (\x y -> mkPred "NOT" (mkRel2 "BEAT" x y))
-
 beatV2 :: NP -> VP
 beatV2 = pureV2' (mkRel2 "BEAT")
 
@@ -387,4 +399,23 @@ example10 = _TRUE ((few (man `that` (lovesVP hisSpouseNP))) ! (beatV2 themSingNP
 {-> putStrLn example10
 
 (∀ x. MAN(x) ∧ LOVE((THE y. MARRIED(x,y)),x) ∼> NOT(BEAT((THE y. MARRIED(x,y)),x)))
+-}
+
+donkey :: CN
+donkey = pureCN (mkPred "DONKEY")
+
+own :: NP -> VP
+own = pureV2' (mkRel2 "OWN")
+
+aDet :: CN -> NP
+aDet cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) ρ),
+                         (pushNP (Descriptor Unknown Plural Other) (pureObj "Z")
+                          ρ))
+
+example11 :: Prop
+example11 = _TRUE (every (man `that` own (aDet donkey)) ! (beatV2 itNP))
+
+{-> putStrLn example11
+
+(∀ x. MAN(x) ∧ (∃ z. DONKEY(z) ∧ OWN(z,x)) → BEAT(assumedObj,x))
 -}

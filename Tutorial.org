@@ -10,7 +10,7 @@ Aim:
 - The type system is a superset of GF's
 - Higher order logic (very expressive logic, so "anything you can
   think of" can be done)
-- Has good reasoning facilities
+- Has good reasoning facilities (can solve some decidable subtheories)
 - Can work on "open terms" (some definitions can remain abstract)
 
 - The mapping is done using the programming bits of Coq
@@ -21,15 +21,18 @@ Aim:
 - Not a decidable logic (cannot evaluate the truth value)
 - Not a theorem prover (cannot in general prove true conjectures)
 - From a pedagogical pov., maybe it could be better to clearly
-  separate the programming bits and
-- The programming bits are restricted to total programs (which can sometimes mean extra work)
+  separate the programming bits and the reasoning bits.
+- The programming bits are restricted to total programs (which can
+  sometimes mean extra work)
 
 
 ** Alternatives:
 
 - Program in your favorite language with higher-order functions (a
   type-system helps). In particular, you can use the concrete syntax
-  mechanism of GF. (You may have difficulties with quantifiers.)
+  mechanism of GF for the simplest semantic mappings. (You may have
+  difficulties with quantifiers; supporting anaphora is most certainly
+  very difficult.)
 - Use your favorite reasoning tool
 
 * General idea
