@@ -4,26 +4,35 @@ import Prelude hiding (pred)
 type Object = String
 type Prop = String
 
-_MARY, _JOHN, _BILL :: Object
-_MARY = "MARY"
-_JOHN = "JOHN"
-_BILL = "BILL"
 
 data Gender where
    Male :: Gender
    Female :: Gender
    Unknown :: Gender
+  deriving (Eq,Show)
 
 data Number where
   Singular :: Number
   Plural :: Number
   deriving (Eq,Show)
 
-  
-type Descriptor = (Gender,Number)
+data Role where
+  Subject :: Role
+  Other :: Role
+  deriving (Eq,Show)
+
+first :: (t2 -> t1) -> (t2, t) -> (t1, t)
+first f (x,y) = (f x,y)
+second f (x,y) = (x,f y)
+data Descriptor = Descriptor {dGender :: Gender
+                             ,dNumber :: Number
+                             ,dRole :: Role}
 
 type ObjQuery = Descriptor -> Bool
-type ObjEnv = ObjQuery -> NP
+type ObjEnv = [(Descriptor,NP)]
+
+clearRole :: Env -> Env
+clearRole Env{..} = Env{objEnv = map (first (\d -> d {dRole = Other})) objEnv,..}
 
 type VPEnv = VP
 -- Just remember the last VP; could be more fine-grained because we have "does", "is", "has" as placehodlers in English.
@@ -33,79 +42,97 @@ data Env = Env {vpEnv :: VPEnv,
 
 type Effect = Env -> (Prop, Env)
 
+mkPred :: String -> Object -> Prop
 mkPred p x = p ++ "(" ++ x ++ ")"
-mkRel2 p x y = p ++ "(" ++ x ++ "," ++ y ++ ")"
 
-assumedObj :: ObjEnv
-assumedObj _query vp rho = vp "assumedObj" rho
+mkRel2 :: String -> Object -> Object -> Prop
+mkRel2 p x y = p ++ "(" ++ x ++ "," ++ y ++ ")"
 
 assumedVP :: VPEnv
 assumedVP x ρ = ("assumedVP " ++ x, ρ) 
 
 assumed :: Env
-assumed = Env assumedVP assumedObj
-
+assumed = Env assumedVP []
 
 _TRUE :: Effect -> Prop
 _TRUE = \x -> let (x',_) = x assumed in x'
 
-
 type S = Effect
 type VP = Object -> Effect
 type CN = Object -> Effect
-type NP = VP -> Effect
+type CN2 = Object -> Object -> Effect
+type NP = Role -> VP -> Effect
 
 isMale :: Descriptor -> Bool
-isMale = \(x,_) -> case x of
-  Male -> True
-  _ -> False
+isMale = (== Male) . dGender
 
 isFemale :: Descriptor -> Bool
-isFemale = \(x,_) -> case x of
-  Female -> True
-  _ -> False
+isFemale =  (== Female) . dGender
 
 isSingular :: Descriptor -> Bool
-isSingular = (==Singular) . snd
+isSingular = (== Singular) . dNumber
 
 isPlural :: Descriptor -> Bool
-isPlural = (== Plural) . snd
+isPlural = (== Plural) . dNumber
 
+isNotSubject :: Descriptor -> Bool
+isNotSubject = (/= Subject) . dRole
 
 pushNP :: Descriptor -> NP -> Env -> Env
-pushNP = \objDescr obj env -> let Env{..} = env in
-     Env vpEnv $ \pred ->
-     case pred objDescr of
-       True -> obj
-       False -> objEnv pred
+pushNP d obj Env{..} = Env{objEnv = (d,obj):objEnv,..}
 
 pushVP :: VP -> Env -> Env
 pushVP = \vp env -> let Env{..} = env in Env vp objEnv
 
 getNP :: Env -> ObjQuery -> NP
-getNP = \env descr -> let Env{..} = env in objEnv descr
+getNP Env{objEnv=[]} _ = \_ vp -> vp "assumedObj"
+getNP Env{objEnv=((d,o):os),..} q = if q d then o else getNP Env{objEnv=os,..} q
 
+
+purePN ::  Object -> Gender -> NP
+purePN o dGender dRole vp ρ = vp o (pushNP (Descriptor{..} ) (purePN o dGender) ρ)
+  where dNumber = Singular
 
 maryNP :: NP
-maryNP = \vp ρ -> vp _MARY (pushNP (Female,Singular) maryNP ρ)
+maryNP = purePN "MARY" Female
 
 johnNP :: NP
-johnNP = \vp ρ -> vp _JOHN (pushNP (Male,Singular) johnNP ρ)
+johnNP = purePN "JOHN" Male
 
 billNP :: NP
-billNP = \vp ρ -> vp _BILL (pushNP (Male,Singular) billNP ρ)
+billNP = purePN "BILL" Male
 
 sheNP :: NP
-sheNP = \vp ρ -> (getNP ρ ((&&) <$> isFemale <*> isSingular)) vp ρ
+sheNP = \role vp ρ -> (getNP ρ (all' [isFemale, isSingular])) role vp ρ
+
+himNP :: NP
+himNP = \role vp ρ -> (getNP ρ (all' [isMale, isSingular, isNotSubject])) role vp ρ
 
 heNP :: NP
-heNP = \vp ρ -> (getNP ρ ((&&) <$> isMale <*> isSingular)) vp ρ
+heNP = \role vp ρ -> (getNP ρ (all' [isMale, isSingular])) role vp ρ
+
+himSelfNP :: NP
+himSelfNP = heNP
+
+his :: CN2 -> NP
+his cn2 role vp = himSelfNP role $ \x -> the (cn2 x) Other vp
+
+the :: CN -> NP
+the cn role vp rho = vp (_THE $ \x -> fst (cn x rho)) rho
+-- FIXME: the CN won't update the environment in this situation.
+-- FIXME: push the NP on the env.
+_THE :: (Object -> Prop) -> Prop
+_THE f = "(THE x. " ++ f "x" ++")"
+
+
+all' :: [a -> Bool] -> a -> Bool
+all' fs x = all ($ x) fs
 
 theySingNP :: NP -- as in everyone owns their book 
-theySingNP = \vp ρ -> (getNP ρ isSingular) vp ρ
+theySingNP = \role vp ρ -> (getNP ρ isSingular) role vp ρ
 
 theyPlNP :: NP -- as in everyone owns their book 
-theyPlNP = \vp ρ -> (getNP ρ isPlural) vp ρ
+theyPlNP = \role vp ρ -> (getNP ρ isPlural) role vp ρ
 
 
 lift2 :: (Prop -> Prop -> Prop) -> Effect -> Effect -> Effect
@@ -118,13 +145,16 @@ lift2 = \op x y rho1 -> let (x' , rho2) = x rho1 in
 a <== b = lift2 (\x y -> y --> x) a b
 (==>) :: Effect -> Effect -> Effect
 (==>) = flip (<==)
-(-->) :: Prop -> Prop -> Prop
+(-->), (~~>) :: Prop -> Prop -> Prop
 x --> y = x ++ " → " ++ y
 x ~~> y = x ++ " ∼> " ++ y
 
 
 (###) :: Effect -> Effect -> Effect
-a ### b = lift2 (\x y -> x ++" ∧ "++ y) a b
+(###) = (∧)
+
+(∧) :: Effect -> Effect -> Effect
+a ∧ b = lift2 (\x y -> x ++" ∧ "++ y) a b
 
 
 _LEAVE_V :: Object -> Prop
@@ -137,7 +167,11 @@ pureVP = \v x rho -> (v x, pushVP (pureVP v) rho)
 
 pureCN :: (Object -> Prop) -> CN
 pureCN = \v x rho -> (v x, rho)
--- CN leave the env as is. The quantifiers may update it.
+-- CN leaves the env as is. The quantifiers may update it.
+
+pureCN2 :: (Object -> Object -> Prop) -> CN2
+pureCN2 = \v x y rho -> (v x y, rho)
+-- CN2 leaves the env as is. The quantifiers may update it.
 
 leavesVP :: VP
 leavesVP = pureVP _LEAVE_V
@@ -149,11 +183,11 @@ isTiredVP = pureVP _IS_TIRED
 
 -- (* EXAMPLE:: john leaves if he is tired *)
 example0 :: Prop
-example0 = _TRUE ((johnNP leavesVP) <== (heNP isTiredVP))
+example0 = _TRUE ((johnNP ! leavesVP) <== (heNP ! isTiredVP))
 
-{-> example0
+{-> putStrLn example0
 
-"IS TIRED JOHN->LEAVES JOHN"
+IS_TIRED(JOHN) → LEAVES(JOHN)
 -}
 
 doesTooVP :: VP
@@ -162,11 +196,11 @@ doesTooVP = \x env -> let Env{..} = env in vpEnv x env
 -- (* EXAMPLE:: john leaves if mary does [too] *)
 
 example1 :: Prop
-example1 = _TRUE ((johnNP leavesVP) <== (maryNP doesTooVP))
+example1 = _TRUE ((johnNP ! leavesVP) <== (maryNP ! doesTooVP))
 
-{-> example1
+{-> putStrLn example1
 
-"LEAVES MARY -> LEAVES JOHN"
+LEAVES(MARY) → LEAVES(JOHN)
 -}
 
 _ADMIT_V :: Prop -> Object -> Prop
@@ -182,18 +216,24 @@ _PERSON = mkPred "PERSON"
 _FORALL :: (Object -> Prop) -> Prop
 _FORALL f = "(∀ x. " ++ f "x" ++")"
 
-_THE :: (Object -> Prop) -> Prop
-_THE f = "(THE x. " ++ f "x" ++")"
-
 pureObj :: Object -> NP
-pureObj x vp ρ = vp x ρ
+pureObj x role vp ρ = vp x ρ
 everyOne :: NP
-everyOne = \vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP (Unknown,Singular) (pureObj x) ρ)),
-                      pushVP vp ρ)
+everyOne = \role vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP (Descriptor Unknown Singular Subject) (pureObj x) ρ)),
+                          pushVP vp ρ)
+-- The referents pushed within the FORALL scope cannot escape to the top level
+
+-- "Everyone" is still referrable within the scope. It is pushed there
+-- (with the appropriate descriptor)
+
+(!) :: NP -> VP -> Effect
+(np ! vp) rho = second clearRole ((np Subject vp) rho)
+  -- FIXME: clear the role in the env afterwards
+
 
 -- EXAMPLE:: everyone admits that they are tired
 example2 :: Prop
-example2 = _TRUE (everyOne (admitVP (theySingNP isTiredVP)))
+example2 = _TRUE (everyOne ! (admitVP (theySingNP ! isTiredVP)))
 
 {-> putStrLn example2
 
@@ -203,7 +243,7 @@ example2 = _TRUE (everyOne (admitVP (theySingNP isTiredVP)))
 
 -- EXAMPLE:: everyone admits that they are tired Mary does too
 example3 :: Prop
-example3 = _TRUE ((everyOne (admitVP (theySingNP isTiredVP))) ### (maryNP doesTooVP))
+example3 = _TRUE ((everyOne ! (admitVP (theySingNP ! isTiredVP))) ### (maryNP ! doesTooVP))
 
 {-> putStrLn example3
 
@@ -214,31 +254,33 @@ example3 = _TRUE ((everyOne (admitVP (theySingNP isTiredVP))) ### (maryNP doesTo
 _MARRIED :: [Char] -> [Char] -> [Char]
 _MARRIED = mkRel2 "MARRIED"
 
-hisSpouseNP :: NP
-hisSpouseNP vp = heNP $ \x rho -> vp (_THE (\y -> _MARRIED x y)) rho
+married :: CN2
+married = pureCN2 _MARRIED
+
+hisSpouseNP = his married
 
 lovesVP :: NP -> VP
-lovesVP directObject subject = directObject $ \x -> pureVP (mkRel2 "LOVE" x) subject
+lovesVP directObject subject = directObject Other $ \x -> pureVP (mkRel2 "LOVE" x) subject
 
 
 example4 :: Prop
-example4 = _TRUE (johnNP (lovesVP hisSpouseNP) ### (billNP doesTooVP) )
+example4 = _TRUE (johnNP ! (lovesVP hisSpouseNP) ### (billNP ! doesTooVP) )
 
 -- Note what happens here.
 -- lovesVP calls the directObject, ("hisSpouseNP"), which has the effect of resolving the anaphora.
 -- Only then, 'pureVP' is called and the vp is pushed onto the environment
 {-> putStrLn example4
 
-LOVE((THE x. MARRIED(JOHN,x)),JOHN)/\LOVE((THE x. MARRIED(JOHN,x)),BILL)
+LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(JOHN,x)),BILL)
 -}
 
 
-lovesVP'' :: NP -> VP
-lovesVP'' directObject subject = directObject (\x rho ->
-                                                (mkRel2 "LOVE" x subject,pushVP (lovesVP'' directObject) rho))
+lovesVP' :: NP -> VP
+lovesVP' directObject subject = directObject Other
+  (\x rho -> (mkRel2 "LOVE" x subject,pushVP (lovesVP' directObject) rho))
 
 example5b :: Prop
-example5b = _TRUE (johnNP (lovesVP'' hisSpouseNP) ### (billNP doesTooVP) )
+example5b = _TRUE (johnNP ! (lovesVP' hisSpouseNP) ### (billNP ! doesTooVP) )
 -- With the above version of "love", the direct object is re-evaluated after it is being referred to.
 
 {-> putStrLn example5b
@@ -248,7 +290,7 @@ LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(BILL,x)),BILL)
 
 
 example6 :: Prop
-example6 = _TRUE (johnNP (lovesVP'' hisSpouseNP) ### (maryNP doesTooVP) )
+example6 = _TRUE (johnNP ! (lovesVP' hisSpouseNP) ### (maryNP ! doesTooVP) )
 -- Because "his" is looking for a masculine object, the re-evaluation
 -- in the "does too" points back to John anyway.
 
@@ -259,28 +301,23 @@ LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(JOHN,x)),MARY)
 
 
 that :: CN -> VP -> CN
-that cn vp x = cn x ### vp x
-
-the :: CN -> NP
-the cn vp rho = vp (_THE $ \x -> fst (cn x rho)) rho
--- FIXME: the CN won't update the environment in this situation.
+that cn vp x = cn x ∧ vp x
 
 few :: CN -> NP
-few cn = \vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (vp x) ρ),
+few cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (vp x) ρ),
                    pushVP vp
-                    (pushNP (Unknown,Plural) (the (cn `that` vp)) -- "e-type" referent
+                    (pushNP (Descriptor Unknown Plural Other) (the (cn `that` vp)) -- "e-type" referent
                       (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
                        ρ)))
 
 envModOf :: Effect -> Env -> Env
 envModOf f rho = snd (f rho)
 
+congressmen :: CN
 congressmen = pureCN (mkPred "CONGRESSMAN")
-admireKennedy :: VP
-admireKennedy = pureVP (mkPred "ADMIRE_K")
 
 example7 :: Prop
-example7 = _TRUE (few congressmen (lovesVP billNP) ### theyPlNP isTiredVP)
+example7 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (theyPlNP ! isTiredVP))
 
 
 {-> putStrLn example7
@@ -290,9 +327,20 @@ example7 = _TRUE (few congressmen (lovesVP billNP) ### theyPlNP isTiredVP)
 
 
 example8 :: Prop
-example8 = _TRUE (few congressmen (lovesVP billNP) ### heNP isTiredVP)
+example8 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (heNP ! isTiredVP))
 
 {-> putStrLn example8
 
 (∀ x. CONGRESSMAN(x) ∼> LOVE(BILL,x)) ∧ IS_TIRED(BILL)
+-}
+
+
+example9 :: Prop
+example9 = _TRUE ((johnNP ! isTiredVP) ### (billNP ! (lovesVP himNP)))
+-- John is tired. Bill loves him
+
+
+{-> putStrLn example9
+
+IS_TIRED(JOHN) ∧ LOVE(JOHN,BILL)
 -}
