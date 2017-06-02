@@ -228,7 +228,7 @@ everyOne = \role vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP (Desc
 
 (!) :: NP -> VP -> Effect
 (np ! vp) rho = second clearRole ((np Subject vp) rho)
-  -- FIXME: clear the role in the env afterwards
+-- Once the sentence is complete, accusative pronouns can refer to the subject. (see example9)
 
 
 -- EXAMPLE:: everyone admits that they are tired
@@ -337,7 +337,7 @@ example8 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (heNP ! isTiredVP))
 
 example9 :: Prop
 example9 = _TRUE ((johnNP ! isTiredVP) ### (billNP ! (lovesVP himNP)))
--- John is tired. Bill loves him
+-- John is tired. Bill loves him.
 
 
 {-> putStrLn example9
