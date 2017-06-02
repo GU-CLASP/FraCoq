@@ -1,0 +1,92 @@
+* Semantics for GF
+
+Aim:
+
+- Map GF abstract syntax to logical statements
+- Reason about them in some way
+
+* Why Coq
+- Both a programming language and a logic
+- The type system is a superset of GF's
+- Higher order logic (very expressive logic, so "anything you can
+  think of" can be done)
+- Has good reasoning facilities
+- Can work on "open terms" (some definitions can remain abstract)
+
+- The mapping is done using the programming bits of Coq
+- The reasoning is done with the HOL bits of Coq
+
+** Downsides:
+
+- Not a decidable logic (cannot evaluate the truth value)
+- Not a theorem prover (cannot in general prove true conjectures)
+- From a pedagogical pov., maybe it could be better to clearly
+  separate the programming bits and
+- The programming bits are restricted to total programs (which can sometimes mean extra work)
+
+
+** Alternatives:
+
+- Program in your favorite language with higher-order functions (a
+  type-system helps). In particular, you can use the concrete syntax
+  mechanism of GF. (You may have difficulties with quantifiers.)
+- Use your favorite reasoning tool
+
+* General idea
+
+
+In GF:
+  - the abstract syntax is a type assignment (symbols are mapped to types)
+  - the concrete syntax is a program assignment (symbols are mapped to
+    definitions)
+  - GF checks that the definitions in question are correct (type-wise)
+
+Semantics are just another concrete syntax (mapping symbols to
+definitions).
+
+
+* "Montague semantics"
+
+
+| Surface syntax | Abstract syntax       | Semantics                   |
+|----------------+-----------------------+-----------------------------|
+| LinCat         | Cat                   | Set                         |
+| String         | Cl                    | Cl := Prop                  |
+| ...            | NP                    | NP := object                |
+| ...            | VP                    | VP := object -> Prop        |
+| ...            | mkCl : NP -> VP -> Cl | mkCl := fun np vp => vp np. |
+
+* Other possible semantics
+
+Top-level categories can be mapped to other things than propositions:
+
+- Commands (programs)
+- Database queries/updates
+- ...
+
+In such a case "reasoning" does not take the usual mathematical form
+of proving/testing conjectures
+
+* Gathering the categories and types
+
+- Get them from the GF shell ("ai" --abstract info-- can be used for this purpose)
+- Get them from the file (probably the easiest)
+
+
+* Assign definitions
+
+- Every category must have a definition:
+
+Definition <cat> : Set := ...
+
+- Every constructor must have a definition (whose type is the same as
+  its GF type).
+
+* Sentences/Clauses
+* Proper nouns
+* VPs
+* Quantifiers
+* Adjectives
+* Comparatives
+* Anaphora
+
