@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE GADTs #-}
 import Prelude hiding (pred)
@@ -27,7 +29,7 @@ first f (x,y) = (f x,y)
 second f (x,y) = (x,f y)
 data Descriptor = Descriptor {dGender :: Gender
                              ,dNumber :: Number
-                             ,dRole :: Role}
+                             ,dRole :: Role} deriving Show
 
 type ObjQuery = Descriptor -> Bool
 type ObjEnv = [(Descriptor,NP)]
@@ -39,7 +41,7 @@ type VPEnv = VP
 -- Just remember the last VP; could be more fine-grained because we have "does", "is", "has" as placehodlers in English.
 
 data Env = Env {vpEnv :: VPEnv,
-                objEnv :: ObjEnv}
+                objEnv :: ObjEnv} deriving Show
 
 type Effect = Env -> (Prop, Env)
 
@@ -58,11 +60,19 @@ assumed = Env assumedVP []
 _TRUE :: Effect -> Prop
 _TRUE = \x -> let (x',_) = x assumed in x'
 
+_ENV :: Effect -> Env
+_ENV = \x -> snd (x assumed)
+
 type S = Effect
 type VP = Object -> Effect
 type CN = Object -> Effect
 type CN2 = Object -> Object -> Effect
 type NP = Role -> VP -> Effect
+
+instance Show VP where
+  show vp = "λw. " ++ fst (vp "w" assumed)
+instance Show NP where
+  show np = fst (np Other (\x rho -> (x,rho)) assumed)
 
 isNeutral :: Descriptor -> Bool
 isNeutral = (== Neutral) . dGender
@@ -91,6 +101,12 @@ pushVP = \vp env -> let Env{..} = env in Env vp objEnv
 getNP :: Env -> ObjQuery -> NP
 getNP Env{objEnv=[]} _ = \_ vp -> vp "assumedObj"
 getNP Env{objEnv=((d,o):os),..} q = if q d then o else getNP Env{objEnv=os,..} q
+
+getNthNP :: Int -> Env ->  NP
+getNthNP _ Env{objEnv=[]} =  \_ vp -> vp "assumedObj"
+getNthNP 0 Env{objEnv=((d,o):_),..} = o
+getNthNP n Env{objEnv=((d,o):os),..} = getNthNP (n-1) Env{objEnv=((d,o):os),..}
+
 
 
 purePN ::  Object -> Gender -> NP
@@ -124,7 +140,11 @@ theySingNP = \role vp ρ -> (getNP ρ isSingular) role vp ρ
 themSingNP :: NP -- as in everyone owns their book 
 themSingNP = \role vp ρ -> (getNP ρ (all' [isSingular, isNotSubject])) role vp ρ
 
+itNP :: Role -> VP -> Env -> (Prop, Env)
 itNP = \role vp ρ -> (getNP ρ (all' [isNeutral, isSingular])) role vp ρ
+
+nthNP :: Int -> Role -> VP -> Env -> (Prop, Env)
+nthNP n = \role vp ρ -> (getNthNP n ρ) role vp ρ
 
 theyPlNP :: NP -- as in everyone owns their book 
 theyPlNP = \role vp ρ -> (getNP ρ isPlural) role vp ρ
@@ -154,7 +174,7 @@ lift1 op x rho0 = let (x',rho1) = x rho0 in (op x', rho1)
 (<==) :: Effect -> Effect -> Effect
 a <== b = lift2 (\x y -> y --> x) a b
 (==>) :: Effect -> Effect -> Effect
-(==>) = flip (<==)
+(==>) = lift2 (-->)
 (-->), (~~>) :: Prop -> Prop -> Prop
 x --> y = x ++ " → " ++ y
 x ~~> y = x ++ " ∼> " ++ y
@@ -188,10 +208,8 @@ pureCN2 = \v x y rho -> (v x y, rho)
 leavesVP :: VP
 leavesVP = pureVP _LEAVE_V
 
-_IS_TIRED :: Object -> Prop
-_IS_TIRED = mkPred "IS_TIRED"
 isTiredVP :: VP
-isTiredVP = pureVP _IS_TIRED
+isTiredVP = pureVP (mkPred "IS_TIRED")
 
 -- (* EXAMPLE:: john leaves if he is tired *)
 example0 :: Prop
@@ -216,7 +234,7 @@ LEAVES(MARY) → LEAVES(JOHN)
 -}
 
 _ADMIT_V :: Prop -> Object -> Prop
-_ADMIT_V p x = "ADMIT(" ++ p ++ "," ++ x ++")"
+_ADMIT_V = mkRel2 "ADMIT"
 
 admitVP :: Effect -> VP
 admitVP = \p x rho0 -> let (p',rho1) = p rho0 in
@@ -232,22 +250,10 @@ _EXISTS :: (Object -> Prop) -> Prop
 _EXISTS f = "(∃ z. " ++ f "z" ++")"
 
 pureObj :: Object -> NP
-pureObj x role vp ρ = vp x ρ
+pureObj x _role vp ρ = vp x ρ
 
-everyOne :: NP
-everyOne = \role vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP (Descriptor Unknown Singular Subject) (pureObj x) ρ)),
-                          pushVP vp ρ)
--- The referents pushed within the FORALL scope cannot escape to the top level
-
--- "Everyone" is still referrable within the scope. It is pushed there
--- (with the appropriate descriptor)
-
-few :: CN -> NP
-few cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (not' (vp x) ) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
-                   pushVP vp
-                    (pushNP (Descriptor Unknown Plural Other) (every (cn `that` vp)) -- "e-type" referent
-                      (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
-                       ρ)))
+everyone :: NP
+everyone = every (pureCN (mkPred "PERSON"))
 
 every :: CN -> NP
 every cn = \role vp ρ -> (_FORALL $ \x -> fst ((cn x ==> vp x) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
@@ -256,6 +262,11 @@ every cn = \role vp ρ -> (_FORALL $ \x -> fst ((cn x ==> vp x) (pushNP (Descrip
                       (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
                        ρ)))
 
+-- The referents pushed within the FORALL scope cannot escape to the top level
+
+-- the bound variable is still referrable within the scope. It is pushed there
+-- (with the appropriate descriptor)
+
 some :: CN -> NP
 some cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
                    pushVP vp
@@ -263,7 +274,14 @@ some cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) (pushNP (Descript
                       (envModOf (vp "<unbound>") -- {- same: can use positiveness -}
                        ρ)))
 
-{- in fact, it seems that all quantifiers have an existential component.  -}
+{- in fact, it seems that all quantifiers have an existential aspect to them. -}
+
+few :: CN -> NP
+few cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (not' (vp x) ) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
+                   pushVP vp
+                    (pushNP (Descriptor Unknown Plural Other) (every (cn `that` vp)) -- "e-type" referent
+                      (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
+                       ρ)))
 
 envModOf :: Effect -> Env -> Env
 envModOf f rho = snd (f rho)
@@ -278,7 +296,7 @@ effect f g x = second f (g x)
 
 -- EXAMPLE:: everyone admits that they are tired
 example2 :: Prop
-example2 = _TRUE (everyOne ! (admitVP (theySingNP ! isTiredVP)))
+example2 = _TRUE (everyone ! (admitVP (theySingNP ! isTiredVP)))
 
 {-> putStrLn example2
 
@@ -288,7 +306,7 @@ example2 = _TRUE (everyOne ! (admitVP (theySingNP ! isTiredVP)))
 
 -- EXAMPLE:: everyone admits that they are tired Mary does too
 example3 :: Prop
-example3 = _TRUE ((everyOne ! (admitVP (theySingNP ! isTiredVP))) ### (maryNP ! doesTooVP))
+example3 = _TRUE ((everyone ! (admitVP (theySingNP ! isTiredVP))) ### (maryNP ! doesTooVP))
 
 {-> putStrLn example3
 
@@ -409,13 +427,69 @@ own = pureV2' (mkRel2 "OWN")
 
 aDet :: CN -> NP
 aDet cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) ρ),
-                         (pushNP (Descriptor Unknown Plural Other) (pureObj "Z")
+                          {- note that this isn't a quantifier, no referent is accessible in the CN-}
+                         (pushNP (Descriptor Neutral Singular role) (pureObj "Z")
+                         {- FIXME: fetch gender from CN -}
+                         {- FIXME: re-push the elements from the CN-}
                           ρ))
 
-example11 :: Prop
-example11 = _TRUE (every (man `that` own (aDet donkey)) ! (beatV2 itNP))
+example11a = (((aDet donkey) ! isTiredVP) ### (itNP ! leavesVP))
+eval :: Effect -> IO ()
+eval = putStrLn . _TRUE
 
-{-> putStrLn example11
+{-> eval example11a
 
-(∀ x. MAN(x) ∧ (∃ z. DONKEY(z) ∧ OWN(z,x)) → BEAT(assumedObj,x))
+(∃ z. DONKEY(z) ∧ IS_TIRED(z)) ∧ LEAVES(Z)
 -}
+
+example11b :: Effect
+example11b = (((aDet donkey) ! isTiredVP) <== (itNP ! leavesVP)) -- ???
+
+{-> eval example11b
+
+LEAVES(Z) → (∃ z. DONKEY(z) ∧ IS_TIRED(z))
+-}
+
+example11c :: Effect
+example11c = (aDet (man `that` own (aDet donkey)) ! (beatV2 itNP))
+
+
+{-> eval example11c
+
+(∃ z. MAN(z) ∧ (∃ z. DONKEY(z) ∧ OWN(z,z)) ∧ BEAT(Z,z))
+-}
+
+example11d :: Effect
+example11d = ((billNP ! (own (aDet donkey))) ### (heNP ! (beatV2 itNP)))
+
+
+{-> eval example11d
+
+(∃ z. DONKEY(z) ∧ OWN(z,BILL)) ∧ BEAT(Z,BILL)
+-}
+
+example11 :: Effect
+example11 = (every (man `that` own (aDet donkey)) ! (beatV2 itNP))
+
+{-> eval example11
+
+(∀ x. MAN(x) ∧ (∃ z. DONKEY(z) ∧ OWN(z,x)) → BEAT(Z,x))
+-}
+
+example12 :: Effect
+example12 = the (man `that` own (aDet donkey)) ! (beatV2 (nthNP 0))
+
+{-> eval example12
+
+BEAT(assumedObj,(THE y. MAN(y) ∧ (∃ z. DONKEY(z) ∧ OWN(z,y))))
+-}
+
+example13 :: Effect
+example13 = billNP ! (own (aDet (donkey `that` (\x -> heNP ! (beatV2 (pureObj x))))))
+
+
+{-> eval example13
+
+(∃ z. DONKEY(z) ∧ BEAT(z,BILL) ∧ OWN(z,BILL))
+-}
+
