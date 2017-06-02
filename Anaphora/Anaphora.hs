@@ -114,32 +114,36 @@ heNP = \role vp ρ -> (getNP ρ (all' [isMale, isSingular])) role vp ρ
 himSelfNP :: NP
 himSelfNP = heNP
 
-his :: CN2 -> NP
-his cn2 role vp = himSelfNP role $ \x -> the (cn2 x) Other vp
-
-the :: CN -> NP
-the cn role vp rho = vp (_THE $ \x -> fst (cn x rho)) rho
--- FIXME: the CN won't update the environment in this situation.
--- FIXME: push the NP on the env.
-_THE :: (Object -> Prop) -> Prop
-_THE f = "(THE x. " ++ f "x" ++")"
-
-
-all' :: [a -> Bool] -> a -> Bool
-all' fs x = all ($ x) fs
-
 theySingNP :: NP -- as in everyone owns their book 
 theySingNP = \role vp ρ -> (getNP ρ isSingular) role vp ρ
+
+themSingNP :: NP -- as in everyone owns their book 
+themSingNP = \role vp ρ -> (getNP ρ (all' [isSingular, isNotSubject])) role vp ρ
 
 theyPlNP :: NP -- as in everyone owns their book 
 theyPlNP = \role vp ρ -> (getNP ρ isPlural) role vp ρ
 
+his :: CN2 -> NP
+his cn2 role vp = himSelfNP role $ \x -> the (cn2 x) Other vp
+
+the :: CN -> NP
+the cn role vp rho = second (pushNP (Descriptor Unknown Singular role) (the cn)) (vp (_THE $ \x -> fst (cn x rho)) rho)
+-- FIXME: the CN won't update the environment in this situation.
+-- FIXME: fetch the gender/number from the CN
+_THE :: (Object -> Prop) -> Prop
+_THE f = "(THE y. " ++ f "y" ++")"
+
+
+all' :: [a -> Bool] -> a -> Bool
+all' fs x = all ($ x) fs
 
 lift2 :: (Prop -> Prop -> Prop) -> Effect -> Effect -> Effect
 lift2 = \op x y rho1 -> let (x' , rho2) = x rho1 in
                       let (y' , rho3) = y rho2 in
                        (op x' y' , rho3)
 
+lift1 :: (Prop -> Prop) -> Effect -> Effect
+lift1 op x rho0 = let (x',rho1) = x rho0 in (op x', rho1)
 
 (<==) :: Effect -> Effect -> Effect
 a <== b = lift2 (\x y -> y --> x) a b
@@ -148,6 +152,8 @@ a <== b = lift2 (\x y -> y --> x) a b
 (-->), (~~>) :: Prop -> Prop -> Prop
 x --> y = x ++ " → " ++ y
 x ~~> y = x ++ " ∼> " ++ y
+not' :: Effect -> Effect
+not' = lift1 (mkPred "NOT")
 
 
 (###) :: Effect -> Effect -> Effect
@@ -218,6 +224,7 @@ _FORALL f = "(∀ x. " ++ f "x" ++")"
 
 pureObj :: Object -> NP
 pureObj x role vp ρ = vp x ρ
+
 everyOne :: NP
 everyOne = \role vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP (Descriptor Unknown Singular Subject) (pureObj x) ρ)),
                           pushVP vp ρ)
@@ -225,6 +232,26 @@ everyOne = \role vp ρ -> (_FORALL $ \x -> _PERSON x --> fst (vp x (pushNP (Desc
 
 -- "Everyone" is still referrable within the scope. It is pushed there
 -- (with the appropriate descriptor)
+
+few :: CN -> NP
+few cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (not' (vp x) ) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
+                   pushVP vp
+                    (pushNP (Descriptor Unknown Plural Other) (the (cn `that` vp)) -- "e-type" referent
+                      (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
+                       ρ)))
+
+every :: CN -> NP
+every cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (-->) (cn x)  (vp x) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
+                   pushVP vp
+                    (pushNP (Descriptor Unknown Plural Other) (the (cn `that` vp)) -- "e-type" referent
+                      (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
+                       ρ)))
+
+envModOf :: Effect -> Env -> Env
+envModOf f rho = snd (f rho)
+
+effect :: (Env -> Env) -> Effect -> Effect
+effect f g x = second f (g x)
 
 (!) :: NP -> VP -> Effect
 (np ! vp) rho = second clearRole ((np Subject vp) rho)
@@ -257,6 +284,7 @@ _MARRIED = mkRel2 "MARRIED"
 married :: CN2
 married = pureCN2 _MARRIED
 
+hisSpouseNP :: NP
 hisSpouseNP = his married
 
 lovesVP :: NP -> VP
@@ -275,9 +303,12 @@ LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(JOHN,x)),BILL)
 -}
 
 
+pureV2' :: (Object -> Object -> Prop) -> NP -> VP
+pureV2' v2 directObject subject = directObject Other
+  (\x rho -> (v2 x subject,pushVP (pureV2' v2 directObject) rho))
+
 lovesVP' :: NP -> VP
-lovesVP' directObject subject = directObject Other
-  (\x rho -> (mkRel2 "LOVE" x subject,pushVP (lovesVP' directObject) rho))
+lovesVP' = pureV2' (mkRel2 "LOVE")
 
 example5b :: Prop
 example5b = _TRUE (johnNP ! (lovesVP' hisSpouseNP) ### (billNP ! doesTooVP) )
@@ -285,7 +316,7 @@ example5b = _TRUE (johnNP ! (lovesVP' hisSpouseNP) ### (billNP ! doesTooVP) )
 
 {-> putStrLn example5b
 
-LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(BILL,x)),BILL)
+LOVE((THE y. MARRIED(JOHN,y)),JOHN) ∧ LOVE((THE y. MARRIED(BILL,y)),BILL)
 -}
 
 
@@ -303,15 +334,7 @@ LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(JOHN,x)),MARY)
 that :: CN -> VP -> CN
 that cn vp x = cn x ∧ vp x
 
-few :: CN -> NP
-few cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (vp x) ρ),
-                   pushVP vp
-                    (pushNP (Descriptor Unknown Plural Other) (the (cn `that` vp)) -- "e-type" referent
-                      (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
-                       ρ)))
 
-envModOf :: Effect -> Env -> Env
-envModOf f rho = snd (f rho)
 
 congressmen :: CN
 congressmen = pureCN (mkPred "CONGRESSMAN")
@@ -343,4 +366,25 @@ example9 = _TRUE ((johnNP ! isTiredVP) ### (billNP ! (lovesVP himNP)))
 {-> putStrLn example9
 
 IS_TIRED(JOHN) ∧ LOVE(JOHN,BILL)
+-}
+
+man :: CN
+man = pureCN (mkPred "MAN")
+
+hisDonkeyNP :: NP
+hisDonkeyNP = his (pureCN2 (mkRel2 "OWNED_DONKEY"))
+
+
+notBeatV2 = pureV2' (\x y -> mkPred "NOT" (mkRel2 "BEAT" x y))
+
+beatV2 :: NP -> VP
+beatV2 = pureV2' (mkRel2 "BEAT")
+
+example10 :: Prop
+example10 = _TRUE ((few (man `that` (lovesVP hisSpouseNP))) ! (beatV2 themSingNP))
+
+
+{-> putStrLn example10
+
+(∀ x. MAN(x) ∧ LOVE((THE y. MARRIED(x,y)),x) ∼> NOT(BEAT((THE y. MARRIED(x,y)),x)))
 -}
