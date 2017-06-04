@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -26,6 +27,7 @@ data Role where
 
 first :: (t2 -> t1) -> (t2, t) -> (t1, t)
 first f (x,y) = (f x,y)
+second :: forall t t1 t2. (t2 -> t1) -> (t, t2) -> (t, t1)
 second f (x,y) = (x,f y)
 data Descriptor = Descriptor {dGender :: Gender
                              ,dNumber :: Number
@@ -102,12 +104,11 @@ getNP :: Env -> ObjQuery -> NP
 getNP Env{objEnv=[]} _ = \_ vp -> vp "assumedObj"
 getNP Env{objEnv=((d,o):os),..} q = if q d then o else getNP Env{objEnv=os,..} q
 
+-- Some debugging function
 getNthNP :: Int -> Env ->  NP
 getNthNP _ Env{objEnv=[]} =  \_ vp -> vp "assumedObj"
-getNthNP 0 Env{objEnv=((d,o):_),..} = o
+getNthNP 0 Env{objEnv=((_,o):_),..} = o
 getNthNP n Env{objEnv=((d,o):os),..} = getNthNP (n-1) Env{objEnv=((d,o):os),..}
-
-
 
 purePN ::  Object -> Gender -> NP
 purePN o dGender dRole vp ρ = vp o (pushNP (Descriptor{..} ) (purePN o dGender) ρ)
@@ -258,7 +259,7 @@ everyone = every (pureCN (mkPred "PERSON"))
 every :: CN -> NP
 every cn = \role vp ρ -> (_FORALL $ \x -> fst ((cn x ==> vp x) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
                    pushVP vp
-                    (pushNP (Descriptor Unknown Plural Other) (every (cn `that` vp)) -- "e-type" referent
+                    (pushNP (Descriptor Unknown Plural role) (every (cn `that` vp)) -- "e-type" referent
                       (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
                        ρ)))
 
@@ -270,7 +271,7 @@ every cn = \role vp ρ -> (_FORALL $ \x -> fst ((cn x ==> vp x) (pushNP (Descrip
 some :: CN -> NP
 some cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
                    pushVP vp
-                    (pushNP (Descriptor Unknown Plural Other) (the (cn `that` vp)) -- "e-type" referent {- this one can done better because existential quantifiers are "positive" -}
+                    (pushNP (Descriptor Unknown Plural role) (the (cn `that` vp)) -- "e-type" referent {- this one can done better because existential quantifiers are "positive" -}
                       (envModOf (vp "<unbound>") -- {- same: can use positiveness -}
                        ρ)))
 
@@ -443,12 +444,13 @@ eval = putStrLn . _TRUE
 -}
 
 example11b :: Effect
-example11b = (((aDet donkey) ! isTiredVP) <== (itNP ! leavesVP)) -- ???
-
+example11b = (((aDet donkey) ! leavesVP) <== (itNP ! isTiredVP))
 {-> eval example11b
 
-LEAVES(Z) → (∃ z. DONKEY(z) ∧ IS_TIRED(z))
+IS_TIRED(Z) → (∃ z. DONKEY(z) ∧ LEAVES(z))
 -}
+-- The proper interpretation is : ∃z. DONKEY(z) ∧ IS_TIRED(z) ∧ LEAVES(z)
+-- Seemingly the existential quantifiers gets "pulled" up as far as possible.
 
 example11c :: Effect
 example11c = (aDet (man `that` own (aDet donkey)) ! (beatV2 itNP))
