@@ -225,7 +225,6 @@ doesTooVP :: VP
 doesTooVP = \x env -> let Env{..} = env in vpEnv x env
 
 -- (* EXAMPLE:: john leaves if mary does [too] *)
-
 example1 :: Prop
 example1 = _TRUE ((johnNP ! leavesVP) <== (maryNP ! doesTooVP))
 
@@ -328,6 +327,7 @@ lovesVP :: NP -> VP
 lovesVP directObject subject = directObject Other $ \x -> pureVP (mkRel2 "LOVE" x) subject
 
 
+-- (* EXAMPLE:: john leaves his wife. Bill does too.  *)
 example4 :: Prop
 example4 = _TRUE (johnNP ! (lovesVP hisSpouseNP) ### (billNP ! doesTooVP) )
 
@@ -347,6 +347,7 @@ pureV2' v2 directObject subject = directObject Other
 lovesVP' :: NP -> VP
 lovesVP' = pureV2' (mkRel2 "LOVE")
 
+-- (* EXAMPLE:: john leaves his wife. Bill does too. [second reading] *)
 example5b :: Prop
 example5b = _TRUE (johnNP ! (lovesVP' hisSpouseNP) ### (billNP ! doesTooVP) )
 -- With the above version of "love", the direct object is re-evaluated after it is being referred to.
@@ -357,6 +358,7 @@ LOVE((THE y. MARRIED(JOHN,y)),JOHN) ∧ LOVE((THE y. MARRIED(BILL,y)),BILL)
 -}
 
 
+-- (* EXAMPLE:: john leaves his spouse. Mary does too. *)
 example6 :: Prop
 example6 = _TRUE (johnNP ! (lovesVP' hisSpouseNP) ### (maryNP ! doesTooVP) )
 -- Because "his" is looking for a masculine object, the re-evaluation
@@ -380,6 +382,7 @@ example7 :: Prop
 example7 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (theyPlNP ! isTiredVP))
 
 
+-- (* EXAMPLE:: Few congressmen love bill. They are tired. *)
 {-> putStrLn example7
 
 (∀ x. CONGRESSMAN(x) ∼> NOT(LOVE(BILL,x))) ∧ (∀ x. CONGRESSMAN(x) ∧ LOVE(BILL,x) → IS_TIRED(x))
@@ -389,6 +392,7 @@ example7 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (theyPlNP ! isTiredVP
 example8 :: Prop
 example8 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (heNP ! isTiredVP))
 
+-- (* EXAMPLE:: Few congressmen love bill. He is tired. *) -- The e-type referent is plural.
 {-> putStrLn example8
 
 (∀ x. CONGRESSMAN(x) ∼> LOVE(BILL,x)) ∧ IS_TIRED(BILL)
@@ -397,9 +401,7 @@ example8 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (heNP ! isTiredVP))
 
 example9 :: Prop
 example9 = _TRUE ((johnNP ! isTiredVP) ### (billNP ! (lovesVP himNP)))
--- John is tired. Bill loves him.
-
-
+-- John is tired. Bill loves him. -- (Bill loves John, not himself.)
 {-> putStrLn example9
 
 IS_TIRED(JOHN) ∧ LOVE(JOHN,BILL)
@@ -414,6 +416,7 @@ beatV2 = pureV2' (mkRel2 "BEAT")
 example10 :: Prop
 example10 = _TRUE ((few (man `that` (lovesVP hisSpouseNP))) ! (beatV2 themSingNP))
 
+-- (* EXAMPLE:: Few men that love their wife beat them.
 
 {-> putStrLn example10
 
@@ -437,6 +440,7 @@ aDet cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) ρ),
 example11a = (((aDet donkey) ! isTiredVP) ### (itNP ! leavesVP))
 eval :: Effect -> IO ()
 eval = putStrLn . _TRUE
+-- A donkey is tired. It leaves.
 
 {-> eval example11a
 
@@ -445,6 +449,7 @@ eval = putStrLn . _TRUE
 
 example11b :: Effect
 example11b = (((aDet donkey) ! leavesVP) <== (itNP ! isTiredVP))
+-- A donkey leaves if it is tired.
 {-> eval example11b
 
 IS_TIRED(Z) → (∃ z. DONKEY(z) ∧ LEAVES(z))
@@ -454,7 +459,7 @@ IS_TIRED(Z) → (∃ z. DONKEY(z) ∧ LEAVES(z))
 
 example11c :: Effect
 example11c = (aDet (man `that` own (aDet donkey)) ! (beatV2 itNP))
-
+-- A man that owns a donkey beats it.
 
 {-> eval example11c
 
@@ -463,7 +468,7 @@ example11c = (aDet (man `that` own (aDet donkey)) ! (beatV2 itNP))
 
 example11d :: Effect
 example11d = ((billNP ! (own (aDet donkey))) ### (heNP ! (beatV2 itNP)))
-
+-- Bill owns a donkey. He beats it.
 
 {-> eval example11d
 
@@ -472,6 +477,7 @@ example11d = ((billNP ! (own (aDet donkey))) ### (heNP ! (beatV2 itNP)))
 
 example11 :: Effect
 example11 = (every (man `that` own (aDet donkey)) ! (beatV2 itNP))
+-- Every man that owns a donkey beat it.
 
 {-> eval example11
 
@@ -480,6 +486,7 @@ example11 = (every (man `that` own (aDet donkey)) ! (beatV2 itNP))
 
 example12 :: Effect
 example12 = the (man `that` own (aDet donkey)) ! (beatV2 (nthNP 0))
+-- The man that own a donkey beat it.
 
 {-> eval example12
 
@@ -488,6 +495,7 @@ BEAT(assumedObj,(THE y. MAN(y) ∧ (∃ z. DONKEY(z) ∧ OWN(z,y))))
 
 example13 :: Effect
 example13 = billNP ! (own (aDet (donkey `that` (\x -> heNP ! (beatV2 (pureObj x))))))
+-- Bill owns a donkey that he beats.
 
 
 {-> eval example13

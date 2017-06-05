@@ -30,7 +30,6 @@ where the rest of the proposition would go. This allows for
 existential quantification to put the "rest" of the proposition within
 the body of the quantification, thus allowing for the bound variables
 to be visible to the "rest" of the proposition.
-
 *)
 Parameter assumedObj : ObjEnv.
 Parameter assumedVP : VPEnv.
