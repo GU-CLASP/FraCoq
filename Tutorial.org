@@ -51,13 +51,13 @@ definitions).
 * "Montague semantics"
 
 
-| Surface syntax | Abstract syntax       | Semantics                   |
-|----------------+-----------------------+-----------------------------|
-| LinCat         | Cat                   | Set                         |
-| String         | Cl                    | Cl := Prop                  |
-| ...            | NP                    | NP := object                |
-| ...            | VP                    | VP := object -> Prop        |
-| ...            | mkCl : NP -> VP -> Cl | mkCl := fun np vp => vp np. |
+| Surface syntax | Abstract syntax       | Semantics           |
+|----------------+-----------------------+---------------------|
+| LinCat         | Cat                   | Type                |
+| String         | Cl                    | Prop                |
+| ...            | NP                    | object              |
+| ...            | VP                    | object -> Prop      |
+| ...            | mkCl : NP -> VP -> Cl | fun np vp => vp np. |
 
 * Other possible semantics
 
@@ -75,21 +75,280 @@ of proving/testing conjectures
 - Get them from the GF shell ("ai" --abstract info-- can be used for this purpose)
 - Get them from the file (probably the easiest)
 
+#+BEGIN_SRC gf
+abstract Grammar = {
+  flags startcat = S ;
 
-* Assign definitions
+  cat
+    S ; Cl ; NP ; VP ; AP ; CN ; PN ;
+    Det ; N ; A ; V ; V2 ; AdA ; 
+    Pol ;
+    Conj ;
+  data
+    UseCl   : Pol -> Cl -> S ;
+    PredVP  : NP -> VP -> Cl ;
+    ComplV2 : V2 -> NP -> VP ;
+    DetCN   : Det -> CN -> NP ;
+    ModCN   : AP -> CN -> CN ;
 
-- Every category must have a definition:
+    CompAP  : AP -> VP ;
+    AdAP    : AdA -> AP -> AP ;
 
-Definition <cat> : Set := ...
+    ConjS   : Conj -> S  -> S  -> S ;
+    ConjNP  : Conj -> NP -> NP -> NP ;
 
-- Every constructor must have a definition (whose type is the same as
-  its GF type).
+    UseV    : V -> VP ;
+    UsePN   : PN -> NP ;
+    UseN    : N -> CN ;
+    UseA    : A -> AP ;
 
-* Sentences/Clauses
-* Proper nouns
-* VPs
-* Quantifiers
-* Adjectives
+    some_Det, every_Det : Det ;
+    i_NP, you_NP : NP ;
+    very_AdA : AdA ;
+
+    Pos, Neg : Pol ;
+
+    and_Conj, or_Conj : Conj ;
+}
+
+abstract Test = Grammar ** {
+
+fun
+  man_N, woman_N, house_N, tree_N : N ;
+  big_A, small_A, green_A : A ;
+  walk_V, arrive_V : V ;
+  love_V2, please_V2 : V2 ;
+  john_PN, mary_PN : PN;
+
+} ;
+#+END_SRC
+
+* Coqification
+
+- Every category must have a definition.
+- Every (data) constructor must have a definition (whose type is the same as
+  its GF type). Some ()
+
+
+When we do not know what definition to use, we can abstract over it
+instead. In Coq this is conveniently done using the "Parameter"
+command.
+
+#+BEGIN_SRC coq
+Parameter S    : Type.
+Parameter Cl   : Type.
+Parameter VP   : Type.
+Parameter PN   : Type.
+Parameter NP   : Type.
+Parameter AP   : Type.
+Parameter A    : Type.
+Parameter CN   : Type.
+Parameter Det  : Type.
+Parameter N    : Type.
+Parameter V    : Type.
+Parameter V2   : Type.
+Parameter AdA  : Type.
+Parameter Pol  : Type.
+Parameter Conj : Type.
+
+Parameter UseCl   : Pol -> Cl -> S. 
+Parameter PredVP  : NP -> VP -> Cl. 
+Parameter ComplV2 : V2 -> NP -> VP. 
+Parameter DetCN   : Det -> CN -> NP. 
+Parameter ModCN   : AP -> CN -> CN. 
+Parameter CompAP  : AP -> VP. 
+Parameter AdAP    : AdA -> AP -> AP. 
+Parameter ConjS   : Conj -> S  -> S  -> S. 
+Parameter ConjNP  : Conj -> NP -> NP -> NP. 
+Parameter UsePN   : PN -> NP.
+Parameter UseV    : V -> VP. 
+Parameter UseN    : N -> CN. 
+Parameter UseA    : A -> AP. 
+Parameter some_Det : Det.
+Parameter every_Det : Det. 
+Parameter we_NP   : NP.
+Parameter you_NP : NP. 
+Parameter very_AdA : AdA. 
+Parameter Pos : Pol.
+Parameter Neg : Pol.
+Parameter and_Conj : Conj.
+Parameter or_Conj : Conj.
+
+Parameter man_N :  N.
+Parameter woman_N : N .
+Parameter house_N :  N.
+Parameter tree_N : N .
+Parameter   big_A : A .
+Parameter small_A : A .
+Parameter green_A : A .
+Parameter  walk_V : V  .
+Parameter arrive_V : V .
+Parameter love_V2 : V2  .
+Parameter please_V2 : V2 .
+Parameter john_PN :PN .
+Parameter mary_PN : PN.
+#+END_SRC
+
+Now, every correct GF abstract syntax expression is well-typed in Coq.
+We can even do (trivial) reasoning.
+
+#+BEGIN_SRC coq
+Theorem thm0 : UseCl Pos (PredVP (UsePN john_PN) walk_V) ->
+               UseCl Pos (PredVP (UsePN john_PN) walk_V).
+intro H.
+exact H.
+Qed.
+#+END_SRC
+
+This may seem useless, but in fact, unless you have a very precise
+idea of your semantic domain, much of the lexicon will remain abstract.
+
+* Sentences/Clauses/Polarity
+
+#+BEGIN_SRC coq
+Definition S    : Type := Prop .
+Definition Cl   : Type := Prop .
+Definition Pol  : Type := Prop -> Prop .
+
+Definition Pos : Pol := fun p => p.
+Definition Neg : Pol := fun p => not p.
+Definition UseCl : Pol -> Cl -> S :=
+  fun pol c => pol c. 
+#+END_SRC
+
+
+#+BEGIN_SRC coq
+Theorem thm1 : UseCl Pos (PredVP (UsePN john_PN) walk_V) ->
+               UseCl Neg (PredVP (UsePN john_PN) walk_V) -> False.
+cbv.
+intros P N.
+exact (N P).
+Qed.
+#+END_SRC
+
+
+* Proper nouns/VP/PN
+
+#+BEGIN_SRC coq
+Definition NP   : Type := PN .
+Definition UsePN :  PN -> NP := fun x => x.
+Definition VP   : Type := PN -> Prop .
+Definition V    : Type := VP.
+Definition UseV  : V -> VP := fun v => v.
+Parameter PredVP  : NP -> VP -> Cl. 
+
+Eval cbv in UseCl Pos (PredVP (UsePN john_PN) walk_V).
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+= walk_V john_PN : S
+#+END_EXAMPLE
+
+* Quantifiers (1)
+The previous definition of NP is too restrictive in the presence of
+quantifiers. Indeed a PN is to restrictive to represent phrases such
+as 'every man', 'some tree', etc.  Montague's solution is to
+generalize NPs to transform the predicate of VPs:
+
+#+BEGIN_SRC coq
+Definition NP    : Type := VP -> Prop .
+Definition UsePN : PN -> NP := fun pn vp => vp pn.
+Definition PredVP  : NP -> VP -> Cl := fun np vp => np vp.
+#+END_SRC
+
+#+BEGIN_SRC 
+Eval cbv in UseCl Pos (PredVP (UsePN john_PN) walk_V).
+#+END_SRC
+
+Then we can represent "everyone" as follows:
+
+#+BEGIN_SRC coq
+Definition everyoneNP : NP := fun vp => forall x, vp x.
+#+END_SRC
+
+Namely, we're applying the VP to every possible 'thing'.
+
+* Quantifiers (2)
+We may want to restrict the domain: "every man", "some tree", etc.
+Thus we will represent common nouns as predicates (like VPs) and weaken the
+propositions accordingly. A determiner transforms common nouns into NPs.
+#+BEGIN_SRC coq
+Definition CN   : Type := PN -> Prop .
+Definition N   : Type := CN .
+Definition Det   : Type := CN -> NP .
+Definition DetCN : Det -> CN -> NP := fun det cn => det cn.
+Definition every_Det : Det := fun cn vp => forall x, cn x -> vp x.
+Definition some_Det : Det := fun cn vp => exists x, cn x /\ vp x.
+#+END_SRC
+Note the inversion of polarity in the connectives.
+
+* Embedding nouns and reasoning
+
+#+BEGIN_SRC coq
+Definition N    : Type := CN .
+Parameter UseN    : N -> CN. 
+#+END_SRC
+
+
+#+BEGIN_SRC coq
+Theorem thm2 :
+    UseCl Pos (PredVP (DetCN every_Det man_N) walk_V) ->
+    (man_N john_PN) ->
+    (walk_V john_PN).
+cbv.
+intros H1 H2.
+exact (H1 john_PN H2).
+Qed.
+#+END_SRC
+
+* Adjectives (basic)
+We can try the usual reciepe and represent adjectives as predicates:
+
+#+BEGIN_SRC coq
+Definition AP   : Type := PN -> Prop .
+Definition A    : Type := AP .
+Definition ModCN   : AP -> CN -> CN := fun ap cn x => ap x /\ cn x. 
+Definition CompAP  : AP -> VP := fun ap x => ap x. 
+#+END_SRC
+
+"every green tree is green."
+
+#+BEGIN_SRC coq
+Theorem thm3 :
+    UseCl Pos (PredVP (DetCN every_Det (ModCN (UseA green_A) (UseN tree_N))) (CompAP (UseA green_A))).
+cbv.
+intuition.
+Qed.
+#+END_SRC
+
+* 2-place verb
+
+#+BEGIN_SRC coq
+Definition V2   : Type := PN -> VP .
+Definition ComplV2 : V2 -> NP -> VP := fun v object subject => object (v subject).
+#+END_SRC
+
+* Conjunctions
+
+#+BEGIN_SRC coq
+Definition Conj : Type := Prop -> Prop -> Prop .
+Definition ConjS   : Conj -> S  -> S  -> S := fun c => c.
+Definition ConjNP  : Conj -> NP -> NP -> NP := fun c np1 np2 vp =>
+  np1 (fun x => np2 (fun y => c (vp x) (vp y))). 
+Definition and_Conj : Conj := fun x y => x /\ y.
+Definition or_Conj : Conj := fun x y => x \/ y.
+#+END_SRC
+
+"John loves Mary and a tree."
+Eval cbv in UseCl Pos (PredVP (UsePN john_PN) (ComplV2 love_V2 (ConjNP and_Conj (UsePN mary_PN) (DetCN some_Det (UseN tree_N))))).
+exists x : PN, tree_N x /\ love_V2 john_PN mary_PN /\ love_V2 john_PN x
+
+* Adverbs
+* Generalized quantifiers
 * Comparatives
 * Anaphora
+* References
+
+- Ranta, 2004. "Computational semantics in type theory". http://msh.revues.org/pdf/2925
+- Bernardy and Chatzikyriakidis, 2017.
 
