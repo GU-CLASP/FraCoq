@@ -343,10 +343,255 @@ Definition or_Conj : Conj := fun x y => x \/ y.
 Eval cbv in UseCl Pos (PredVP (UsePN john_PN) (ComplV2 love_V2 (ConjNP and_Conj (UsePN mary_PN) (DetCN some_Det (UseN tree_N))))).
 exists x : PN, tree_N x /\ love_V2 john_PN mary_PN /\ love_V2 john_PN x
 
+* Abstract Domain knowledge
+
+Even in the presence of abstract parameters, one can add arbitrary assumptions.
+
+example: green and black are disjoint properties:
+
+#+BEGIN_SRC coq
+Parameter green_black_disjoint: forall x, green_A x -> black_A x -> False.
+#+END_SRC
+
+* Refining and complexifying the interpretations
+
+* Adjectival phrases and adjectives
+  Adjectives and adjectival phrases are represented as modifiers of common nouns.
+  \begin{coq}
+    Definition A := CN -> CN.
+  \end{coq}
+  The test suite further requires to refine adjectives as
+  intersective, subsective, extensional subsective, privative and
+  non-commital, as it is standard in the formal semantics literature
+  \citep{kamp:75,partee:07,partee:10}. For a full discussion of
+  adjectives and in general modification within a constructive
+  setting, see \cite{Chatzikyriakidis:2017}. For concision we show
+   how to deal with intersective and extensional subsective only.
+
+  An intersective adjective (\texttt{IntersectiveA}) is fully defined by a
+  predicate over objects. The adjectival meaning is the conjunction of
+  such predicate and the bare noun (\texttt{wkIntersectiveA}). Additionally, to
+  relieve the user from calling this semantic function in in many
+  places, we declare it as an implicit coercion.
+  \begin{coq}
+Definition IntersectiveA := object -> Prop.
+Definition wkIntersectiveA : IntersectiveA -> A
+            := fun a cn (x:object) => a x /\ cn x.
+Coercion wkIntersectiveA : IntersectiveA >-> A.
+\end{coq}
+Extensional subsective adjectives are characterised by a noun-modifier
+$a$, and the property that if two noun classes $p$ and $q$ are
+extensionally equivalent, then $a(q)$ implies $a(p)$ (again, note the use of a dependent type):
+\begin{coq}
+Inductive ExtensionalSubsectiveA : Type :=
+   mkExtensionalSubsective :
+     forall (a : (object -> Prop) -> (object -> Prop)),
+     forall (ext : forall (p q:object -> Prop),
+                   (forall x, p x -> q x) -> (forall x, q x -> p x) -> forall x, a p x -> a q x),
+     ExtensionalSubsectiveA.
+   \end{coq}
+   The adjectival semantics is that of a subsective adjective: the
+   bare noun holds in conjunction with the modified noun:
+     \begin{coq}
+Definition apExtensionalSubsectiveA
+            : ExtensionalSubsectiveA -> A
+            := fun a cn (x:object) => let (aa,_) := a in
+                 aa cn x /\ cn x .
+Coercion apExtensionalSubsectiveA : ExtensionalSubsectiveA >-> A.
+\end{coq}
+In the same way we treated intersective adjectives, we add the semantics as a coercion for subsectives as well. It should be
+stressed that it suffices to declare an adjective as extensional
+subsective for Coq to remember the extensional property, even though
+it does not appear in the interpretation as a coerced general adjective.
+
 * Adverbs
-* Generalized quantifiers
+  Adverbs are similar to adjectives, except that they
+  modify verbal predicates or propositions instead of nouns. In the FraCaS test suite we only find VP adverbs (verbal predicates). Furthermore, the test suite does not
+  require the noun class to be passed to the adverb semantics, and
+  thus we omit it. \textit{A contrario}, the test suite requires many adverbs to be veridical
+  and covariant. Thus, as for adjectives, we define a refined subclass
+  to capture these properties.
+  \begin{coq}
+Definition ADV := (object -> Prop) -> (object -> Prop).
+Definition Adv:= ADV.
+Definition VeridicalAdv :=
+  { adv : (object -> Prop) -> (object -> Prop)
+    & (forall (x : object) (v : object -> Prop), (adv v) x -> v x) *
+      (forall (v w : object -> Prop),
+        (forall x, v x -> w x) -> forall (x : object), adv v x -> adv w x)
+    }.
+  \end{coq}
+  The plain adverbial semantics are recovered by extracting the $adv$
+  component. Similarly to extensional adjectives,  veridical adverbs the additional properties
+  are made available solely by declaring lexical entries as belonging to
+  the correct class. A coercion between $VeridicalAdv$ and $Adv$ is further defined (in effect we define veridical adverbs to be subtypes of adverbs). To give an example, consider the veridical 
+  adverb $on\_time$. This will have the entry: 
+
+\begin{coq}
+Parameter on_time_Adv : VeridicalAdv .
+\end{coq}
+
+* Predeterminers
+ The literature usually defines
+  the semantics of noun-phrases as a predicate over verb phrases:
+  \begin{coq}
+    Definition NP0 := VP -> Prop.
+  \end{coq}
+  Unfortunately, such a clean definition cannot work with GF's
+  abstract syntax.  The main issue is that predeterminers, which
+  include ``most'', ``at least'', ``all'', etc. are parsed as
+  modifiers of noun phrases: $PredetNP : Predet → NP → NP$. A moment
+  of thought suffices to be convinced that predicates over
+  verb-phrases are too rigid to be ``pre-determined'' in this way.
+  Therefore the semantics that we use is a tuple of the components of
+  noun-phrases: number, quantifier, and common noun:
+  \begin{coq}
+  Inductive NP : Type := mkNP : Num -> Quant -> CN -> NP.
+  \end{coq}
+  Predeterminers can then update the quantifier part of the NP. For
+  example, the ``all'' and ``most'' predeterminers replace the quantifier part by the
+  corresponding quantifier:
+  \begin{coq}
+  Definition Predet := NP -> NP.
+  Definition all_Predet : Predet := fun np => let (num,qIGNORED,cn) := np
+                                              in mkNP num all_Quant cn.
+  Definition most_Predet : Predet := fun np => let (num,qIGNORED,cn) := np
+                                               in mkNP num MOST_Quant cn.
+  \end{coq}
+  One may wonder if it is justified to simply ignore the quantifier in
+  such a way. We answer positively, because in practice, a noun-phrase
+  with a useful quantifier is never equipped with the ``all''
+  predeterminer --- in fact, in this case GF introduces a dummy
+  indefinite article which \emph{must} be overwritten in the semantics.
+  
+* Numerals, cardinals
+  An important part of the NP is the
+  number. Here we record as precisely as possible the information
+  given by the syntax; which can be a singular, a plural, a precise
+  cardinality or even the ``more than'' modifier.
+  \begin{coq}
+  Inductive Num : Type       :=
+    singular : Num           |
+    plural   : Num           |
+    unknownNum : Num         |
+    moreThan : Num -> Num    |
+    cardinal : nat -> Num    .
+  \end{coq}
+
+* Generalised quantifiers
+
+Generalised quantifiers turn a number
+  and a common noun into a (usual) noun-phrase (which we call $NP0$).
+  \begin{coq}
+Definition Quant := Num -> CN -> NP0.
+\end{coq}
+Certain quantifiers ignore the number, and are thus given usual definitions:
+\begin{coq}
+Definition all_Quant : Quant :=fun (num:Num) (cn : CN) (vp : VP) => forall x, cn x->vp cn x.
+\end{coq}
+Some others, such as ``at most'' make essential use of the number:
+\begin{coq}
+Definition atMost_quant : Quant
+  := fun num cn vp => interpAtMost num (CARD (fun x => cn x /\ vp cn x))
+\end{coq}
+In the above, \texttt{interpAtMost} checks that the given number is less than
+the given cardinality. The function \texttt{CARD} is a context-dependent
+abstract function which turns a predicate into a natural number. We
+equip \texttt{CARD} with common-sense axioms of set cardinality, such as
+monotonicity:
+\begin{coq}
+Parameter CARD : (object -> Prop) -> nat.
+Variable CARD_monotonous : forall a b:CN, (forall x, a x -> b x) -> CARD a <= CARD b.
+\end{coq}
+
+The \texttt{CARD} variable is used to interpret several other quantifiers, including ``most'':
+\begin{coq}
+Definition MOST_Quant : Quant :=
+    fun num (cn : CN) (vp : VP) => CARD (fun x => cn x /\ vp cn x) >= MOSTPART (CARD cn).
+\end{coq}
+where \texttt{MOSTPART} is another context-dependent abstract function
+from natural to natural. To support FraCas examples, it is sufficient
+to equip it with a monotonicity axiom:
+\begin{coq}
+Parameter MOSTPART: nat -> nat.
+Variable MOST_mono : forall x, MOSTPART x <= x.
+\end{coq}
+
+
+As usual, articles are  special cases of quantifiers.  When a
+useful number is provided by the NP, the indefinite article enforces
+it. Otherwise it generates an existential quantification.
+\begin{coq}
+  Definition IndefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
+  cardinal n => CARD (fun x => P x /\ Q P x) = n                        |
+  moreThan n => interpAtLeast n (CARD (fun x => P x /\ Q P x))          |
+  _          => exists x, P x/\Q P x end                                .
+\end{coq}
+The definite article checks for plural noun phrases, in which case it
+implements\textit{} definite plurals (universal quantification). Otherwise, it
+looks up the object of discourse in an abstract $environment$, which
+is a function which turns a common noun into an object:
+$environment : CN → object$.
+\begin{coq}
+  Definition DefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
+  plural => (forall x, P x -> Q P x) /\ Q P (environment P) /\ P (environment P) |
+  _ => Q P (environment P) /\ P (environment P) end.
+\end{coq}
+
+* Prepositions
+Prepositions are interpreted as values transforming
+  simplified noun phrases (1) to predicates. This transformation is
+  veridical (2) and covariant (3).  These three aspects are captured
+  in three fields of a record, as follows.
+  \begin{coq}
+Definition NP1 := (object -> Prop) ->Prop.
+Inductive Prep : Type :=
+   mkPrep : forall
+   (prep : NP1 -> (object -> Prop) -> (object -> Prop)),                       (* 1 *)
+   (forall (prepArg : NP1) (v : object -> Prop) (subject : object),            (* 2 *)
+     prep prepArg v subject -> v subject) ->
+     (forall (prepArg : NP1) (v w : object -> Prop),
+     (forall x, v x -> w x) -> forall x, prep prepArg v x -> prep prepArg w x) (* 3 *)
+      -> Prep.
+  \end{coq}
+
 * Comparatives
+We interpret comparatives as functions from
+  adjective and NP into an adjectival phrase. We use the common
+  noun (class) provided by the NP as a common reference class for the
+  quality (or adjective, denoted $a$ below) under comparison. Note that
+  we additionally obtain the class of the object, but we ignore
+  it. (Future work may want to unify those two classes).
+  \begin{coq}
+Definition ComparA : A -> NP -> AP
+ := fun a np cn x => apNP np (fun yCN y =>    (a cn y -> a cn x)
+                                           /\ (not (a cn x) -> not (a cn y))).
+Definition ComparAsAs : A -> NP -> AP
+ := fun a np cn x => apNP np (fun _class y => a cn x <-> a cn y).
+\end{coq}
+We define 'as ... as' as an equivalence of the quality $a$ between the
+subject and the object.  We define 'more ... than' as an implication
+of the quality $a$ in the appropriate direction, and the converse
+implication in the opposite direction. Note that the treatment of
+comparatives does not involve any reference to scales or degrees: this
+was not needed at least for the examples at hand, even though many fine-grained
+treatments of comparatives take these into
+consideration.\footnote{For a first treatment in MTTs, the interested
+  reader is directed to
+  \cite{Chatzikyriakidis:2014,Chatzikyriakidis:2017}.}
+
+
+* Relative clauses
+ Relative clauses are interpreted as verb phrases and used intersectively when building noun phrases:
+  \begin{coq}
+    Definition RS := VP.
+    Definition RelNPa : NP -> RS -> NP
+      := fun np rs => let (num,q,cn) := np
+      in mkNP num q (fun x => cn x /\ rs cn x).
+  \end{coq}
+
 * Anaphora
+TODO.
 * References
 
 - Ranta, 2004. "Computational semantics in type theory". http://msh.revues.org/pdf/2925
