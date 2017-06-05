@@ -18,6 +18,20 @@ Definition VPEnv := (object -> Prop). (* Just remember the last VP; could be mor
 Definition Env : Type := VPEnv * ObjEnv.
 
 Definition Effect := Env -> (Prop * Env).
+(* Effect could be extended to Env -> (Env -> Prop) -> Prop.
+
+Indeed:
+
+1. The new objects bound in the environment would be made available to
+the "rest" of the proposition (Env -> Prop).
+
+2. The current constructor (returning the final prop) would control
+where the rest of the proposition would go. This allows for
+existential quantification to put the "rest" of the proposition within
+the body of the quantification, thus allowing for the bound variables
+to be visible to the "rest" of the proposition.
+
+*)
 Parameter assumedObj : ObjEnv.
 Parameter assumedVP : VPEnv.
 Definition assumed := (assumedVP,assumedObj).
