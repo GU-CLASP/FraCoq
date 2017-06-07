@@ -35,6 +35,7 @@ data Descriptor = Descriptor {dGender :: Gender
 
 type ObjQuery = Descriptor -> Bool
 type ObjEnv = [(Descriptor,NP)]
+type NounEnv = [CN]
 
 clearRole :: Env -> Env
 clearRole Env{..} = Env{objEnv = map (first (\d -> d {dRole = Other})) objEnv,..}
@@ -43,7 +44,8 @@ type VPEnv = VP
 -- Just remember the last VP; could be more fine-grained because we have "does", "is", "has" as placehodlers in English.
 
 data Env = Env {vpEnv :: VPEnv,
-                objEnv :: ObjEnv} deriving Show
+                objEnv :: ObjEnv,
+                cnEnv :: NounEnv} deriving Show
 
 type Effect = Env -> (Prop, Env)
 
@@ -56,8 +58,10 @@ mkRel2 p x y = p ++ "(" ++ x ++ "," ++ y ++ ")"
 assumedVP :: VPEnv
 assumedVP x ρ = ("assumedVP " ++ x, ρ) 
 
+assumedCN :: CN
+assumedCN x ρ = (mkPred "assumedCN" x, ρ)
 assumed :: Env
-assumed = Env assumedVP []
+assumed = Env assumedVP [] [assumedCN]
 
 _TRUE :: Effect -> Prop
 _TRUE = \x -> let (x',_) = x assumed in x'
@@ -68,7 +72,7 @@ _ENV = \x -> snd (x assumed)
 type S = Effect
 type VP = Object -> Effect
 type CN = Object -> Effect
-type CN2 = Object -> Object -> Effect
+type CN2 = Object -> CN
 type NP = Role -> VP -> Effect
 
 instance Show VP where
@@ -98,7 +102,14 @@ pushNP :: Descriptor -> NP -> Env -> Env
 pushNP d obj Env{..} = Env{objEnv = (d,obj):objEnv,..}
 
 pushVP :: VP -> Env -> Env
-pushVP = \vp env -> let Env{..} = env in Env vp objEnv
+pushVP vp Env{..} = Env{vpEnv=vp,..}
+
+pushCN :: CN -> Env -> Env
+pushCN cn Env{..} = Env{cnEnv=cn:cnEnv,..}
+
+getCN :: Env -> CN
+getCN Env{cnEnv=cn:_} = cn
+getCN _ = error "panic: no cn in env"
 
 getNP :: Env -> ObjQuery -> NP
 getNP Env{objEnv=[]} _ = \_ vp -> vp "assumedObj"
@@ -199,7 +210,7 @@ pureVP = \v x rho -> (v x, pushVP (pureVP v) rho)
 -- pushes itself in the env for reference
 
 pureCN :: (Object -> Prop) -> CN
-pureCN = \v x rho -> (v x, rho)
+pureCN cn = \x rho -> (cn x, pushCN (pureCN cn) rho)
 -- CN leaves the env as is. The quantifiers may update it.
 
 pureCN2 :: (Object -> Object -> Prop) -> CN2
@@ -277,7 +288,7 @@ some cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) (pushNP (Descript
 {- in fact, it seems that all quantifiers have an existential aspect to them. -}
 
 few :: CN -> NP
-few cn = \role vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (not' (vp x) ) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
+few cn = \_role vp ρ -> (_FORALL $ \x -> fst (lift2 (~~>) (cn x) (not' (vp x) ) (pushNP (Descriptor Male Singular Subject) (pureObj x) ρ)),
                    pushVP vp
                     (pushNP (Descriptor Unknown Plural Other) (every (cn `that` vp)) -- "e-type" referent
                       (envModOf (vp "<unbound>") -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
@@ -431,11 +442,15 @@ own = pureV2' (mkRel2 "OWN")
 
 aDet :: CN -> NP
 aDet cn = \role vp ρ -> (_EXISTS $ \x -> fst ((cn x ∧ vp x) ρ),
-                          {- note that this isn't a quantifier, no referent is accessible in the CN-}
-                         (pushNP (Descriptor Neutral Singular role) (pureObj "Z")
+                          {- note that this isn't a quantifier, 'x' is not accessible in the CN-}
+                         pushNP (Descriptor Neutral Singular role) (pureObj "Z")
                          {- FIXME: fetch gender from CN -}
-                         {- FIXME: re-push the elements from the CN-}
-                          ρ))
+                         (snd ((cn "Z" ∧ vp "Z") ρ))
+                         )
+
+oneToo :: NP
+oneToo = \role vp ρ -> aDet (getCN ρ) role vp ρ
+
 
 example11a = (((aDet donkey) ! isTiredVP) ### (itNP ! leavesVP))
 eval :: Effect -> IO ()
@@ -503,3 +518,11 @@ example13 = billNP ! (own (aDet (donkey `that` (\x -> heNP ! (beatV2 (pureObj x)
 (∃ z. DONKEY(z) ∧ BEAT(z,BILL) ∧ OWN(z,BILL))
 -}
 
+
+example14 :: Effect
+example14 = (billNP ! own (aDet donkey)) ### (johnNP ! (own oneToo))
+
+{-> eval example14
+
+(∃ z. DONKEY(z) ∧ OWN(z,BILL)) ∧ (∃ z. DONKEY(z) ∧ OWN(z,JOHN))
+-}
