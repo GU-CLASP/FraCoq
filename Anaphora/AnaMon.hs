@@ -328,7 +328,7 @@ every cn role vp = do
     modify (pushNP (Descriptor Male Singular Subject) (pureObj x)) -- FIXME: gender from CN
     cn x ==> vp x
   _ <- cn unbound ==> vp unbound -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
-  modify (pushVP vp)
+  when (role == Subject) (modify (pushVP vp)) -- see example5c for why the guard is needed.
   modify (pushNP (Descriptor Unknown Plural role) (every (cn `that` vp))) -- "e-type" referent
   return (_FORALL x p')
 
@@ -429,11 +429,34 @@ signV2 = pureV2' (mkRel2 "sign")
 
 example5c :: Effect
 example5c = (aDet lawyerCN ! signV2 (every reportCN)) ### (aDet auditorCN ! doesTooVP)
+{-
 
+Analysis: in S := PN VP, the VP can refer to the subject. So the VP
+must be evaluated in a context where the subject (which may be a
+variable bound by a quantifier from the NP) is pushed in the
+environment. Thus, the NP must take care of evaluating the VP.  A
+side-effect of this evaluation is that the VP itself is pushed in the
+environment by the NP
+
+Yet, as in the above example, we have (V2 NP). In this situation V2 is
+not a proper noun phrase. If we push the VP argument in the NP we get
+nonsense.
+
+A possible solution would be to separate the updates and the lookup in
+the environment:
+
+type VP = (Env -> Env, Env -> Object -> Prop)
+
+The first component woud be evaluated "once per lexical occurence",
+while the second component would be evaluated "according to the
+semantic context". Yet, if we were to be doing something like this, it
+would preclude "strict" readings, as in example4.
+
+-}
 
 {-> eval example5c
 
-(∃ x. lawyer(x) ∧ (∀ y. report(y) → sign(y,x))) ∧ (∃ z. auditor(z) ∧ sign(z,x))
+(∃ x. lawyer(x) ∧ (∀ y. report(y) → sign(y,x))) ∧ (∃ z. auditor(z) ∧ (∀ α. report(α) → sign(α,z)))
 -}
 
 
