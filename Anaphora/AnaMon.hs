@@ -1,10 +1,11 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE GADTs #-}
 import Prelude hiding (pred)
-import Data.List (intercalate)
+import Data.List (intercalate, partition)
 import Control.Monad.State
 type Object = String
 type Prop = String
@@ -51,15 +52,18 @@ data Env = Env {vpEnv :: VPEnv
                ,freshVars :: [String]} deriving Show
 
 allVars :: [String]
-allVars = map (:[]) ['x'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
+allVars = map (:[]) ['a'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
 
 type Disc a = State Env a
-type Effect = Disc Prop
+type Effect = Disc Row
 -- Env -> (Prop, Env)
 
-type Sit = [(String,String)]
-showSit :: Sit -> String
-showSit sit = "[" ++ intercalate "; " [field ++ " : " ++ typ | (field,typ) <- sit ] ++ "]"
+type Row = [(String,String)]
+mkRec :: Row -> Prop
+-- mkRec row = "[" ++ intercalate " ; " ++ map showField row ++ "]"
+mkRec row = intercalate " × " (map showField row)
+  where showField ("_",p) = p
+        showField (field,typ) = "(" ++ field ++ " : " ++ typ  ++ ")"
 
 mkPred :: String -> Object -> Prop
 mkPred p x = p ++ "(" ++ x ++ ")"
@@ -67,17 +71,22 @@ mkPred p x = p ++ "(" ++ x ++ ")"
 mkRel2 :: String -> Object -> Object -> Prop
 mkRel2 p x y = p ++ "(" ++ x ++ "," ++ y ++ ")"
 
+assumedPred :: String -> Object -> Effect
+assumedPred predName x = do
+  f <- getFresh
+  return [(f,mkPred predName x)]
+
 assumedVP :: VPEnv
-assumedVP x = pure ("assumedVP " ++ x)
+assumedVP = assumedPred "assumedVP"
 
 assumedCN :: CN
-assumedCN x = pure (mkPred "assumedCN" x)
+assumedCN = assumedPred "assumedCN"
 
 assumed :: Env
 assumed = Env assumedVP [] [assumedCN] allVars
 
 _TRUE :: Effect -> Prop
-_TRUE x = evalState x assumed
+_TRUE x = mkRec $ evalState x assumed
 
 _ENV :: Effect -> Env
 _ENV x = execState x assumed
@@ -96,9 +105,9 @@ np ! vp = do
 
 
 instance Show VP where
-  show vp = "λω. " ++ evalState (vp "ω") assumed
+  show vp = "λω. " ++ mkRec (evalState (vp "ω") assumed)
 instance Show NP where
-  show np = evalState (np Other return) assumed
+  show np = mkRec (evalState (np Other $ \x -> return [("_",x)]) assumed)
 
 isNeutral :: Descriptor -> Bool
 isNeutral = (== Neutral) . dGender
@@ -129,7 +138,7 @@ pushCN cn Env{..} = Env{cnEnv=cn:cnEnv,..}
 
 getCN :: Env -> CN
 getCN Env{cnEnv=cn:_} = cn
-getCN _ = \x -> pure (mkPred "asusmedCN" x)
+getCN _ = assumedPred "assumedCN"
 
 getNP' :: ObjQuery -> Env -> NP
 getNP' _ Env{objEnv=[]} = \_ vp -> vp "assumedObj"
@@ -208,50 +217,58 @@ the cn role vp = do
   modify (pushNP (Descriptor Unknown Singular role) (the cn)) -- FIXME: fetch the gender/number from the CN
   v <- getFresh
   p <- cn v
-  vp ("(THE " ++ v ++ ". " ++ p ++")")
+  vp ("(THE " ++ v ++ ". " ++ mkRec p ++")")
   -- FIXME: variable may escape its scope
 
 
-lift2 :: (Prop -> Prop -> Prop) -> Effect -> Effect -> Effect
+lift2 :: (Row -> Row -> Row) -> Effect -> Effect -> Effect
 lift2 = liftM2
 
-lift1 :: (Prop -> Prop) -> Effect -> Effect
+lift1 :: (Row -> Row) -> Effect -> Effect
 lift1 = fmap
 
+prop :: Prop -> Row
+prop x = [("_",x)]
+
+imply :: String -> Row -> Row -> Row
+imply implicationSymbol = \x y -> prop (mkRec x ++ " " ++ implicationSymbol ++ " " ++ mkRec y)
 (<==), (~~>) :: Effect -> Effect -> Effect
-a <== b = lift2 (\x y -> y --> x) a b
+a <== b = do
+  a' <- a
+  b' <- b
+  let (props::Row,binders::Row) = partition (\(x,_) -> x == "_") a'
+  return (binders ++ prop (mkRec b' ++ "->" ++ mkRec props))
 (==>) :: Effect -> Effect -> Effect
-(==>) = lift2 (-->)
+(==>) = lift2 (imply "->")
 (-->) :: Prop -> Prop -> Prop
 x --> y = x ++ " → " ++ y
-(~~>) = lift2 (\x y -> x ++ " ∼> " ++ y)
+(~~>) = lift2 (imply "~>")
 not' :: Effect -> Effect
-not' = lift1 (mkPred "NOT")
-
+not' a = do
+  x <- a
+  return (prop (mkPred "NOT" (mkRec x)))
 
 (###) :: Effect -> Effect -> Effect
 (###) = (∧)
 
 (∧) :: Effect -> Effect -> Effect
-a ∧ b = lift2 (\x y -> x ++" ∧ "++ y) a b
-
-
+(∧) = liftM2 (++)
 
 
 pureVP :: (Object -> Prop) -> VP
 pureVP v x = do
   modify (pushVP (pureVP v))
-  return (v x)
+  return (prop (v x))
 -- pushes itself in the env for reference
 
 
 pureCN :: (Object -> Prop) -> CN
 pureCN cn x = do
   modify (pushCN (pureCN cn))
-  return (cn x)
+  return (prop (cn x))
 
 pureCN2 :: (Object -> Object -> Prop) -> CN2
-pureCN2 v x y = return (v x y)
+pureCN2 v x y = return (prop (v x y))
 -- FIXME: CN2 leaves the env as is.
 
 leavesVP :: VP
@@ -266,7 +283,7 @@ example0 = _TRUE ((johnNP ! leavesVP) <== (heNP ! isTiredVP))
 
 {-> putStrLn example0
 
-IS_TIRED(JOHN) → LEAVES(JOHN)
+IS_TIRED(JOHN) -> LEAVES(JOHN)
 -}
 
 doesTooVP :: VP
@@ -281,7 +298,7 @@ example1 = _TRUE ((johnNP ! leavesVP) <== (maryNP ! doesTooVP))
 
 {-> putStrLn example1
 
-LEAVES(MARY) → LEAVES(JOHN)
+LEAVES(MARY) -> LEAVES(JOHN)
 -}
 
 _ADMIT_V :: Prop -> Object -> Prop
@@ -291,16 +308,13 @@ admitVP :: Effect -> VP
 admitVP p x = do
   p' <- p
   modify (pushVP (admitVP p))
-  return (_ADMIT_V p' x)
+  return (prop (_ADMIT_V (mkRec p') x))
 
 _PERSON :: Object -> Prop
 _PERSON = mkPred "PERSON"
 
 _FORALL :: String -> Prop -> Prop
-_FORALL var f = "(∀ "++var++". " ++ f ++")"
-
-_EXISTS :: String ->Prop -> Prop
-_EXISTS var f = "(∃ "++var++". " ++ f ++")"
+_FORALL var f = "(Π("++var++" : i). " ++ f ++")"
 
 pureObj :: Object -> NP
 pureObj x _role vp = vp x
@@ -330,7 +344,7 @@ every cn role vp = do
   _ <- cn unbound ==> vp unbound -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
   when (role == Subject) (modify (pushVP vp)) -- see example5c for why the guard is needed.
   modify (pushNP (Descriptor Unknown Plural role) (every (cn `that` vp))) -- "e-type" referent
-  return (_FORALL x p')
+  return (prop (_FORALL x (mkRec p')))
 
 -- The referents pushed within the FORALL scope cannot escape to the top level
 
@@ -343,7 +357,7 @@ some cn role vp = do
   modify (pushNP (Descriptor Male Singular Subject) (pureObj x))
   p' <- cn x ∧ vp x
   modify (pushNP (Descriptor Unknown Plural role) (the (cn `that` vp)))
-  return (_EXISTS x p')
+  return ((x,"i"):p')
 
 few :: CN -> NP
 few cn role vp = do
@@ -354,7 +368,7 @@ few cn role vp = do
   _ <- cn unbound ~~> vp unbound -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
   modify (pushVP vp)
   modify (pushNP (Descriptor Unknown Plural role) (every (cn `that` vp))) -- "e-type" referent
-  return (_FORALL x p')
+  return (prop (_FORALL x (mkRec p')))
 
 
 -- EXAMPLE:: everyone admits that they are tired
@@ -364,7 +378,7 @@ example2 = _TRUE (everyone ! (admitVP (theySingNP ! isTiredVP)))
 
 {-> putStrLn example2
 
-(∀ x. PERSON(x) → ADMIT(IS_TIRED(x),x))
+(∀ a. PERSON(a) -> ADMIT(IS_TIRED(a),a))
 -}
 
 
@@ -374,7 +388,7 @@ example3 = _TRUE ((everyone ! (admitVP (theySingNP ! isTiredVP))) ### (maryNP ! 
 
 {-> putStrLn example3
 
-(∀ x. PERSON(x) → ADMIT(IS_TIRED(x),x)) ∧ ADMIT(IS_TIRED(MARY),MARY)
+(∀ a. PERSON(a) -> ADMIT(IS_TIRED(a),a)) × ADMIT(IS_TIRED(MARY),MARY)
 -}
 
 
@@ -397,14 +411,14 @@ example4 = _TRUE (johnNP ! (lovesVP hisSpouseNP) ### (billNP ! doesTooVP) )
 -- Only then, 'pureVP' is called and the vp is pushed onto the environment
 {-> putStrLn example4
 
-LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE x. MARRIED(JOHN,x)),BILL)
+LOVE((THE a. MARRIED(JOHN,a)),JOHN) × LOVE((THE a. MARRIED(JOHN,a)),BILL)
 -}
 
 
 pureV2' :: (Object -> Object -> Prop) -> NP -> VP
 pureV2' v2 directObject subject = directObject Other $ \x -> do
   modify (pushVP (pureV2' v2 directObject))
-  return (v2 x subject)
+  return (prop (v2 x subject))
 
 lovesVP' :: NP -> VP
 lovesVP' = pureV2' (mkRel2 "LOVE")
@@ -416,7 +430,7 @@ example5b = johnNP ! (lovesVP' hisSpouseNP) ### (billNP ! doesTooVP)
 
 {-> eval example5b
 
-LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE y. MARRIED(BILL,y)),BILL)
+LOVE((THE a. MARRIED(JOHN,a)),JOHN) × LOVE((THE b. MARRIED(BILL,b)),BILL)
 -}
 
 
@@ -456,7 +470,7 @@ would preclude "strict" readings, as in example4.
 
 {-> eval example5c
 
-(∃ x. lawyer(x) ∧ (∀ y. report(y) → sign(y,x))) ∧ (∃ z. auditor(z) ∧ (∀ α. report(α) → sign(α,z)))
+(a : i) × (c : i) × lawyer(a) × (∀ b. report(b) -> sign(b,a)) × auditor(c) × (∀ d. report(d) -> sign(d,c))
 -}
 
 
@@ -468,7 +482,7 @@ example6 = _TRUE (johnNP ! (lovesVP' hisSpouseNP) ### (maryNP ! doesTooVP) )
 
 {-> putStrLn example6
 
-LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE y. MARRIED(JOHN,y)),MARY)
+LOVE((THE a. MARRIED(JOHN,a)),JOHN) × LOVE((THE b. MARRIED(JOHN,b)),MARY)
 -}
 
 
@@ -484,7 +498,7 @@ example7 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (theyPlNP ! isTiredVP
 -- (* EXAMPLE:: Few congressmen love bill. They are tired. *)
 {-> putStrLn example7
 
-(∀ x. CONGRESSMAN(x) ∼> NOT(LOVE(BILL,x))) ∧ (∀ y. CONGRESSMAN(y) ∧ LOVE(BILL,y) → IS_TIRED(y))
+(∀ a. CONGRESSMAN(a) ~> NOT(LOVE(BILL,a))) × (∀ b. CONGRESSMAN(b) × LOVE(BILL,b) -> IS_TIRED(b))
 -}
 
 
@@ -494,7 +508,7 @@ example8 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (heNP ! isTiredVP))
 -- (* EXAMPLE:: Few congressmen love bill. He is tired. *) -- The e-type referent is plural.
 {-> putStrLn example8
 
-(∀ x. CONGRESSMAN(x) ∼> NOT(LOVE(BILL,x))) ∧ IS_TIRED(BILL)
+(∀ a. CONGRESSMAN(a) ~> NOT(LOVE(BILL,a))) × IS_TIRED(BILL)
 -}
 
 
@@ -503,7 +517,7 @@ example9 = _TRUE ((johnNP ! isTiredVP) ### (billNP ! (lovesVP himNP)))
 -- John is tired. Bill loves him. -- (Bill loves John, not himself.)
 {-> putStrLn example9
 
-IS_TIRED(JOHN) ∧ LOVE(JOHN,BILL)
+IS_TIRED(JOHN) × LOVE(JOHN,BILL)
 -}
 
 
@@ -520,7 +534,7 @@ example10 = _TRUE ((few (man `that` (lovesVP hisSpouseNP))) ! (beatV2 themSingNP
 
 {-> putStrLn example10
 
-(∀ x. MAN(x) ∧ LOVE((THE y. MARRIED(x,y)),x) ∼> NOT(BEAT((THE z. MARRIED(x,z)),x)))
+(∀ a. MAN(a) × LOVE((THE b. MARRIED(a,b)),a) ~> NOT(BEAT((THE c. MARRIED(a,c)),a)))
 -}
 
 donkey :: CN
@@ -534,7 +548,7 @@ aDet cn role vp = do
   x <- getFresh {- note that this isn't a quantifier, 'x' is not accessible in the CN nor the VP -}
   p' <- (cn x ∧ vp x)
   modify (pushNP (Descriptor Neutral Singular role) (pureObj x)) {- FIXME: fetch gender from CN; 'x' becomes visible AFTER the NP -}
-  return (_EXISTS x p')
+  return ((x,"i"):p')
 
 example11a :: Effect
 example11a = (((aDet donkey) ! isTiredVP) ### (itNP ! leavesVP))
@@ -545,16 +559,16 @@ eval = putStrLn . _TRUE
 
 {-> eval example11a
 
-(∃ x. DONKEY(x) ∧ IS_TIRED(x)) ∧ LEAVES(x)
+(a : i) × DONKEY(a) × IS_TIRED(a) × LEAVES(a)
 -}
 
 
 example11b :: Effect
 example11b = (((aDet donkey) ! leavesVP) <== (itNP ! isTiredVP))
--- A donkey leaves if it is tired.
+-- Some donkey leave if it is tired.
 {-> eval example11b
 
-IS_TIRED(x) → (∃ x. DONKEY(x) ∧ LEAVES(x))
+(a : i) × IS_TIRED(a)->DONKEY(a) × LEAVES(a)
 -}
 -- The proper interpretation is : ∃z. DONKEY(z) ∧ IS_TIRED(z) ∧ LEAVES(z)
 -- Seemingly the existential quantifiers gets "pulled" up as far as possible.
@@ -565,7 +579,7 @@ example11c = (aDet (man `that` own (aDet donkey)) ! (beatV2 itNP))
 
 {-> eval example11c
 
-(∃ x. MAN(x) ∧ (∃ y. DONKEY(y) ∧ OWN(y,x)) ∧ BEAT(y,x))
+(a : i) × (b : i) × MAN(a) × DONKEY(b) × OWN(b,a) × BEAT(b,a)
 -}
 
 example11d :: Effect
@@ -574,7 +588,7 @@ example11d = ((billNP ! (own (aDet donkey))) ### (heNP ! (beatV2 itNP)))
 
 {-> eval example11d
 
-(∃ x. DONKEY(x) ∧ OWN(x,BILL)) ∧ BEAT(x,BILL)
+(a : i) × DONKEY(a) × OWN(a,BILL) × BEAT(a,BILL)
 -}
 
 example11 :: Effect
@@ -583,7 +597,7 @@ example11 = (every (man `that` own (aDet donkey)) ! (beatV2 itNP))
 
 {-> eval example11
 
-(∀ x. MAN(x) ∧ (∃ y. DONKEY(y) ∧ OWN(y,x)) → BEAT(y,x))
+(Π(a : i). (b : i) × MAN(a) × DONKEY(b) × OWN(b,a) -> BEAT(b,a))
 -}
 
 
@@ -594,7 +608,7 @@ example13 = billNP ! (own (aDet (donkey `that` (\x -> heNP ! (beatV2 (pureObj x)
 
 {-> eval example13
 
-(∃ x. DONKEY(x) ∧ BEAT(x,BILL) ∧ OWN(x,BILL))
+(a : i) × DONKEY(a) × BEAT(a,BILL) × OWN(a,BILL)
 -}
 
 oneToo :: NP
@@ -608,6 +622,6 @@ example14 = (billNP ! own (aDet donkey)) ### (johnNP ! (own oneToo))
 
 {-> eval example14
 
-(∃ x. DONKEY(x) ∧ OWN(x,BILL)) ∧ (∃ y. DONKEY(y) ∧ OWN(y,JOHN))
+(a : i) × DONKEY(a) × OWN(a,BILL) × (b : i) × DONKEY(b) × OWN(b,JOHN)
 -}
 
