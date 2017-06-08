@@ -410,13 +410,30 @@ lovesVP' :: NP -> VP
 lovesVP' = pureV2' (mkRel2 "LOVE")
 
 -- (* EXAMPLE:: john leaves his wife. Bill does too. [second reading] *)
-example5b :: Prop
-example5b = _TRUE (johnNP ! (lovesVP' hisSpouseNP) ### (billNP ! doesTooVP) )
+example5b :: Effect
+example5b = johnNP ! (lovesVP' hisSpouseNP) ### (billNP ! doesTooVP) 
 -- With the above version of "love", the direct object is re-evaluated after it is being referred to.
 
-{-> putStrLn example5b
+{-> eval example5b
 
 LOVE((THE x. MARRIED(JOHN,x)),JOHN) ∧ LOVE((THE y. MARRIED(BILL,y)),BILL)
+-}
+
+
+lawyerCN = pureCN (mkPred "lawyer")
+auditorCN = pureCN (mkPred "auditor")
+reportCN = pureCN (mkPred "report")
+signV2 = pureV2' (mkRel2 "sign")
+
+-- A lawyer signed every report, and so did an auditor.
+
+example5c :: Effect
+example5c = (aDet lawyerCN ! signV2 (every reportCN)) ### (aDet auditorCN ! doesTooVP)
+
+
+{-> eval example5c
+
+(∃ x. lawyer(x) ∧ (∀ y. report(y) → sign(y,x))) ∧ (∃ z. auditor(z) ∧ sign(z,x))
 -}
 
 
@@ -570,3 +587,4 @@ example14 = (billNP ! own (aDet donkey)) ### (johnNP ! (own oneToo))
 
 (∃ x. DONKEY(x) ∧ OWN(x,BILL)) ∧ (∃ y. DONKEY(y) ∧ OWN(y,JOHN))
 -}
+
