@@ -80,7 +80,7 @@ assumedVP :: VPEnv
 assumedVP = assumedPred "assumedVP"
 
 assumedCN :: CN
-assumedCN = assumedPred "assumedCN"
+assumedCN = (assumedPred "assumedCN",Unknown,Singular)
 
 assumed :: Env
 assumed = Env assumedVP [] [assumedCN] allVars
@@ -93,7 +93,7 @@ _ENV x = execState x assumed
 
 type S = Effect
 type VP = Object -> Effect -- FIXME: attempt to change to Disc (Object -> Prop)
-type CN = Object -> Effect
+type CN = (Object -> Effect,Gender,Number)
 type CN2 = Object -> CN
 type NP = Role -> VP -> Effect
 
@@ -138,7 +138,7 @@ pushCN cn Env{..} = Env{cnEnv=cn:cnEnv,..}
 
 getCN :: Env -> CN
 getCN Env{cnEnv=cn:_} = cn
-getCN _ = assumedPred "assumedCN"
+getCN _ = (assumedPred "assumedCN",Unknown,Singular)
 
 getNP' :: ObjQuery -> Env -> NP
 getNP' _ Env{objEnv=[]} = \_ vp -> vp "assumedObj"
@@ -213,8 +213,8 @@ getFresh = do
   return x
 
 the :: CN -> NP
-the cn role vp = do
-  modify (pushNP (Descriptor Unknown Singular role) (the cn)) -- FIXME: fetch the gender/number from the CN
+the (cn,gender,number) role vp = do
+  modify (pushNP (Descriptor gender number role) (the (cn,gender,number)))
   v <- getFresh
   p <- cn v
   vp ("(THE " ++ v ++ ". " ++ mkRec p ++")")
@@ -262,14 +262,14 @@ pureVP v x = do
 -- pushes itself in the env for reference
 
 
-pureCN :: (Object -> Prop) -> CN
-pureCN cn x = do
-  modify (pushCN (pureCN cn))
-  return (prop (cn x))
+pureCN :: (Object -> Prop) -> Gender -> Number -> CN
+pureCN cn gender number = (\x -> do
+                              modify (pushCN (pureCN cn gender number))
+                              return (prop (cn x))
+                          ,gender,number)
 
-pureCN2 :: (Object -> Object -> Prop) -> CN2
-pureCN2 v x y = return (prop (v x y))
--- FIXME: CN2 leaves the env as is.
+pureCN2 :: (Object -> Object -> Prop) -> Gender -> Number -> CN2
+pureCN2 v gender number x = pureCN (v x) gender number
 
 leavesVP :: VP
 leavesVP = pureVP (mkPred "LEAVES")
@@ -320,7 +320,7 @@ pureObj :: Object -> NP
 pureObj x _role vp = vp x
 
 everyone :: NP
-everyone = every (pureCN (mkPred "PERSON"))
+everyone = every (pureCN (mkPred "PERSON") Unknown Singular)
 
 hide :: State s x -> State s x
 hide a = do
@@ -333,17 +333,17 @@ unbound :: String
 unbound = "<unbound>"
 
 that :: CN -> VP -> CN
-that cn vp x = cn x ∧ vp x
+that (cn,gender,number) vp = (\x -> cn x ∧ vp x,gender,number)
 
 every :: CN -> NP
-every cn role vp = do
+every cn0@(cn,gender,Singular) role vp = do
   x <- getFresh
   p' <- hide $ do
-    modify (pushNP (Descriptor Male Singular Subject) (pureObj x)) -- FIXME: gender from CN
+    modify (pushNP (Descriptor gender Singular Subject) (pureObj x))
     cn x ==> vp x
   _ <- cn unbound ==> vp unbound -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
   when (role == Subject) (modify (pushVP vp)) -- see example5c for why the guard is needed.
-  modify (pushNP (Descriptor Unknown Plural role) (every (cn `that` vp))) -- "e-type" referent
+  modify (pushNP (Descriptor Unknown Plural role) (every (cn0 `that` vp))) -- "e-type" referent
   return (prop (_FORALL x (mkRec p')))
 
 -- The referents pushed within the FORALL scope cannot escape to the top level
@@ -352,22 +352,22 @@ every cn role vp = do
 -- (with the appropriate descriptor)
 
 some :: CN -> NP
-some cn role vp = do
+some cn0@(cn,gender,Singular) role vp = do
   x <- getFresh
-  modify (pushNP (Descriptor Male Singular Subject) (pureObj x))
+  modify (pushNP (Descriptor gender Singular Subject) (pureObj x))
   p' <- cn x ∧ vp x
-  modify (pushNP (Descriptor Unknown Plural role) (the (cn `that` vp)))
+  modify (pushNP (Descriptor Unknown Plural role) (the (cn0 `that` vp)))
   return ((x,"i"):p')
 
 few :: CN -> NP
-few cn role vp = do
+few cn0@(cn,gender,Plural) role vp = do
   x <- getFresh
   p' <- hide $ do
-    modify (pushNP (Descriptor Male Singular Subject) (pureObj x)) -- FIXME: gender from CN
+    modify (pushNP (Descriptor gender Singular Subject) (pureObj x)) -- Attn: the number is doubtful here; in the examples I've used singular pronouns.
     cn x ~~> not' (vp x)
   _ <- cn unbound ~~> vp unbound -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
   modify (pushVP vp)
-  modify (pushNP (Descriptor Unknown Plural role) (every (cn `that` vp))) -- "e-type" referent
+  modify (pushNP (Descriptor Unknown Plural role) (every (cn0 `that` vp))) -- "e-type" referent
   return (prop (_FORALL x (mkRec p')))
 
 
@@ -378,7 +378,7 @@ example2 = _TRUE (everyone ! (admitVP (theySingNP ! isTiredVP)))
 
 {-> putStrLn example2
 
-(∀ a. PERSON(a) -> ADMIT(IS_TIRED(a),a))
+(Π(a : i). PERSON(a) -> ADMIT(IS_TIRED(a),a))
 -}
 
 
@@ -388,12 +388,12 @@ example3 = _TRUE ((everyone ! (admitVP (theySingNP ! isTiredVP))) ### (maryNP ! 
 
 {-> putStrLn example3
 
-(∀ a. PERSON(a) -> ADMIT(IS_TIRED(a),a)) × ADMIT(IS_TIRED(MARY),MARY)
+(Π(a : i). PERSON(a) -> ADMIT(IS_TIRED(a),a)) × ADMIT(IS_TIRED(MARY),MARY)
 -}
 
 
 married :: CN2
-married = pureCN2 (mkRel2 "MARRIED")
+married = pureCN2 (mkRel2 "MARRIED") Unknown Singular
 
 hisSpouseNP :: NP
 hisSpouseNP = his married
@@ -434,9 +434,9 @@ LOVE((THE a. MARRIED(JOHN,a)),JOHN) × LOVE((THE b. MARRIED(BILL,b)),BILL)
 -}
 
 
-lawyerCN = pureCN (mkPred "lawyer")
-auditorCN = pureCN (mkPred "auditor")
-reportCN = pureCN (mkPred "report")
+lawyerCN = pureCN (mkPred "lawyer") Unknown Singular
+auditorCN = pureCN (mkPred "auditor") Unknown Singular
+reportCN = pureCN (mkPred "report") Neutral Singular
 signV2 = pureV2' (mkRel2 "sign")
 
 -- A lawyer signed every report, and so did an auditor.
@@ -489,7 +489,7 @@ LOVE((THE a. MARRIED(JOHN,a)),JOHN) × LOVE((THE b. MARRIED(JOHN,b)),MARY)
 
 
 congressmen :: CN
-congressmen = pureCN (mkPred "CONGRESSMAN")
+congressmen = pureCN (mkPred "CONGRESSMEN") Male Plural
 
 example7 :: Prop
 example7 = _TRUE ((few congressmen ! (lovesVP billNP)) ### (theyPlNP ! isTiredVP))
@@ -522,32 +522,35 @@ IS_TIRED(JOHN) × LOVE(JOHN,BILL)
 
 
 man :: CN
-man = pureCN (mkPred "MAN")
+man = pureCN (mkPred "MAN") Male Singular
+
+men :: CN
+men = pureCN (mkPred "MAN") Male Plural
 
 beatV2 :: NP -> VP
 beatV2 = pureV2' (mkRel2 "BEAT")
 
 example10 :: Prop
-example10 = _TRUE ((few (man `that` (lovesVP hisSpouseNP))) ! (beatV2 themSingNP))
+example10 = _TRUE ((few (men `that` (lovesVP hisSpouseNP))) ! (beatV2 themSingNP))
 
 -- (* EXAMPLE:: Few men that love their wife beat them.
 
 {-> putStrLn example10
 
-(∀ a. MAN(a) × LOVE((THE b. MARRIED(a,b)),a) ~> NOT(BEAT((THE c. MARRIED(a,c)),a)))
+(Π(a : i). MAN(a) × LOVE((THE b. MARRIED(a,b)),a) ~> NOT(BEAT((THE c. MARRIED(a,c)),a)))
 -}
 
 donkey :: CN
-donkey = pureCN (mkPred "DONKEY")
+donkey = pureCN (mkPred "DONKEY") Neutral Singular
 
 own :: NP -> VP
 own = pureV2' (mkRel2 "OWN")
 
 aDet :: CN -> NP
-aDet cn role vp = do
+aDet (cn,gender,number) role vp = do
   x <- getFresh {- note that this isn't a quantifier, 'x' is not accessible in the CN nor the VP -}
   p' <- (cn x ∧ vp x)
-  modify (pushNP (Descriptor Neutral Singular role) (pureObj x)) {- FIXME: fetch gender from CN; 'x' becomes visible AFTER the NP -}
+  modify (pushNP (Descriptor gender number role) (pureObj x))
   return ((x,"i"):p')
 
 example11a :: Effect
