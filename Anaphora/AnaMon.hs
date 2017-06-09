@@ -628,3 +628,22 @@ example14 = (billNP ! own (aDet donkey)) ### (johnNP ! (own oneToo))
 (a : i) × DONKEY(a) × OWN(a,BILL) × (b : i) × DONKEY(b) × OWN(b,JOHN)
 -}
 
+commitee :: CN
+commitee = pureCN (mkPred "commitee") Neutral Singular
+
+chairman :: CN
+chairman = pureCN (mkPred "chairman") Male Singular
+
+has = pureV2' (mkRel2 "have")
+
+example15 :: Effect
+example15 = every commitee ! has (aDet chairman)
+-- every man owns a donkey. He beats it. #?!
+-- every commitee has a chairman. He is appointed by its members. #?
+
+{-> eval example15
+
+(Π(a : i). commitee(a) -> (b : i) × chairman(b) × have(b,a))
+-}
+
+
