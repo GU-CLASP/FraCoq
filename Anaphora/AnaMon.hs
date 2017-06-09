@@ -351,7 +351,11 @@ every cn0@(cn,gender,Singular) role vp = do
   p' <- hide $ do
     modify (pushNP (Descriptor gender Singular Subject) (pureObj x))
     cn x ==> vp x
-  _ <- cn unbound ==> vp unbound -- the things that we talk about in the CN/VP can be referred to anyway! (see example8)
+  _ <- cn unbound ==> vp unbound -- the things that we talk about in the CN/VP can be referred to anyway! (see example8).
+    -- If we end up with references to the unbound variable we have not felicitous sentences
+    -- Alternatively, we could demand that such variables re-introduce the quantification:
+    -- modify (pushNP (Descriptor gender Singular Subject) (every cn0 Other))
+    -- _ <- IT ! (\x -> cn x ==> vp x)
   when (role == Subject) (modify (pushVP vp)) -- see example5c for why the guard is needed.
   modify (pushNP (Descriptor Unknown Plural role) (every (cn0 `that` vp))) -- "e-type" referent
   return (prop (_FORALL x (mkRec p')))
