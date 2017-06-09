@@ -213,7 +213,10 @@ theyPlNP :: NP
 theyPlNP = pron isPlural
 
 his :: CN2 -> NP
-his cn2 role vp = himSelfNP role $ \x -> the (cn2 x) Other vp
+his cn2 role vp = heNP role $ \x -> the (cn2 x) Other vp
+
+its :: CN2 -> NP
+its cn2 role vp = itNP role $ \x -> the (cn2 x) Other vp
 
 getFresh :: Disc String
 getFresh = do
@@ -650,16 +653,24 @@ commitee = pureCN (mkPred "commitee") Neutral Singular
 chairman :: CN
 chairman = pureCN (mkPred "chairman") Male Singular
 
+members :: CN2
+members = pureCN2 (mkRel2 "members") Unknown Plural
+
+has :: NP -> VP
 has = pureV2' (mkRel2 "have")
 
+isAppointedBy :: NP -> VP
+isAppointedBy = pureV2' (mkRel2 "appoint")
+
 example15 :: Effect
-example15 = every commitee ! has (aDet chairman)
+example15 = every commitee ! has (aDet chairman) ### (heNP ! (isAppointedBy (its members)))
 -- every man owns a donkey. He beats it. #?!
 -- every commitee has a chairman. He is appointed by its members. #?
+-- every commitee has a chairman. It members appoint him. #?
 
 {-> eval example15
 
-(Π(a : i). commitee(a) -> (b : i) × chairman(b) × have(b,a))
+(Π(a : i). commitee(a) -> (b : i) × chairman(b) × have(b,a)) × appoint((THE c. members(assumedObj,c)),b)
 -}
 
 
