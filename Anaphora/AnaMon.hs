@@ -396,7 +396,7 @@ example2 = _TRUE (everyone ! (admitVP (theySingNP ! isTiredVP)))
 -}
 
 
--- EXAMPLE:: everyone admits that they are tired Mary does too
+-- EXAMPLE:: everyone admits that they are tired. Mary does too
 example3 :: Prop
 example3 = _TRUE ((everyone ! (admitVP (theySingNP ! isTiredVP))) ### (maryNP ! doesTooVP))
 
@@ -416,7 +416,7 @@ lovesVP :: NP -> VP
 lovesVP directObject subject = directObject Other $ \x -> pureVP (mkRel2 "LOVE" x) subject
 
 
--- (* EXAMPLE:: john leaves his wife. Bill does too.  *)
+-- (* EXAMPLE:: john loves his wife. Bill does too.  *)
 example4 :: Prop
 example4 = _TRUE (johnNP ! (lovesVP hisSpouseNP) ### (billNP ! doesTooVP) )
 
@@ -484,7 +484,7 @@ would preclude "strict" readings, as in example4.
 
 {-> eval example5c
 
-(a : i) × (c : i) × lawyer(a) × (∀ b. report(b) -> sign(b,a)) × auditor(c) × (∀ d. report(d) -> sign(d,c))
+(a : i) × lawyer(a) × (Π(b : i). report(b) -> sign(b,a)) × (c : i) × auditor(c) × (Π(d : i). report(d) -> sign(d,c))
 -}
 
 
@@ -532,6 +532,14 @@ example9 = _TRUE ((johnNP ! isTiredVP) ### (billNP ! (lovesVP himNP)))
 {-> putStrLn example9
 
 IS_TIRED(JOHN) × LOVE(JOHN,BILL)
+-}
+
+example9b :: Effect
+example9b = (johnNP ! isTiredVP) ### (billNP ! (lovesVP himSelfNP))
+-- John is tired. Bill loves himself.
+{-> eval example9b
+
+IS_TIRED(JOHN) × LOVE(BILL,BILL)
 -}
 
 
@@ -585,10 +593,8 @@ example11b = (((aDet donkey) ! leavesVP) <== (itNP ! isTiredVP))
 -- Some donkey leaves if it is tired.
 {-> eval example11b
 
-(a : i) × IS_TIRED(a)->DONKEY(a) × LEAVES(a)
+(a : i) × IS_TIRED(a) -> DONKEY(a) × LEAVES(a)
 -}
--- The proper interpretation is : ∃z. DONKEY(z) ∧ IS_TIRED(z) ∧ LEAVES(z)
--- Seemingly the existential quantifiers gets "pulled" up as far as possible.
 
 example11c :: Effect
 example11c = (aDet (man `that` own (aDet donkey)) ! (beatV2 itNP))
@@ -614,7 +620,7 @@ example11 = (every (man `that` own (aDet donkey)) ! (beatV2 itNP))
 
 {-> eval example11
 
-(Π(a : i). MAN(a) -> (b : i) -> DONKEY(b) -> OWN(b,a) -> BEAT(b,a))
+(Π(a : i). (MAN(a) × (b : i) × DONKEY(b) × OWN(b,a)) -> BEAT(b,a))
 -}
 
 example12 :: Effect
@@ -670,7 +676,9 @@ example15 :: Effect
 example15 = every commitee ! has (aDet chairman) ### (heNP ! (isAppointedBy (its members)))
 -- every man owns a donkey. He beats it. #?!
 -- every commitee has a chairman. He is appointed by its members. #?
--- every commitee has a chairman. It members appoint him. #?
+-- every man own a donkey. It helps him. #?!
+-- every man has a wife. She helps him. #?!
+-- every commitee has a chairman. Its members appoint him. #?
 
 {-> eval example15
 
@@ -680,9 +688,14 @@ example15 = every commitee ! has (aDet chairman) ### (heNP ! (isAppointedBy (its
 
 example16 :: Effect
 example16 = every man ! (beatV2 (every (donkey `that` (\x -> own heNP x))))
-  -- every man beats every donkey that he owns.
+-- every man beats every donkey that he owns.
 
 {-> eval example16
 
 (Π(a : i). MAN(a) -> (Π(b : i). DONKEY(b) × OWN(a,b) -> BEAT(b,a)))
 -}
+
+-- TODO: Mary read every book that John did
+-- TODO: The man who gave his paycheck to his wife was wiser than the one who gave it to his mistress.
+-- If a man is from Athens, he (always) likes ouzo. 
+-- If a drummer lives in an apartment complex, it is usually half empty. 
