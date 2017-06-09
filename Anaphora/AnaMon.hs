@@ -62,8 +62,17 @@ type Row = [(String,String)]
 mkRec :: Row -> Prop
 -- mkRec row = "[" ++ intercalate " ; " ++ map showField row ++ "]"
 mkRec row = intercalate " × " (map showField row)
-  where showField ("_",p) = p
-        showField (field,typ) = "(" ++ field ++ " : " ++ typ  ++ ")"
+
+telescope :: String -> Row -> String
+telescope implicationSymbol [f] = showField f ++ " " ++ implicationSymbol ++ " "
+telescope implicationSymbol row = "(" ++ mkRec row ++ ") " ++ implicationSymbol ++ " "
+-- this definition has the effect of confusing some people:
+-- telescope implicationSymbol row = concat $ [showField f ++ " " ++ implicationSymbol ++ " " | f <- row]
+-- but it is better because it clearly brings the right variables into scope.
+
+showField :: (String, Prop) -> String
+showField ("_",p) = p
+showField (field,typ) = "(" ++ field ++ " : " ++ typ  ++ ")"
 
 mkPred :: String -> Object -> Prop
 mkPred p x = p ++ "(" ++ x ++ ")"
@@ -220,29 +229,27 @@ the (cn,gender,number) role vp = do
   vp ("(THE " ++ v ++ ". " ++ mkRec p ++")")
   -- FIXME: variable may escape its scope
 
-
-lift2 :: (Row -> Row -> Row) -> Effect -> Effect -> Effect
-lift2 = liftM2
-
-lift1 :: (Row -> Row) -> Effect -> Effect
-lift1 = fmap
-
 prop :: Prop -> Row
 prop x = [("_",x)]
 
-imply :: String -> Row -> Row -> Row
-imply implicationSymbol = \x y -> prop (mkRec x ++ " " ++ implicationSymbol ++ " " ++ mkRec y)
 (<==), (~~>) :: Effect -> Effect -> Effect
 a <== b = do
   a' <- a
   b' <- b
   let (props::Row,binders::Row) = partition (\(x,_) -> x == "_") a'
-  return (binders ++ prop (mkRec b' ++ "->" ++ mkRec props))
+  return (binders ++ prop (telescope "->" b' ++ mkRec props)) -- TODO: currify
+
+imply :: Monad m => String -> m Row -> m Row -> m Row
+imply implicationSymbol a b = do
+  a' <- a
+  b' <- b
+  return (prop (telescope implicationSymbol a' ++ mkRec b'))
+
 (==>) :: Effect -> Effect -> Effect
-(==>) = lift2 (imply "->")
+(==>) = imply "->"
 (-->) :: Prop -> Prop -> Prop
 x --> y = x ++ " → " ++ y
-(~~>) = lift2 (imply "~>")
+(~~>) = imply "~>"
 not' :: Effect -> Effect
 not' a = do
   x <- a
@@ -568,7 +575,7 @@ eval = putStrLn . _TRUE
 
 example11b :: Effect
 example11b = (((aDet donkey) ! leavesVP) <== (itNP ! isTiredVP))
--- Some donkey leave if it is tired.
+-- Some donkey leaves if it is tired.
 {-> eval example11b
 
 (a : i) × IS_TIRED(a)->DONKEY(a) × LEAVES(a)
@@ -600,7 +607,16 @@ example11 = (every (man `that` own (aDet donkey)) ! (beatV2 itNP))
 
 {-> eval example11
 
-(Π(a : i). (b : i) × MAN(a) × DONKEY(b) × OWN(b,a) -> BEAT(b,a))
+(Π(a : i). MAN(a) -> (b : i) -> DONKEY(b) -> OWN(b,a) -> BEAT(b,a))
+-}
+
+example12 :: Effect
+example12 = (aDet man ! own (aDet donkey)) ==> (heNP ! (beatV2 itNP))
+-- If a man owns a donkey, he beats it.
+
+{-> eval example12
+
+((a : i) × MAN(a) × (b : i) × DONKEY(b) × OWN(b,a)) -> BEAT(b,a)
 -}
 
 
@@ -647,3 +663,11 @@ example15 = every commitee ! has (aDet chairman)
 -}
 
 
+example16 :: Effect
+example16 = every man ! (beatV2 (every (donkey `that` (\x -> own heNP x))))
+  -- every man beats every donkey that he owns.
+
+{-> eval example16
+
+(Π(a : i). MAN(a) -> (Π(b : i). DONKEY(b) × OWN(a,b) -> BEAT(b,a)))
+-}
