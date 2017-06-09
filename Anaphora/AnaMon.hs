@@ -47,9 +47,11 @@ type VPEnv = VP
 -- Just remember the last VP; could be more fine-grained because we have "does", "is", "has" as placehodlers in English.
 
 data Env = Env {vpEnv :: VPEnv
+               ,vp2Env :: NP -> VP
                ,objEnv :: ObjEnv
                ,cnEnv :: NounEnv
-               ,freshVars :: [String]} deriving Show
+               ,freshVars :: [String]}
+         -- deriving Show
 
 allVars :: [String]
 allVars = map (:[]) ['a'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
@@ -82,8 +84,7 @@ mkRel2 p x y = p ++ "(" ++ x ++ "," ++ y ++ ")"
 
 assumedPred :: String -> Object -> Effect
 assumedPred predName x = do
-  f <- getFresh
-  return [(f,mkPred predName x)]
+  return (prop (mkPred predName x))
 
 assumedVP :: VPEnv
 assumedVP = assumedPred "assumedVP"
@@ -91,8 +92,11 @@ assumedVP = assumedPred "assumedVP"
 assumedCN :: CN
 assumedCN = (assumedPred "assumedCN",Unknown,Singular)
 
+assumedV2 :: NP -> VP
+assumedV2 dobj subj = dobj Other $ \x -> return (prop (mkRel2 "assumedV2" subj x))
+  
 assumed :: Env
-assumed = Env assumedVP [] [assumedCN] allVars
+assumed = Env assumedVP assumedV2 [] [assumedCN] allVars
 
 _TRUE :: Effect -> Prop
 _TRUE x = mkRec $ evalState x assumed
@@ -141,6 +145,9 @@ pushNP d obj Env{..} = Env{objEnv = (d,obj):objEnv,..}
 
 pushVP :: VP -> Env -> Env
 pushVP vp Env{..} = Env{vpEnv=vp,..}
+
+pushV2 :: (NP -> VP) -> Env -> Env
+pushV2 vp2 Env{..} = Env{vp2Env=vp2,..}
 
 pushCN :: CN -> Env -> Env
 pushCN cn Env{..} = Env{cnEnv=cn:cnEnv,..}
@@ -430,9 +437,11 @@ LOVE((THE a. MARRIED(JOHN,a)),JOHN) × LOVE((THE a. MARRIED(JOHN,a)),BILL)
 
 
 pureV2' :: (Object -> Object -> Prop) -> NP -> VP
-pureV2' v2 directObject subject = directObject Other $ \x -> do
-  modify (pushVP (pureV2' v2 directObject))
-  return (prop (v2 x subject))
+pureV2' v2 directObject subject = do
+  modify (pushV2 (pureV2' v2)) -- note that the direct object can in fact refer to the V2
+  directObject Other $ \x -> do
+    modify (pushVP (pureV2' v2 directObject))
+    return (prop (v2 x subject))
 
 lovesVP' :: NP -> VP
 lovesVP' = pureV2' (mkRel2 "LOVE")
@@ -686,3 +695,23 @@ example16 = every man ! (beatV2 (every (donkey `that` (\x -> own heNP x))))
 
 (Π(a : i). MAN(a) -> (Π(b : i). DONKEY(b) × OWN(a,b) -> BEAT(b,a)))
 -}
+
+
+
+doTooV2 :: NP -> VP
+doTooV2 np subject = do
+  v2 <- gets vp2Env
+  v2 np subject
+
+-- ACH (antecedent-contained ellipsis)
+example17 :: Effect
+example17 = maryNP ! beatV2 (every (donkey `that` (\x -> doTooV2 johnNP x)))
+-- Mary read every book that John did
+
+{-> eval example17
+
+(Π(a : i). (DONKEY(a) × BEAT(JOHN,a)) -> BEAT(a,MARY))
+-}
+
+
+  
