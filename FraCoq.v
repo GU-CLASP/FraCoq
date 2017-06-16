@@ -3238,8 +3238,8 @@ Qed.
 Theorem FraCas212:s_212_1_p -> s_212_2_p -> s_212_3_p -> s_212_4_p -> s_212_6_h.
 cbv.
 assert (slK := small_and_large_opposite_K).
-destruct small_A as [small].
-destruct large_A as [large].
+destruct small_A as [small smallThreshold].
+destruct large_A as [large largeThreshold].
 intros P1 P2  [largeM mouse] [smallD eleph].
 destruct (slK animal_N DUMBO) as [neg disj].
 destruct (slK animal_N MICKEY) as [neg' disj'].
