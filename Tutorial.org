@@ -368,6 +368,7 @@ Other types of domain knowledge:
 - John belive y /\ (x -> y) -> John believe y
 
 * Refining and complexifying the interpretations
+ Pause and reflect
 
 The above is a basic approach only. 
 
@@ -589,30 +590,31 @@ Inductive Prep : Type :=
   \end{coq}
 
 * Comparatives
-We interpret comparatives as functions from
-  adjective and NP into an adjectival phrase. We use the common
-  noun (class) provided by the NP as a common reference class for the
-  quality (or adjective, denoted $a$ below) under comparison. Note that
-  we additionally obtain the class of the object, but we ignore
-  it. (Future work may want to unify those two classes).
-  \begin{coq}
-Definition ComparA : A -> NP -> AP
- := fun a np cn x => apNP np (fun yCN y =>    (a cn y -> a cn x)
-                                           /\ (not (a cn x) -> not (a cn y))).
-Definition ComparAsAs : A -> NP -> AP
- := fun a np cn x => apNP np (fun _class y => a cn x <-> a cn y).
-\end{coq}
-We define 'as ... as' as an equivalence of the quality $a$ between the
-subject and the object.  We define 'more ... than' as an implication
-of the quality $a$ in the appropriate direction, and the converse
-implication in the opposite direction. Note that the treatment of
-comparatives does not involve any reference to scales or degrees: this
-was not needed at least for the examples at hand, even though many fine-grained
-treatments of comparatives take these into
-consideration.\footnote{For a first treatment in MTTs, the interested
-  reader is directed to
-  \cite{Chatzikyriakidis:2014,Chatzikyriakidis:2017}.}
+- Change the interpretation of adjective to be a measure:
 
+  #+BEGIN_SRC coq
+  Inductive A : Type  :=
+    mkA : forall (measure : (object -> Prop) -> object -> Z)
+                 (threshold : Z)
+                 (property : (object -> Prop) -> (object -> Prop)), A.
+  #+END_SRC
+
+- Now we can precisely compare things!
+
+#+BEGIN_SRC coq
+Definition ComparA : A -> NP -> AP
+ := fun a np cn x => let (measure,_,_) := a in
+    apNP np (fun _class y => (measure cn y < measure cn x)).
+
+ 
+Definition ComparAsAs : A -> NP -> AP
+ := fun a np cn x => let (measure,_,_) := a in
+    apNP np (fun _class y => measure cn x = measure cn y).
+#+END_SRC
+
+- Subsective adjectives have different comparison classes.
+- Most of the time, the comparatives are used in a copula, and in that
+  case the cn comes from the NP.
 
 * Relative clauses
 Relative clauses are interpreted as verb phrases and used
