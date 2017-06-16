@@ -694,9 +694,10 @@ Variable small_and_large_opposite_K : opposite_adjectives small_A large_A.
 Theorem FraCas212:s_212_1_p -> s_212_2_p -> s_212_3_p -> s_212_4_p -> s_212_6_h.
 cbv.
 assert (slK := small_and_large_opposite_K).
-destruct small_A as [small].
-destruct large_A as [large].
+destruct small_A as [small smallThreshold].
+destruct large_A as [large largeThreshold].
 intros P1 P2  [largeM mouse] [smallD eleph].
+(* here *)
 destruct (slK animal_N DUMBO) as [neg disj].
 destruct (slK animal_N MICKEY) as [neg' disj'].
 destruct (P1 _ mouse) as [X Y].
@@ -704,6 +705,23 @@ destruct (P2 _ eleph) as [Z W].
 lia.
 Qed.
 #+END_SRC
+
+Here:
+#+BEGIN_EXAMPLE
+  small : (object -> Prop) -> object -> Z
+  smallThreshold : Z
+  large : (object -> Prop) -> object -> Z
+  largeThreshold : Z
+  slK : opposite_adjectives (mkSubsective small smallThreshold) (mkSubsective large largeThreshold)
+  P1 : forall x : object, mouse_N x -> smallThreshold <= small animal_N x /\ animal_N x
+  P2 : forall x : object, elephant_N x -> largeThreshold <= large animal_N x /\ animal_N x
+  largeM : largeThreshold <= large mouse_N MICKEY
+  mouse : mouse_N MICKEY
+  smallD : smallThreshold <= small elephant_N DUMBO
+  eleph : elephant_N DUMBO
+  ============================
+  1 <= large animal_N DUMBO - large animal_N MICKEY
+#+END_EXAMPLE
 
 
 * References
