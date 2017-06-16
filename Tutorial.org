@@ -466,118 +466,133 @@ Parameter on_time_Adv : VeridicalAdv .
 #+END_SRC
 
 * Predeterminers
- The literature usually defines
-  the semantics of noun-phrases as a predicate over verb phrases:
-  \begin{coq}
-    Definition NP0 := VP -> Prop.
-  \end{coq}
-  Unfortunately, such a clean definition cannot work with GF's
-  abstract syntax.  The main issue is that predeterminers, which
-  include ``most'', ``at least'', ``all'', etc. are parsed as
-  modifiers of noun phrases: $PredetNP : Predet → NP → NP$. A moment
-  of thought suffices to be convinced that predicates over
-  verb-phrases are too rigid to be ``pre-determined'' in this way.
-  Therefore the semantics that we use is a tuple of the components of
-  noun-phrases: number, quantifier, and common noun:
-  \begin{coq}
+In the resource grammar, a noun phrase is comprised of several
+components:
+
+#+BEGIN_SRC gf
+mkNP :	Quant -> Num -> CN -> NP
+#+END_SRC
+
+example:
+  - [this five old men] = mkNP [this] [five] [old men]
+
+Additionnally we have predeterminers:
+
+#+BEGIN_SRC gf
+mkNP : Predet -> NP -> NP
+#+END_SRC
+
+example:
+  - most, all, etc.
+
+This is problematic, because they are naturally interpreted as quantifiers.
+Solution:
+
+1. remember the components of the NP as such: Therefore the semantics
+   that we use is a tuple of the components of noun-phrases: number,
+   quantifier, and common noun:
+  #+BEGIN_SRC coq
   Inductive NP : Type := mkNP : Num -> Quant -> CN -> NP.
-  \end{coq}
-  Predeterminers can then update the quantifier part of the NP. For
-  example, the ``all'' and ``most'' predeterminers replace the quantifier part by the
-  corresponding quantifier:
-  \begin{coq}
+  #+END_SRC
+
+2. Predeterminers update the quantifier part of the NP. For example,
+   the ``all'' and ``most'' predeterminers replace the quantifier part
+   by the corresponding quantifier:
+
+  #+BEGIN_SRC coq
   Definition Predet := NP -> NP.
   Definition all_Predet : Predet := fun np => let (num,qIGNORED,cn) := np
                                               in mkNP num all_Quant cn.
   Definition most_Predet : Predet := fun np => let (num,qIGNORED,cn) := np
                                                in mkNP num MOST_Quant cn.
-  \end{coq}
-  One may wonder if it is justified to simply ignore the quantifier in
-  such a way. We answer positively, because in practice, a noun-phrase
-  with a useful quantifier is never equipped with the ``all''
-  predeterminer --- in fact, in this case GF introduces a dummy
-  indefinite article which \emph{must} be overwritten in the semantics.
-  
+  #+END_SRC
+
+3. when appliying a NP (eg. in PredVP), we can apply the quantifier to
+   the CN (and the number)
+  #+BEGIN_SRC coq
+    Definition NP0 := VP -> Prop.
+  #+END_SRC
+
 * Numerals, cardinals
-  An important part of the NP is the
-  number. Here we record as precisely as possible the information
+  We can record the number as precisely as possible the information
   given by the syntax; which can be a singular, a plural, a precise
   cardinality or even the ``more than'' modifier.
-  \begin{coq}
+  #+BEGIN_SRC coq
   Inductive Num : Type       :=
     singular : Num           |
     plural   : Num           |
     unknownNum : Num         |
     moreThan : Num -> Num    |
     cardinal : nat -> Num    .
-  \end{coq}
+  #+END_SRC
 
 * Generalised quantifiers
-
-Generalised quantifiers turn a number
-  and a common noun into a (usual) noun-phrase (which we call $NP0$).
-  \begin{coq}
+Generalised quantifiers turn a number and a common noun into a (usual)
+noun-phrase (which we call $NP0$).
+#+BEGIN_SRC coq
 Definition Quant := Num -> CN -> NP0.
-\end{coq}
+#+END_SRC
 Certain quantifiers ignore the number, and are thus given usual definitions:
-\begin{coq}
+#+BEGIN_SRC coq
 Definition all_Quant : Quant :=fun (num:Num) (cn : CN) (vp : VP) => forall x, cn x->vp cn x.
-\end{coq}
+#+END_SRC
 Some others, such as ``at most'' make essential use of the number:
-\begin{coq}
+#+BEGIN_SRC coq
 Definition atMost_quant : Quant
   := fun num cn vp => interpAtMost num (CARD (fun x => cn x /\ vp cn x))
-\end{coq}
+#+END_SRC
+
+** Cardinalities
 In the above, \texttt{interpAtMost} checks that the given number is less than
 the given cardinality. The function \texttt{CARD} is a context-dependent
 abstract function which turns a predicate into a natural number. We
 equip \texttt{CARD} with common-sense axioms of set cardinality, such as
 monotonicity:
-\begin{coq}
+#+BEGIN_SRC coq
 Parameter CARD : (object -> Prop) -> nat.
 Variable CARD_monotonous : forall a b:CN, (forall x, a x -> b x) -> CARD a <= CARD b.
-\end{coq}
+#+END_SRC
 
 The \texttt{CARD} variable is used to interpret several other quantifiers, including ``most'':
-\begin{coq}
+#+BEGIN_SRC coq
 Definition MOST_Quant : Quant :=
     fun num (cn : CN) (vp : VP) => CARD (fun x => cn x /\ vp cn x) >= MOSTPART (CARD cn).
-\end{coq}
+#+END_SRC
 where \texttt{MOSTPART} is another context-dependent abstract function
 from natural to natural. To support FraCas examples, it is sufficient
 to equip it with a monotonicity axiom:
-\begin{coq}
+#+BEGIN_SRC coq
 Parameter MOSTPART: nat -> nat.
 Variable MOST_mono : forall x, MOSTPART x <= x.
-\end{coq}
+#+END_SRC
 
-
+** Articles
 As usual, articles are  special cases of quantifiers.  When a
 useful number is provided by the NP, the indefinite article enforces
 it. Otherwise it generates an existential quantification.
-\begin{coq}
+#+BEGIN_SRC coq
   Definition IndefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
   cardinal n => CARD (fun x => P x /\ Q P x) = n                        |
   moreThan n => interpAtLeast n (CARD (fun x => P x /\ Q P x))          |
   _          => exists x, P x/\Q P x end                                .
-\end{coq}
+#+END_SRC
 The definite article checks for plural noun phrases, in which case it
-implements\textit{} definite plurals (universal quantification). Otherwise, it
+implements definite plurals (universal quantification). Otherwise, it
 looks up the object of discourse in an abstract $environment$, which
 is a function which turns a common noun into an object:
 $environment : CN → object$.
-\begin{coq}
+#+BEGIN_SRC coq
   Definition DefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
   plural => (forall x, P x -> Q P x) /\ Q P (environment P) /\ P (environment P) |
   _ => Q P (environment P) /\ P (environment P) end.
-\end{coq}
+#+END_SRC
 
 * Prepositions
 Prepositions are interpreted as values transforming
   simplified noun phrases (1) to predicates. This transformation is
   veridical (2) and covariant (3).  These three aspects are captured
   in three fields of a record, as follows.
-  \begin{coq}
+  #+BEGIN_SRC coq
 Definition NP1 := (object -> Prop) ->Prop.
 Inductive Prep : Type :=
    mkPrep : forall
@@ -587,7 +602,7 @@ Inductive Prep : Type :=
      (forall (prepArg : NP1) (v w : object -> Prop),
      (forall x, v x -> w x) -> forall x, prep prepArg v x -> prep prepArg w x) (* 3 *)
       -> Prep.
-  \end{coq}
+  #+END_SRC
 
 * Comparatives
 - Change the interpretation of adjective to be a measure:
@@ -627,8 +642,70 @@ intersectively when building noun phrases:
       in mkNP num q (fun x => cn x /\ rs cn x).
 #+END_SRC
 
+
 * Anaphora
 TODO.
+* Case studies
+** At least three female commissioners spend time at home
+
+#+BEGIN_SRC coq
+Definition s_063_1_p := (Sentence (UseCl (Present) (PPos) (PredVP
+  (PredetNP (at_least_Predet) (DetCN (DetQuant (IndefArt) (NumCard
+  (NumNumeral (N_three)))) (AdjCN (PositA (female_A)) (UseN
+  (commissioner_N))))) (AdvVP (ComplSlash (SlashV2a (spend_V2)) (MassNP
+  (UseN (time_N)))) (at_home_Adv))))).
+
+Theorem test : (s_063_1_p -> False).
+cbv.
+destruct at_home_Adv as [atHome [verid mono]].
+simpl.
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+  atHome : (object -> Prop) -> object -> Prop
+  verid : forall (x : object) (v : object -> Prop), atHome v x -> v x
+  mono : forall v w : object -> Prop, (forall x : object, v x -> w x) -> forall x : object, atHome v x -> atHome w x
+  ============================
+  3 <= CARD (fun x : object => (female_A x /\ commissioner_N x) /\ atHome (fun y : object => exists x0 : object, time_N x0 /\ spend_V2 x0 y) x) ->
+  False
+#+END_EXAMPLE
+
+** Dumbo is larger than Mickey.
+
+#+BEGIN_EXAMPLE
+P1	All mice are small animals.
+P2	All elephants are large animals.
+P3	Mickey is a large mouse.
+P4	Dumbo is a small elephant.
+---------------------------------------
+H	Dumbo is larger than Mickey.
+#+END_EXAMPLE
+
+
+#+BEGIN_SRC coq
+Definition opposite_adjectives : A -> A -> Prop
+  := fun a1 a2 =>
+  forall cn o,  let (mSmall,threshSmall,_) := a1 in
+                let (mLarge,threshLarge,_) := a2 in
+               (   (mSmall cn o = - mLarge cn o)
+                /\ (1 <= threshLarge + threshSmall)).
+Variable small_and_large_opposite_K : opposite_adjectives small_A large_A.
+
+Theorem FraCas212:s_212_1_p -> s_212_2_p -> s_212_3_p -> s_212_4_p -> s_212_6_h.
+cbv.
+assert (slK := small_and_large_opposite_K).
+destruct small_A as [small].
+destruct large_A as [large].
+intros P1 P2  [largeM mouse] [smallD eleph].
+destruct (slK animal_N DUMBO) as [neg disj].
+destruct (slK animal_N MICKEY) as [neg' disj'].
+destruct (P1 _ mouse) as [X Y].
+destruct (P2 _ eleph) as [Z W].
+lia.
+Qed.
+#+END_SRC
+
+
 * References
 
 - Ranta, 2004. "Computational semantics in type theory". http://msh.revues.org/pdf/2925
