@@ -3,7 +3,8 @@
 Aim:
 
 - Map GF abstract syntax to logical statements
-- Reason about them in some way
+  - every (abstract) sentence is mapped to a logical proposition
+- Reason about such propositions, in some way
 
 * Why GF
 
@@ -13,10 +14,10 @@ Aim:
   structure which underlies the semantics)
 
 * Why Coq
-- Both a programming language and a logic
+- Both a programming language and a logical framework
 - The type system is a superset of GF's
 - Higher order logic (very expressive logic, so "anything you can
-  think of" can be done)
+  think of" can be expressed)
 - Has good reasoning facilities ("tactics") (some can solve decidable subtheories)
 - Can work on "open terms" (some definitions can remain abstract)
 
@@ -31,7 +32,7 @@ Aim:
   separate the programming bits and the reasoning bits.
 - The programming bits are restricted to total programs (which can
   sometimes mean extra work)
-- Not the same support for overloading
+- Not the same support for overloading as GF
 
 ** Alternatives:
 
@@ -42,23 +43,20 @@ Aim:
      mechanism of GF for the simplest semantic mappings. (You may have
      difficulties with quantifiers; supporting anaphora is most certainly
      very difficult.)
-   - Use your favorite reasoning tool
+   - Use your favorite reasoning tool (HOL, SAT solvers, SMT, etc.)
 
-* General idea
-
+* Mapping structure
 
 In GF:
   - the abstract syntax is a type assignment (symbols are mapped to types)
   - the concrete syntax is a program assignment (symbols are mapped to
-    definitions)
+    definitions) (aka. linearization)
   - GF checks that the definitions in question are correct (type-wise)
 
 Semantics are just another concrete syntax (mapping symbols to
 definitions).
 
-
 * "Montague semantics"
-
 
 | Surface syntax | Abstract syntax       | Semantics           |
 |----------------+-----------------------+---------------------|
@@ -68,6 +66,13 @@ definitions).
 | ...            | VP                    | object -> Prop      |
 | ...            | mkCl : NP -> VP -> Cl | fun np vp => vp np. |
 
+
+Example:
+
+- ⟦gives a ball to the boy⟧ : object -> Prop
+- ⟦John⟧ : object
+- mkCl ⟦John⟧ ⟦gives a ball to the boy⟧ : Prop
+  = ⟦gives a ball to the boy⟧ ⟦John⟧
 * Other possible semantics
 
 Top-level categories can be mapped to other things than propositions:
@@ -79,7 +84,7 @@ Top-level categories can be mapped to other things than propositions:
 In such a case "reasoning" does not take the usual mathematical form
 of proving/testing conjectures
 
-* Gathering the categories and types
+* Hands on: Gathering the categories and types
 
 - Get them from the GF shell ("ai" --abstract info-- can be used for this purpose)
 - Get them from the file (probably the easiest)
@@ -134,7 +139,7 @@ fun
 
 * Coqification
 
-- Every category must have a definition.
+- Every category must have a definition (of type Type).
 - Every (data) constructor must have a definition (whose type is the same as
   its GF type). Some ()
 
@@ -194,12 +199,12 @@ Parameter  walk_V : V  .
 Parameter arrive_V : V .
 Parameter love_V2 : V2  .
 Parameter please_V2 : V2 .
-Parameter john_PN :PN .
+Parameter john_PN : PN .
 Parameter mary_PN : PN.
 #+END_SRC
 
-Now, every correct GF abstract syntax expression is well-typed in Coq.
-We can even do (trivial) reasoning.
+Now, every correct GF abstract syntax expression is a well-typed
+expression in Coq as well.  We can even do (trivial) reasoning.
 
 #+BEGIN_SRC coq
 Theorem thm0 : UseCl Pos (PredVP (UsePN john_PN) walk_V) ->
@@ -257,10 +262,10 @@ Eval cbv in UseCl Pos (PredVP (UsePN john_PN) walk_V).
 The previous definition of NP is too restrictive in the presence of
 quantifiers. Indeed a PN is to restrictive to represent phrases such
 as 'every man', 'some tree', etc.  Montague's solution is to
-generalize NPs to transform the predicate of VPs:
+generalize NPs to be predicates over VPs:
 
 #+BEGIN_SRC coq
-Definition NP    : Type := VP -> Prop .
+Definition NP    : Type := VP -> Prop .              (* NP := (PN -> Prop) -> Prop *)
 Definition UsePN : PN -> NP := fun pn vp => vp pn.
 Definition PredVP  : NP -> VP -> Cl := fun np vp => np vp.
 #+END_SRC
@@ -269,13 +274,25 @@ Definition PredVP  : NP -> VP -> Cl := fun np vp => np vp.
 Eval cbv in UseCl Pos (PredVP (UsePN john_PN) walk_V).
 #+END_SRC
 
-Then we can represent "everyone" as follows:
+Exercise: evaluate the above example step by step.
+
+#+BEGIN_SRC coq
+UseCl Pos (PredVP (UsePN john_PN) walk_V).
+UseCl Pos (PredVP (\vp -> vp john_PN) walk_V).
+UseCl Pos ((\vp -> vp john_PN) walk_V).
+UseCl Pos (walk_V john_PN).
+walk_V john_PN.
+#+END_SRC
+
+Then we can interpret "everyone" as follows:
 
 #+BEGIN_SRC coq
 Definition everyoneNP : NP := fun vp => forall x, vp x.
 #+END_SRC
 
 Namely, we're applying the VP to every possible 'thing'.
+
+Exercise: evaluate  everyoneNP walk_V
 
 * Quantifiers (2)
 We may want to restrict the domain: "every man", "some tree", etc.
@@ -368,9 +385,12 @@ Other types of domain knowledge:
 - John belive y /\ (x -> y) -> John believe y
 
 * Refining and complexifying the interpretations
- Pause and reflect
+Pause and reflect
 
-The above is a basic approach only. 
+The above is a basic approach only. In the paper (linked below) we
+have supported more (generally useful) constructions.
+
+Wishes?
 
 * Adjectival phrases and adjectives
 
@@ -380,7 +400,7 @@ Adjectives and adjectival phrases are represented as modifiers of common nouns.
 Definition A := CN -> CN.
 #+END_SRC
 
-** Basic Clasisfication
+** Basic Classification
 - Intersective (fun cn x => a x /\ cn x).
 - Subsective (fun cn x => a cn x /\ cn x). (Skillful doctor, Skillful
   archer). Skillful does not transfer across nouns. A skillful doctor
@@ -642,9 +662,8 @@ intersectively when building noun phrases:
       in mkNP num q (fun x => cn x /\ rs cn x).
 #+END_SRC
 
-
 * Anaphora
-TODO.
+TODO
 * Case studies
 ** At least three female commissioners spend time at home
 
@@ -727,5 +746,5 @@ Here:
 * References
 
 - Ranta, 2004. "Computational semantics in type theory". http://msh.revues.org/pdf/2925
-- Bernardy and Chatzikyriakidis, 2017.
+- Bernardy and Chatzikyriakidis, 2017. (IWCS 2017)
 
