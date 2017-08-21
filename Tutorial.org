@@ -265,15 +265,13 @@ as 'every man', 'some tree', etc.  Montague's solution is to
 generalize NPs to be predicates over VPs:
 
 #+BEGIN_SRC coq
-Definition NP    : Type := VP -> Prop .              (* NP := (PN -> Prop) -> Prop *)
+Definition NP    : Type := VP -> Prop .   (* NP := (PN -> Prop) -> Prop *)
 Definition UsePN : PN -> NP := fun pn vp => vp pn.
 Definition PredVP  : NP -> VP -> Cl := fun np vp => np vp.
 #+END_SRC
-
 #+BEGIN_SRC 
 Eval cbv in UseCl Pos (PredVP (UsePN john_PN) walk_V).
 #+END_SRC
-
 Exercise: evaluate the above example step by step.
 
 #+BEGIN_SRC coq
@@ -283,7 +281,7 @@ UseCl Pos ((\vp -> vp john_PN) walk_V).
 UseCl Pos (walk_V john_PN).
 walk_V john_PN.
 #+END_SRC
-
+** Everyone
 Then we can interpret "everyone" as follows:
 
 #+BEGIN_SRC coq
@@ -381,8 +379,8 @@ Parameter green_black_disjoint: forall x, green_A x -> black_A x -> False.
 
 Other types of domain knowledge:
 
-- John saw x -> x is true
-- John belive y /\ (x -> y) -> John believe y
+- John saw x ⇒ x is true
+- John believes y ∧ (x → y) ⇒ John believes y
 
 * Refining and complexifying the interpretations
 Pause and reflect
@@ -411,10 +409,10 @@ Definition A := CN -> CN.
 - Non-commital (fun cn x => a cn x /\ cn x)
 
 ** Subtyping and coercions
-  An intersective adjective (\texttt{IntersectiveA}) is fully defined by a
+  An intersective adjective (~IntersectiveA~) is fully defined by a
   predicate over objects. The adjectival meaning is the conjunction of
-  such predicate and the bare noun (\texttt{wkIntersectiveA}). Additionally, to
-  relieve the user from calling this semantic function in in many
+  such predicate and the bare noun (~wkIntersectiveA~). Additionally,
+  to relieve the user from calling this semantic function in in many
   places, we declare it as an implicit coercion.
 
 #+BEGIN_SRC coq
@@ -455,13 +453,8 @@ appear in the interpretation as a coerced general adjective.
 
 * Adverbs
 Adverbs are similar to adjectives, except that they modify verbal
-predicates or propositions instead of nouns. In the FraCaS test
-suite we only find VP adverbs (verbal predicates). Furthermore, the
-test suite does not require the noun class to be passed to the
-adverb semantics, and thus we omit it. \textit{A contrario}, the
-test suite requires many adverbs to be veridical and
-covariant. Thus, as for adjectives, we define a refined subclass to
-capture these properties.
+predicates or propositions instead of nouns. For FraCas we chose
+adverbs to be veridical and covariant.
 #+BEGIN_SRC coq
 Definition ADV := (object -> Prop) -> (object -> Prop).
 Definition Adv:= ADV.
@@ -472,14 +465,11 @@ Definition VeridicalAdv :=
         (forall x, v x -> w x) -> forall (x : object), adv v x -> adv w x)
     }.
 #+END_SRC
-  The plain adverbial semantics are recovered by extracting the $adv$
-  component. Similarly to extensional adjectives, veridical adverbs
-  the additional properties are made available solely by declaring
-  lexical entries as belonging to the correct class. A coercion
-  between $VeridicalAdv$ and $Adv$ is further defined (in effect we
-  define veridical adverbs to be subtypes of adverbs). To give an
-  example, consider the veridical adverb $on\_time$. This will have
-  the entry:
+The plain adverbial semantics are recovered by extracting the ~adv~
+component. The additional properties are made available solely by
+declaring lexical entries as belonging to the correct class. A
+coercion between ~VeridicalAdv~ and ~Adv~ is further defined (in effect we
+define veridical adverbs to be subtypes of adverbs). Example:
 
 #+BEGIN_SRC coq
 Parameter on_time_Adv : VeridicalAdv .
@@ -489,26 +479,23 @@ Parameter on_time_Adv : VeridicalAdv .
 In the resource grammar, a noun phrase is comprised of several
 components:
 
-#+BEGIN_SRC gf
 mkNP :	Quant -> Num -> CN -> NP
 #+END_SRC
-
 example:
-  - [this five old men] = mkNP [this] [five] [old men]
+  - ⟦this five old men⟧ = mkNP ⟦this⟧ ⟦five⟧ ⟦old men⟧
 
 Additionnally we have predeterminers:
 
-#+BEGIN_SRC gf
 mkNP : Predet -> NP -> NP
 #+END_SRC
-
 example:
   - most, all, etc.
 
 This is problematic, because they are naturally interpreted as quantifiers.
-Solution:
 
-1. remember the components of the NP as such: Therefore the semantics
+** Solution
+
+1. remember the components of the NP as such. Therefore the semantics
    that we use is a tuple of the components of noun-phrases: number,
    quantifier, and common noun:
   #+BEGIN_SRC coq
@@ -516,7 +503,7 @@ Solution:
   #+END_SRC
 
 2. Predeterminers update the quantifier part of the NP. For example,
-   the ``all'' and ``most'' predeterminers replace the quantifier part
+   the "all" and "most" predeterminers replace the quantifier part
    by the corresponding quantifier:
 
   #+BEGIN_SRC coq
@@ -536,7 +523,7 @@ Solution:
 * Numerals, cardinals
   We can record the number as precisely as possible the information
   given by the syntax; which can be a singular, a plural, a precise
-  cardinality or even the ``more than'' modifier.
+  cardinality or even the "more than" modifier.
   #+BEGIN_SRC coq
   Inductive Num : Type       :=
     singular : Num           |
@@ -548,7 +535,7 @@ Solution:
 
 * Generalised quantifiers
 Generalised quantifiers turn a number and a common noun into a (usual)
-noun-phrase (which we call $NP0$).
+noun-phrase (which we call ~NP0~).
 #+BEGIN_SRC coq
 Definition Quant := Num -> CN -> NP0.
 #+END_SRC
@@ -563,24 +550,24 @@ Definition atMost_quant : Quant
 #+END_SRC
 
 ** Cardinalities
-In the above, \texttt{interpAtMost} checks that the given number is less than
-the given cardinality. The function \texttt{CARD} is a context-dependent
+In the above, ~interpAtMost~ checks that the given number is less than
+the given cardinality. The function ~CARD~ is a context-dependent
 abstract function which turns a predicate into a natural number. We
-equip \texttt{CARD} with common-sense axioms of set cardinality, such as
+equip ~CARD~ with common-sense axioms of set cardinality, such as
 monotonicity:
 #+BEGIN_SRC coq
 Parameter CARD : (object -> Prop) -> nat.
 Variable CARD_monotonous : forall a b:CN, (forall x, a x -> b x) -> CARD a <= CARD b.
 #+END_SRC
-
-The \texttt{CARD} variable is used to interpret several other quantifiers, including ``most'':
+The ~CARD~ variable is used to interpret several other quantifiers,
+including "most":
 #+BEGIN_SRC coq
 Definition MOST_Quant : Quant :=
     fun num (cn : CN) (vp : VP) => CARD (fun x => cn x /\ vp cn x) >= MOSTPART (CARD cn).
 #+END_SRC
-where \texttt{MOSTPART} is another context-dependent abstract function
-from natural to natural. To support FraCas examples, it is sufficient
-to equip it with a monotonicity axiom:
+where ~MOSTPART~ is another context-dependent abstract function from
+natural to natural. To support FraCas examples, it is sufficient to
+equip it with a monotonicity axiom:
 #+BEGIN_SRC coq
 Parameter MOSTPART: nat -> nat.
 Variable MOST_mono : forall x, MOSTPART x <= x.
@@ -626,14 +613,12 @@ Inductive Prep : Type :=
 
 * Comparatives
 - Change the interpretation of adjective to be a measure:
-
   #+BEGIN_SRC coq
   Inductive A : Type  :=
     mkA : forall (measure : (object -> Prop) -> object -> Z)
                  (threshold : Z)
                  (property : (object -> Prop) -> (object -> Prop)), A.
   #+END_SRC
-
 - Now we can precisely compare things!
 
 #+BEGIN_SRC coq
@@ -663,7 +648,12 @@ intersectively when building noun phrases:
 #+END_SRC
 
 * Anaphora
-TODO
+General recommended idea:
+- define a concept of environment (discourse background)
+- change the semantics to be functions from an environment to a pair
+  of (old) semantics and a new environment [ie. a state monad]
+- new PN, verbs, etc. update the environment
+- pronouns, etc. lookup what they need in the environment
 * Case studies
 ** At least three female commissioners spend time at home
 
