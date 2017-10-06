@@ -6,6 +6,10 @@ Aim:
   - every (abstract) sentence is mapped to a logical proposition
 - Reason about such propositions, in some way
 
+
+
+(Based on work presented this year at IWCS)
+
 * Why GF
 
 - GF syntaxes generally follow Montague's principle: syntax is a
@@ -18,7 +22,8 @@ Aim:
 - The type system is a superset of GF's
 - Higher order logic (very expressive logic, so "anything you can
   think of" can be expressed)
-- Has good reasoning facilities ("tactics") (some can solve decidable subtheories)
+- Has good reasoning facilities ("tactics") (some can solve decidable
+  subtheories)
 - Can work on "open terms" (some definitions can remain abstract)
 
 - The mapping is done using the programming bits of Coq
@@ -28,7 +33,7 @@ Aim:
 
 - Not a decidable logic (cannot evaluate the truth value)
 - Not a theorem prover (cannot in general prove true conjectures)
-- From a pedagogical pov., maybe it could be better to clearly
+- From a pedagogical point of view, maybe it could be better to clearly
   separate the programming bits and the reasoning bits.
 - The programming bits are restricted to total programs (which can
   sometimes mean extra work)
@@ -238,18 +243,26 @@ cbv.
 intros P N.
 exact (N P).
 Qed.
+
+Theorem thm1prime : forall c, UseCl Pos c -> UseCl Neg c -> False.
+cbv.
+intros P N.
+exact (N P).
+Qed.
 #+END_SRC
 
 
 * Proper nouns/VP/PN
 
 #+BEGIN_SRC coq
-Definition NP   : Type := PN .
-Definition UsePN :  PN -> NP := fun x => x.
-Definition VP   : Type := PN -> Prop .
-Definition V    : Type := VP.
+Parameter object : Type.
+Definition PN   : Type := object.
+Definition NP   : Type := PN.
+Definition UsePN :  PN -> NP := fun x ==> x.
+Definition VP   : Type :== object -> Prop.
+Definition V    : Type := object -> Prop.
 Definition UseV  : V -> VP := fun v => v.
-Parameter PredVP  : NP -> VP -> Cl. 
+Definition PredVP  : NP -> VP -> Cl := fun np vp => vp np.
 
 Eval cbv in UseCl Pos (PredVP (UsePN john_PN) walk_V).
 #+END_SRC
