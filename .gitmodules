@@ -1,0 +1,3 @@
+[submodule "FraCaS-treebank"]
+	path = FraCaS-treebank
+	url = https://github.com/heatherleaf/FraCaS-treebank
