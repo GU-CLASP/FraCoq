@@ -8,7 +8,6 @@
 module MS where
 
 import Prelude hiding (pred)
--- import Data.List (intercalate, partition,(\\))
 import Control.Monad.State hiding (ap)
 import Logic
 
@@ -224,15 +223,6 @@ pureNP o dGender dNumber dRole = do
 purePN ::  String -> Gender -> NP
 purePN o dGender = pureNP (Con o) dGender Singular
 
-maryNP :: NP
-maryNP = purePN "MARY" Female
-
-johnNP :: NP
-johnNP = purePN "JOHN" Male
-
-billNP :: NP
-billNP = purePN "BILL" Male
-
 all' :: [a -> Bool] -> a -> Bool
 all' fs x = all ($ x) fs
 
@@ -362,38 +352,6 @@ pureCN2 v gender number = do
 constant :: String -> Exp
 constant x = Con x
 
-leavesVP :: VP
-leavesVP = pureVP (mkPred "LEAVES")
-
-walkedInVP :: VP
-walkedInVP = pureVP (mkPred "walkedIn")
-
-fellVP :: VP
-fellVP = pureVP (mkPred "fell")
-
-isTiredVP :: VP
-isTiredVP = pureVP (mkPred "TIRED")
-
-isFastVP :: VP
-isFastVP = pureVP (mkPred "fast")
-
-isHiddenVP :: VP
-isHiddenVP = pureVP (mkPred "Hidden")
-
-isHandsomeVP :: VP
-isHandsomeVP = pureVP (mkPred "HANDSOME")
-
-isAfraid :: VP
-isAfraid = pureVP (mkPred "afraid_to_fall")
-
-arriveVP :: VP
-arriveVP = pureVP (mkPred "arrive")
-
-isOld :: VP
-isOld = pureVP (mkPred "Old")
-
-ishappy :: VP
-ishappy = pureVP (mkPred "happy")
 
 pureEval :: Effect -> Exp
 pureEval = extendAllScopes . repairFields . _TRUE
@@ -416,22 +374,17 @@ doesTooVP = do
   vp <- gets vpEnv
   sloppily vp
 
+-- admitVP :: S -> VP
+-- admitVP p = do
+--   p' <- p
+--   modify (pushVP (admitVP p))
+--   return (\x -> (_ADMIT_V (p') x))
 
-_ADMIT_V :: Prop -> Object -> Prop
-_ADMIT_V = mkRel2 "ADMIT"
-
-
-admitVP :: S -> VP
-admitVP p = do
-  p' <- p
-  modify (pushVP (admitVP p))
-  return (\x -> (_ADMIT_V (p') x))
-
-may :: VP -> VP
-may vp = do
-  vp' <- vp
-  modify (pushVP (may vp))
-  return (\x -> mkPred "may" (vp' x))
+-- may :: VP -> VP
+-- may vp = do
+--   vp' <- vp
+--   modify (pushVP (may vp))
+--   return (\x -> mkPred "may" (vp' x))
 
 
 pureObj :: Exp -> NP
@@ -497,25 +450,6 @@ most (cn) role = do
   modify (pushNP (Descriptor gender Plural role) (pureVar x))
   return $ \vp' -> MOST x cn' (vp' (Var x)) ∧ Forall z (Sigma x cn' (vp' (Var x))) true
 
-marriedCN2 :: CN2
-marriedCN2 = pureCN2 (mkPred "married") Unknown Singular
-
-wifeCN2 :: CN2
-wifeCN2 = pureCN2 (mkPred "wife") Female Singular
-
-coatCN2 :: CN2
-coatCN2 = pureCN2 (mkPred "coat") Neutral Singular
-
-mistressCN2 :: CN2
-mistressCN2 = pureCN2 (mkPred "mistress") Unknown Singular
-
-handCN2 :: CN2
-handCN2 = pureCN2 (mkPred "hand") Neutral Singular
-
-paycheckCN2 :: CN2
-paycheckCN2 = pureCN2 (mkPred "paycheck") Neutral Singular
-
-
 
 -- hisSpouseNP :: NP
 -- hisSpouseNP = his marriedCN2
@@ -535,83 +469,16 @@ pureV3 v3 = do
   -- modify (pushV2 (pureV2 v2)) -- no v3 yet in the env
   return v3
 
-lovesVP' :: VP2
-lovesVP' = pureV2 (mkRel2 "LOVE")
 
-likeVP :: VP2
-likeVP = pureV2 (mkRel2 "like")
 
-was_sadVP :: VP
-was_sadVP = pureVP (mkPred "was_sad")
-brayedVP :: VP
-brayedVP = pureVP (mkPred "brayed")
-growlVP :: VP
-growlVP = pureVP (mkPred "growl")
-enterVP :: VP
-enterVP = pureVP (mkPred "enter")
 
-lawyerCN :: CN
-lawyerCN = pureCN (constant "lawyer") Unknown Singular
-studentCN :: CN
-studentCN = pureCN (constant "student") Unknown Singular
-boyCN :: CN
-boyCN = pureCN (constant "boy") Male Singular
-boysCN :: CN
-boysCN = pureCN (constant "boy") Male Plural
-treeCN :: CN
-treeCN = pureCN (constant "tree") Neutral Singular
-auditorCN :: CN
-auditorCN = pureCN (constant "auditor") Unknown Singular
-reportCN :: CN
-reportCN = pureCN (constant "report") Neutral Singular
-signV2 :: VP2
-signV2 = pureV2 (mkRel2 "sign")
-climbedOnV2 :: VP2
-climbedOnV2 = pureV2 (mkRel2 "climbed_on")
-
-will :: VP -> VP
-will x = x
-would :: VP -> VP
-would x = x
-might :: VP -> VP
-might x = x
-
-congressmen :: CN
-congressmen = pureCN (constant "CONGRESSMEN") Male Plural
-
-man :: CN
-man = pureCN (constant "MAN") Male Singular
-
-men :: CN
-men = pureCN (constant "MAN") Male Plural
-
-beatV2,readV2,findV2 :: VP2
-beatV2 = pureV2 (mkRel2 "BEAT")
-readV2 = pureV2 (mkRel2 "read")
-wearV2 :: VP2
-wearV2 = pureV2 (mkRel2 "wear")
-findV2 = pureV2 (mkRel2 "find")
-
-donkey, mule, book :: CN
-donkey = pureCN (constant "DONKEY") Neutral Singular
-mule = pureCN (constant "mule") Neutral Singular
-book = pureCN (constant "book") Neutral Singular
-wolf :: CN
-wolf = pureCN (constant "wolf") Neutral Singular
-
-own :: VP2
-own = pureV2 (mkRel2 "OWN")
-
-isHere :: Object -> Prop
-isHere = mkPred "here"
-
-thereIs :: CN -> S
-thereIs cn = do
-  x <- getFresh
-  (cn',gender,number) <- cn
-  modify (pushNP (Descriptor gender number Subject) (pureVar x))
-  modify (pushThing cn' x)
-  return (Exists x cn' (isHere (Var x)))
+-- thereIs :: CN -> S
+-- thereIs cn = do
+--   x <- getFresh
+--   (cn',gender,number) <- cn
+--   modify (pushNP (Descriptor gender number Subject) (pureVar x))
+--   modify (pushThing cn' x)
+--   return (Exists x cn' (isHere (Var x)))
 
 aDet :: CN -> NP
 aDet cn role = do
@@ -621,15 +488,6 @@ aDet cn role = do
   modify (pushThing cn' x)
   return (\vp' -> Exists x cn' (vp' (Var x)))
 
-
-example13 :: Effect
-example13 = billNP ! (own ? (aDet (donkey `that` heBeats)))
--- Bill owns a donkey that he beats.
-  where
-    heBeats :: VP
-    heBeats = do
-          he <- heNP Subject
-          return (\x -> he (\y -> (mkRel2 "beat" x y)))
 
 one :: CN
 one = do
@@ -643,22 +501,6 @@ thatOf x role = do
 
 oneToo :: NP
 oneToo role = aDet one role
-
-
-commitee :: CN
-commitee = pureCN (constant "commitee") Neutral Singular
-
-chairman :: CN
-chairman = pureCN (constant "chairman") Male Singular
-
-members :: CN2
-members = pureCN2 (mkPred "members") Unknown Plural
-
-has :: VP2
-has = pureV2 (mkRel2 "have")
-
-isAppointedBy :: VP2
-isAppointedBy = pureV2 (flip (mkRel2 "appoint"))
 
 sloppily :: Dynamic a -> Dynamic a
 sloppily = withState (\Env{..} -> Env{envSloppyFeatures = True,..})
@@ -766,33 +608,21 @@ adVP vp ad = do
   return (ad' vp')
 
 
-everyday :: AdVP
-everyday = pureAdVP "everyday"
-today :: AdVP
-today = pureAdVP "today"
-thisEvening :: AdVP
-thisEvening = pureAdVP "this_evening"
-onSundays :: AdVP
-onSundays = pureAdVP "on_sundays"
+-- everyday :: AdVP
+-- everyday = pureAdVP "everyday"
+-- today :: AdVP
+-- today = pureAdVP "today"
+-- thisEvening :: AdVP
+-- thisEvening = pureAdVP "this_evening"
+-- onSundays :: AdVP
+-- onSundays = pureAdVP "on_sundays"
 
 
 -- CN2 example%
 
-francePN, germanyPN :: NP
-francePN = purePN "france" Neutral
-germanyPN = purePN "germany" Neutral
-
-populationCN2 :: CN2
-populationCN2 = pureCN2 (mkPred "population") Neutral Singular
-
-exx :: Effect
-exx = the (populationCN2 `_of` francePN) ! (is_larger_thanV2 ? thatOf germanyPN)
 
 orS :: S -> S -> S
 orS s1 s2 = (∨) <$> s1 <*> s2
-
-exx1 :: Effect
-exx1 = negation (thereIs bathroomCN)  `orS` (itNP ! isHiddenVP)
 
 
 -- >>> evalDbg exx1
