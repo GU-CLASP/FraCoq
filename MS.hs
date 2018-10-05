@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -9,10 +10,9 @@ module MS where
 
 import Prelude hiding (pred)
 import Control.Monad.State hiding (ap)
-import Logic
+import Logic hiding (Pol)
 
 type Object = Exp
-
 type Prop = Exp
 
 
@@ -23,10 +23,10 @@ data Gender where
    Unknown :: Gender -- male or female
   deriving (Eq,Show)
 
-data Number where
-  Singular :: Number
-  Plural :: Number
-  deriving (Eq,Show)
+-- data Number where
+--   Singular :: Number
+--   Plural :: Number
+--   deriving (Eq,Show)
 
 data Role where
   Subject :: Role
@@ -55,7 +55,7 @@ type VPEnv = VP
 -- Just remember the last VP; could be more fine-grained because we have "does", "is", "has" as placehodlers in English.
 
 data Env = Env {vpEnv :: VPEnv
-               ,vp2Env :: VP2
+               ,vp2Env :: V2
                ,apEnv :: AP
                ,cn2Env :: CN2
                ,objEnv :: ObjEnv
@@ -65,6 +65,13 @@ data Env = Env {vpEnv :: VPEnv
                ,envSloppyFeatures :: Bool
                ,freshVars :: [String]}
          -- deriving Show
+
+pushNP :: Descriptor -> NP -> Env -> Env
+pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
+
+pushCN :: CN -> Env -> Env
+pushCN cn Env{..} = Env{cnEnv=cn:cnEnv,..}
+
 
 allVars :: [String]
 allVars = map (:[]) ['a'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
@@ -85,14 +92,38 @@ assumedPred :: String -> Dynamic (Object -> Prop)
 assumedPred predName = do
   return $ \x -> (mkPred predName x)
 
+constant :: String -> Exp
+constant x = Con x
+
+pureObj :: Exp -> Number -> CN -> NP
+pureObj x number cn  = MkNP number (\_number _cn _role -> return $ \vp -> vp x) cn
+
+-- _ _ return (\vp -> vp (x))
+
+pureVar :: Var -> Number -> CN -> NP
+pureVar x = pureObj (Var x)
+
+-- pureIntersectiveAP :: (Object -> Prop) -> AP
+-- pureIntersectiveAP q = do
+--   modify (pushAP (pureIntersectiveAP q))
+--   x <- getFresh
+--   return (\typ -> Sigma x typ (q (Var x)))
+
+getFresh :: Dynamic String
+getFresh = do
+  (x:_) <- gets freshVars
+  modify (\Env{freshVars=_:freshVars,..} -> Env{..})
+  return x
+
 assumed :: Env
-assumed = Env {vpEnv = assumedPred "assumedVP"
-              ,vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
-              ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
-              ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
+assumed = Env {
+              vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
+               --, vpEnv = assumedPred "assumedVP"
+              -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
+              -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
               ,objEnv = []
               ,sEnv = return (constant "assumedS")
-              ,cnEnv = [return (Var "assumedCN",Unknown,Singular)]
+              -- ,cnEnv = [return (Var "assumedCN",Unknown,Singular)]
               ,envThings = \x -> Op THE [x]
               ,envSloppyFeatures = False
               ,freshVars = allVars}
@@ -103,49 +134,135 @@ _TRUE x = evalState x assumed
 _ENV :: Effect -> Env
 _ENV x = execState x assumed
 
+type S' = Prop
 type S = Dynamic Prop
-type VP = Dynamic (Object -> Prop)
-type VP2 = Dynamic (Object -> Object -> Prop)
-type VP3 = Dynamic (Object -> Object -> Object -> Prop)
-type CN = Dynamic (Type,Gender,Number)
+type VP' = (Object -> Prop)
+-- type VP' = (({-subjectClass-} Object -> Prop) -> Object -> Prop) -- in Coq
+type VP = Dynamic VP'
+type V2 = Dynamic (Object -> Object -> Prop)
+type V3 = Dynamic (Object -> Object -> Object -> Prop)
+type CN' = (Object -> Prop,Gender)
+type CN = Dynamic CN'
 type AP = Dynamic (Type -> Type)
 type CN2 = Dynamic ((Object -> Type),Gender,Number)
-type NP = Role -> Dynamic ((Object -> Prop) -> Prop)
+type NP' = ((Object -> Prop) -> Prop)
+type NP = NPData
 type AdvV = Dynamic ((Object -> Prop) -> (Object -> Prop))
 
-(!) :: NP -> VP -> Effect
-(!) = predVP
+type V = Dynamic (Object -> Prop)
+type V2S = Dynamic (Object -> S' -> Object -> Prop)
+type V2V = Dynamic (Object -> VP' -> Object -> Prop)
+type VV = Dynamic (VP' -> Object -> Prop)
+type Subj = Dynamic (Prop -> Prop -> Prop)
+type SC = Dynamic (VP')
+type VPS = Dynamic (VP')
+type VS = Dynamic (S -> VP')
+
+-- Definition NP0 := VP ->Prop.
+-- Definition NP1 := (object -> Prop) ->Prop.
+
+type A' = Object -> Prop
+type Cl =  Dynamic (Prop)
+type Temp =  (Prop -> Prop) 
+type Phr =  Dynamic (Prop)
+type Ord = Dynamic ( A' )
+type Comp  = Dynamic ( VP') 
+type Predet  = Dynamic ( NP' -> NP')
+type AdA  = Dynamic (A' -> A')
+type ClSlash  = Dynamic (VP') 
+type RCl  = Dynamic (RCl')
+type RCl' = VP'
+type RS  = Dynamic ( RCl')
+type Pol = Prop -> Prop
+
+
+data Nat = Nat Integer deriving Show
+
+data Number where
+  Singular :: Number
+  Plural   :: Number
+  UnknownNumber :: Number
+  MoreThan :: Number -> Number
+  Cardinal :: Nat -> Number
+  deriving Show
+
+data NPData where
+  MkNP :: Number -> Quant -> CN -> NPData
+
+type Quant' = (Number -> CN -> Role -> Dynamic NP')
+type Quant = Quant'
+type Det = (Number,Quant)
+type N = CN
+
+sentence :: S -> Phr
+sentence = id
+
+useCl :: Temp -> Pol -> Cl -> S
+useCl = \temp pol cl -> temp <$> (pol <$> cl)
+
+
+genderedN :: String -> Gender -> CN
+genderedN s gender =
+  do modify (pushCN (genderedN s gender))
+     return (mkPred s,gender)
+
+lexemeN :: String -> N
+lexemeN x = genderedN x Unknown
+
+useN :: N -> CN
+useN = id
+
+past :: Temp
+past = id
+
+pPos :: Pol
+pPos = id
+
+interpNP :: NPData -> Role -> Dynamic NP'
+interpNP (MkNP n q c) role = q n c role
+
+detCN :: Det -> CN -> NP
+detCN (num,quant) cn = (MkNP num quant cn)
 
 predVP :: NP -> VP -> Effect
 predVP np vp = do
-  np' <- np Subject
+  np' <- interpNP np Subject
   vp' <- vp
   modify clearRole -- Once the sentence is complete, accusative pronouns can refer to the direct arguments.
   modify (pushS (predVP np vp))
   return (np' vp')
 
-(?) :: VP2 -> NP -> VP
-(?) = appVP2
+pushS :: S -> Env -> Env
+pushS s Env{..} = Env{sEnv=s,..}
 
-appVP2 :: VP2 -> NP -> VP
-appVP2 v2 directObject = do
+{-
+
+(!) :: NP -> VP -> Effect
+(!) = predVP
+
+
+(?) :: V2 -> NP -> VP
+(?) = appV2
+
+appV2 :: V2 -> NP -> VP
+appV2 v2 directObject = do
   v2' <- v2
   do' <- directObject Other
-  modify (pushVP (appVP2 v2 directObject))
+  modify (pushVP (appV2 v2 directObject))
   return (\y -> do' $ \x -> (v2' x y))
 
-(¿) :: NP -> VP2 -> VP
+(¿) :: NP -> V2 -> VP
 (¿) = slashVP
 
-slashVP :: NP -> VP2 -> VP
+slashVP :: NP -> V2 -> VP
 slashVP subj v2 = do
   subj' <- subj Subject
   v2' <- v2
   -- Don't push these things (slash vps).
   return $ \x -> subj' $ \y -> v2' x y
 
-appVP3 :: VP3 -> NP -> VP2
-appVP3 v3 obj = do
+appV3 :: V3 -> NP -> V2
+appV3 v3 obj = do
   v3' <- v3
   o' <- obj Other
   -- Don't push these things (not implemented)
@@ -174,9 +291,6 @@ isNotSubject = (/= Subject) . dRole
 isCoArgument :: Descriptor -> Bool
 isCoArgument = (== Subject) . dRole
 
-pushNP :: Descriptor -> NP -> Env -> Env
-pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
-
 pushThing :: Exp -> Var -> Env -> Env
 pushThing source target Env{..} = Env{envThings = \x -> if x == source then Var target else envThings x,..}
 
@@ -184,20 +298,15 @@ pushThing source target Env{..} = Env{envThings = \x -> if x == source then Var 
 pushVP :: VP -> Env -> Env
 pushVP vp Env{..} = Env{vpEnv=vp,..}
 
-pushV2 :: VP2 -> Env -> Env
+pushV2 :: V2 -> Env -> Env
 pushV2 vp2 Env{..} = Env{vp2Env=vp2,..}
 
 pushAP :: AP -> Env -> Env
 pushAP a Env{..} = Env{apEnv=a,..}
 
-pushCN :: CN -> Env -> Env
-pushCN cn Env{..} = Env{cnEnv=cn:cnEnv,..}
-
 pushCN2 :: CN2 -> Env -> Env
 pushCN2 cn2 Env{..} = Env{cn2Env=cn2,..}
 
-pushS :: S -> Env -> Env
-pushS s Env{..} = Env{sEnv=s,..}
 
 getCN :: Env -> CN
 getCN Env{cnEnv=cn:_} = cn
@@ -285,11 +394,6 @@ their = poss theyPlNP
 its :: CN2 -> NP
 its = poss itNP
 
-getFresh :: Dynamic String
-getFresh = do
-  (x:_) <- gets freshVars
-  modify (\Env{freshVars=_:freshVars,..} -> Env{..})
-  return x
 
 -- TODO: remove
 -- | Definite which cannot look up in the environment (mostly because
@@ -339,18 +443,10 @@ pureVP v = do
 -- pushes itself in the env for reference
 
 
-pureCN :: Type -> Gender -> Number -> CN
-pureCN cn gender number =
-  do modify (pushCN (pureCN cn gender number))
-     return (cn,gender,number)
-
 pureCN2 :: (Object -> Type) -> Gender -> Number -> CN2
 pureCN2 v gender number = do
   modify (pushCN2 (pureCN2 v gender number))
   return (v,gender,number)
-
-constant :: String -> Exp
-constant x = Con x
 
 
 pureEval :: Effect -> Exp
@@ -386,13 +482,6 @@ doesTooVP = do
 --   modify (pushVP (may vp))
 --   return (\x -> mkPred "may" (vp' x))
 
-
-pureObj :: Exp -> NP
-pureObj x _role = return (\vp -> vp (x))
-
-pureVar :: Var -> NP
-pureVar x = pureObj (Var x)
-
 everyone :: NP
 everyone = every (pureCN (constant "PERSON") Unknown Singular)
 
@@ -420,13 +509,16 @@ that cn vp = do
     vp' <- vp
     return (Sigma x cn' (vp' (Var x)),gender,number)
 
-every :: CN -> NP
-every cn role = do -- allow any number so that it can be reused in 'few'
-  x <- getFresh
-  (cn',gender,number) <- cn
-  modify (pushNP (Descriptor gender number role) (pureVar x))
-  return $ \vp' -> (Forall x cn' (vp' (Var x)))
+-}
 
+every_Det :: Det
+every_Det = (Singular {- TODO -},) $ \number cn role -> do -- allow any number so that it can be reused in 'few'
+  x <- getFresh
+  (cn',gender) <- cn
+  modify (pushNP (Descriptor gender number role) (pureVar x number cn))
+  return $ \vp' -> (Forall x (cn' (Var x)) (vp' (Var x)))
+
+{-
 some :: CN -> NP
 some cn role = do
   x <- getFresh
@@ -459,12 +551,12 @@ lovesVP directObject = do
   do' <- directObject Other
   pureVP $ \y -> do' $ \x -> (mkRel2 "LOVE" x y)
 
-pureV2 :: (Object -> Object -> Prop) -> VP2
+pureV2 :: (Object -> Object -> Prop) -> V2
 pureV2 v2 = do
   modify (pushV2 (pureV2 v2))
   return (\y x -> (v2 x y))
 
-pureV3 :: (Object -> Object -> Object -> Prop) -> VP3
+pureV3 :: (Object -> Object -> Object -> Prop) -> V3
 pureV3 v3 = do
   -- modify (pushV2 (pureV2 v2)) -- no v3 yet in the env
   return v3
@@ -505,12 +597,12 @@ oneToo role = aDet one role
 sloppily :: Dynamic a -> Dynamic a
 sloppily = withState (\Env{..} -> Env{envSloppyFeatures = True,..})
 
-doTooV2 :: VP2
+doTooV2 :: V2
 doTooV2 = do
   v2 <- gets vp2Env
   sloppily v2
 
-hasTooV2 :: VP2
+hasTooV2 :: V2
 hasTooV2 = doTooV2
 
 so :: S
@@ -527,11 +619,6 @@ suchDet (cn) role = do
   modify (pushNP (Descriptor gender number role) (pureVar x))
   return $ \vp' -> (Forall x (ap' cn') (vp' (Var x)))
 
-pureIntersectiveAP :: (Object -> Prop) -> AP
-pureIntersectiveAP q = do
-  modify (pushAP (pureIntersectiveAP q))
-  x <- getFresh
-  return (\typ -> Sigma x typ (q (Var x)))
 
 oldAP :: AP
 oldAP = pureIntersectiveAP (mkPred "old")
@@ -567,18 +654,18 @@ shouldersCN2 = pureCN2 (mkPred "shoulders") Neutral Singular
 carsCN :: CN
 carsCN = pureCN (constant "cars") Neutral Plural
 
-slappedV2 :: VP2
+slappedV2 :: V2
 slappedV2 = pureV2 (mkRel2 "slapped")
-hurtV2 :: VP2
+hurtV2 :: V2
 hurtV2 = pureV2 (mkRel2 "hurt")
 
-is_wiser_thanV2 :: VP2
+is_wiser_thanV2 :: V2
 is_wiser_thanV2 = pureV2 (mkRel2 "wiser")
 
-is_larger_thanV2 :: VP2
+is_larger_thanV2 :: V2
 is_larger_thanV2 = pureV2 (mkRel2 "larger")
 
-gaveV3 :: VP3
+gaveV3 :: V3
 gaveV3 = pureV3 (mkRel3 "gave")
 
 andNP :: NP -> NP -> NP
@@ -634,3 +721,4 @@ orS s1 s2 = (∨) <$> s1 <*> s2
 unsupported :: Effect
 unsupported = return (constant "unsupported")
 
+-}
