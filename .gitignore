@@ -1,3 +1,9 @@
+*~
+\#*\#
 *.vo
 *.glob
 *.v.d
+
+*.hi
+*.o
+*_flymake.hs
