@@ -57,7 +57,10 @@ processDef (x,e) = x ++ "=" ++ processExp e
 processExp :: SExpr -> String
 processExp (SExpr xs) = "(" ++ intercalate " " (map processExp xs) ++ ")"
 processExp (Atom []) = error "empty identifer"
-processExp (Atom (c:s)) = toLower c : s
+processExp (Atom s@(x:xs)) = case reverse s of
+                               ('N':'_':_) -> "lexemeN " ++ show s
+                               ('2':'V':'_':_) -> "lexemeV2 " ++ show s
+                               _ -> toLower x : xs
 processExp Variants = "variants"
 
 main :: IO ()
