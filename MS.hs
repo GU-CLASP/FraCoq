@@ -30,11 +30,6 @@ data Gender where
    Unknown :: Gender -- male or female
   deriving (Eq,Show)
 
--- data Number where
---   Singular :: Number
---   Plural :: Number
---   deriving (Eq,Show)
-
 data Role where
   Subject :: Role
   Other :: Role
@@ -82,10 +77,10 @@ isFemale Descriptor{..} = dGender `elem` [Unknown, Female]
 isNeutral Descriptor{..} = dGender `elem` [Neutral]
 
 isSingular :: Descriptor -> Bool
-isSingular = (== Singular) . dNumber
+isSingular Descriptor {..} = dNumber `elem` [Singular, Unspecified]
 
 isPlural :: Descriptor -> Bool
-isPlural = (== Plural) . dNumber
+isPlural Descriptor {..} = dNumber `elem` [Plural, Unspecified] -- FIXME
 
 isNotSubject :: Descriptor -> Bool
 isNotSubject = (/= Subject) . dRole
@@ -256,7 +251,7 @@ data Nat = Nat Integer deriving (Show,Eq)
 data Number where
   Singular :: Number
   Plural   :: Number
-  UnknownNumber :: Number
+  Unspecified :: Number
   MoreThan :: Number -> Number
   Cardinal :: Nat -> Number
   deriving (Show,Eq)
@@ -361,6 +356,9 @@ she_Pron = all' [isFemale, isSingular]
 theySingNP :: Pron -- as in everyone owns their book 
 theySingNP = isSingular
 
+maximallySloppyPron :: Pron
+maximallySloppyPron = const True
+
 -- his :: CN2 -> NP
 -- his cn2 role = do
 --   (isSloppy :: Bool) <- gets envSloppyFeatures
@@ -376,7 +374,7 @@ detQuant :: Quant -> Number -> Det
 detQuant q n = (n,q)
 
 every_Det :: Det
-every_Det = (UnknownNumber,every_Quant)
+every_Det = (Unspecified,every_Quant)
 
 ----------------------------
 -- Comp
@@ -440,6 +438,7 @@ possPron q _number (cn', _gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
   x <- getFresh
   return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
+  -- FIXME: it the above quantifier the right one?
 
 no_Quant :: Quant
 no_Quant num cn role = do
@@ -690,9 +689,6 @@ most (cn) role = do
   return $ \vp' -> MOST x cn' (vp' (Var x)) ∧ Forall z (Sigma x cn' (vp' (Var x))) true
 
 
--- hisSpouseNP :: NP
--- hisSpouseNP = his marriedCN2
-
 lovesVP :: NP -> VP
 lovesVP directObject = do
   do' <- directObject Other
@@ -754,7 +750,6 @@ oldAP = pureIntersectiveAP (mkPred "old")
 
 redAP :: AP
 redAP = pureIntersectiveAP (mkPred "red")
-
 
 donkeys :: CN
 donkeys = pureCN (constant "donkeys") Neutral Plural
@@ -824,15 +819,6 @@ adVP vp ad = do
   return (ad' vp')
 
 
--- everyday :: AdVP
--- everyday = pureAdVP "everyday"
--- today :: AdVP
--- today = pureAdVP "today"
--- thisEvening :: AdVP
--- thisEvening = pureAdVP "this_evening"
--- onSundays :: AdVP
--- onSundays = pureAdVP "on_sundays"
-
 
 -- CN2 example%
 
@@ -840,15 +826,6 @@ adVP vp ad = do
 orS :: S -> S -> S
 orS s1 s2 = (∨) <$> s1 <*> s2
 
-
--- >>> evalDbg exx1
--- (¬ (∃a:bathroom. here(a)) ∨ Hidden(a))
--- (¬ (∃a:bathroom. here(a)) ∨ Hidden(a))
--- (∃a:bathroom. ¬ here(a) ∨ Hidden(a))
--- []
-
-unsupported :: Effect
-unsupported = return (constant "unsupported")
 
 -}
 evalDbg :: Effect -> IO ()

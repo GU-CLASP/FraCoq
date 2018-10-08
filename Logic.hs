@@ -89,16 +89,16 @@ ppOp :: Op -> [Char]
 ppOp o = case o of
   (Custom op) -> op
   THE -> "THE"
-  Not -> "¬"
-  And -> "∧"
-  Or -> "∨"
-  Implies -> "→"
-  ImpliesOften -> "↝"
+  Not -> "NOT"
+  And -> "/\\"
+  Or -> "\\/"
+  Implies -> "->"
+  ImpliesOften -> "~>"
   Qu k p v dom -> (++ (v ++ ":" ++ show dom ++ ".")) $ case (k,p) of
-    (All,Neg) -> "∀"
-    (All,Pos) -> "∃"
-    (Pi,Pos) -> "Σ"
-    (Pi,Neg) -> "Π"
+    (All,Neg) -> "FORALL"
+    (All,Pos) -> "EXISTS"
+    (Pi,Pos) -> "SIGMA"
+    (Pi,Neg) -> "PI"
     (Most,Pos) -> "FEW "
     (Most,Neg) -> "MOST "
 
