@@ -51,8 +51,9 @@ parseBank = parseFromFile bank longestResult "FraCaS-treebank/src/FraCaSBankI.gf
 
 
 
-processDef :: ([Char], SExpr) -> [Char]
-processDef (x,e) = x ++ "=" ++ processExp e
+processDef :: ([Char], SExpr) -> [String]
+processDef (x,e) = [x ++ " :: Phr"
+                   ,x ++ "=" ++ processExp e]
 
 processExp :: SExpr -> String
 processExp (SExpr xs) = "(" ++ intercalate " " (map processExp xs) ++ ")"
@@ -69,4 +70,4 @@ main = do
   putStrLn $ unlines $
     ("module Bank where" :
      "import MS" :
-     map processDef inp)
+     concatMap processDef (filter ((== "s_117_1_p") . fst) inp))
