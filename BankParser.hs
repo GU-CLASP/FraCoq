@@ -59,12 +59,13 @@ processExp :: SExpr -> String
 processExp (SExpr xs) = "(" ++ intercalate " " (map processExp xs) ++ ")"
 processExp (Atom []) = error "empty identifer"
 processExp (Atom s@(x:xs)) = case reverse s of
-                               ('A':'_':_) -> "lexemeN " ++ show s
+                               ('A':'_':_) -> "lexemeA " ++ show s
                                ('N':'_':_) -> "lexemeN " ++ show s
                                ('N':'P':'_':_) -> "lexemePN " ++ show s
+                               ('V':'_':_) -> "lexemeV " ++ show s
                                ('2':'V':'_':_) -> "lexemeV2 " ++ show s
                                ('3':'V':'_':_) -> "lexemeV3 " ++ show s
-                               ('v':'d':'A':'_':_) -> "lexemeV3 " ++ show s
+                               ('v':'d':'A':'_':_) -> "lexemeAdv " ++ show s
                                _ -> toLower x : xs
 processExp Variants = "variants"
 

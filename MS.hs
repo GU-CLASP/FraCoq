@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -104,12 +105,18 @@ getNP' q Env{objEnv=((d,o):os),..} = if q d then o else getNP' q Env{objEnv=os,.
 getNP :: ObjQuery -> Dynamic NP
 getNP q = gets (getNP' q)
 
+
+getDefinite :: CN' -> Dynamic Object
+getDefinite (cn',_gender) = do
+  things <- gets envThings
+  return (things (cn' (constant "__DEFINITE__")))
+
 -------------------------------
 -- Pushes
 
 
 pushThing :: (Object -> Prop) -> Var -> Env -> Env
-pushThing source target Env{..} = Env{envThings = \x -> if x == source (constant "__THING__") then Var target else envThings x,..}
+pushThing source target Env{..} = Env{envThings = \x -> if x == source (constant "__DEFINITE__") then Var target else envThings x,..}
 
 pushNP :: Descriptor -> NP -> Env -> Env
 pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
@@ -177,9 +184,9 @@ getFresh = do
 ----------------------------------
 -- Assumed
 
--- assumedPred :: String -> Dynamic (Object -> Prop)
--- assumedPred predName = do
---   return $ \x -> (mkPred predName x)
+assumedPred :: String -> Dynamic (Object -> Prop)
+assumedPred predName = do
+  return $ \x -> (mkPred predName x)
 
 assumedCN :: CN'
 assumedCN = (mkPred "assumedCN",Unknown)
@@ -190,7 +197,7 @@ assumedNumber = Singular
 assumed :: Env
 assumed = Env {
               vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
-               --, vpEnv = assumedPred "assumedVP"
+               , vpEnv = assumedPred "assumedVP"
               -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
               -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
               ,objEnv = []
@@ -208,10 +215,7 @@ _ENV x = execState x assumed
 
 type S' = Prop
 type S = Dynamic Prop
-type VP' = (Object -> Prop)
--- type VP' = (({-subjectClass-} Object -> Prop) -> Object -> Prop) -- in Coq
-type VP = Dynamic VP'
-type V2 = Dynamic (Object -> Object -> Prop)
+type V2 = Dynamic (Object -> Object -> Prop) --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> Prop)
 type CN' = (Object -> Prop,Gender)
 type CN = Dynamic CN'
@@ -233,7 +237,6 @@ type VS = Dynamic (S -> VP')
 -- Definition NP0 := VP ->Prop.
 -- Definition NP1 := (object -> Prop) ->Prop.
 
-type A' = Object -> Prop
 type Cl =  Dynamic (Prop)
 type Temp =  (Prop -> Prop) 
 type Phr =  Dynamic (Prop)
@@ -257,8 +260,9 @@ data Number where
   Cardinal :: Nat -> Number
   deriving (Show,Eq)
 
-numSg :: Number
+numSg,numPl :: Number
 numSg = Singular
+numPl = Singular
 
 data NPData where
   MkNP :: Number -> Quant -> CN' -> NPData
@@ -292,6 +296,18 @@ pureV3 v3 = do
 lexemeN :: String -> N
 lexemeN x = genderedN x Unknown
 
+lexemeV :: String -> V
+lexemeV x = return $ mkPred x
+
+lexemeA :: String -> A
+lexemeA x = return $ mkPred x
+
+lexemeV3 :: String -> V3
+lexemeV3 x = return $ mkRel3 x
+
+-- lexemeAdv :: String -> Adv
+-- lexemeAdv x = _
+
 lexemeV2 :: String -> V2
 lexemeV2 x = pureV2 (mkRel2 x)
 
@@ -312,10 +328,27 @@ pPos = id
 -----------------
 -- Numbers
 
-numCard = Cardinal 
+numCard :: Nat -> Number
+numCard = Cardinal
 
+numNumeral :: Integer -> Nat
+numNumeral = Nat
+
+n_two :: Integer
 n_two = 2
+n_eight :: Integer
 n_eight = 8
+n_ten :: Integer
+n_ten = 10
+
+--------------------
+-- A
+
+type A = Dynamic A'
+type A' = Object -> Prop
+
+positA :: A -> A
+positA = id
 
 --------------------
 -- CNs
@@ -406,6 +439,22 @@ compCN cn = do
   (cn',_gender) <- cn
   return cn'
 
+compAP :: AP -> Comp
+compAP = id
+
+
+---------------------------
+-- VP
+type VP' = (Object -> Prop)
+-- type VP' = (({-subjectClass-} Object -> Prop) -> Object -> Prop) -- in Coq
+type VP = Dynamic VP'
+
+-- | Passive
+passV2s :: V2 -> VP
+passV2s v2 = do
+  v2' <- v2
+  x <- getFresh
+  return $ \subject -> Exists x true (v2' (Var x) subject) 
 
 ----------------------------
 -- VPSlash
@@ -432,15 +481,33 @@ predVP np vp = do
   modify (pushS (predVP np vp))
   return (np' vp')
 
+--------------------
+-- Conj
+data Conj where
+  Associative :: (Prop -> Prop -> Prop) -> Conj
+  EitherOr :: Conj
+
+apConj2 :: Conj -> Prop -> Prop -> Prop
+apConj2 conj = case conj of
+  Associative c -> c
+  EitherOr -> \p q -> (p ∧ not' q) ∨ (not' p ∧ q)
 
 --------------------
--- S, Phr
-sentence :: S -> Phr
-sentence = id
-
+-- S
 
 useCl :: Temp -> Pol -> Cl -> S
 useCl = \temp pol cl -> temp <$> (pol <$> cl)
+
+conjS2 :: Conj -> S -> S -> S
+conjS2 c s1 s2 = apConj2 c <$> s1 <*> s2
+
+
+--------------------
+-- Phr
+
+sentence :: S -> Phr
+sentence = id
+
 
 -------------------------
 -- Quant
@@ -470,6 +537,15 @@ indefArt number (cn',gender) role = do
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   modify (pushThing cn' x)
   return (\vp' -> Exists x (cn' (Var x)) (vp' (Var x)))
+
+-- | Definite which looks up in the environment.
+defArt :: Quant
+defArt _number (cn',gender) _role = do
+  it <- getDefinite (cn',gender) 
+  -- note that here we push the actual object (it seems that the strict reading is preferred in this case)
+  _ <- pureNP it gender
+  return $ \vp' -> vp' it
+
 
 genNP :: NP -> Quant
 genNP np _number (cn',_gender) _role = do
@@ -516,13 +592,6 @@ the' cn _role = do
   (cn',_g,_n) <- cn
   return $ \vp -> vp (The cn')
 
--- | Definite which looks up in the environment.
-the :: CN -> NP
-the cn role = do
-  (cn',gender,number) <- cn
-  it <- ($ cn') <$> gets (envThings)
-  -- note that here we push the actual object (it seems that the strict reading is preferred in this case)
-  pureNP it gender number role
 
 (<==)  :: Effect -> Effect -> Effect
 a <== b = do
