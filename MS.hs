@@ -15,6 +15,13 @@ import Logic hiding (Pol)
 type Object = Exp
 type Prop = Exp
 
+--------------------------------
+-- Operators
+
+not' :: Exp -> Exp
+not' x = Op Not [x]
+
+
 
 data Gender where
    Male :: Gender
@@ -103,6 +110,11 @@ getNP q = gets (getNP' q)
 
 -------------------------------
 -- Pushes
+
+
+pushThing :: (Object -> Prop) -> Var -> Env -> Env
+pushThing source target Env{..} = Env{envThings = \x -> if x == source (constant "__THING__") then Var target else envThings x,..}
+
 pushNP :: Descriptor -> NP -> Env -> Env
 pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
 
@@ -123,6 +135,9 @@ pushCN2 cn2 Env{..} = Env{cn2Env=cn2,..}
 
 pushS :: S -> Env -> Env
 pushS s Env{..} = Env{sEnv=s,..}
+
+----------------------------------
+-- Effects/Dynamic
 
 allVars :: [String]
 allVars = map (:[]) ['a'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
@@ -227,7 +242,6 @@ type Cl =  Dynamic (Prop)
 type Temp =  (Prop -> Prop) 
 type Phr =  Dynamic (Prop)
 type Ord = Dynamic ( A' )
-type Comp  = Dynamic ( VP') 
 type Predet  = Dynamic ( NP' -> NP')
 type AdA  = Dynamic (A' -> A')
 type ClSlash  = Dynamic (VP') 
@@ -255,7 +269,6 @@ data NPData where
 
 type N = CN
 type PN = (String,Gender)
-
 
 all' :: [a -> Bool] -> a -> Bool
 all' fs x = all ($ x) fs
@@ -320,7 +333,7 @@ pureNP :: Object -> Gender -> NP
 pureNP o dGender = do
   return $ MkNP Singular q (\_ -> true,dGender)
   where q :: Quant
-        q dNumber oClass dRole = do
+        q dNumber _oClass dRole = do
           modify (pushNP (Descriptor{..}) (pureNP o dGender))
           return (\vp -> vp o)
 
@@ -340,7 +353,13 @@ usePron q = do
 type Pron = ObjQuery
 
 sheRefl_Pron :: Pron
-sheRefl_Pron = (all' [isFemale, isSingular, isCoArgument])
+sheRefl_Pron = all' [isFemale, isSingular, isCoArgument]
+
+she_Pron :: Pron
+she_Pron = all' [isFemale, isSingular]
+
+theySingNP :: Pron -- as in everyone owns their book 
+theySingNP = isSingular
 
 -- his :: CN2 -> NP
 -- his cn2 role = do
@@ -357,10 +376,22 @@ detQuant :: Quant -> Number -> Det
 detQuant q n = (n,q)
 
 every_Det :: Det
-every_Det = (UnknownNumber,\number (cn',gender) role -> do
-  x <- getFresh
-  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
-  return $ \vp' -> (Forall x (cn' (Var x)) (vp' (Var x))))
+every_Det = (UnknownNumber,every_Quant)
+
+----------------------------
+-- Comp
+
+type Comp = VP
+
+useComp :: VP -> Comp
+useComp = id
+
+-- | be a thing given by the CN
+compCN :: CN -> Comp
+compCN cn = do
+  (cn',_gender) <- cn
+  return cn'
+
 
 ----------------------------
 -- VPSlash
@@ -410,6 +441,23 @@ possPron q _number (cn', _gender) _role = do
   x <- getFresh
   return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
 
+no_Quant :: Quant
+no_Quant num cn role = do
+  q <- every_Quant num cn role
+  return $ \vp' -> q (\x -> not' (vp' x))
+
+every_Quant :: Quant
+every_Quant = \number (cn',gender) role -> do
+  x <- getFresh
+  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  return $ \vp' -> (Forall x (cn' (Var x)) (vp' (Var x)))
+
+indefArt :: Quant
+indefArt number (cn',gender) role = do
+  x <- getFresh
+  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  modify (pushThing cn' x)
+  return (\vp' -> Exists x (cn' (Var x)) (vp' (Var x)))
 
 -- _of :: CN2 -> NP -> CN
 -- _of cn2 np =
@@ -458,9 +506,6 @@ appV3 v3 obj = do
 --   show np = mkRec (evalState (np Other $ \x -> return [("_",x)]) assumed)
 
 
-pushThing :: Exp -> Var -> Env -> Env
-pushThing source target Env{..} = Env{envThings = \x -> if x == source then Var target else envThings x,..}
-
   
 
 
@@ -477,8 +522,6 @@ heNP :: NP
 heNP = pron (all' [isMale, isSingular])
 
 
-theySingNP :: NP -- as in everyone owns their book 
-theySingNP = pron (isSingular)
 
 themSingNP :: NP -- as in everyone owns their book 
 themSingNP = pron (all' [isSingular, isNotSubject])
@@ -549,9 +592,6 @@ imply implication a b = do
 (==>) :: Effect -> Effect -> Effect
 (==>) = imply (-->)
 
-not' :: Exp -> Exp
-not' x = Op Not [x]
-
 negation :: Effect -> Effect
 negation x = not' <$> x
 
@@ -577,15 +617,6 @@ pureEval = extendAllScopes . repairFields . _TRUE
 eval :: Effect -> IO ()
 eval = print . pureEval
 
-evalDbg :: Effect -> IO ()
-evalDbg e = do
-  let p = _TRUE e
-  let r = repairFields p
-      q = extendAllScopes r
-  print p
-  print r
-  print q
-  print (freeVars q)
 
 doesTooVP :: VP
 doesTooVP = do
@@ -677,13 +708,6 @@ lovesVP directObject = do
 --   modify (pushThing cn' x)
 --   return (Exists x cn' (isHere (Var x)))
 
-aDet :: CN -> NP
-aDet cn role = do
-  x <- getFresh
-  (cn',gender,number) <- cn
-  modify (pushNP (Descriptor gender number role) (pureVar x))
-  modify (pushThing cn' x)
-  return (\vp' -> Exists x cn' (vp' (Var x)))
 
 
 one :: CN
@@ -827,3 +851,12 @@ unsupported :: Effect
 unsupported = return (constant "unsupported")
 
 -}
+evalDbg :: Effect -> IO ()
+evalDbg e = do
+  let p = _TRUE e
+  let r = repairFields p
+      q = extendAllScopes r
+  print p
+  -- print r
+  -- print q
+  -- print (freeVars q)
