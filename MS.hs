@@ -88,7 +88,7 @@ isCoArgument = (== Subject) . dRole
 
 getCN :: Env -> CN
 getCN Env{cnEnv=cn:_} = cn
-getCN _ = assumedCN
+getCN _ = return assumedCN
 
 getCN2 :: Env -> CN2
 getCN2 Env{cn2Env=cn} = cn
@@ -142,12 +142,12 @@ mkRel3 p x y z = Op (Custom p) [x,y,z]
 constant :: String -> Exp
 constant x = Con x
 
-pureObj :: Exp -> Number -> CN -> NP
+pureObj :: Exp -> Number -> CN' -> NP
 pureObj x number cn  = return $ MkNP number (\_number _cn _role -> return $ \vp -> vp x) cn
 
 -- _ _ return (\vp -> vp (x))
 
-pureVar :: Var -> Number -> CN -> NP
+pureVar :: Var -> Number -> CN' -> NP
 pureVar x = pureObj (Var x)
 
 -- pureIntersectiveAP :: (Object -> Prop) -> AP
@@ -170,8 +170,8 @@ getFresh = do
 -- assumedPred predName = do
 --   return $ \x -> (mkPred predName x)
 
-assumedCN :: CN
-assumedCN = return (mkPred "assumedCN",Unknown)
+assumedCN :: CN'
+assumedCN = (mkPred "assumedCN",Unknown)
 
 assumedNumber :: Number
 assumedNumber = Singular
@@ -184,7 +184,7 @@ assumed = Env {
               -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
               ,objEnv = []
               ,sEnv = return (constant "assumedS")
-              ,cnEnv = [assumedCN]
+              ,cnEnv = [return assumedCN]
               ,envThings = \x -> Op THE [x]
               ,envSloppyFeatures = False
               ,freshVars = allVars}
@@ -251,7 +251,7 @@ numSg :: Number
 numSg = Singular
 
 data NPData where
-  MkNP :: Number -> Quant -> CN -> NPData
+  MkNP :: Number -> Quant -> CN' -> NPData
 
 type N = CN
 type PN = (String,Gender)
@@ -318,14 +318,16 @@ usePN (o,g) = pureNP (Con o) g
 
 pureNP :: Object -> Gender -> NP
 pureNP o dGender = do
-  return $ MkNP Singular q (return (\_ -> true,dGender))
+  return $ MkNP Singular q (\_ -> true,dGender)
   where q :: Quant
         q dNumber oClass dRole = do
           modify (pushNP (Descriptor{..}) (pureNP o dGender))
           return (\vp -> vp o)
 
 detCN :: Det -> CN -> NP
-detCN (num,quant) cn = return (MkNP num quant cn)
+detCN (num,quant) cn = do
+  cn' <- cn
+  return (MkNP num quant cn')
 
 usePron :: Pron -> NP
 usePron q = do
@@ -355,11 +357,10 @@ detQuant :: Quant -> Number -> Det
 detQuant q n = (n,q)
 
 every_Det :: Det
-every_Det = (UnknownNumber {- FIXME? -},) $ \number cn role -> do -- allow any number so that it can be reused in 'few'
+every_Det = (UnknownNumber,\number (cn',gender) role -> do
   x <- getFresh
-  (cn',gender) <- cn
-  modify (pushNP (Descriptor gender number role) (pureVar x number cn))
-  return $ \vp' -> (Forall x (cn' (Var x)) (vp' (Var x)))
+  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  return $ \vp' -> (Forall x (cn' (Var x)) (vp' (Var x))))
 
 ----------------------------
 -- VPSlash
@@ -399,14 +400,13 @@ useCl = \temp pol cl -> temp <$> (pol <$> cl)
 -------------------------
 -- Quant
 
-type Quant' = (Number -> CN -> Role -> Dynamic NP')
+type Quant' = (Number -> CN' -> Role -> Dynamic NP')
 type Quant = Quant'
 
 possPron :: Pron -> Quant
-possPron q _number cn _role = do
+possPron q _number (cn', _gender) _role = do
   np <- getNP q
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
-  (cn', _gender) <- cn
   x <- getFresh
   return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
 
