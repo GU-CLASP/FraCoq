@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
@@ -246,7 +247,7 @@ type RS  = Dynamic ( RCl')
 type Pol = Prop -> Prop
 
 
-data Nat = Nat Integer deriving (Show,Eq)
+newtype Nat = Nat Integer deriving (Show,Eq,Num)
 
 data Number where
   Singular :: Number
@@ -300,12 +301,21 @@ lexemePN x = (x,Unknown)
 ---------------------
 -- Unimplemented categories
 
-past,present :: Temp
+past,present,presentPerfect :: Temp
 past = id
 present = id
+presentPerfect = id
 
 pPos :: Pol
 pPos = id
+
+-----------------
+-- Numbers
+
+numCard = Cardinal 
+
+n_two = 2
+n_eight = 8
 
 --------------------
 -- CNs
@@ -350,18 +360,24 @@ type Pron = ObjQuery
 sheRefl_Pron :: Pron
 sheRefl_Pron = all' [isFemale, isSingular, isCoArgument]
 
-she_Pron :: Pron
+he_Pron, she_Pron :: Pron
+he_Pron = all' [isMale, isSingular]
 she_Pron = all' [isFemale, isSingular]
 
-theySingNP :: Pron -- as in everyone owns their book 
-theySingNP = isSingular
+
+it_Pron :: Pron
+it_Pron = all' [isNeutral, isSingular]
+
+
+they_Pron :: Pron
+they_Pron = isPlural
 
 maximallySloppyPron :: Pron
 maximallySloppyPron = const True
 
 -- his :: CN2 -> NP
 -- his cn2 role = do
---   (isSloppy :: Bool) <- gets envSloppyFeatures
+--   (isSloppy :: Bool) <- gets envSloppyFeatures -- FIXME: put this in Pron -> NP
 --   poss (pron (\x -> isSloppy || (all' [isMale, isSingular] x))) cn2 role
 
 
@@ -433,12 +449,9 @@ type Quant' = (Number -> CN' -> Role -> Dynamic NP')
 type Quant = Quant'
 
 possPron :: Pron -> Quant
-possPron q _number (cn', _gender) _role = do
+possPron q number cn role = do
   np <- getNP q
-  them <- interpNP np Other -- only the direct arguments need to be referred by "self"
-  x <- getFresh
-  return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
-  -- FIXME: it the above quantifier the right one?
+  genNP np number cn role
 
 no_Quant :: Quant
 no_Quant num cn role = do
@@ -458,54 +471,15 @@ indefArt number (cn',gender) role = do
   modify (pushThing cn' x)
   return (\vp' -> Exists x (cn' (Var x)) (vp' (Var x)))
 
--- _of :: CN2 -> NP -> CN
--- _of cn2 np =
---   do (cn2',gender,number) <- cn2
---      them <- np Other -- only the direct arguments need to be referred by "self"
---      return (them cn2',gender,number)
+genNP :: NP -> Quant
+genNP np _number (cn',_gender) _role = do
+  them <- interpNP np Other -- only the direct arguments need to be referred by "self"
+  x <- getFresh
+  return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
+  -- FIXME: it the above quantifier the right one?
 
 
 {-
-
-(!) :: NP -> VP -> Effect
-(!) = predVP
-
-
-(?) :: V2 -> NP -> VP
-(?) = appV2
-
-appV2 :: V2 -> NP -> VP
-appV2 v2 directObject = do
-  v2' <- v2
-  do' <- directObject Other
-  modify (pushVP (appV2 v2 directObject))
-  return (\y -> do' $ \x -> (v2' x y))
-
-(¿) :: NP -> V2 -> VP
-(¿) = slashVP
-
-slashVP :: NP -> V2 -> VP
-slashVP subj v2 = do
-  subj' <- subj Subject
-  v2' <- v2
-  -- Don't push these things (slash vps).
-  return $ \x -> subj' $ \y -> v2' x y
-
-appV3 :: V3 -> NP -> V2
-appV3 v3 obj = do
-  v3' <- v3
-  o' <- obj Other
-  -- Don't push these things (not implemented)
-  return $ \x y -> o' $ \z -> v3' z x y
-
-  
--- instance Show VP where
---   show vp = "λω. " ++ mkRec (evalState (vp "ω") assumed)
--- instance Show NP where
---   show np = mkRec (evalState (np Other $ \x -> return [("_",x)]) assumed)
-
-
-  
 
 
 sheNP :: NP
@@ -525,38 +499,13 @@ heNP = pron (all' [isMale, isSingular])
 themSingNP :: NP -- as in everyone owns their book 
 themSingNP = pron (all' [isSingular, isNotSubject])
 
-itNP :: NP
-itNP =  pron (all' [isNeutral, isSingular])
-
 -- nthNP :: Int -> Role -> VP -> Env -> (Prop, Env)
 -- nthNP n = \role vp ρ -> (getNthNP n ρ) role vp ρ
-
-theyPlNP :: NP
-theyPlNP = pron isPlural
-
-poss :: NP -> CN2 -> NP
-poss np cn2 role =
-  do them <- np Other -- only the direct arguments need to be referred by "self"
-     (cn2',gender,number) <- cn2
-     modify (pushNP (Descriptor gender number role) (poss np cn2))
-     the' (return (them cn2',gender,number)) Other
-
-_of :: CN2 -> NP -> CN
-_of cn2 np =
-  do (cn2',gender,number) <- cn2
-     them <- np Other -- only the direct arguments need to be referred by "self"
-     return (them cn2',gender,number)
 
 his :: CN2 -> NP
 his cn2 role = do
   (isSloppy :: Bool) <- gets envSloppyFeatures
   poss (pron (\x -> isSloppy || (all' [isMale, isSingular] x))) cn2 role
-
-their :: CN2 -> NP
-their = poss theyPlNP
-
-its :: CN2 -> NP
-its = poss itNP
 
 
 -- TODO: remove
