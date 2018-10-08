@@ -254,6 +254,7 @@ data NPData where
   MkNP :: Number -> Quant -> CN -> NPData
 
 type N = CN
+type PN = (String,Gender)
 
 
 all' :: [a -> Bool] -> a -> Bool
@@ -285,11 +286,15 @@ lexemeN x = genderedN x Unknown
 lexemeV2 :: String -> V2
 lexemeV2 x = pureV2 (mkRel2 x)
 
+lexemePN :: String -> PN
+lexemePN x = (x,Unknown)
+
 ---------------------
 -- Unimplemented categories
 
-past :: Temp
+past,present :: Temp
 past = id
+present = id
 
 pPos :: Pol
 pPos = id
@@ -307,6 +312,17 @@ interpNP :: NP -> Role -> Dynamic NP'
 interpNP np role = do
   MkNP n q c <- np
   q n c role
+
+usePN ::  PN -> NP
+usePN (o,g) = pureNP (Con o) g
+
+pureNP :: Object -> Gender -> NP
+pureNP o dGender = do
+  return $ MkNP Singular q (return (\_ -> true,dGender))
+  where q :: Quant
+        q dNumber oClass dRole = do
+          modify (pushNP (Descriptor{..}) (pureNP o dGender))
+          return (\vp -> vp o)
 
 detCN :: Det -> CN -> NP
 detCN (num,quant) cn = return (MkNP num quant cn)
@@ -445,15 +461,8 @@ appV3 v3 obj = do
 pushThing :: Exp -> Var -> Env -> Env
 pushThing source target Env{..} = Env{envThings = \x -> if x == source then Var target else envThings x,..}
 
-
-pureNP :: Object -> Gender ->  Number -> NP
-pureNP o dGender dNumber dRole = do
-  modify (pushNP (Descriptor{..}) (pureNP o dGender dNumber))
-  return (\vp -> vp o)
   
 
-purePN ::  String -> Gender -> NP
-purePN o dGender = pureNP (Con o) dGender Singular
 
 sheNP :: NP
 sheNP = pron (all' [isFemale, isSingular])

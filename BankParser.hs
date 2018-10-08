@@ -60,6 +60,7 @@ processExp (SExpr xs) = "(" ++ intercalate " " (map processExp xs) ++ ")"
 processExp (Atom []) = error "empty identifer"
 processExp (Atom s@(x:xs)) = case reverse s of
                                ('N':'_':_) -> "lexemeN " ++ show s
+                               ('N':'P':'_':_) -> "lexemePN " ++ show s
                                ('2':'V':'_':_) -> "lexemeV2 " ++ show s
                                _ -> toLower x : xs
 processExp Variants = "variants"
@@ -70,4 +71,4 @@ main = do
   putStrLn $ unlines $
     ("module Bank where" :
      "import MS" :
-     concatMap processDef (filter ((== "s_117_1_p") . fst) inp))
+     concatMap processDef [(x,e) | (x,e) <- inp, x >= "s_117_1_p", x <= "s_120_1_p", not ("_q" `isSuffixOf` x)])
