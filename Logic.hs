@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
 module Logic where
 
@@ -13,7 +14,9 @@ type Var = String
 data Exp = Op Op [Exp]
          | Var Var
          | Con String
-         deriving (Eq,Ord)
+         | Lam (Exp -> Exp)
+
+instance Eq Exp where
 
 type Type = Exp
 data Op = THE
@@ -25,14 +28,27 @@ data Op = THE
         | Implies
         | ImpliesOften
         | Qu Qu Pol Var Type
-        | LAST_OPERATOR
-        deriving (Eq,Ord)
+        deriving (Eq)
+
+opPrc :: Op -> Int
+opPrc = \case
+  THE -> 0
+  Fld _ -> 1
+  App -> 2
+  Not -> 3
+  And -> 4
+  Or -> 5
+  ImpliesOften -> 6
+  Implies -> 6
+  Qu{} -> 7
+  
+
 
 pattern TRUE :: Exp
 pattern TRUE = Con "true"
 
-app :: Exp -> [Exp] -> Exp
-app f args  = Op App (f:args)
+apps :: Exp -> [Exp] -> Exp
+apps f args  = Op App (f:args)
 
 true :: Exp
 true = TRUE
@@ -77,7 +93,7 @@ isAssoc ImpliesOften = False
 isAssoc _ = True
 
 needsParens :: Op -> Op -> Bool
-needsParens ctx op = ctx < op || (ctx == op && not (isAssoc op))
+needsParens ctx op = opPrc ctx < opPrc op || (opPrc ctx == opPrc op && not (isAssoc op))
 
 instance Show Exp where
   show = ppExp Not
@@ -174,12 +190,14 @@ normalize = map toLower
 
 freeVars :: Exp -> [Var]
 freeVars (Con _x) = []
+freeVars (Lam f) = freeVars (f (Con "__FREE__"))
 freeVars (Var x) = [x]
-freeVars (Quant _ _ x dom body) = freeVars dom ++ (nub (freeVars body) \\ [x])
+freeVars (Quant _ _ x dom body) = (freeVars dom ++ nub (freeVars body)) \\ [x]
 freeVars (Op _ xs) = (concatMap freeVars xs)
 
 boundVars :: Exp -> [Var]
 boundVars (Var _) = []
+boundVars (Lam f) = boundVars (f (Con "__BOUND__")) 
 boundVars (Con _) = []
 boundVars (Quant _ _ x dom body) = x:boundVars dom++boundVars body
 boundVars (Op _ xs) = concatMap boundVars xs
@@ -232,7 +250,7 @@ extendAllScopes e = case freeVars e `intersect` boundVars e of
   [] -> e
   xs -> case liftQuantifiersAnyWhere xs e of
     Nothing -> error "freevars, but nothing to lift!"
-    Just e' -> if e == e' then e else extendAllScopes e'
+    -- Just e' -> if e == e' then e else extendAllScopes e'
 
 type Subst = Var -> Exp
 
