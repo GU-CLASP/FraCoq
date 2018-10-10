@@ -223,7 +223,6 @@ type AP = Dynamic (Type -> Type)
 type CN2 = Dynamic ((Object -> Type),Gender,Number)
 type NP' = ((Object -> Prop) -> Prop)
 type NP = Dynamic NPData
-type AdvV = Dynamic ((Object -> Prop) -> (Object -> Prop))
 
 type V = Dynamic (Object -> Prop)
 type V2S = Dynamic (Object -> S' -> Object -> Prop)
@@ -305,14 +304,22 @@ lexemeA x = return $ mkPred x
 lexemeV3 :: String -> V3
 lexemeV3 x = return $ mkRel3 x
 
--- lexemeAdv :: String -> Adv
--- lexemeAdv x = _
+lexemeAdv :: String -> Adv
+lexemeAdv adv = return $ \vp subj -> apps (Con adv) [Lam vp, subj]
+
+lexemeAdV :: String -> AdV
+lexemeAdV adv = return $ \vp subj -> apps (Con adv) [Lam vp, subj]
 
 lexemeV2 :: String -> V2
 lexemeV2 x = pureV2 (mkRel2 x)
 
 lexemePN :: String -> PN
 lexemePN x = (x,Unknown)
+
+type Prep = Dynamic (Object -> VP' -> VP')
+lexemePrep :: String -> Prep
+lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, Lam vp, subj]
+
 
 ---------------------
 -- Unimplemented categories
@@ -349,6 +356,22 @@ type A' = Object -> Prop
 
 positA :: A -> A
 positA = id
+
+--------------------
+-- Adv
+
+type ADV = Dynamic (VP' -> VP')
+type Adv = ADV
+type AdvV = ADV
+type AdV = ADV
+
+prepNP :: Prep -> NP -> AdV
+prepNP prep np = do
+  prep' <- prep
+  np' <- interpNP np Other
+  return (\vp' subj -> np' $ \x -> prep' x vp' subj)
+
+
 
 --------------------
 -- CNs
@@ -456,6 +479,53 @@ passV2s v2 = do
   x <- getFresh
   return $ \subject -> Exists x true (v2' (Var x) subject) 
 
+complSlash :: VPSlash -> NP -> VP
+complSlash v2 directObject = do
+  v2' <- v2
+  do' <- interpNP directObject Other
+  modify (pushVP (complSlash v2 directObject))
+  return (\y -> do' $ \x -> (v2' x y))
+
+advVP :: VP -> Adv -> VP
+advVP vp adv = do
+  vp' <- vp
+  adv' <- adv
+  return (adv' vp')
+
+adVVP :: VP -> Adv -> VP
+adVVP = advVP
+
+slash2V3 :: V3 -> NP -> VPSlash
+slash2V3 v np = do
+  v' <- v
+  np' <- interpNP np Other
+  return $ \indirectObject subject -> np' $ \directObject -> v' indirectObject directObject subject
+
+slash3V3 :: V3 -> NP -> VPSlash
+slash3V3 v np = do
+  v' <- v
+  np' <- interpNP np Other
+  return $ \directObject subjectClass -> np' $ \indirectObject -> v' indirectObject directObject subjectClass
+
+slashV2S :: V2S -> S -> VPSlash
+slashV2S v2s s = do
+  v2s' <- v2s
+  s' <- s
+  return $ \directObject subject -> v2s' directObject s' subject
+
+slashV2V :: V2V -> VP -> VPSlash
+slashV2V v2v vp = do
+  v2v' <- v2v
+  vp' <- vp
+  return $ \directObject subject -> v2v' directObject vp' subject
+
+slashVV :: VV -> VPSlash -> VPSlash
+slashVV vv v2 = do
+  vv' <- vv
+  v2' <- v2
+  return $ \directObject subject -> vv' (\x -> v2' directObject x) subject
+
+
 ----------------------------
 -- VPSlash
 type VPSlash = V2
@@ -463,12 +533,6 @@ type VPSlash = V2
 slashV2a :: V2 -> VPSlash
 slashV2a = id
 
-complSlash :: VPSlash -> NP -> VP
-complSlash v2 directObject = do
-  v2' <- v2
-  do' <- interpNP directObject Other
-  modify (pushVP (complSlash v2 directObject))
-  return (\y -> do' $ \x -> (v2' x y))
 
 ----------------------------
 -- Cl
@@ -552,7 +616,7 @@ genNP np _number (cn',_gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
   x <- getFresh
   return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
-  -- FIXME: it the above quantifier the right one?
+  -- FIXME: is  -- FIXME: is the above quantifier the right one?
 
 
 {-
