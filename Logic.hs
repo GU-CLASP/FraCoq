@@ -16,9 +16,9 @@ data Exp = Op Op [Exp]
          deriving (Eq,Ord)
 
 type Type = Exp
-data Op = Custom String
-        | THE
+data Op = THE
         | Fld String -- ^ field lookup
+        | App
         | Not
         | And
         | Or
@@ -28,11 +28,16 @@ data Op = Custom String
         | LAST_OPERATOR
         deriving (Eq,Ord)
 
+pattern TRUE :: Exp
 pattern TRUE = Con "true"
+
+app :: Exp -> [Exp] -> Exp
+app f args  = Op App (f:args)
 
 true :: Exp
 true = TRUE
 
+pattern Proj :: Exp -> String -> Exp
 pattern Proj e f = Op (Fld f) [e]
 
 (-->),(~~>) :: Exp -> Exp -> Exp
@@ -45,6 +50,7 @@ pattern x :∧ y = Op And [x,y]
 (∧) :: Exp -> Exp -> Exp
 (x :∧ y) ∧ z = x :∧ (y ∧ z)
 x ∧ y = x :∧ y
+(∨) :: Exp -> Exp -> Exp
 x ∨ y = Op Or [x,y]
 
 data Qu = All | Most | Pi
@@ -82,12 +88,11 @@ quoteTex = concatMap q
   where q x | x `elem` "_#\\%" = "\\" ++ [x]
             | otherwise = [x]
 
-showTex :: Exp -> [Char]
-showTex = texExp LAST_OPERATOR
+-- showTex :: Exp -> [Char]
+-- showTex = texExp LAST_OPERATOR
 
 ppOp :: Op -> [Char]
 ppOp o = case o of
-  (Custom op) -> op
   THE -> "THE"
   Not -> "NOT"
   And -> "/\\"
@@ -103,17 +108,22 @@ ppOp o = case o of
     (Most,Neg) -> "MOST "
 
 
-ppExp :: Op -> Exp -> [Char]
+ppExp :: Op -> Exp -> String
 ppExp _ (Var x) = x
 ppExp _ (Con x) = x
 ppExp op (Proj e f) = ppExp op e ++ "." ++ f
-ppExp _ (Op op@(Custom _) args) = ppOp op ++ "(" ++ intercalate "," (map (ppExp op) args) ++ ")"
+-- ppExp _ (Op op@(Custom _) args) = ppOp op ++ "(" ++ intercalate "," (map (ppExp op) args) ++ ")"
+ppExp _ctx (Op App args) = parens $ intercalate " " $ map (ppExp App) args
 ppExp ctx (Op op args) = prns $ case args of
   [x,y] -> ppExp op x ++ " " ++ ppOp op ++ " " ++ ppExp op y
   [x] -> ppOp op ++ " " ++ ppExp op x
-  where prns x = if needsParens ctx op then "(" ++ x ++ ")" else x
+  where prns x = if needsParens ctx op then parens x else x
 
-pattern The body =  Op (Custom "THE") [body]
+
+parens :: [Char] -> [Char]
+parens x = "(" ++ x ++ ")"
+
+pattern The body =  Op THE [body]
 pattern Quant k pol x dom body = Op (Qu k pol x dom) [body]
 pattern Forall x dom body = Quant All Neg x dom body
 pattern Exists x dom body = Quant All Pos x dom body
@@ -121,45 +131,46 @@ pattern Sigma x dom body = Quant Pi Pos x dom body
 pattern MOST x dom body = Quant Most Neg x dom body
 pattern FEW x dom body = Quant Most Pos x dom body
 
+normalize :: [Char] -> [Char]
 normalize = map toLower
 
-texRec :: Exp -> [(String,String)]
-texRec (Quant _ Pos x dom body) = (x,showTex dom):texRec body
-texRec body = [("p",showTex body)]
+-- texRec :: Exp -> [(String,String)]
+-- texRec (Quant _ Pos x dom body) = (x,showTex dom):texRec body
+-- texRec body = [("p",showTex body)]
 
-showRec :: Op -> Exp -> [Char]
-showRec _ ex@(Quant _ Pos _ _ _) = "[" ++ intercalate ";\\;" ([x ++ " : " ++ t | (x,t) <- texRec ex]) ++ "]"
-showRec op ex = texExp op ex
+-- showRec :: Op -> Exp -> [Char]
+-- showRec _ ex@(Quant _ Pos _ _ _) = "[" ++ intercalate ";\\;" ([x ++ " : " ++ t | (x,t) <- texRec ex]) ++ "]"
+-- showRec op ex = texExp op ex
 
--- | Convert an expression to tex string. The 1st argument is the
--- operator of the context where the expression is to be printed.
-texExp :: Op -> Exp -> [Char]
-texExp _ (Var x) = "\\mathnormal{" ++ quoteTex (normalize x) ++ "}"
-texExp _ (Con x) = "\\mathrm{" ++ quoteTex (normalize x) ++ "}"
-texExp op (Proj e f) = texExp op e ++ "." ++ f
-texExp _ (Op op@(Custom _) args) = texOp op ++ "(" ++ intercalate "," (map (texExp op) args) ++ ")"
-texExp _ (Op THE args) = texOp THE ++ "(" ++ intercalate "," (map (texExp THE) args) ++ ")"
-texExp ctx (Op op args) = prns $ case args of
-  [x,y] -> texExp op x ++ " " ++ texOp op ++ " " ++ texExp op y
-  [x] -> texOp op ++ " " ++ texExp op x
-  where prns x = if needsParens ctx op then "(" ++ x ++ ")" else x
-texOp :: Op -> [Char]
-texOp o = case o of
-  (Custom op) -> "\\mathrm{" ++ quoteTex (normalize op) ++ "}"
-  THE -> "\\mathbf{U}"
-  Not -> "¬"
-  And -> "∧"
-  Or -> "∨"
-  Implies -> "→"
-  ImpliesOften -> "↝"
-  -- Or -> "∨"
-  Qu k p v dom -> (++ ("(" ++ v ++ ":" ++ showRec LAST_OPERATOR dom {-(1)-} ++ ").\\;")) $ case (k,p) of
-    (All,Neg) -> "∀"
-    (All,Pos) -> "∃"
-    (Pi,Pos) -> "Σ"
-    (Pi,Neg) -> "Π"
-    (Most,Pos) -> "FEW "
-    (Most,Neg) -> "MOST "
+-- -- | Convert an expression to tex string. The 1st argument is the
+-- -- operator of the context where the expression is to be printed.
+-- texExp :: Op -> Exp -> [Char]
+-- texExp _ (Var x) = "\\mathnormal{" ++ quoteTex (normalize x) ++ "}"
+-- texExp _ (Con x) = "\\mathrm{" ++ quoteTex (normalize x) ++ "}"
+-- texExp op (Proj e f) = texExp op e ++ "." ++ f
+-- texExp _ (Op op@(Custom _) args) = texOp op ++ "(" ++ intercalate "," (map (texExp op) args) ++ ")"
+-- texExp _ (Op THE args) = texOp THE ++ "(" ++ intercalate "," (map (texExp THE) args) ++ ")"
+-- texExp ctx (Op op args) = prns $ case args of
+--   [x,y] -> texExp op x ++ " " ++ texOp op ++ " " ++ texExp op y
+--   [x] -> texOp op ++ " " ++ texExp op x
+--   where prns x = if needsParens ctx op then "(" ++ x ++ ")" else x
+-- texOp :: Op -> [Char]
+-- texOp o = case o of
+--   (Custom op) -> "\\mathrm{" ++ quoteTex (normalize op) ++ "}"
+--   THE -> "\\mathbf{U}"
+--   Not -> "¬"
+--   And -> "∧"
+--   Or -> "∨"
+--   Implies -> "→"
+--   ImpliesOften -> "↝"
+--   -- Or -> "∨"
+--   Qu k p v dom -> (++ ("(" ++ v ++ ":" ++ showRec LAST_OPERATOR dom {-(1)-} ++ ").\\;")) $ case (k,p) of
+--     (All,Neg) -> "∀"
+--     (All,Pos) -> "∃"
+--     (Pi,Pos) -> "Σ"
+--     (Pi,Neg) -> "Π"
+--     (Most,Pos) -> "FEW "
+--     (Most,Neg) -> "MOST "
 
 freeVars :: Exp -> [Var]
 freeVars (Con _x) = []

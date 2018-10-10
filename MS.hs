@@ -149,13 +149,13 @@ type Dynamic a = (State Env a)
 type Effect = Dynamic Prop
 
 mkPred :: String -> Object -> Prop
-mkPred p x = Op (Custom p) [x]
+mkPred p x = Con p `app` [x]
 
 mkRel2 :: String -> Object -> Object -> Prop
-mkRel2 p x y = Op (Custom p) [x,y]
+mkRel2 p x y = Con p `app` [x,y]
 
 mkRel3 :: String -> Object -> Object -> Object -> Prop
-mkRel3 p x y z = Op (Custom p) [x,y,z]
+mkRel3 p x y z = Con p `app` [x,y,z]
 
 constant :: String -> Exp
 constant x = Con x
