@@ -68,6 +68,7 @@ processExp (Atom s@(x:xs)) = case reverse s of
                                ('v':'d':'A':'_':_) -> "lexemeAdv " ++ show s
                                ('V':'d':'A':'_':_) -> "lexemeAdV " ++ show s
                                ('p':'e':'r':'P':'_':_) -> "lexemePrep " ++ show s
+                               ('j':'n':'o':'C':'P':'_':_) -> "lexemePConj " ++ show s
                                _ -> toLower x : xs
 processExp Variants = "variants"
 

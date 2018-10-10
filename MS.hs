@@ -236,16 +236,15 @@ type VS = Dynamic (S -> VP')
 -- Definition NP0 := VP ->Prop.
 -- Definition NP1 := (object -> Prop) ->Prop.
 
-type Cl =  Dynamic (Prop)
-type Temp =  (Prop -> Prop) 
-type Phr =  Dynamic (Prop)
-type Ord = Dynamic ( A' )
-type Predet  = Dynamic ( NP' -> NP')
+type Cl =  Dynamic Prop
+type Temp = Prop -> Prop
+type Ord = Dynamic  A'
+type Predet = NPData -> NPData
 type AdA  = Dynamic (A' -> A')
-type ClSlash  = Dynamic (VP') 
-type RCl  = Dynamic (RCl')
+type ClSlash  = Dynamic VP'
+type RCl  = Dynamic RCl'
 type RCl' = VP'
-type RS  = Dynamic ( RCl')
+type RS  = Dynamic RCl'
 type Pol = Prop -> Prop
 
 
@@ -320,6 +319,10 @@ type Prep = Dynamic (Object -> VP' -> VP')
 lexemePrep :: String -> Prep
 lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, Lam vp, subj]
 
+type PConj = String
+
+lexemePConj :: String -> PConj
+lexemePConj = id
 
 ---------------------
 -- Unimplemented categories
@@ -379,6 +382,20 @@ prepNP prep np = do
 useN :: N -> CN
 useN = id
 
+relCN :: CN->RS->CN
+relCN cn rs = do
+  (cn',gender) <- cn
+  rs' <- rs
+  return $ (\x -> cn' x ∧ rs' x, gender)
+   -- GF FIXME: Relative clauses should apply to NPs. See 013, 027, 044.  
+
+advCN :: CN -> Adv -> CN
+advCN cn adv = do
+  (cn',gender) <- cn
+  adv' <- adv
+  return (adv' cn',gender)
+
+
 
 ------------------------
 -- NP
@@ -407,6 +424,77 @@ usePron :: Pron -> NP
 usePron q = do
   np <- getNP q
   np
+
+advNP :: NP -> Adv -> NP
+advNP np adv = do
+  MkNP num1 q1 (cn1,gender1) <- np
+  adv' <- adv
+  return $ MkNP num1
+           (\num' cn' role -> do
+               p1 <- q1 num' cn' role
+               return $ \vp -> (p1 (adv' vp)))
+           (cn1,gender1)
+
+predetNP :: Predet -> NP -> NP
+predetNP f np = do
+  np' <- np
+  return (f np')
+
+-- FIXME: WTF?
+detNP :: Det -> NP
+detNP (number,quant) =
+  return (MkNP number quant (const TRUE,Unknown)) 
+
+
+pPartNP :: NP -> V2 -> NP  -- Word of warning: in FraCas partitives always behave like intersection, which is probably not true in general
+pPartNP np v2 = do
+  MkNP num q (cn,gender) <- np
+  v2' <- v2
+  subject <- getFresh
+  return $ MkNP num q ((\x -> cn x ∧ Exists subject true (v2' x (Var subject))),gender)
+
+relNPa :: NP -> RS -> NP
+relNPa np rs = do
+  MkNP num q (cn,gender) <- np
+  rs' <- rs
+  return $ MkNP num q (\x -> cn x ∧ rs' x, gender)
+
+
+conjNP2 :: Conj -> NP -> NP -> NP
+conjNP2 c np1 np2 = do
+  MkNP num1 q1 (cn1,gender1) <- np1
+  MkNP num2 q2 (cn2,gender2) <- np2
+  return $ MkNP (num1) {- FIXME add numbers? min? max? -}
+                -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
+                (\num' cn' role -> do
+                    p1 <- q1 num' cn' role
+                    p2 <- q2 num' cn' role
+                    return $ \vp -> apConj2 c (p1 vp) (p2 vp))
+                (\x -> cn1 x ∨ cn2 x, gender1) 
+
+conjNP3 :: Conj -> NP -> NP -> NP -> NP
+conjNP3 c np1 np2 np3 = do
+  MkNP num1 q1 (cn1,gender1) <- np1
+  MkNP num2 q2 (cn2,gender2) <- np2
+  MkNP num3 q3 (cn3,gender3) <- np3
+  return $ MkNP (num1) {- FIXME add numbers? min? max? -}
+                -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
+                (\num' cn' role -> do
+                    p1 <- q1 num' cn' role
+                    p2 <- q2 num' cn' role
+                    p3 <- q3 num' cn' role
+                    return $ \vp -> apConj3 c (p1 vp) (p2 vp) (p3 vp))
+                (\x -> cn1 x ∨ cn2 x ∨ cn3 x, gender1)
+
+-- Definition ConjNP3 : Conj -> NP -> NP -> NP -> NP
+--                    := fun c np1 np2 np3 =>
+--                          let (num1, q1,cn1) := np1 in
+--                          let (num2, q2,cn2) := np2 in
+--                          let (num3, q3,cn3) := np3 in
+--                               mkNP (num1) (* FIXME add numbers? min? max? *)
+--                                    (fun num' cn' vp => apConj3 c (q1 num' cn' vp) (q2 num' cn' vp) (q3 num' cn' vp))
+--                                    (fun x => (cn1 x) \/ (cn2 x) \/ (cn3 x)).
+
 
 ----------------------
 -- Pron
@@ -448,6 +536,9 @@ detQuant q n = (n,q)
 every_Det :: Det
 every_Det = (Unspecified,every_Quant)
 
+somePl_Det :: Det
+somePl_Det = (Plural,indefArt)
+
 ----------------------------
 -- Comp
 
@@ -465,6 +556,10 @@ compCN cn = do
 compAP :: AP -> Comp
 compAP = id
 
+compAdv :: Adv -> Comp
+compAdv adv = do
+  adv' <- adv
+  return $ \x -> adv' (\y -> (Con "_BE_" `apps` [y])) x
 
 ---------------------------
 -- VP
@@ -486,14 +581,24 @@ complSlash v2 directObject = do
   modify (pushVP (complSlash v2 directObject))
   return (\y -> do' $ \x -> (v2' x y))
 
-advVP :: VP -> Adv -> VP
+adVVP adv vp = do
+  adv' <- adv
+  vp' <- vp
+  return (adv' vp')
+
 advVP vp adv = do
   vp' <- vp
   adv' <- adv
   return (adv' vp')
 
-adVVP :: VP -> Adv -> VP
-adVVP = advVP
+useV :: V -> VP
+useV v = do
+  modify (pushVP (useV v))
+  v
+
+----------------------------
+-- VPSlash
+type VPSlash = V2
 
 slash2V3 :: V3 -> NP -> VPSlash
 slash2V3 v np = do
@@ -526,10 +631,6 @@ slashVV vv v2 = do
   return $ \directObject subject -> vv' (\x -> v2' directObject x) subject
 
 
-----------------------------
--- VPSlash
-type VPSlash = V2
-
 slashV2a :: V2 -> VPSlash
 slashV2a = id
 
@@ -537,7 +638,12 @@ slashV2a = id
 ----------------------------
 -- Cl
 
-predVP :: NP -> VP -> Effect
+existNP :: NP -> Cl
+existNP np = do
+  np' <- interpNP np Other
+  return $ (np' $ \_ -> TRUE)
+
+predVP :: NP -> VP -> Cl
 predVP np vp = do
   np' <- interpNP np Subject
   vp' <- vp
@@ -545,16 +651,51 @@ predVP np vp = do
   modify (pushS (predVP np vp))
   return (np' vp')
 
+---------------------
+-- RCl
+
+emptyRelSlash :: ClSlash -> RCl
+emptyRelSlash = id
+
+--------------------
+-- ClSlash
+slashVP :: NP -> VPSlash -> ClSlash
+slashVP np vp = do
+  np' <- interpNP np Other
+  vp' <- vp
+  return $ \object -> np' (\subject -> vp' object subject)
+
+
+
 --------------------
 -- Conj
 data Conj where
   Associative :: (Prop -> Prop -> Prop) -> Conj
   EitherOr :: Conj
 
+and_Conj :: Conj
+and_Conj = Associative (∧)
+
+comma_and_Conj :: Conj
+comma_and_Conj = Associative (∧)
+  
 apConj2 :: Conj -> Prop -> Prop -> Prop
 apConj2 conj = case conj of
   Associative c -> c
   EitherOr -> \p q -> (p ∧ not' q) ∨ (not' p ∧ q)
+
+apConj3 :: Conj -> Prop -> Prop-> Prop-> Prop
+apConj3 conj = case conj of
+  Associative c -> \p q r -> c (c p q) r
+  EitherOr -> \p q r -> (p ∧ not' q ∧ not' r) ∨ (not' p ∧ q ∧ not' r) ∨ (not' p ∧ not' q ∧ r)
+
+----------------------
+-- RS
+
+useRCl :: Temp->Pol->RCl->RS
+useRCl temp pol r = do
+  r' <- r
+  return $ \x -> temp (pol (r' x))
 
 --------------------
 -- S
@@ -568,10 +709,13 @@ conjS2 c s1 s2 = apConj2 c <$> s1 <*> s2
 
 --------------------
 -- Phr
+type Phr =  Dynamic (Prop)
 
 sentence :: S -> Phr
 sentence = id
 
+pSentence :: PConj -> S -> Phr
+pSentence _ x = x
 
 -------------------------
 -- Quant
@@ -595,6 +739,13 @@ every_Quant = \number (cn',gender) role -> do
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   return $ \vp' -> (Forall x (cn' (Var x)) (vp' (Var x)))
 
+most_Quant :: Quant
+most_Quant number  (cn',gender) role = do
+  x <- getFresh
+  z <- getFresh
+  modify (pushNP (Descriptor gender Plural role) (pureVar x number (cn',gender)))
+  return $ \vp' -> MOST x (cn' (Var x)) (vp' (Var x)) ∧ Forall z ((cn' (Var z)) ∧ (vp' (Var z))) true
+
 indefArt :: Quant
 indefArt number (cn',gender) role = do
   x <- getFresh
@@ -617,6 +768,12 @@ genNP np _number (cn',_gender) _role = do
   x <- getFresh
   return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
   -- FIXME: is  -- FIXME: is the above quantifier the right one?
+
+-------------------------
+-- Predet
+
+most_of_Predet :: Predet
+most_of_Predet (MkNP n _q cn) = MkNP n most_Quant cn
 
 
 {-
@@ -679,10 +836,6 @@ negation x = not' <$> x
 (###) :: Effect -> Effect -> Effect
 (###) = liftM2 (∧)
 
-pureVP :: (Object -> Prop) -> VP
-pureVP v = do
-  modify (pushVP (pureVP v))
-  return v
 -- pushes itself in the env for reference
 
 
