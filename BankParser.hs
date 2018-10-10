@@ -62,8 +62,11 @@ processExp (Atom s@(x:xs)) = case reverse s of
                                ('A':'_':_) -> "lexemeA " ++ show s
                                ('N':'_':_) -> "lexemeN " ++ show s
                                ('N':'P':'_':_) -> "lexemePN " ++ show s
+                               ('P':'R':'_':_) -> "lexemeRP " ++ show s
                                ('V':'_':_) -> "lexemeV " ++ show s
                                ('2':'V':'_':_) -> "lexemeV2 " ++ show s
+                               ('S':'V':'_':_) -> "lexemeVS " ++ show s
+                               ('V':'2':'V':'_':_) -> "lexemeV2V " ++ show s
                                ('3':'V':'_':_) -> "lexemeV3 " ++ show s
                                ('v':'d':'A':'_':_) -> "lexemeAdv " ++ show s
                                ('V':'d':'A':'_':_) -> "lexemeAdV " ++ show s
@@ -78,4 +81,4 @@ main = do
   putStrLn $ unlines $
     ("module Bank where" :
      "import MS" :
-     concatMap processDef [(x,e) | (x,e) <- inp, x >= "s_114_1_p", x <= "s_130_1_p", not ("_q" `isSuffixOf` x)])
+     concatMap processDef [(x,e) | (x,e) <- inp, x >= "s_114_1_p", x <= "s_142_1_p", not ("_q" `isSuffixOf` x)])

@@ -78,6 +78,9 @@ isMale Descriptor{..} = dGender `elem` [Unknown, Male]
 isFemale Descriptor{..} = dGender `elem` [Unknown, Female]
 isNeutral Descriptor{..} = dGender `elem` [Neutral]
 
+isPerson :: Descriptor -> Bool
+isPerson = const True -- FIXME
+
 isSingular :: Descriptor -> Bool
 isSingular Descriptor {..} = dNumber `elem` [Singular, Unspecified]
 
@@ -219,7 +222,7 @@ type V2 = Dynamic (Object -> Object -> Prop) --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> Prop)
 type CN' = (Object -> Prop,Gender)
 type CN = Dynamic CN'
-type AP = Dynamic (Type -> Type)
+type AP = Dynamic A'
 type CN2 = Dynamic ((Object -> Type),Gender,Number)
 type NP' = ((Object -> Prop) -> Prop)
 type NP = Dynamic NPData
@@ -230,8 +233,7 @@ type V2V = Dynamic (Object -> VP' -> Object -> Prop)
 type VV = Dynamic (VP' -> Object -> Prop)
 type Subj = Dynamic (Prop -> Prop -> Prop)
 type SC = Dynamic (VP')
-type VPS = Dynamic (VP')
-type VS = Dynamic (S -> VP')
+type VS = Dynamic (S' -> VP')
 
 -- Definition NP0 := VP ->Prop.
 -- Definition NP1 := (object -> Prop) ->Prop.
@@ -271,6 +273,9 @@ type PN = (String,Gender)
 all' :: [a -> Bool] -> a -> Bool
 all' fs x = all ($ x) fs
 
+any' :: [a -> Bool] -> a -> Bool
+any' fs x = any ($ x) fs
+
 -------------------
 -- "PureX"
 genderedN :: String -> Gender -> CN
@@ -298,7 +303,7 @@ lexemeV :: String -> V
 lexemeV x = return $ mkPred x
 
 lexemeA :: String -> A
-lexemeA x = return $ mkPred x
+lexemeA a = return $ \cn obj -> apps (Con a) [Lam cn, obj]
 
 lexemeV3 :: String -> V3
 lexemeV3 x = return $ mkRel3 x
@@ -312,6 +317,12 @@ lexemeAdV adv = return $ \vp subj -> apps (Con adv) [Lam vp, subj]
 lexemeV2 :: String -> V2
 lexemeV2 x = pureV2 (mkRel2 x)
 
+lexemeVS :: String -> VS
+lexemeVS vs = return $ \s x -> mkRel2 vs s x
+
+lexemeV2V :: String -> V2V
+lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,Lam vp,y]
+
 lexemePN :: String -> PN
 lexemePN x = (x,Unknown)
 
@@ -324,16 +335,27 @@ type PConj = String
 lexemePConj :: String -> PConj
 lexemePConj = id
 
+type RP = ()
+lexemeRP :: String -> RP
+lexemeRP _ = ()
+
+idRP :: RP
+idRP = ()
+
 ---------------------
 -- Unimplemented categories
 
-past,present,presentPerfect :: Temp
+pastPerfect,past,present,presentPerfect :: Temp
 past = id
 present = id
 presentPerfect = id
+pastPerfect = id
 
 pPos :: Pol
 pPos = id
+
+uncNeg :: Pol
+uncNeg = not'
 
 -----------------
 -- Numbers
@@ -346,16 +368,63 @@ numNumeral = Nat
 
 n_two :: Integer
 n_two = 2
+n_10 :: Integer
+n_10 = 10
+n_100 :: Integer
+n_100 = 100
+n_13 :: Integer
+n_13 = 13
+n_14 :: Integer
+n_14 = 14
+n_15 :: Integer
+n_15 = 15
+n_150 :: Integer
+n_150 = 150
+n_2 :: Integer
+n_2 = 2
+n_2500 :: Integer
+n_2500 = 2500
+n_3000 :: Integer
+n_3000 = 3000
+n_4 :: Integer
+n_4 = 4
+n_500 :: Integer
+n_500 = 500
+n_5500 :: Integer
+n_5500 = 5500
+n_8 :: Integer
+n_8 = 8
+n_99 :: Integer
+n_99 = 99
 n_eight :: Integer
 n_eight = 8
+n_eleven :: Integer
+n_eleven = 11
+n_five :: Integer
+n_five = 5
+n_fortyfive :: Integer
+n_fortyfive = 45
+n_four :: Integer
+n_four = 4
+n_one :: Integer
+n_one = 1
+n_six :: Integer
+n_six = 6
+n_sixteen :: Integer
+n_sixteen = 16
 n_ten :: Integer
 n_ten = 10
+n_three :: Integer
+n_three = 3
+n_twenty :: Integer
+n_twenty = 20
+
 
 --------------------
 -- A
 
 type A = Dynamic A'
-type A' = Object -> Prop
+type A' = (Object -> Prop) -> (Object -> Prop)
 
 positA :: A -> A
 positA = id
@@ -377,7 +446,7 @@ prepNP prep np = do
 
 
 --------------------
--- CNs
+-- CN
 
 useN :: N -> CN
 useN = id
@@ -395,7 +464,11 @@ advCN cn adv = do
   adv' <- adv
   return (adv' cn',gender)
 
-
+adjCN :: A -> CN -> CN
+adjCN a cn = do
+  a' <- a
+  (cn',gendr) <- cn
+  return $ (a' cn',gendr)
 
 ------------------------
 -- NP
@@ -443,7 +516,7 @@ predetNP f np = do
 -- FIXME: WTF?
 detNP :: Det -> NP
 detNP (number,quant) =
-  return (MkNP number quant (const TRUE,Unknown)) 
+  return (MkNP number quant (const TRUE {- fixme -},Unknown))
 
 
 pPartNP :: NP -> V2 -> NP  -- Word of warning: in FraCas partitives always behave like intersection, which is probably not true in general
@@ -470,13 +543,13 @@ conjNP2 c np1 np2 = do
                     p1 <- q1 num' cn' role
                     p2 <- q2 num' cn' role
                     return $ \vp -> apConj2 c (p1 vp) (p2 vp))
-                (\x -> cn1 x ∨ cn2 x, gender1) 
+                (\x -> cn1 x ∨ cn2 x, gender1)
 
 conjNP3 :: Conj -> NP -> NP -> NP -> NP
 conjNP3 c np1 np2 np3 = do
   MkNP num1 q1 (cn1,gender1) <- np1
-  MkNP num2 q2 (cn2,gender2) <- np2
-  MkNP num3 q3 (cn3,gender3) <- np3
+  MkNP num2 q2 (cn2,_gender2) <- np2
+  MkNP _num3 q3 (cn3,_gender3) <- np3
   return $ MkNP (num1) {- FIXME add numbers? min? max? -}
                 -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
                 (\num' cn' role -> do
@@ -485,15 +558,6 @@ conjNP3 c np1 np2 np3 = do
                     p3 <- q3 num' cn' role
                     return $ \vp -> apConj3 c (p1 vp) (p2 vp) (p3 vp))
                 (\x -> cn1 x ∨ cn2 x ∨ cn3 x, gender1)
-
--- Definition ConjNP3 : Conj -> NP -> NP -> NP -> NP
---                    := fun c np1 np2 np3 =>
---                          let (num1, q1,cn1) := np1 in
---                          let (num2, q2,cn2) := np2 in
---                          let (num3, q3,cn3) := np3 in
---                               mkNP (num1) (* FIXME add numbers? min? max? *)
---                                    (fun num' cn' vp => apConj3 c (q1 num' cn' vp) (q2 num' cn' vp) (q3 num' cn' vp))
---                                    (fun x => (cn1 x) \/ (cn2 x) \/ (cn3 x)).
 
 
 ----------------------
@@ -512,12 +576,19 @@ she_Pron = all' [isFemale, isSingular]
 it_Pron :: Pron
 it_Pron = all' [isNeutral, isSingular]
 
+itRefl_Pron :: Pron
+itRefl_Pron = all' [isNeutral, isSingular, isCoArgument]
 
 they_Pron :: Pron
 they_Pron = isPlural
 
+someone_Pron :: Pron
+someone_Pron = all' [isSingular, isPerson]
+
 maximallySloppyPron :: Pron
 maximallySloppyPron = const True
+
+
 
 -- his :: CN2 -> NP
 -- his cn2 role = do
@@ -536,8 +607,14 @@ detQuant q n = (n,q)
 every_Det :: Det
 every_Det = (Unspecified,every_Quant)
 
+each_Det :: Det
+each_Det = (Singular,every_Quant)
+
 somePl_Det :: Det
 somePl_Det = (Plural,indefArt)
+
+anySg_Det :: Det
+anySg_Det = each_Det
 
 ----------------------------
 -- Comp
@@ -554,12 +631,30 @@ compCN cn = do
   return cn'
 
 compAP :: AP -> Comp
-compAP = id
+compAP ap = do
+  a' <- ap
+  return $ \x -> a' (const TRUE) x 
+
+compNP :: NP -> Comp
+compNP np = do
+  np' <- interpNP np Other
+  return $ \x -> np' $ \y -> mkRel2 "EQUAL" x y
 
 compAdv :: Adv -> Comp
 compAdv adv = do
   adv' <- adv
   return $ \x -> adv' (\y -> (Con "_BE_" `apps` [y])) x
+
+---------------------------
+-- VPS
+
+type VPS = Dynamic (VP')
+
+conjVPS2 :: Conj -> Temp -> Pol -> VP -> Temp -> Pol -> VP -> VPS
+conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
+  vp1' <- vp1
+  vp2' <- vp2
+  return $ \x -> (apConj2 conj (pol1 (vp1' x)) (pol2 (vp2' x)))
 
 ---------------------------
 -- VP
@@ -581,11 +676,13 @@ complSlash v2 directObject = do
   modify (pushVP (complSlash v2 directObject))
   return (\y -> do' $ \x -> (v2' x y))
 
+adVVP :: Adv -> VP -> VP
 adVVP adv vp = do
   adv' <- adv
   vp' <- vp
   return (adv' vp')
 
+advVP :: VP -> Adv -> VP
 advVP vp adv = do
   vp' <- vp
   adv' <- adv
@@ -595,6 +692,24 @@ useV :: V -> VP
 useV v = do
   modify (pushVP (useV v))
   v
+
+relVP :: RP->VP->RCl
+relVP _ vp = vp
+
+complVS :: VS -> S -> VP
+complVS vs s = do
+  vs' <- vs
+  s' <- s
+  return (vs' s')
+
+complVSa :: VS -> S -> VP
+complVSa = complVS -- FIXME: what is the difference from ComplVS? 
+
+reflVP :: VPSlash -> VP
+reflVP v2 =  do
+  v2' <- v2
+  return $ \subject -> v2' subject subject
+
 
 ----------------------------
 -- VPSlash
@@ -657,6 +772,13 @@ predVP np vp = do
 emptyRelSlash :: ClSlash -> RCl
 emptyRelSlash = id
 
+relSlash :: RP -> ClSlash -> RCl
+relSlash _rpIgnored cl = cl
+
+strandRelSlash :: RP -> ClSlash -> RCl
+strandRelSlash _rp cl = cl
+
+
 --------------------
 -- ClSlash
 slashVP :: NP -> VPSlash -> ClSlash
@@ -706,6 +828,12 @@ useCl = \temp pol cl -> temp <$> (pol <$> cl)
 conjS2 :: Conj -> S -> S -> S
 conjS2 c s1 s2 = apConj2 c <$> s1 <*> s2
 
+predVPS :: NP -> VPS -> S
+predVPS np vp = do
+  np' <- interpNP np Subject
+  vp' <- vp
+  modify clearRole -- Once the sentence is complete, accusative pronouns can refer to the direct arguments.
+  return (np' vp')
 
 --------------------
 -- Phr
@@ -775,6 +903,11 @@ genNP np _number (cn',_gender) _role = do
 most_of_Predet :: Predet
 most_of_Predet (MkNP n _q cn) = MkNP n most_Quant cn
 
+most_Predet :: Predet
+most_Predet (MkNP n _q cn) = MkNP n most_Quant cn 
+
+all_Predet :: Predet
+all_Predet  (MkNP n _q cn) = MkNP n every_Quant cn
 
 {-
 
@@ -1066,8 +1199,8 @@ orS s1 s2 = (∨) <$> s1 <*> s2
 evalDbg :: Effect -> IO ()
 evalDbg e = do
   let p = _TRUE e
-  let r = repairFields p
-      q = extendAllScopes r
+  -- let r = repairFields p
+  --     q = extendAllScopes r
   print p
   -- print r
   -- print q
