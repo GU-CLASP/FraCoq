@@ -23,6 +23,8 @@ type Prop = Exp
 not' :: Exp -> Exp
 not' x = Op Not [x]
 
+(###) :: Effect -> Effect -> Effect
+(###) = liftM2 (∧)
 
 
 data Gender where
@@ -267,7 +269,7 @@ data NPData where
   MkNP :: Number -> Quant -> CN' -> NPData
 
 type N = CN
-type PN = (String,Gender)
+type PN = (String,Gender,Number)
 
 all' :: [a -> Bool] -> a -> Bool
 all' fs x = all ($ x) fs
@@ -326,7 +328,8 @@ lexemeV2V :: String -> V2V
 lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,Lam vp,y]
 
 lexemePN :: String -> PN
-lexemePN x = (x,Unknown)
+lexemePN x@"smith_PN" = (x,Female,Singular)
+lexemePN x = (x,Unknown,Unspecified)
 
 type Prep = Dynamic (Object -> VP' -> VP')
 lexemePrep :: String -> Prep
@@ -503,14 +506,14 @@ interpNP np role = do
   q n c role
 
 usePN ::  PN -> NP
-usePN (o,g) = pureNP (Con o) g
+usePN (o,g,n) = pureNP (Con o) g n Subject -- FIXME: role
 
-pureNP :: Object -> Gender -> NP
-pureNP o dGender = do
+pureNP :: Object -> Gender -> Number -> Role -> NP
+pureNP o dGender dNumber dRole = do
+  modify (pushNP (Descriptor{..}) (pureNP o dGender dNumber dRole))
   return $ MkNP Singular q (\_ -> true,dGender)
   where q :: Quant
-        q dNumber _oClass dRole = do
-          modify (pushNP (Descriptor{..}) (pureNP o dGender))
+        q _dNumber _oClass _dRole = do
           return (\vp -> vp o)
 
 massNP :: CN -> NP
@@ -912,6 +915,13 @@ useRCl temp pol r = do
 --------------------
 -- S
 
+extAdvS :: Adv -> S -> S
+extAdvS adv s = do
+  adv' <- adv
+  s' <- s
+  return $ adv' (\_ -> s') (Con "IMPERSONAL")
+
+
 useCl :: Temp -> Pol -> Cl -> S
 useCl = \temp pol cl -> temp <$> (pol <$> cl)
 
@@ -977,10 +987,10 @@ indefArt number (cn',gender) role = do
 
 -- | Definite which looks up in the environment.
 defArt :: Quant
-defArt _number (cn',gender) _role = do
+defArt number (cn',gender) role = do
   it <- getDefinite (cn',gender) 
   -- note that here we push the actual object (it seems that the strict reading is preferred in this case)
-  _ <- pureNP it gender
+  _ <- pureNP it gender number role
   return $ \vp' -> vp' it
 
 
@@ -1051,9 +1061,6 @@ a <== b = do
 
 negation :: Effect -> Effect
 negation x = not' <$> x
-
-(###) :: Effect -> Effect -> Effect
-(###) = liftM2 (∧)
 
 -- pushes itself in the env for reference
 

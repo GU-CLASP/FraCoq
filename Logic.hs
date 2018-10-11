@@ -126,6 +126,7 @@ ppOp o = case o of
 
 ppExp :: Op -> Exp -> String
 ppExp _ (Var x) = x
+ppExp _ (Lam f) = parens ("Lam FV. " ++ ppExp THE (f (Var "FV")))
 ppExp _ (Con x) = x
 ppExp op (Proj e f) = ppExp op e ++ "." ++ f
 -- ppExp _ (Op op@(Custom _) args) = ppOp op ++ "(" ++ intercalate "," (map (ppExp op) args) ++ ")"
