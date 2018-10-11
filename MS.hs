@@ -656,14 +656,6 @@ somePl_Det = (Plural,indefArt)
 several_Det :: (Number, Quant)
 several_Det = (Plural,several_Quant)
 
-exactly_Det :: Det
-exactly_Det = (numPl,q) where
-  q :: Quant
-  q number@(Cardinal n) (cn',gender) role = do
-      x <- getFresh
-      modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
-      return (\vp' -> Quant (Exact n) Both x (cn' (Var x)) (vp' (Var x)))
-
 anySg_Det :: Det
 anySg_Det = each_Det
 
@@ -853,6 +845,9 @@ predVP np vp = do
   modify (pushS (predVP np vp))
   return (np' vp')
 
+questCl :: Cl -> Cl
+questCl = id
+
 sloppily :: Dynamic a -> Dynamic a
 sloppily = withState (\Env{..} -> Env{envSloppyFeatures = True,..})
 
@@ -935,6 +930,9 @@ extAdvS adv s = do
 useCl :: Temp -> Pol -> Cl -> S
 useCl = \temp pol cl -> temp <$> (pol <$> cl)
 
+useQCl :: Temp -> Pol -> Cl -> S
+useQCl = useCl
+
 conjS2 :: Conj -> S -> S -> S
 conjS2 c s1 s2 = apConj2 c <$> s1 <*> s2
 
@@ -951,6 +949,9 @@ type Phr =  Dynamic (Prop)
 
 sentence :: S -> Phr
 sentence = id
+
+question :: S -> Phr
+question _ = return TRUE -- not sure about anything (but we keep the effects! so we know what we're talking about)
 
 pSentence :: PConj -> S -> Phr
 pSentence _ x = x
@@ -1019,6 +1020,9 @@ genNP np _number (cn',_gender) _role = do
   return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
   -- FIXME: is  -- FIXME: is the above quantifier the right one?
 
+the_other_Q :: Quant
+the_other_Q number cn role = return $ \vp -> apps (Con "theOtherQ") [Lam vp]
+
 -------------------------
 -- Predet
 
@@ -1030,6 +1034,16 @@ most_Predet (MkNP n _q cn) = MkNP n most_Quant cn
 
 all_Predet :: Predet
 all_Predet  (MkNP n _q cn) = MkNP n every_Quant cn
+
+exactly_Predet :: Predet
+exactly_Predet (MkNP n _q cn) = MkNP n q cn where
+  q :: Quant
+  q number@(Cardinal n) (cn',gender) role = do
+      x <- getFresh
+      modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+      return (\vp' -> Quant (Exact n) Both x (cn' (Var x)) (vp' (Var x)))
+
+
 
 {-
 
