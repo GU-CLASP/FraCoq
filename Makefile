@@ -4,3 +4,6 @@ Bank.hs: BankParser.hs FraCaS-treebank/src/FraCaSBankI.gf
 FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
 	gawk -f $^ >$@
 
+test: Bank.hs
+	ghc Tests -e main
+
