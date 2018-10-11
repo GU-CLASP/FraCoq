@@ -231,7 +231,6 @@ type V = Dynamic (Object -> Prop)
 type V2S = Dynamic (Object -> S' -> Object -> Prop)
 type V2V = Dynamic (Object -> VP' -> Object -> Prop)
 type VV = Dynamic (VP' -> Object -> Prop)
-type Subj = Dynamic (Prop -> Prop -> Prop)
 type SC = Dynamic (VP')
 type VS = Dynamic (S' -> VP')
 
@@ -316,6 +315,9 @@ lexemeAdV adv = return $ \vp subj -> apps (Con adv) [Lam vp, subj]
 
 lexemeV2 :: String -> V2
 lexemeV2 x = pureV2 (mkRel2 x)
+
+lexemeV2S :: String -> V2S
+lexemeV2S v2s = return $ mkRel3 v2s
 
 lexemeVS :: String -> VS
 lexemeVS vs = return $ \s x -> mkRel2 vs s x
@@ -434,6 +436,14 @@ positA :: A -> A
 positA = id
 
 --------------------
+-- Subjs
+type Subj = Dynamic (Prop -> Prop -> Prop)
+
+before_Subj :: Subj
+before_Subj = return (∧) -- no tense
+
+
+--------------------
 -- Adv
 
 type ADV = Dynamic (VP' -> VP')
@@ -447,6 +457,11 @@ prepNP prep np = do
   np' <- interpNP np Other
   return (\vp' subj -> np' $ \x -> prep' x vp' subj)
 
+subjS :: Subj -> S -> Adv
+subjS subj s = do
+  subj' <- subj
+  s' <- s
+  return $ \vp x -> subj' s' (vp x)
 
 
 --------------------
@@ -473,6 +488,12 @@ adjCN a cn = do
   a' <- a
   (cn',gendr) <- cn
   return $ (a' cn',gendr)
+
+elliptic_CN :: CN
+elliptic_CN = do
+  cn <- gets getCN
+  cn
+
 
 ------------------------
 -- NP
@@ -503,9 +524,7 @@ detCN (num,quant) cn = do
   return (MkNP num quant cn')
 
 usePron :: Pron -> NP
-usePron q = do
-  np <- getNP q
-  np
+usePron = id 
 
 advNP :: NP -> Adv -> NP
 advNP np adv = do
@@ -572,34 +591,41 @@ conjNP3 c np1 np2 np3 = do
 ----------------------
 -- Pron
 
-type Pron = ObjQuery
+type Pron = NP
+
+qPron :: ObjQuery -> Pron
+qPron q = do
+  np <- getNP q
+  np
 
 sheRefl_Pron :: Pron
-sheRefl_Pron = all' [isFemale, isSingular, isCoArgument]
+sheRefl_Pron = qPron $ all' [isFemale, isSingular, isCoArgument]
 
 heRefl_Pron :: Pron
-heRefl_Pron = all' [isMale, isSingular, isCoArgument]
+heRefl_Pron = qPron $ all' [isMale, isSingular, isCoArgument]
 
 he_Pron, she_Pron :: Pron
-he_Pron = all' [isMale, isSingular]
-she_Pron = all' [isFemale, isSingular]
+he_Pron = qPron $ all' [isMale, isSingular]
+she_Pron = qPron $ all' [isFemale, isSingular]
 
 
 it_Pron :: Pron
-it_Pron = all' [isNeutral, isSingular]
+it_Pron = qPron $ all' [isNeutral, isSingular]
 
 itRefl_Pron :: Pron
-itRefl_Pron = all' [isNeutral, isSingular, isCoArgument]
+itRefl_Pron = qPron $ all' [isNeutral, isSingular, isCoArgument]
 
 they_Pron :: Pron
-they_Pron = isPlural
+they_Pron = qPron $ isPlural
 
 someone_Pron :: Pron
-someone_Pron = all' [isSingular, isPerson]
+someone_Pron = qPron $ all' [isSingular, isPerson]
 
 maximallySloppyPron :: Pron
-maximallySloppyPron = const True
+maximallySloppyPron = qPron $ const True
 
+everyone_Pron :: Pron
+everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",Unknown)
 
 
 -- his :: CN2 -> NP
@@ -661,12 +687,10 @@ compAdv adv = do
 ---------------------------
 -- V2
 
-doTooV2 :: V2
-doTooV2 = do
+elliptic_VPSlash :: VPSlash
+elliptic_VPSlash = do
   v2 <- gets vp2Env
   sloppily v2
-
-
 
 ---------------------------
 -- VPS
@@ -694,7 +718,6 @@ type VP' = (Object -> Prop)
 -- type VP' = (({-subjectClass-} Object -> Prop) -> Object -> Prop) -- in Coq
 type VP = Dynamic VP'
 
-
 progrVPa :: VP -> VP
 progrVPa = id -- ignoring tense
 
@@ -716,6 +739,9 @@ passV2s v2 = do
   v2' <- v2
   x <- getFresh
   return $ \subject -> Exists x true (v2' (Var x) subject) 
+
+passVPSlash :: VPSlash -> VP
+passVPSlash = passV2s
 
 complSlash :: VPSlash -> NP -> VP
 complSlash v2 directObject = do
@@ -852,24 +878,28 @@ slashVP np vp = do
 --------------------
 -- Conj
 data Conj where
-  Associative :: (Prop -> Prop -> Prop) -> Conj
+  RightAssoc :: (Prop -> Prop -> Prop) -> Conj
   EitherOr :: Conj
 
 and_Conj :: Conj
-and_Conj = Associative (∧)
+and_Conj = RightAssoc (∧)
 
 comma_and_Conj :: Conj
-comma_and_Conj = Associative (∧)
-  
+comma_and_Conj = RightAssoc (∧)
+
+if_comma_then_Conj :: Conj
+if_comma_then_Conj = RightAssoc (-->)
+
 apConj2 :: Conj -> Prop -> Prop -> Prop
 apConj2 conj = case conj of
-  Associative c -> c
+  RightAssoc c -> c
   EitherOr -> \p q -> (p ∧ not' q) ∨ (not' p ∧ q)
 
 apConj3 :: Conj -> Prop -> Prop-> Prop-> Prop
 apConj3 conj = case conj of
-  Associative c -> \p q r -> c (c p q) r
+  RightAssoc c -> \p q r -> (p `c` q) `c` r
   EitherOr -> \p q r -> (p ∧ not' q ∧ not' r) ∨ (not' p ∧ q ∧ not' r) ∨ (not' p ∧ not' q ∧ r)
+
 
 ----------------------
 -- RS
@@ -912,9 +942,7 @@ type Quant' = (Number -> CN' -> Role -> Dynamic NP')
 type Quant = Quant'
 
 possPron :: Pron -> Quant
-possPron q number cn role = do
-  np <- getNP q
-  genNP np number cn role
+possPron np number cn role = genNP np number cn role
 
 no_Quant :: Quant
 no_Quant num cn role = do
@@ -1020,14 +1048,6 @@ a <== b = do
   return (b' --> a')
 
 
-imply :: Monad m => (t1 -> t -> b) -> m t1 -> m t -> m b
-imply implication a b = do
-  a' <- a
-  b' <- b
-  return (implication a' b')
-
-(==>) :: Effect -> Effect -> Effect
-(==>) = imply (-->)
 
 negation :: Effect -> Effect
 negation x = not' <$> x
@@ -1129,11 +1149,6 @@ lovesVP directObject = do
 --   return (Exists x cn' (isHere (Var x)))
 
 
-
-one :: CN
-one = do
-  cn <- gets getCN
-  cn
 
 thatOf :: NP -> NP
 thatOf x role = do

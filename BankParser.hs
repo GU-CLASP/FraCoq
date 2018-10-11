@@ -65,6 +65,7 @@ processExp (Atom s@(x:xs)) = case reverse s of
                                ('P':'R':'_':_) -> "lexemeRP " ++ show s
                                ('V':'_':_) -> "lexemeV " ++ show s
                                ('2':'V':'_':_) -> "lexemeV2 " ++ show s
+                               ('S':'2':'V':'_':_) -> "lexemeV2S " ++ show s
                                ('S':'V':'_':_) -> "lexemeVS " ++ show s
                                ('V':'2':'V':'_':_) -> "lexemeV2V " ++ show s
                                ('3':'V':'_':_) -> "lexemeV3 " ++ show s
