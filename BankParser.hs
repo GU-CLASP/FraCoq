@@ -81,4 +81,4 @@ main = do
   putStrLn $ unlines $
     ("module Bank where" :
      "import MS" :
-     concatMap processDef [(x,e) | (x,e) <- inp, x >= "s_114_1_p", x <= "s_142_1_p", not ("_q" `isSuffixOf` x)])
+     concatMap processDef [(x,e) | (x,e) <- inp, x >= "s_114_1_p", x <= "s_196_1_p", not ("_q" `isSuffixOf` x)])

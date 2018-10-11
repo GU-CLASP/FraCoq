@@ -345,14 +345,18 @@ idRP = ()
 ---------------------
 -- Unimplemented categories
 
-pastPerfect,past,present,presentPerfect :: Temp
+future,pastPerfect,past,present,presentPerfect :: Temp
 past = id
 present = id
 presentPerfect = id
 pastPerfect = id
+future = id
 
 pPos :: Pol
 pPos = id
+
+pNeg :: Pol
+pNeg = not'
 
 uncNeg :: Pol
 uncNeg = not'
@@ -488,6 +492,11 @@ pureNP o dGender = do
           modify (pushNP (Descriptor{..}) (pureNP o dGender))
           return (\vp -> vp o)
 
+massNP :: CN -> NP
+massNP cn = do
+  cn' <- cn
+  return $ MkNP Singular some_Quant cn'
+
 detCN :: Det -> CN -> NP
 detCN (num,quant) cn = do
   cn' <- cn
@@ -536,7 +545,7 @@ relNPa np rs = do
 conjNP2 :: Conj -> NP -> NP -> NP
 conjNP2 c np1 np2 = do
   MkNP num1 q1 (cn1,gender1) <- np1
-  MkNP num2 q2 (cn2,gender2) <- np2
+  MkNP _num2 q2 (cn2,_gender2) <- np2
   return $ MkNP (num1) {- FIXME add numbers? min? max? -}
                 -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
                 (\num' cn' role -> do
@@ -548,7 +557,7 @@ conjNP2 c np1 np2 = do
 conjNP3 :: Conj -> NP -> NP -> NP -> NP
 conjNP3 c np1 np2 np3 = do
   MkNP num1 q1 (cn1,gender1) <- np1
-  MkNP num2 q2 (cn2,_gender2) <- np2
+  MkNP _num2 q2 (cn2,_gender2) <- np2
   MkNP _num3 q3 (cn3,_gender3) <- np3
   return $ MkNP (num1) {- FIXME add numbers? min? max? -}
                 -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
@@ -567,6 +576,9 @@ type Pron = ObjQuery
 
 sheRefl_Pron :: Pron
 sheRefl_Pron = all' [isFemale, isSingular, isCoArgument]
+
+heRefl_Pron :: Pron
+heRefl_Pron = all' [isMale, isSingular, isCoArgument]
 
 he_Pron, she_Pron :: Pron
 he_Pron = all' [isMale, isSingular]
@@ -645,6 +657,17 @@ compAdv adv = do
   adv' <- adv
   return $ \x -> adv' (\y -> (Con "_BE_" `apps` [y])) x
 
+
+---------------------------
+-- V2
+
+doTooV2 :: V2
+doTooV2 = do
+  v2 <- gets vp2Env
+  sloppily v2
+
+
+
 ---------------------------
 -- VPS
 
@@ -657,10 +680,35 @@ conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
   return $ \x -> (apConj2 conj (pol1 (vp1' x)) (pol2 (vp2' x)))
 
 ---------------------------
+-- VV
+
+do_VV :: VV
+do_VV = return $ \vp x -> vp x
+
+going_to_VV :: VV
+going_to_VV = do_VV -- ignoring tense
+
+---------------------------
 -- VP
 type VP' = (Object -> Prop)
 -- type VP' = (({-subjectClass-} Object -> Prop) -> Object -> Prop) -- in Coq
 type VP = Dynamic VP'
+
+
+progrVPa :: VP -> VP
+progrVPa = id -- ignoring tense
+
+complVV :: VV -> VP -> VP
+complVV vv vp = vv <*> vp
+
+doesTooVP :: VP
+doesTooVP = do
+  vp <- gets vpEnv
+  sloppily vp
+
+elliptic_VP :: VP
+elliptic_VP = doesTooVP
+
 
 -- | Passive
 passV2s :: V2 -> VP
@@ -766,6 +814,18 @@ predVP np vp = do
   modify (pushS (predVP np vp))
   return (np' vp')
 
+sloppily :: Dynamic a -> Dynamic a
+sloppily = withState (\Env{..} -> Env{envSloppyFeatures = True,..})
+
+
+soDoI :: NP -> Cl
+soDoI np = predVP np doesTooVP
+
+elliptic_Cl :: Cl
+elliptic_Cl = do
+  cl <- gets sEnv
+  cl
+
 ---------------------
 -- RCl
 
@@ -866,6 +926,12 @@ every_Quant = \number (cn',gender) role -> do
   x <- getFresh
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   return $ \vp' -> (Forall x (cn' (Var x)) (vp' (Var x)))
+
+some_Quant :: Quant
+some_Quant = \number (cn',gender) role -> do
+  x <- getFresh
+  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  return (\vp' -> Exists x (cn' (Var x)) (vp' (Var x)))
 
 most_Quant :: Quant
 most_Quant number  (cn',gender) role = do
@@ -985,10 +1051,6 @@ eval :: Effect -> IO ()
 eval = print . pureEval
 
 
-doesTooVP :: VP
-doesTooVP = do
-  vp <- gets vpEnv
-  sloppily vp
 
 -- admitVP :: S -> VP
 -- admitVP p = do
@@ -1033,12 +1095,6 @@ that cn vp = do
 
 
 {-
-some :: CN -> NP
-some cn role = do
-  x <- getFresh
-  (cn',gender,number) <- cn
-  modify (pushNP (Descriptor gender number role) (pureVar x))
-  return (\vp' -> Exists x cn' (vp' (Var x)))
 
 few :: CN -> NP
 few (cn) role = do
@@ -1087,13 +1143,6 @@ thatOf x role = do
 oneToo :: NP
 oneToo role = aDet one role
 
-sloppily :: Dynamic a -> Dynamic a
-sloppily = withState (\Env{..} -> Env{envSloppyFeatures = True,..})
-
-doTooV2 :: V2
-doTooV2 = do
-  v2 <- gets vp2Env
-  sloppily v2
 
 hasTooV2 :: V2
 hasTooV2 = doTooV2
