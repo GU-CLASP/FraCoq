@@ -251,7 +251,6 @@ type RS  = Dynamic RCl'
 type Pol = Prop -> Prop
 
 
-newtype Nat = Nat Integer deriving (Show,Eq,Num)
 
 data Number where
   Singular :: Number
@@ -654,6 +653,17 @@ each_Det = (Singular,every_Quant)
 somePl_Det :: Det
 somePl_Det = (Plural,indefArt)
 
+several_Det :: (Number, Quant)
+several_Det = (Plural,several_Quant)
+
+exactly_Det :: Det
+exactly_Det = (numPl,q) where
+  q :: Quant
+  q number@(Cardinal n) (cn',gender) role = do
+      x <- getFresh
+      modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+      return (\vp' -> Quant (Exact n) Both x (cn' (Var x)) (vp' (Var x)))
+
 anySg_Det :: Det
 anySg_Det = each_Det
 
@@ -984,6 +994,14 @@ indefArt number (cn',gender) role = do
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   modify (pushThing cn' x)
   return (\vp' -> Exists x (cn' (Var x)) (vp' (Var x)))
+
+several_Quant :: Quant
+several_Quant number (cn',gender) role = do
+  x <- getFresh
+  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  modify (pushThing cn' x)
+  return (\vp' -> SEVERAL x (cn' (Var x)) (vp' (Var x)))
+
 
 -- | Definite which looks up in the environment.
 defArt :: Quant

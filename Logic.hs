@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -19,6 +20,12 @@ data Exp = Op Op [Exp]
 instance Eq Exp where
 
 type Type = Exp
+
+newtype Nat = Nat Integer deriving (Show,Eq,Num)
+
+data Amount = One | Few | Several | Exact Nat -- amount for the *positive* polarity
+  deriving (Eq)
+
 data Op = THE
         | Fld String -- ^ field lookup
         | App
@@ -27,7 +34,7 @@ data Op = THE
         | Or
         | Implies
         | ImpliesOften
-        | Qu Qu Pol Var Type
+        | Qu Amount Pol Var Type
         deriving (Eq)
 
 opPrc :: Op -> Int
@@ -69,9 +76,9 @@ x ∧ y = x :∧ y
 (∨) :: Exp -> Exp -> Exp
 x ∨ y = Op Or [x,y]
 
-data Qu = All | Most | Pi
+data Qu = All -- | Most | Pi
         deriving (Eq,Ord)
-data Pol = Pos | Neg
+data Pol = Pos | Neg | Both
         deriving (Eq,Ord)
 
 substOp :: Subst -> Op -> Op
@@ -116,12 +123,13 @@ ppOp o = case o of
   Implies -> "->"
   ImpliesOften -> "~>"
   Qu k p v dom -> (++ (v ++ ":" ++ show dom ++ ".")) $ case (k,p) of
-    (All,Neg) -> "FORALL"
-    (All,Pos) -> "EXISTS"
-    (Pi,Pos) -> "SIGMA"
-    (Pi,Neg) -> "PI"
-    (Most,Pos) -> "FEW "
-    (Most,Neg) -> "MOST "
+    (One,Neg) -> "FORALL "
+    (One,Pos) -> "EXISTS "
+    -- (Pi,Pos) -> "SIGMA"
+    -- (Pi,Neg) -> "PI"
+    (Few,Pos) -> "FEW "
+    (Few,Neg) -> "MOST "
+    (Several,Pos) -> "SEVERAL "
 
 
 ppExp :: Op -> Exp -> String
@@ -140,13 +148,22 @@ ppExp ctx (Op op args) = prns $ case args of
 parens :: [Char] -> [Char]
 parens x = "(" ++ x ++ ")"
 
+pattern The :: Exp -> Exp
 pattern The body =  Op THE [body]
+pattern Quant :: Amount -> Pol -> Var -> Type -> Exp -> Exp
 pattern Quant k pol x dom body = Op (Qu k pol x dom) [body]
-pattern Forall x dom body = Quant All Neg x dom body
-pattern Exists x dom body = Quant All Pos x dom body
-pattern Sigma x dom body = Quant Pi Pos x dom body
-pattern MOST x dom body = Quant Most Neg x dom body
-pattern FEW x dom body = Quant Most Pos x dom body
+pattern Forall :: Var -> Type -> Exp -> Exp
+pattern Forall x dom body = Quant One Neg x dom body
+pattern Exists :: Var -> Type -> Exp -> Exp
+pattern Exists x dom body = Quant One Pos x dom body
+
+-- pattern Sigma x dom body = Quant Pi Pos x dom body
+pattern MOST :: Var -> Type -> Exp -> Exp
+pattern MOST x dom body = Quant Few Neg x dom  body
+pattern FEW :: Var -> Type -> Exp -> Exp
+pattern FEW x dom body = Quant Few Pos x dom  body
+pattern SEVERAL :: Var -> Type -> Exp -> Exp
+pattern SEVERAL x dom body = Quant Several Pos x dom  body
 
 normalize :: [Char] -> [Char]
 normalize = map toLower
@@ -212,7 +229,7 @@ negativeContext _ _ = False
 -- FIMXE: rename
 isQuant :: [Var] -> Exp -> Bool
 isQuant x' e = case e of
-  (Quant All _ x _ _) -> x `elem` x'
+  (Quant One _ x _ _) -> x `elem` x'
   _ -> False
 
 matchQuantArg :: Alternative m => Monad m => [Var] -> [Exp] -> m ([Exp],Exp,[Exp])
@@ -225,9 +242,9 @@ liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp -> m Exp
 liftQuantifiers _ (Var x) = return (Var x)
 liftQuantifiers _ (Con x) = return (Con x)
 liftQuantifiers xs (Op op args) = do
-  (l,Quant All pol x dom body,r) <- matchQuantArg xs args
+  (l,Quant One pol x dom body,r) <- matchQuantArg xs args
   let pol' = if negativeContext op (length l) then dualize pol else pol
-  return (Quant All pol' x dom (Op op (l++body:r)))
+  return (Quant One pol' x dom (Op op (l++body:r)))
 
 bottomUp :: (Monad m) => (Exp -> m Exp) -> (Exp -> m Exp)
 bottomUp f (Var x) = f (Var x)
