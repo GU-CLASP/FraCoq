@@ -13,7 +13,7 @@ module MS where
 import Prelude hiding (pred)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
-
+import Data.List (intersect)
 type Object = Exp
 type Prop = Exp
 
@@ -31,7 +31,6 @@ data Gender where
    Male :: Gender
    Female :: Gender
    Neutral :: Gender
-   Unknown :: Gender -- male or female
   deriving (Eq,Show)
 
 data Role where
@@ -44,7 +43,7 @@ data Role where
 -- second :: forall t t1 t2. (t2 -> t1) -> (t, t2) -> (t, t1)
 -- second f (x,y) = (x,f y)
 
-data Descriptor = Descriptor {dGender :: Gender
+data Descriptor = Descriptor {dGender :: [Gender]
                              ,dNumber :: Number
                              ,dRole :: Role} deriving Show
 
@@ -75,10 +74,15 @@ data Env = Env {vpEnv :: VPEnv
 ------------------------------
 -- Gets
 
+overlaps :: Eq a => [a] -> [a] -> Bool
+overlaps a b = case intersect a b of
+  [] -> False
+  _ -> True
+
 isNeutral, isMale, isFemale :: Descriptor -> Bool
-isMale Descriptor{..} = dGender `elem` [Unknown, Male]
-isFemale Descriptor{..} = dGender `elem` [Unknown, Female]
-isNeutral Descriptor{..} = dGender `elem` [Neutral]
+isMale Descriptor{..} = dGender `overlaps` [Male]
+isFemale Descriptor{..} = dGender `overlaps` [Female]
+isNeutral Descriptor{..} = dGender `overlaps` [Neutral]
 
 isPerson :: Descriptor -> Bool
 isPerson = const True -- FIXME
@@ -194,7 +198,7 @@ assumedPred predName = do
   return $ \x -> (mkPred predName x)
 
 assumedCN :: CN'
-assumedCN = (mkPred "assumedCN",Unknown)
+assumedCN = (mkPred "assumedCN", [Male,Female,Neutral])
 
 assumedNumber :: Number
 assumedNumber = Singular
@@ -222,7 +226,7 @@ type S' = Prop
 type S = Dynamic Prop
 type V2 = Dynamic (Object -> Object -> Prop) --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> Prop)
-type CN' = (Object -> Prop,Gender)
+type CN' = (Object -> Prop,[Gender])
 type CN = Dynamic CN'
 type AP = Dynamic A'
 type CN2 = Dynamic ((Object -> Type),Gender,Number)
@@ -268,7 +272,7 @@ data NPData where
   MkNP :: Number -> Quant -> CN' -> NPData
 
 type N = CN
-type PN = (String,Gender,Number)
+type PN = (String,[Gender],Number)
 
 all' :: [a -> Bool] -> a -> Bool
 all' fs x = all ($ x) fs
@@ -278,7 +282,7 @@ any' fs x = any ($ x) fs
 
 -------------------
 -- "PureX"
-genderedN :: String -> Gender -> CN
+genderedN :: String -> [Gender] -> CN
 genderedN s gender =
   do modify (pushCN (genderedN s gender))
      return (mkPred s,gender)
@@ -297,7 +301,8 @@ pureV3 v3 = do
 -- Lexemes
 
 lexemeN :: String -> N
-lexemeN x = genderedN x Unknown
+lexemeN x@"meeting_N" = genderedN x [Neutral]
+lexemeN x = genderedN x [Male,Female,Neutral]
 
 lexemeV :: String -> V
 lexemeV x = return $ mkPred x
@@ -327,8 +332,8 @@ lexemeV2V :: String -> V2V
 lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,Lam vp,y]
 
 lexemePN :: String -> PN
-lexemePN x@"smith_PN" = (x,Female,Singular)
-lexemePN x = (x,Unknown,Unspecified)
+lexemePN x@"smith_PN" = (x,[Female],Singular)
+lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 
 type Prep = Dynamic (Object -> VP' -> VP')
 lexemePrep :: String -> Prep
@@ -507,7 +512,7 @@ interpNP np role = do
 usePN ::  PN -> NP
 usePN (o,g,n) = pureNP (Con o) g n Subject -- FIXME: role
 
-pureNP :: Object -> Gender -> Number -> Role -> NP
+pureNP :: Object -> [Gender] -> Number -> Role -> NP
 pureNP o dGender dNumber dRole = do
   modify (pushNP (Descriptor{..}) (pureNP o dGender dNumber dRole))
   return $ MkNP Singular q (\_ -> true,dGender)
@@ -546,7 +551,7 @@ predetNP f np = do
 -- FIXME: WTF?
 detNP :: Det -> NP
 detNP (number,quant) =
-  return (MkNP number quant (const TRUE {- fixme -},Unknown))
+  return (MkNP number quant (const TRUE {- fixme -},[Male,Female,Neutral]))
 
 
 pPartNP :: NP -> V2 -> NP  -- Word of warning: in FraCas partitives always behave like intersection, which is probably not true in general
@@ -610,7 +615,6 @@ he_Pron, she_Pron :: Pron
 he_Pron = qPron $ all' [isMale, isSingular]
 she_Pron = qPron $ all' [isFemale, isSingular]
 
-
 it_Pron :: Pron
 it_Pron = qPron $ all' [isNeutral, isSingular]
 
@@ -627,7 +631,7 @@ maximallySloppyPron :: Pron
 maximallySloppyPron = qPron $ const True
 
 everyone_Pron :: Pron
-everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",Unknown)
+everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,Female])
 
 
 -- his :: CN2 -> NP
