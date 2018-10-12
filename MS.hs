@@ -723,6 +723,9 @@ type VP' = (Object -> Prop)
 -- type VP' = (({-subjectClass-} Object -> Prop) -> Object -> Prop) -- in Coq
 type VP = Dynamic VP'
 
+complVQ :: VQ -> QS -> VP
+complVQ = id
+
 progrVPa :: VP -> VP
 progrVPa = id -- ignoring tense
 
@@ -930,7 +933,10 @@ extAdvS adv s = do
 useCl :: Temp -> Pol -> Cl -> S
 useCl = \temp pol cl -> temp <$> (pol <$> cl)
 
-useQCl :: Temp -> Pol -> Cl -> S
+type QCl = Cl
+type QS = S
+
+useQCl :: Temp -> Pol -> QCl -> QS
 useQCl = useCl
 
 conjS2 :: Conj -> S -> S -> S
@@ -1043,22 +1049,37 @@ exactly_Predet (MkNP n _q cn) = MkNP n q cn where
       modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
       return (\vp' -> Quant (Exact n) Both x (cn' (Var x)) (vp' (Var x)))
 
+------------------------
+--
 
+type IAdv = Cl -> QCl
+
+
+questIAdv :: IAdv -> Cl -> QCl
+questIAdv = id
+
+why_IAdv :: IAdv
+why_IAdv cl = do
+  cl' <- cl
+  return (Con "WHY" `apps` [cl'])
+
+------------------------
+-- VQ
+
+type VQ = QS -> VP
+
+know_VQ :: VQ
+know_VQ qs = do
+  qs' <- qs
+  return $ \x -> Con "knowVQ" `apps` [qs',x]
 
 {-
-
-
-sheNP :: NP
-sheNP = pron (all' [isFemale, isSingular])
 
 himNP :: NP
 himNP = pron (all' [isMale, isSingular, isNotSubject])
 
 herNP :: NP
 herNP = pron (all' [isFemale, isSingular, isNotSubject])
-
-heNP :: NP
-heNP = pron (all' [isMale, isSingular])
 
 
 
