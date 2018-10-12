@@ -5,6 +5,8 @@ import Text.ParserCombinators.Parsek.Position
 -- import Text.ParserCombinators.Class
 import Data.Char
 import Data.List
+import Data.Function
+import Data.List.Split
 
 data SExpr = Atom String | SExpr [SExpr] | Variants deriving Show
 
@@ -49,12 +51,21 @@ bank = do
 parseBank :: IO (ParseResult SourcePos [(String, SExpr)])
 parseBank = parseFromFile bank longestResult "FraCaS-treebank/src/FraCaSBankI.gf"
 
+processProblem :: [((String,String,String),SExpr)] -> [String]
+processProblem defs = concatMap processDef defs ++ problemDef (reverse (map fst defs))
 
+problemDef :: [(String,String,String)] -> [String]
+problemDef (th@(pb,_,_):hs) = ["p_" ++ pb ++ " :: Effect"
+                              ,"p_" ++ pb ++ " = (" ++ intercalate " ### " (map hypName (reverse hs)) ++ ") ==> " ++ hypName th]
+problemDef [] = error "prooblem without hypothesis"
 
-processDef :: ([Char], SExpr) -> [String]
-processDef (x,e) = [x ++ " :: Phr"
+hypName :: (String,String,String) -> String
+hypName (pb,h,t) = "s_" ++ pb ++ "_" ++ h ++ "_" ++ t
+
+processDef :: ((String,String,String), SExpr) -> [String]
+processDef (h,e) = [x ++ " :: Phr"
                    ,x ++ "=" ++ processExp e]
-
+  where x = hypName h
 processExp :: SExpr -> String
 processExp (SExpr xs) = "(" ++ intercalate " " (map processExp xs) ++ ")"
 processExp (Atom []) = error "empty identifer"
@@ -76,10 +87,28 @@ processExp (Atom s@(x:xs)) = case reverse s of
                                _ -> toLower x : xs
 processExp Variants = "variants"
 
+frst :: (t2, t1, t) -> t2
+frst (x,_,_) = x
+
 main :: IO ()
 main = do
   Right inp <- parseBank
+  let handled = [((pbNumber,hypNumber,hypTyp),e)
+                | (x,e) <- inp,
+                  let (pbNumber, hypNumber, hypTyp) = parseHName x,
+                  pbNumber >= "114",
+                  pbNumber < "164",
+                  hypTyp /= "q"]
+      problems = groupBy ((==) `on` (frst . fst)) handled
   putStrLn $ unlines $
     ("module Bank where" :
      "import MS" :
-     concatMap processDef [(x,e) | (x,e) <- inp, x >= "s_114_1_p", x < "s_164_1_p", not ("_q" `isSuffixOf` x)])
+     concatMap processProblem problems)
+
+parseHName :: [Char] -> ([Char], [Char], [Char])
+parseHName x = case splitOn "_" x of
+  ("s": pbNumber : hypNumber : rest) -> (pbNumber, hypNumber, intercalate "_" rest)
+  _ -> error ("statement with unexpected format: " ++ x)
+
+-- >>> splitOn "_" "s_168_4_h"
+-- ["s","168","4","h"]

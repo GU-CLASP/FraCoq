@@ -26,6 +26,14 @@ not' x = Op Not [x]
 (###) :: Effect -> Effect -> Effect
 (###) = liftM2 (∧)
 
+imply :: Monad m => (t1 -> t -> b) -> m t1 -> m t -> m b
+imply implication a b = do
+  a' <- a
+  b' <- b
+  return (implication a' b')
+
+(==>) :: Effect -> Effect -> Effect
+(==>) = imply (-->)
 
 data Gender where
    Male :: Gender
