@@ -461,6 +461,8 @@ type Subj = Dynamic (Prop -> Prop -> Prop)
 before_Subj :: Subj
 before_Subj = return (∧) -- no tense
 
+if_Subj :: Subj
+if_Subj = return (-->)
 
 --------------------
 -- Adv
@@ -733,6 +735,18 @@ do_VV = return $ \vp x -> vp x
 going_to_VV :: VV
 going_to_VV = do_VV -- ignoring tense
 
+need_VV :: VV
+need_VV = lexemeVV "need_VV"
+
+want_VV :: VV
+want_VV = lexemeVV "want_VV"
+
+shall_VV :: VV
+shall_VV = lexemeVV "shall_VV"
+
+lexemeVV :: String -> VV
+lexemeVV vv = return $ \vp x -> apps (Con vv) [lam vp, x]
+
 ---------------------------
 -- VP
 type VP' = (Object -> Prop)
@@ -851,6 +865,11 @@ slashV2a = id
 ----------------------------
 -- Cl
 
+impersCl :: VP -> Cl
+impersCl vp = do
+  vp' <- vp
+  return (vp' (Con "IMPERSONAL"))
+  
 existNP :: NP -> Cl
 existNP np = do
   np' <- interpNP np Other
@@ -949,9 +968,6 @@ extAdvS adv s = do
 useCl :: Temp -> Pol -> Cl -> S
 useCl = \temp pol cl -> temp <$> (pol <$> cl)
 
-type QCl = Cl
-type QS = S
-
 useQCl :: Temp -> Pol -> QCl -> QS
 useQCl = useCl
 
@@ -964,6 +980,15 @@ predVPS np vp = do
   vp' <- vp
   modify clearRole -- Once the sentence is complete, accusative pronouns can refer to the direct arguments.
   return (np' vp')
+
+--------------------
+-- QS
+
+type QCl = Cl
+type QS = S
+
+conjQS2 :: Conj -> S -> S -> S
+conjQS2 = conjS2
 
 --------------------
 -- Phr
