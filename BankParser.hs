@@ -48,15 +48,25 @@ bank = do
   return defs
 
 
+processSuite :: [[((String,String,String),SExpr)]] -> [String]
+processSuite pbs = "suite :: IO ()" :
+                   "suite = do" :
+                   concat
+                     [["  putStrLn " ++ show pb,
+                       "  evalDbg " ++ pbName pb] | (((pb,_,_),_):_) <- pbs ]
+
 parseBank :: IO (ParseResult SourcePos [(String, SExpr)])
 parseBank = parseFromFile bank longestResult "FraCaS-treebank/src/FraCaSBankI.gf"
 
 processProblem :: [((String,String,String),SExpr)] -> [String]
 processProblem defs = concatMap processDef defs ++ problemDef (reverse (map fst defs))
 
+pbName :: String -> String
+pbName pb = "p_" ++ pb
+
 problemDef :: [(String,String,String)] -> [String]
-problemDef (th@(pb,_,_):hs) = ["p_" ++ pb ++ " :: Effect"
-                              ,"p_" ++ pb ++ " = (" ++ intercalate " ### " (map hypName (reverse hs)) ++ ") ==> " ++ hypName th]
+problemDef (th@(pb,_,_):hs) = [pbName pb ++ " :: Effect"
+                              ,pbName pb ++ " = (" ++ intercalate " ### " (map hypName (reverse hs)) ++ ") ==> " ++ hypName th]
 problemDef [] = error "prooblem without hypothesis"
 
 hypName :: (String,String,String) -> String
@@ -103,7 +113,8 @@ main = do
   putStrLn $ unlines $
     ("module Bank where" :
      "import MS" :
-     concatMap processProblem problems)
+     concatMap processProblem problems ++
+     processSuite problems)
 
 parseHName :: [Char] -> ([Char], [Char], [Char])
 parseHName x = case splitOn "_" x of

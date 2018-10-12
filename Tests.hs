@@ -8,6 +8,8 @@ main = do
   evalDbg p_114
   print 120
   evalDbg p_120
+  suite
+
 
 
 -- >>> evalDbg (s_120_1_p ### s_120_2_p)
