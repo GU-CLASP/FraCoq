@@ -987,8 +987,13 @@ predVPS np vp = do
 type QCl = Cl
 type QS = S
 
-conjQS2 :: Conj -> S -> S -> S
+conjQS2 :: Conj -> QS -> QS -> QS
 conjQS2 = conjS2
+
+questVP :: NP -> VP -> QCl
+questVP = predVP
+
+
 
 --------------------
 -- Phr
