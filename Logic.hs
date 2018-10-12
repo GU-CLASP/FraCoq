@@ -16,15 +16,26 @@ data Exp = Op Op [Exp]
          | Var Var
          | Con String
          | Lam (Exp -> Exp)
+         | Quant Amount Pol Var Exp Exp
 
-instance Eq Exp where
+
+
+
+eqExp :: Int -> Exp -> Exp -> Bool
+eqExp n (Op op1 exps1) (Op op2 exps2) = op1 == op2 && and (zipWith (eqExp n) exps1 exps2)
+eqExp n (Quant a1 p1 v1 t1 b1) (Quant a2 p2 v2 t2 b2) = a1 == a2 && p1 == p2 && v1 == v2 && eqExp n t1 t2 && eqExp n b1 b2
+eqExp n (Lam f1) (Lam f2) = eqExp (n+1) (f1 x) (f2 x)
+  where x = Var $ "_V" ++ show n
+eqExp _ (Var x) (Var x') = x == x'
+eqExp _ (Con x) (Con x') = x == x'
+eqExp _ _ _ = False
 
 type Type = Exp
 
 newtype Nat = Nat Integer deriving (Show,Eq,Num)
 
 data Amount = One | Few | Several | Exact Nat -- amount for the *positive* polarity
-  deriving (Eq)
+  deriving (Eq,Show)
 
 data Op = THE
         | Fld String -- ^ field lookup
@@ -34,8 +45,9 @@ data Op = THE
         | Or
         | Implies
         | ImpliesOften
-        | Qu Amount Pol Var Type
-        deriving (Eq)
+        | LAST_OPERATOR
+  deriving (Eq,Show)
+
 
 opPrc :: Op -> Int
 opPrc = \case
@@ -47,15 +59,25 @@ opPrc = \case
   Or -> 5
   ImpliesOften -> 6
   Implies -> 6
-  Qu{} -> 7
-  
+  LAST_OPERATOR -> 7
 
 
 pattern TRUE :: Exp
 pattern TRUE = Con "true"
 
+lam :: (Exp -> Exp) -> Exp
+lam f = case f (Var eta) of
+           Op App [b,Var "__ETA__"] | not (eta `elem` freeVars b) -> b
+           _ -> Lam f
+  where eta = "__ETA__"
+
+
+app :: Exp -> Exp -> Exp
+app (Lam f) x = f x
+app f x = Op App [f,x]
+
 apps :: Exp -> [Exp] -> Exp
-apps f args  = Op App (f:args)
+apps f args = foldl app f args
 
 true :: Exp
 true = TRUE
@@ -76,16 +98,14 @@ x ∧ y = x :∧ y
 (∨) :: Exp -> Exp -> Exp
 x ∨ y = Op Or [x,y]
 
-data Qu = All -- | Most | Pi
-        deriving (Eq,Ord)
-data Pol = Pos | Neg | Both
-        deriving (Eq,Ord)
+data Pol = Pos | Neg | Both deriving (Eq,Ord,Show)
 
 substOp :: Subst -> Op -> Op
-substOp f (Qu q p v t) = Qu q p v (subst f t)
 substOp _ op = op
 
 subst :: Subst -> Exp -> Exp
+subst f (Lam t) = Lam (\x -> subst f (t x))
+subst f (Quant a p v t b) = Quant a p v (subst f t) (subst f b)
 subst f (Var x) = f x
 subst _ (Con x) = Con x
 subst f (Op o xs) = Op (substOp f o) (map (subst f) xs)
@@ -93,10 +113,12 @@ subst f (Op o xs) = Op (substOp f o) (map (subst f) xs)
 dualize :: Pol -> Pol
 dualize Pos = Neg
 dualize Neg = Pos
+dualize Both = Both
 
 isAssoc :: Op -> Bool
 isAssoc Implies = False
 isAssoc ImpliesOften = False
+isAssoc App = False
 isAssoc _ = True
 
 needsParens :: Op -> Op -> Bool
@@ -122,14 +144,7 @@ ppOp o = case o of
   Or -> "\\/"
   Implies -> "->"
   ImpliesOften -> "~>"
-  Qu k p v dom -> (++ (v ++ ":" ++ show dom ++ ".")) $ case (k,p) of
-    (One,Neg) -> "FORALL "
-    (One,Pos) -> "EXISTS "
-    -- (Pi,Pos) -> "SIGMA"
-    -- (Pi,Neg) -> "PI"
-    (Few,Pos) -> "FEW "
-    (Few,Neg) -> "MOST "
-    (Several,Pos) -> "SEVERAL "
+  _ -> error "cant print op"
 
 
 ppExp :: Op -> Exp -> String
@@ -138,7 +153,18 @@ ppExp _ (Lam f) = parens ("Lam FV. " ++ ppExp THE (f (Var "FV")))
 ppExp _ (Con x) = x
 ppExp op (Proj e f) = ppExp op e ++ "." ++ f
 -- ppExp _ (Op op@(Custom _) args) = ppOp op ++ "(" ++ intercalate "," (map (ppExp op) args) ++ ")"
-ppExp _ctx (Op App args) = parens $ intercalate " " $ map (ppExp App) args
+ppExp _ (Quant k p v dom body) = o ++ " " ++ v ++ ":" ++ ppExp App dom ++ ". " ++ ppExp App body
+  where o = case (k,p) of
+              (One,Neg) -> "FORALL"
+              (One,Pos) -> "EXISTS"
+              -- (Pi,Pos) -> "SIGMA"
+              -- (Pi,Neg) -> "PI"
+              (Few,Pos) -> "FEW"
+              (Few,Neg) -> "MOST"
+              (Several,Pos) -> "SEVERAL"
+              _ -> show (k,p)
+ppExp ctx (Op App (f:args)) = prns $ ppExp Not f ++ concatMap ((" "++) . ppExp App) args
+  where prns x = if needsParens ctx App then parens x else x
 ppExp ctx (Op op args) = prns $ case args of
   [x,y] -> ppExp op x ++ " " ++ ppOp op ++ " " ++ ppExp op y
   [x] -> ppOp op ++ " " ++ ppExp op x
@@ -150,8 +176,6 @@ parens x = "(" ++ x ++ ")"
 
 pattern The :: Exp -> Exp
 pattern The body =  Op THE [body]
-pattern Quant :: Amount -> Pol -> Var -> Type -> Exp -> Exp
-pattern Quant k pol x dom body = Op (Qu k pol x dom) [body]
 pattern Forall :: Var -> Type -> Exp -> Exp
 pattern Forall x dom body = Quant One Neg x dom body
 pattern Exists :: Var -> Type -> Exp -> Exp

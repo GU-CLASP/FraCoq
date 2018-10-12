@@ -126,14 +126,17 @@ getNP q = gets (getNP' q)
 getDefinite :: CN' -> Dynamic Object
 getDefinite (cn',_gender) = do
   things <- gets envThings
-  return (things (cn' (constant "__DEFINITE__")))
+  return (things (lam cn'))
 
 -------------------------------
 -- Pushes
 
 
 pushThing :: (Object -> Prop) -> Var -> Env -> Env
-pushThing source target Env{..} = Env{envThings = \x -> if x == source (constant "__DEFINITE__") then Var target else envThings x,..}
+pushThing source target Env{..} = Env{envThings = \x ->
+                                                    if eqExp 0 x (lam source)
+                                                    then Var target
+                                                    else envThings x,..}
 
 pushNP :: Descriptor -> NP -> Env -> Env
 pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
@@ -310,22 +313,23 @@ pureV3 v3 = do
 
 lexemeN :: String -> N
 lexemeN x@"meeting_N" = genderedN x [Neutral]
+lexemeN x@"chairman_N" = genderedN x [Male]
 lexemeN x = genderedN x [Male,Female,Neutral]
 
 lexemeV :: String -> V
 lexemeV x = return $ mkPred x
 
 lexemeA :: String -> A
-lexemeA a = return $ \cn obj -> apps (Con a) [Lam cn, obj]
+lexemeA a = return $ \cn obj -> apps (Con a) [lam cn, obj]
 
 lexemeV3 :: String -> V3
 lexemeV3 x = return $ mkRel3 x
 
 lexemeAdv :: String -> Adv
-lexemeAdv adv = return $ \vp subj -> apps (Con adv) [Lam vp, subj]
+lexemeAdv adv = return $ \vp subj -> apps (Con adv) [lam vp, subj]
 
 lexemeAdV :: String -> AdV
-lexemeAdV adv = return $ \vp subj -> apps (Con adv) [Lam vp, subj]
+lexemeAdV adv = return $ \vp subj -> apps (Con adv) [lam vp, subj]
 
 lexemeV2 :: String -> V2
 lexemeV2 x = pureV2 (mkRel2 x)
@@ -337,7 +341,7 @@ lexemeVS :: String -> VS
 lexemeVS vs = return $ \s x -> mkRel2 vs s x
 
 lexemeV2V :: String -> V2V
-lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,Lam vp,y]
+lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,lam vp,y]
 
 lexemePN :: String -> PN
 lexemePN x@"smith_PN" = (x,[Female],Singular)
@@ -345,7 +349,7 @@ lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 
 type Prep = Dynamic (Object -> VP' -> VP')
 lexemePrep :: String -> Prep
-lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, Lam vp, subj]
+lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, lam vp, subj]
 
 type PConj = String
 
@@ -1039,7 +1043,7 @@ genNP np _number (cn',_gender) _role = do
   -- FIXME: is  -- FIXME: is the above quantifier the right one?
 
 the_other_Q :: Quant
-the_other_Q number cn role = return $ \vp -> apps (Con "theOtherQ") [Lam vp]
+the_other_Q number cn role = return $ \vp -> apps (Con "theOtherQ") [lam vp]
 
 -------------------------
 -- Predet
