@@ -126,7 +126,7 @@ needsParens :: Op -> Op -> Bool
 needsParens ctx op = opPrc ctx < opPrc op || (opPrc ctx == opPrc op && not (isAssoc op))
 
 instance Show Exp where
-  show = ppExp Not
+  show = ppExp 1 Not
 
 
 quoteTex :: String -> String
@@ -148,13 +148,16 @@ ppOp o = case o of
   _ -> error "cannot print op"
 
 
-ppExp :: Op -> Exp -> String
-ppExp _ (Var x) = x
-ppExp _ (Lam f) = parens ("fun FV => " ++ ppExp THE (f (Var "FV")))
-ppExp _ (Con x) = x
-ppExp op (Proj e f) = ppExp op e ++ "." ++ f
+varName :: Int -> String
+varName n = "x" ++ show n
+
+ppExp :: Int -> Op -> Exp -> String
+ppExp _ _ (Var x) = x
+ppExp n _ (Lam f) = parens ("fun " ++ varName n ++ " => " ++ ppExp (n+1) THE (f (Var (varName n))))
+ppExp _ _ (Con x) = x
+ppExp n op (Proj e f) = ppExp n op e ++ "." ++ f
 -- ppExp _ (Op op@(Custom _) args) = ppOp op ++ "(" ++ intercalate "," (map (ppExp op) args) ++ ")"
-ppExp ctx (Quant k p v dom body) = prns (o ++ " " ++ v ++ ", " ++ ppExp LAST_OPERATOR (dom `c` body))
+ppExp n ctx (Quant k p v dom body) = prns (o ++ " " ++ v ++ ", " ++ ppExp n LAST_OPERATOR (dom `c` body))
   where o = case (k,p) of
               (One,Neg) -> "forall"
               (One,Pos) -> "exists"
@@ -166,11 +169,11 @@ ppExp ctx (Quant k p v dom body) = prns (o ++ " " ++ v ++ ", " ++ ppExp LAST_OPE
               Neg -> (-->)
               _ -> (∧)
         prns x = if needsParens ctx LAST_OPERATOR then parens x else x
-ppExp ctx (Op App (f:args)) = prns $ ppExp Not f ++ concatMap ((" "++) . ppExp App) args
+ppExp n ctx (Op App (f:args)) = prns $ ppExp n Not f ++ concatMap ((" "++) . ppExp n App) args
   where prns x = if needsParens ctx App then parens x else x
-ppExp ctx (Op op args) = prns $ case args of
-  [x,y] -> ppExp op x ++ " " ++ ppOp op ++ " " ++ ppExp op y
-  [x] -> ppOp op ++ " " ++ ppExp op x
+ppExp n ctx (Op op args) = prns $ case args of
+  [x,y] -> ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
+  [x] -> ppOp op ++ " " ++ ppExp n op x
   where prns x = if needsParens ctx op then parens x else x
 
 
