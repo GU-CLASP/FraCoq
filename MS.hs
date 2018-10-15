@@ -800,6 +800,7 @@ advVP :: VP -> Adv -> VP
 advVP vp adv = do
   vp' <- vp
   adv' <- adv
+  modify (pushVP (advVP vp adv))
   return (adv' vp')
 
 useV :: V -> VP
