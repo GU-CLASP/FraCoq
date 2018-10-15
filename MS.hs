@@ -359,7 +359,8 @@ toto whom (Quant a p x dom body) = Quant a p x dom (toto whom body)
 toto whom (Op App [f,x]) = toto whom f `app` x
 toto whom (Op And xs) = Op And (map (toto whom) xs)
 toto whom (Con "deliver_V2") = Con "deliver_V3" `app` whom
-toto whom s = apps (Con "TO_PREP") [whom,s]
+toto whom (Con "go8walk_V") = Con "go8walk_V2" `app` whom
+toto whom s =  Con "TO_PREP" `apps` [whom,s]
 
 
 type RP = ()
