@@ -93,6 +93,7 @@ pattern (:∧) :: Exp -> Exp -> Exp
 pattern x :∧ y = Op And [x,y]
 
 (∧) :: Exp -> Exp -> Exp
+TRUE ∧ y = y
 (x :∧ y) ∧ z = x :∧ (y ∧ z)
 x ∧ y = x :∧ y
 (∨) :: Exp -> Exp -> Exp
@@ -144,7 +145,7 @@ ppOp o = case o of
   Or -> "\\/"
   Implies -> "->"
   ImpliesOften -> "~>"
-  _ -> error "cant print op"
+  _ -> error "cannot print op"
 
 
 ppExp :: Op -> Exp -> String
@@ -153,16 +154,18 @@ ppExp _ (Lam f) = parens ("Lam FV. " ++ ppExp THE (f (Var "FV")))
 ppExp _ (Con x) = x
 ppExp op (Proj e f) = ppExp op e ++ "." ++ f
 -- ppExp _ (Op op@(Custom _) args) = ppOp op ++ "(" ++ intercalate "," (map (ppExp op) args) ++ ")"
-ppExp _ (Quant k p v dom body) = o ++ " " ++ v ++ ":" ++ ppExp App dom ++ ". " ++ ppExp App body
+ppExp ctx (Quant k p v dom body) = prns (o ++ " " ++ v ++ ", " ++ ppExp LAST_OPERATOR (dom `c` body))
   where o = case (k,p) of
-              (One,Neg) -> "FORALL"
-              (One,Pos) -> "EXISTS"
-              -- (Pi,Pos) -> "SIGMA"
-              -- (Pi,Neg) -> "PI"
+              (One,Neg) -> "forall"
+              (One,Pos) -> "exists"
               (Few,Pos) -> "FEW"
               (Few,Neg) -> "MOST"
               (Several,Pos) -> "SEVERAL"
               _ -> show (k,p)
+        c = case p of
+              Neg -> (-->)
+              _ -> (∧)
+        prns x = if needsParens ctx LAST_OPERATOR then parens x else x
 ppExp ctx (Op App (f:args)) = prns $ ppExp Not f ++ concatMap ((" "++) . ppExp App) args
   where prns x = if needsParens ctx App then parens x else x
 ppExp ctx (Op op args) = prns $ case args of
