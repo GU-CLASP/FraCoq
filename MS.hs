@@ -16,9 +16,11 @@ import Logic hiding (Pol)
 import Data.List (intersect)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
+import Control.Applicative.Alternative
 
 type Object = Exp
 type Prop = Exp
+
 
 --------------------------------
 -- Operators
@@ -64,8 +66,7 @@ clearRole :: Env -> Env
 clearRole Env{..} = Env{objEnv = map cr objEnv,..}
   where cr (d,np) = (d {dRole = Other},np)
 
-type VPEnv = VP
--- Just remember the last VP; could be more fine-grained because we have "does", "is", "has" as placehodlers in English.
+type VPEnv = [VP]
 
 data Env = Env {vpEnv :: VPEnv
                ,vp2Env :: V2
@@ -107,9 +108,9 @@ isNotSubject = (/= Subject) . dRole
 isCoArgument :: Descriptor -> Bool
 isCoArgument = (== Subject) . dRole
 
-getCN :: Env -> CN
-getCN Env{cnEnv=cn:_} = cn
-getCN _ = return assumedCN
+getCN :: Env -> [CN]
+getCN Env{cnEnv=cn:cns} = cn:cns
+getCN _ = [return assumedCN]
 
 getCN2 :: Env -> CN2
 getCN2 Env{cn2Env=cn} = cn
@@ -121,7 +122,6 @@ getNP' q Env{objEnv=((d,o):os),..} = if q d then o else getNP' q Env{objEnv=os,.
 
 getNP :: ObjQuery -> Dynamic NP
 getNP q = gets (getNP' q)
-
 
 getDefinite :: CN' -> Dynamic Object
 getDefinite (cn',_gender) = do
@@ -145,7 +145,7 @@ pushCN :: CN -> Env -> Env
 pushCN cn Env{..} = Env{cnEnv=cn:cnEnv,..}
 
 pushVP :: VP -> Env -> Env
-pushVP vp Env{..} = Env{vpEnv=vp,..}
+pushVP vp Env{..} = Env{vpEnv=vp:vpEnv,..}
 
 pushV2 :: V2 -> Env -> Env
 pushV2 vp2 Env{..} = Env{vp2Env=vp2,..}
@@ -166,6 +166,11 @@ allVars :: [String]
 allVars = map (:[]) ['a'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
 
 newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
+allInterpretations :: Dynamic a -> [a]
+allInterpretations (Dynamic x) = (observeAll (evalStateT x assumed))
+
+-- newtype Dynamic a = Dynamic {fromDynamic :: LogicT (State Env) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
+
 type Effect = Dynamic Prop
 
 mkPred :: String -> Object -> Prop
@@ -217,12 +222,12 @@ assumedNumber = Singular
 assumed :: Env
 assumed = Env {
               vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
-               , vpEnv = assumedPred "assumedVP"
+               , vpEnv = []
               -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
               -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
               ,objEnv = []
               ,sEnv = return (constant "assumedS")
-              ,cnEnv = [return assumedCN]
+              ,cnEnv = []
               ,envThings = \x -> Op THE [x]
               ,envSloppyFeatures = False
               ,freshVars = allVars}
@@ -440,9 +445,7 @@ lexemeN x@"chairman_N" = genderedN x [Male]
 lexemeN x = genderedN x [Male,Female,Neutral]
 
 one_N :: N
-one_N = do
-  cn <- gets getCN
-  cn
+one_N = elliptic_CN
 
 
 --------------------
@@ -508,13 +511,14 @@ adjCN :: A -> CN -> CN
 adjCN a cn = do
   a' <- a
   (cn',gendr) <- cn
+  modify (pushCN (adjCN a cn))
   return $ (a' cn',gendr)
 
 elliptic_CN :: CN
 elliptic_CN = do
-  cn <- gets getCN
+  cns <- gets getCN
+  cn <- afromList cns
   cn
-
 
 ------------------------
 -- NP
@@ -764,7 +768,10 @@ complVV vv vp = vv <*> vp
 
 doesTooVP :: VP
 doesTooVP = do
-  vp <- gets vpEnv
+  vps <- gets vpEnv
+  vp :: VP <- case vps of
+    [] -> return (assumedPred "assumedVP")
+    h:_ -> return h -- FIXME: do not re-evaluate effects (like this!) when re-running.
   sloppily vp
 
 elliptic_VP :: VP
@@ -888,8 +895,8 @@ questCl :: Cl -> Cl
 questCl = id
 
 sloppily :: Dynamic a -> Dynamic a
-sloppily (Dynamic x) = Dynamic (withStateT (\Env{..} -> Env{envSloppyFeatures = True,..}) x)
-
+-- sloppily (Dynamic x) = Dynamic (withStateT (\Env{..} -> Env{envSloppyFeatures = True,..}) x)
+sloppily = id
 
 soDoI :: NP -> Cl
 soDoI np = predVP np doesTooVP
@@ -1294,16 +1301,17 @@ andVP np1 np2 = do
 -}
 evalDbg :: Effect -> IO ()
 evalDbg e = do
-  let p = _TRUE e
+  let ps = allInterpretations e
   -- let r = repairFields p
   --     q = extendAllScopes r
-  print p
+  forM_ ps print
   -- print r
   -- print q
   -- print (freeVars q)
 
+
 _TRUE :: Effect -> Prop
-_TRUE (Dynamic x) = observe (evalStateT x assumed)
+_TRUE e = foldr (∨) FALSE (allInterpretations e)
 
 
 

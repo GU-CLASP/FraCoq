@@ -65,6 +65,9 @@ opPrc = \case
 pattern TRUE :: Exp
 pattern TRUE = Con "true"
 
+pattern FALSE :: Exp
+pattern FALSE = Con "false"
+
 lam :: (Exp -> Exp) -> Exp
 lam f = case f (Var eta) of
            Op App [b,Var "__ETA__"] | not (eta `elem` freeVars b) -> b

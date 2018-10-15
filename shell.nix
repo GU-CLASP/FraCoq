@@ -11,6 +11,7 @@ let myGHC = haskellPackages.ghcWithPackages
                        mtl
                        split
                        logict
+                       monadplus
                      ]);
 
 in stdenv.mkDerivation {
