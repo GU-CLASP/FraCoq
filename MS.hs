@@ -328,12 +328,6 @@ lexemeA a = return $ \cn obj -> apps (Con a) [lam cn, obj]
 lexemeV3 :: String -> V3
 lexemeV3 x = return $ mkRel3 x
 
-lexemeAdv :: String -> Adv
-lexemeAdv adv = return $ \vp subj -> apps (Con adv) [lam vp, subj]
-
-lexemeAdV :: String -> AdV
-lexemeAdV adv = return $ \vp subj -> apps (Con adv) [lam vp, subj]
-
 lexemeV2 :: String -> V2
 lexemeV2 x = pureV2 (mkRel2 x)
 
@@ -353,7 +347,20 @@ lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 
 type Prep = Dynamic (Object -> VP' -> VP')
 lexemePrep :: String -> Prep
+lexemePrep "to_Prep"  = return $ \x vp subj -> toPrep x vp subj
 lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, lam vp, subj]
+
+toPrep :: Object -> VP' -> VP'
+toPrep x vp subj = toto x (vp subj)
+
+-- | Heavy machinery for rewriting prepositions into arguments of predicates.
+toto :: Exp -> Exp -> Exp
+toto whom (Quant a p x dom body) = Quant a p x dom (toto whom body)
+toto whom (Op App [f,x]) = toto whom f `app` x
+toto whom (Op And xs) = Op And (map (toto whom) xs)
+toto whom (Con "deliver_V2") = Con "deliver_V3" `app` whom
+toto whom s = apps (Con "TO_PREP") [whom,s]
+
 
 type RP = ()
 lexemeRP :: String -> RP
@@ -448,6 +455,7 @@ n_twenty = 20
 
 lexemeN :: String -> N
 lexemeN "one_N" = one_N
+lexemeN x@"invoice_N" = genderedN x [Neutral]
 lexemeN x@"meeting_N" = genderedN x [Neutral]
 lexemeN x@"report_N" = genderedN x [Neutral]
 lexemeN x@"chairman_N" = genderedN x [Male]
@@ -483,6 +491,13 @@ type ADV = Dynamic (VP' -> VP')
 type Adv = ADV
 type AdvV = ADV
 type AdV = ADV
+
+lexemeAdv :: String -> Adv
+lexemeAdv adv = return $ \vp subj -> apps (Con adv) [lam vp, subj]
+
+lexemeAdV :: String -> AdV
+lexemeAdV = lexemeAdv
+
 
 prepNP :: Prep -> NP -> AdV
 prepNP prep np = do
@@ -610,14 +625,14 @@ conjNP2 c np1 np2 = do
 conjNP3 :: Conj -> NP -> NP -> NP -> NP
 conjNP3 c np1 np2 np3 = do
   MkNP num1 q1 (cn1,gender1) <- np1
-  MkNP _num2 q2 (cn2,_gender2) <- np2
-  MkNP _num3 q3 (cn3,_gender3) <- np3
+  MkNP _num2 q2 (cn2,gender2) <- np2
+  MkNP _num3 q3 (cn3,gender3) <- np3
   return $ MkNP (num1) {- FIXME add numbers? min? max? -}
                 -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
                 (\num' cn' role -> do
-                    p1 <- q1 num' cn' role
-                    p2 <- q2 num' cn' role
-                    p3 <- q3 num' cn' role
+                    p1 <- q1 num' (cn1,gender1) role
+                    p2 <- q2 num' (cn2,gender2) role
+                    p3 <- q3 num' (cn3,gender3) role
                     return $ \vp -> apConj3 c (p1 vp) (p2 vp) (p3 vp))
                 (\x -> cn1 x ∨ cn2 x ∨ cn3 x, gender1)
 
