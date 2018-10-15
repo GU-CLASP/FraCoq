@@ -69,7 +69,7 @@ pbName pb = "p_" ++ show pb
 problemDef :: [HypID] -> [String]
 problemDef (th@(pb,_,_):hs) = [pbName pb ++ " :: Effect"
                               ,pbName pb ++ " = phrToEff (" ++ intercalate " ### " (map hypName (reverse hs)) ++ ") ==> phrToEff " ++ hypName th]
-problemDef [] = error "prooblem without hypothesis"
+problemDef [] = error "problem without hypothesis"
 
 hypName :: HypID -> String
 hypName (pb,h,t) = "s_" ++ show pb ++ "_" ++ show h ++ "_" ++ t

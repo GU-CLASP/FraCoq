@@ -1110,8 +1110,9 @@ genNP :: NP -> Quant
 genNP np _number (cn',_gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
   x <- getFresh
-  return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
-  -- FIXME: is  -- FIXME: is the above quantifier the right one?
+  -- return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
+  return (\vp' -> them $ \y -> Exists x (cn' (Var x) ∧ possess y (Var x)) (vp' (Var x))) -- seem to work better than Forall.
+ where possess = mkRel2 "have_V2" -- possisive is sometimes used in another sense, but it seems that Fracas expects this.
 
 the_other_Q :: Quant
 the_other_Q number cn role = return $ \vp -> apps (Con "theOtherQ") [lam vp]
