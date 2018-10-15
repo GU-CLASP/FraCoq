@@ -347,8 +347,12 @@ lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 
 type Prep = Dynamic (Object -> VP' -> VP')
 lexemePrep :: String -> Prep
+lexemePrep "before_Prep" = before_Prep
 lexemePrep "to_Prep"  = return $ \x vp subj -> toPrep x vp subj
 lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, lam vp, subj]
+
+before_Prep :: Prep
+before_Prep = return $ \x vp'' subj -> Con "before_Subj" `apps` [vp'' subj, vp'' x]
 
 toPrep :: Object -> VP' -> VP'
 toPrep x vp subj = toto x (vp subj)
