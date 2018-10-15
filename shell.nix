@@ -10,6 +10,7 @@ let myGHC = haskellPackages.ghcWithPackages
                        cabal-install
                        mtl
                        split
+                       logict
                      ]);
 
 in stdenv.mkDerivation {

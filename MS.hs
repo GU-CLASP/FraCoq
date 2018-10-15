@@ -14,6 +14,9 @@ import Prelude hiding (pred)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
 import Data.List (intersect)
+import Control.Monad.Logic hiding (ap)
+import Control.Applicative
+
 type Object = Exp
 type Prop = Exp
 
@@ -162,7 +165,7 @@ pushS s Env{..} = Env{sEnv=s,..}
 allVars :: [String]
 allVars = map (:[]) ['a'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
 
-type Dynamic a = (State Env a)
+newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
 type Effect = Dynamic Prop
 
 mkPred :: String -> Object -> Prop
@@ -224,11 +227,6 @@ assumed = Env {
               ,envSloppyFeatures = False
               ,freshVars = allVars}
 
-_TRUE :: Effect -> Prop
-_TRUE x = evalState x assumed
-
-_ENV :: Effect -> Env
-_ENV x = execState x assumed
 
 type S' = Prop
 type S = Dynamic Prop
@@ -594,7 +592,7 @@ conjNP2 c np1 np2 = do
                     p1 <- q1 num' cn' role
                     p2 <- q2 num' cn' role
                     return $ \vp -> apConj2 c (p1 vp) (p2 vp))
-                (\x -> cn1 x ∨ cn2 x, gender1)
+                (\x -> cn1 x ∨ cn2 x, gender1) -- FIXME: problem 128, etc.
 
 conjNP3 :: Conj -> NP -> NP -> NP -> NP
 conjNP3 c np1 np2 np3 = do
@@ -890,7 +888,7 @@ questCl :: Cl -> Cl
 questCl = id
 
 sloppily :: Dynamic a -> Dynamic a
-sloppily = withState (\Env{..} -> Env{envSloppyFeatures = True,..})
+sloppily (Dynamic x) = Dynamic (withStateT (\Env{..} -> Env{envSloppyFeatures = True,..}) x)
 
 
 soDoI :: NP -> Cl
@@ -955,8 +953,11 @@ apConj3 conj = case conj of
 
 type PConj = Conj
 
+and_PConj :: PConj
 and_PConj = and_Conj
+but_PConj :: PConj
 but_PConj = and_Conj
+that_is_PConj :: PConj
 that_is_PConj = and_Conj
 
 
@@ -1116,7 +1117,7 @@ genNP np _number (cn',_gender) _role = do
  where possess = mkRel2 "have_V2" -- possisive is sometimes used in another sense, but it seems that Fracas expects this.
 
 the_other_Q :: Quant
-the_other_Q number cn role = return $ \vp -> apps (Con "theOtherQ") [lam vp]
+the_other_Q _number _cn _role = return $ \vp -> apps (Con "theOtherQ") [lam vp]
 
 -------------------------
 -- Predet
@@ -1300,3 +1301,11 @@ evalDbg e = do
   -- print r
   -- print q
   -- print (freeVars q)
+
+_TRUE :: Effect -> Prop
+_TRUE (Dynamic x) = observe (evalStateT x assumed)
+
+
+
+-- _ENV :: Effect -> Env
+-- _ENV x = execState x assumed
