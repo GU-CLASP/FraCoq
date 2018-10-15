@@ -25,6 +25,13 @@ type Prop = Exp
 --------------------------------
 -- Operators
 
+protected :: Dynamic a -> Dynamic a
+protected a = do
+  s <- get
+  x <- a
+  put s
+  return x
+
 not' :: Exp -> Exp
 not' x = Op Not [x]
 
@@ -771,8 +778,8 @@ doesTooVP = do
   vps <- gets vpEnv
   vp :: VP <- case vps of
     [] -> return (assumedPred "assumedVP")
-    h:_ -> return h -- FIXME: do not re-evaluate effects (like this!) when re-running.
-  sloppily vp
+    h:hs -> afromList (h:hs)
+  protected $ sloppily vp
 
 elliptic_VP :: VP
 elliptic_VP = doesTooVP
