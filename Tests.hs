@@ -4,11 +4,9 @@ import MS
 import Bank
 
 main = do
-  print 114
-  evalDbg p_114
-  print 120
-  evalDbg p_120
   suite
+  print "--- 121 ---"
+  evalDbg p_121
 
 
 

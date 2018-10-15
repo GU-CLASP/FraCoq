@@ -348,6 +348,7 @@ lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,lam vp,y]
 
 lexemePN :: String -> PN
 lexemePN x@"smith_PN" = (x,[Female],Singular)
+lexemePN x@"itel_PN" = (x,[Neutral],Plural)
 lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 
 type Prep = Dynamic (Object -> VP' -> VP')
@@ -448,6 +449,7 @@ n_twenty = 20
 lexemeN :: String -> N
 lexemeN "one_N" = one_N
 lexemeN x@"meeting_N" = genderedN x [Neutral]
+lexemeN x@"report_N" = genderedN x [Neutral]
 lexemeN x@"chairman_N" = genderedN x [Male]
 lexemeN x = genderedN x [Male,Female,Neutral]
 
@@ -846,13 +848,13 @@ slash2V3 :: V3 -> NP -> VPSlash
 slash2V3 v np = do
   v' <- v
   np' <- interpNP np Other
-  return $ \indirectObject subject -> np' $ \directObject -> v' indirectObject directObject subject
+  return $ \directObject subject -> np' $ \indirectObject -> v' indirectObject directObject subject
 
 slash3V3 :: V3 -> NP -> VPSlash
 slash3V3 v np = do
   v' <- v
   np' <- interpNP np Other
-  return $ \directObject subjectClass -> np' $ \indirectObject -> v' indirectObject directObject subjectClass
+  return $ \indirectObject subjectClass -> np' $ \directObject -> v' indirectObject directObject subjectClass
 
 slashV2S :: V2S -> S -> VPSlash
 slashV2S v2s s = do
