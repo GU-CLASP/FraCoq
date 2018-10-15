@@ -308,10 +308,6 @@ pureV3 v3 = do
 -----------------
 -- Lexemes
 
-lexemeN :: String -> N
-lexemeN x@"meeting_N" = genderedN x [Neutral]
-lexemeN x@"chairman_N" = genderedN x [Male]
-lexemeN x = genderedN x [Male,Female,Neutral]
 
 lexemeV :: String -> V
 lexemeV x = return $ mkPred x
@@ -435,6 +431,20 @@ n_three :: Integer
 n_three = 3
 n_twenty :: Integer
 n_twenty = 20
+
+--------------------
+-- N
+
+lexemeN :: String -> N
+lexemeN "one_N" = one_N
+lexemeN x@"meeting_N" = genderedN x [Neutral]
+lexemeN x@"chairman_N" = genderedN x [Male]
+lexemeN x = genderedN x [Male,Female,Neutral]
+
+one_N :: N
+one_N = do
+  cn <- gets getCN
+  cn
 
 
 --------------------
@@ -1245,9 +1255,6 @@ thatOf :: NP -> NP
 thatOf x role = do
   cn2 <- gets getCN2
   the (cn2 `_of` x) role
-
-oneToo :: NP
-oneToo role = aDet one role
 
 suchDet :: CN -> NP
 suchDet (cn) role = do
