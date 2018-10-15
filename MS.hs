@@ -23,9 +23,6 @@ type Prop = Exp
 not' :: Exp -> Exp
 not' x = Op Not [x]
 
-(###) :: Effect -> Effect -> Effect
-(###) = liftM2 (∧)
-
 imply :: Monad m => (t1 -> t -> b) -> m t1 -> m t -> m b
 imply implication a b = do
   a' <- a
@@ -350,11 +347,6 @@ lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 type Prep = Dynamic (Object -> VP' -> VP')
 lexemePrep :: String -> Prep
 lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, lam vp, subj]
-
-type PConj = String
-
-lexemePConj :: String -> PConj
-lexemePConj = id
 
 type RP = ()
 lexemeRP :: String -> RP
@@ -947,6 +939,16 @@ apConj3 conj = case conj of
   EitherOr -> \p q r -> (p ∧ not' q ∧ not' r) ∨ (not' p ∧ q ∧ not' r) ∨ (not' p ∧ not' q ∧ r)
 
 
+----------------------------------
+-- PConj
+
+type PConj = Conj
+
+and_PConj = and_Conj
+but_PConj = and_Conj
+that_is_PConj = and_Conj
+
+
 ----------------------
 -- RS
 
@@ -997,16 +999,45 @@ questVP = predVP
 
 --------------------
 -- Phr
-type Phr =  Dynamic (Prop)
+data Phr = Sentence S | Adverbial Adv | PAdverbial Conj Adv
 
 sentence :: S -> Phr
-sentence = id
+sentence = Sentence
 
 question :: S -> Phr
-question _ = return TRUE -- not sure about anything (but we keep the effects! so we know what we're talking about)
+question _ = Sentence (return TRUE) -- not sure about anything (but we keep the effects! so we know what we're talking about)
 
 pSentence :: PConj -> S -> Phr
-pSentence _ x = x
+pSentence _ x = Sentence x
+
+adverbial :: Adv -> Phr
+adverbial = Adverbial
+
+pAdverbial :: Conj -> Adv -> Phr
+pAdverbial = PAdverbial
+
+phrToEff :: Phr -> Effect
+phrToEff p = case p of
+  Sentence s -> s
+  _ -> return TRUE -- can't be interpreted on their own
+
+infixl ###
+(###) :: Phr -> Phr -> Phr
+x ### Sentence s = Sentence (liftM2 (∧) (phrToEff x) s)
+x ### (Adverbial adv) = Sentence $ do
+  x' <- phrToEff x
+  adv' <- adv
+  return (adv' (\_ -> x') (Con "IMPERSONAL"))
+  -- Sentence (extAdvS adv (phrToEff x))
+  -- FIXME: the adverbs should be pushed to the VP. It should be
+  -- possible to do that on the semantics (modify the predicate)
+x ### (PAdverbial conj adv) = Sentence $ do
+  x' <- phrToEff x
+  adv' <- adv
+  return (apConj2 conj x' (adv' (\_ -> x') (Con "IMPERSONAL")))
+  -- FIXME: the adverbs should be pushed to the VP. It should be
+  -- possible to do that on the semantics (modify the predicate)
+
 
 -------------------------
 -- Quant
@@ -1090,10 +1121,10 @@ all_Predet  (MkNP n _q cn) = MkNP n every_Quant cn
 exactly_Predet :: Predet
 exactly_Predet (MkNP n _q cn) = MkNP n q cn where
   q :: Quant
-  q number@(Cardinal n) (cn',gender) role = do
+  q number@(Cardinal n') (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
-      return (\vp' -> Quant (Exact n) Both x (cn' (Var x)) (vp' (Var x)))
+      return (\vp' -> Quant (Exact n') Both x (cn' (Var x)) (vp' (Var x)))
 
 ------------------------
 --
@@ -1127,8 +1158,6 @@ himNP = pron (all' [isMale, isSingular, isNotSubject])
 herNP :: NP
 herNP = pron (all' [isFemale, isSingular, isNotSubject])
 
-
-
 themSingNP :: NP -- as in everyone owns their book 
 themSingNP = pron (all' [isSingular, isNotSubject])
 
@@ -1149,15 +1178,6 @@ the' cn _role = do
   (cn',_g,_n) <- cn
   return $ \vp -> vp (The cn')
 
-
-(<==)  :: Effect -> Effect -> Effect
-a <== b = do
-  a' <- a
-  b' <- b
-  return (b' --> a')
-
-
-
 negation :: Effect -> Effect
 negation x = not' <$> x
 
@@ -1169,36 +1189,14 @@ pureCN2 v gender number = do
   modify (pushCN2 (pureCN2 v gender number))
   return (v,gender,number)
 
-
 pureEval :: Effect -> Exp
 pureEval = extendAllScopes . repairFields . _TRUE
 
 eval :: Effect -> IO ()
 eval = print . pureEval
 
-
-
--- admitVP :: S -> VP
--- admitVP p = do
---   p' <- p
---   modify (pushVP (admitVP p))
---   return (\x -> (_ADMIT_V (p') x))
-
--- may :: VP -> VP
--- may vp = do
---   vp' <- vp
---   modify (pushVP (may vp))
---   return (\x -> mkPred "may" (vp' x))
-
 everyone :: NP
 everyone = every (pureCN (constant "PERSON") Unknown Singular)
-
-hide :: State s x -> State s x
-hide a = do
-  s <- get
-  x <- a
-  put s
-  return x
 
 unbound :: String
 unbound = "<unbound>"
@@ -1217,10 +1215,6 @@ that cn vp = do
     vp' <- vp
     return (Sigma x cn' (vp' (Var x)),gender,number)
 
--}
-
-
-{-
 
 few :: CN -> NP
 few (cn) role = do
@@ -1238,14 +1232,6 @@ most (cn) role = do
   modify (pushNP (Descriptor gender Plural role) (pureVar x))
   return $ \vp' -> MOST x cn' (vp' (Var x)) ∧ Forall z (Sigma x cn' (vp' (Var x))) true
 
-
-lovesVP :: NP -> VP
-lovesVP directObject = do
-  do' <- directObject Other
-  pureVP $ \y -> do' $ \x -> (mkRel2 "LOVE" x y)
-
-
-
 -- thereIs :: CN -> S
 -- thereIs cn = do
 --   x <- getFresh
@@ -1253,7 +1239,6 @@ lovesVP directObject = do
 --   modify (pushNP (Descriptor gender number Subject) (pureVar x))
 --   modify (pushThing cn' x)
 --   return (Exists x cn' (isHere (Var x)))
-
 
 
 thatOf :: NP -> NP
@@ -1264,15 +1249,6 @@ thatOf x role = do
 oneToo :: NP
 oneToo role = aDet one role
 
-
-hasTooV2 :: V2
-hasTooV2 = doTooV2
-
-so :: S
-so = do
-  s <- gets sEnv
-  s
-
 suchDet :: CN -> NP
 suchDet (cn) role = do
   ap <- gets apEnv
@@ -1282,36 +1258,6 @@ suchDet (cn) role = do
   modify (pushNP (Descriptor gender number role) (pureVar x))
   return $ \vp' -> (Forall x (ap' cn') (vp' (Var x)))
 
-
-oldAP :: AP
-oldAP = pureIntersectiveAP (mkPred "old")
-
-redAP :: AP
-redAP = pureIntersectiveAP (mkPred "red")
-
-donkeys :: CN
-donkeys = pureCN (constant "donkeys") Neutral Plural
-
-(#) :: AP -> CN -> CN
-ap # cn = do
-  ap' <- ap
-  (cn', g,n) <- cn
-  return (ap' cn',g,n)
-
-carCN :: CN
-carCN = pureCN (constant "car") Neutral Singular
-
-bathroomCN :: CN
-bathroomCN = pureCN (constant "bathroom") Neutral Singular
-
-hatCN2 :: CN2
-hatCN2 = pureCN2 (mkPred "hat") Neutral Singular
-
-colleaguesCN2 :: CN2
-colleaguesCN2 = pureCN2 (mkPred "colleagues") Neutral Singular
-
-shouldersCN2 :: CN2
-shouldersCN2 = pureCN2 (mkPred "shoulders") Neutral Singular
 
 carsCN :: CN
 carsCN = pureCN (constant "cars") Neutral Plural
@@ -1327,42 +1273,12 @@ is_wiser_thanV2 = pureV2 (mkRel2 "wiser")
 is_larger_thanV2 :: V2
 is_larger_thanV2 = pureV2 (mkRel2 "larger")
 
-gaveV3 :: V3
-gaveV3 = pureV3 (mkRel3 "gave")
-
-andNP :: NP -> NP -> NP
-andNP np1 np2 role = do
-  np1' <- np1 role
-  np2' <- np2 role
-  return (\vp -> np1' vp ∧ np2' vp)
-
 andVP :: VP -> VP -> VP
 andVP np1 np2 = do
   np1' <- np1
   np2' <- np2
   return (\x -> np1' x ∧ np2' x)
 
-type AdVP = Dynamic ((Object -> Prop) -> (Object -> Prop))
-
-
-pureAdVP :: String -> AdVP
-pureAdVP name = return (\vp x -> mkPred name (vp x))
-
-
-adVP :: VP -> AdVP ->  VP
-adVP vp ad = do
-  vp' <- vp
-  ad' <- ad
-  modify (pushVP (adVP vp ad))
-  return (ad' vp')
-
-
-
--- CN2 example%
-
-
-orS :: S -> S -> S
-orS s1 s2 = (∨) <$> s1 <*> s2
 
 
 -}

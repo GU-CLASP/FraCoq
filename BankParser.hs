@@ -1,3 +1,5 @@
+{-# LANGUAGE ViewPatterns #-}
+
 module BankParser where
 
 -- import Text.ParserCombinators.Parsek
@@ -48,34 +50,37 @@ bank = do
   return defs
 
 
-processSuite :: [[((String,String,String),SExpr)]] -> [String]
+processSuite :: [[(HypID,SExpr)]] -> [String]
 processSuite pbs = "suite :: IO ()" :
                    "suite = do" :
                    concat
-                     [["  putStrLn " ++ show pb,
+                     [["  putStrLn " ++ show (show pb),
                        "  evalDbg " ++ pbName pb] | (((pb,_,_),_):_) <- pbs ]
 
 parseBank :: IO (ParseResult SourcePos [(String, SExpr)])
 parseBank = parseFromFile bank longestResult "FraCaS-treebank/src/FraCaSBankI.gf"
 
-processProblem :: [((String,String,String),SExpr)] -> [String]
+processProblem :: [(HypID,SExpr)] -> [String]
 processProblem defs = concatMap processDef defs ++ problemDef (reverse (map fst defs))
 
-pbName :: String -> String
-pbName pb = "p_" ++ pb
+pbName :: Int -> String
+pbName pb = "p_" ++ show pb
 
-problemDef :: [(String,String,String)] -> [String]
+problemDef :: [HypID] -> [String]
 problemDef (th@(pb,_,_):hs) = [pbName pb ++ " :: Effect"
-                              ,pbName pb ++ " = (" ++ intercalate " ### " (map hypName (reverse hs)) ++ ") ==> " ++ hypName th]
+                              ,pbName pb ++ " = phrToEff (" ++ intercalate " ### " (map hypName (reverse hs)) ++ ") ==> phrToEff " ++ hypName th]
 problemDef [] = error "prooblem without hypothesis"
 
-hypName :: (String,String,String) -> String
-hypName (pb,h,t) = "s_" ++ pb ++ "_" ++ h ++ "_" ++ t
+hypName :: HypID -> String
+hypName (pb,h,t) = "s_" ++ show pb ++ "_" ++ show h ++ "_" ++ t
 
-processDef :: ((String,String,String), SExpr) -> [String]
+processDef :: (HypID, SExpr) -> [String]
 processDef (h,e) = [x ++ " :: Phr"
-                   ,x ++ "=" ++ processExp e]
+                   ,x ++ "=" ++ e']
   where x = hypName h
+        e' = case overrides h of
+               Nothing -> processExp e
+               Just v -> v
 processExp :: SExpr -> String
 processExp (SExpr xs) = "(" ++ intercalate " " (map processExp xs) ++ ")"
 processExp (Atom []) = error "empty identifer"
@@ -93,7 +98,6 @@ processExp (Atom s@(x:xs)) = case reverse s of
                                ('v':'d':'A':'_':_) -> "lexemeAdv " ++ show s
                                ('V':'d':'A':'_':_) -> "lexemeAdV " ++ show s
                                ('p':'e':'r':'P':'_':_) -> "lexemePrep " ++ show s
-                               ('j':'n':'o':'C':'P':'_':_) -> "lexemePConj " ++ show s
                                _ -> toLower x : xs
 processExp Variants = "variants"
 
@@ -106,20 +110,28 @@ main = do
   let handled = [((pbNumber,hypNumber,hypTyp),e)
                 | (x,e) <- inp,
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
-                  pbNumber >= "114",
-                  pbNumber < "164",
+                  pbNumber >= 114,
+                  pbNumber < 197,
                   hypTyp /= "q"]
-      problems = groupBy ((==) `on` (frst . fst)) handled
+      problems = filter (not . (`elem` disabledProblems) . frst . fst  . head) $
+                 groupBy ((==) `on` (frst . fst)) handled
   putStrLn $ unlines $
     ("module Bank where" :
      "import MS" :
      concatMap processProblem problems ++
      processSuite problems)
 
-parseHName :: [Char] -> ([Char], [Char], [Char])
+parseHName :: [Char] -> HypID
 parseHName x = case splitOn "_" x of
-  ("s": pbNumber : hypNumber : rest) -> (pbNumber, hypNumber, intercalate "_" rest)
+  ("s": pbNumber : hypNumber : rest) -> (read pbNumber, read hypNumber, intercalate "_" rest)
   _ -> error ("statement with unexpected format: " ++ x)
 
--- >>> splitOn "_" "s_168_4_h"
--- ["s","168","4","h"]
+type HypID = (Int, Int, [Char])
+
+
+overrides :: HypID -> Maybe String
+overrides (177,1,_)= Just "s_177_1_p_NEW"
+overrides _ = Nothing
+
+disabledProblems :: [Int]
+disabledProblems = [167,168,171,172]
