@@ -1156,6 +1156,7 @@ defArt :: Quant
 defArt number (cn',gender) role = do
   it <- getDefinite (cn',gender) 
   -- note that here we push the actual object (it seems that the strict reading is preferred in this case)
+  -- return (\vp' -> them $ \y -> Exists x (cn' (Var x) ∧ possess y (Var x)) (vp' (Var x))) -- Existence is another possibility (harder to work with)
   _ <- pureNP it gender number role
   return $ \vp' -> vp' it
 
@@ -1163,10 +1164,13 @@ defArt number (cn',gender) role = do
 genNP :: NP -> Quant
 genNP np _number (cn',_gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
-  x <- getFresh
-  -- return (\vp' -> them $ \y -> Forall x (cn' (Var x) ∧ mkRel2 "HAVE" y (Var x)) (vp' (Var x)))
-  return (\vp' -> them $ \y -> Exists x (cn' (Var x) ∧ possess y (Var x)) (vp' (Var x))) -- seem to work better than Forall.
- where possess = mkRel2 "have_V2" -- possisive is sometimes used in another sense, but it seems that Fracas expects this.
+  return (\vp' -> them $ \y -> vp' (cn' `of_` y))
+
+possess :: Object -> Object -> Prop
+possess = mkRel2 "have_V2" -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
+
+of_ :: (Object -> Prop) -> Object -> Object
+of_ cn owner = Op THE [Lam $ \x -> possess owner x ∧ cn x]
 
 the_other_Q :: Quant
 the_other_Q _number _cn _role = return $ \vp -> apps (Con "theOtherQ") [lam vp]
