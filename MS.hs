@@ -13,10 +13,11 @@ module MS where
 import Prelude hiding (pred)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
-import Data.List (intersect,nub)
+import Data.List (intersect,nub,nubBy)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
+import Data.Function (on)
 
 type Object = Exp
 type Prop = Exp
@@ -185,6 +186,12 @@ mkPred p x = Con p `apps` [x]
 mkRel2 :: String -> Object -> Object -> Prop
 mkRel2 p x y = Con p `apps` [x,y]
 
+namedRel2 :: String -> String -> String -> Object -> Object -> Prop
+namedRel2 p a b x y = Op (Custom p) [(a,x),(b,y)]
+
+namedRel3 :: String -> String -> String -> String -> Object -> Object -> Object -> Prop
+namedRel3 p a b c x y z = Op (Custom p) [(a,x),(b,y),(c,z)]
+
 mkRel3 :: String -> Object -> Object -> Object -> Prop
 mkRel3 p x y z = Con p `apps` [x,y,z]
 
@@ -327,6 +334,7 @@ lexemeV3 :: String -> V3
 lexemeV3 x = return $ mkRel3 x
 
 lexemeV2 :: String -> V2
+lexemeV2 x@"appoint_V2" = pureV2 (namedRel2 x "by" "who")
 lexemeV2 x = pureV2 (mkRel2 x)
 
 lexemeV2S :: String -> V2S
@@ -348,23 +356,23 @@ lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 type Prep = Dynamic (Object -> VP' -> VP')
 lexemePrep :: String -> Prep
 lexemePrep "before_Prep" = before_Prep
-lexemePrep "to_Prep"  = return $ \x vp subj -> toPrep x vp subj
+lexemePrep "by8agent_Prep" = return (modifyingPrep "by")
+lexemePrep "to_Prep"  = return (modifyingPrep "to")
 lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, lam vp, subj]
 
 -- ALT: Do it in Coq/HOL
 before_Prep :: Prep
 before_Prep = return $ \x vp'' subj -> Con "before_Subj" `apps` [vp'' subj, vp'' x]
 
-toPrep :: Object -> VP' -> VP'
-toPrep x vp subj = toto x (vp subj)
+modifyingPrep :: String -> Object -> VP' -> VP'
+modifyingPrep aname x vp subj = toto (aname,x) (vp subj)
 
 -- | Heavy machinery for rewriting prepositions into arguments of predicates.
-toto :: Exp -> Exp -> Exp
+toto :: (String,Exp) -> Exp -> Exp
 toto whom (Quant a p x dom body) = Quant a p x dom (toto whom body)
--- toto whom (Op App [f,x]) = toto whom f `app` x
-toto whom (Con "deliver_V2") = Con "deliver_V3" `app` whom
-toto whom (Con "go8walk_V") = Con "go8walk_V2" `app` whom
-toto whom s =  Con "TO_PREP" `apps` [whom,s]
+toto whom (Op op@(Custom _) args) = Op op (nubBy ((==) `on` fst) (whom:args))
+toto (aname,whom) s =  Con (aname ++ "_PREP")  `apps` [whom,s]
+
 
 
 type RP = ()
@@ -462,6 +470,7 @@ lexemeN :: String -> N
 lexemeN "one_N" = one_N
 lexemeN x@"line_N" = genderedN x [Neutral]
 lexemeN x@"department_N" = genderedN x [Neutral]
+lexemeN x@"committee_N" = genderedN x [Neutral]
 lexemeN x@"sales_department_N" = genderedN x [Neutral]
 lexemeN x@"invoice_N" = genderedN x [Neutral]
 lexemeN x@"meeting_N" = genderedN x [Neutral]
@@ -822,8 +831,8 @@ elliptic_VP = doesTooVP
 passV2s :: V2 -> VP
 passV2s v2 = do
   v2' <- v2
-  x <- getFresh
-  return $ \object -> Exists x true (v2' object (Var x)) 
+  -- x <- getFresh; return $ \object -> Exists x true (v2' object (Var x)) -- alternative with quantifier
+  return $ \object -> (v2' (Con "META") object)
 
 passVPSlash :: VPSlash -> VP
 passVPSlash = passV2s
