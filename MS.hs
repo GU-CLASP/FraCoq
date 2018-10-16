@@ -226,17 +226,16 @@ assumedNumber :: Number
 assumedNumber = Singular
 
 assumed :: Env
-assumed = Env {
-              vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
+assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
                , vpEnv = []
-              -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
-              -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
-              ,objEnv = []
-              ,sEnv = return (constant "assumedS")
-              ,cnEnv = []
-              ,envDefinites = The
-              ,envSloppyFeatures = False
-              ,freshVars = allVars}
+               -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
+               -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
+               ,objEnv = []
+               ,sEnv = return (constant "assumedS")
+               ,cnEnv = []
+               ,envDefinites = The
+               ,envSloppyFeatures = False
+               ,freshVars = allVars}
 
 
 type S' = Prop
@@ -307,7 +306,7 @@ genderedN s gender =
 pureV2 :: (Object -> Object -> Prop) -> V2
 pureV2 v2 = do
   modify (pushV2 (pureV2 v2))
-  return (\y x -> (v2 x y))
+  return (\x y -> (v2 x y))
 
 pureV3 :: (Object -> Object -> Object -> Prop) -> V3
 pureV3 v3 = do
@@ -824,7 +823,7 @@ passV2s :: V2 -> VP
 passV2s v2 = do
   v2' <- v2
   x <- getFresh
-  return $ \subject -> Exists x true (v2' (Var x) subject) 
+  return $ \object -> Exists x true (v2' object (Var x)) 
 
 passVPSlash :: VPSlash -> VP
 passVPSlash = passV2s
