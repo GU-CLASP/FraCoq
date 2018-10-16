@@ -122,12 +122,13 @@ getCN _ = [return assumedCN]
 getCN2 :: Env -> CN2
 getCN2 Env{cn2Env=cn} = cn
 
-getNP' :: ObjQuery -> Env -> NP
-getNP' _q Env{objEnv=[]} = return $ MkNP assumedNumber (\_num _cn _role -> return (\vp -> vp (constant "assumedNP"))) assumedCN
-getNP' q Env{objEnv=((d,o):os),..} = if q d then o else getNP' q Env{objEnv=os,..}
+getNP' :: ObjQuery -> Env -> [NP]
+getNP' q Env{objEnv=os,..} = case filter (q . fst) os of
+  [] -> [return $ MkNP assumedNumber (\_num _cn _role -> return (\vp -> vp (constant "assumedNP"))) assumedCN]
+  xs -> map snd xs
 
 
-getNP :: ObjQuery -> Dynamic NP
+getNP :: ObjQuery -> Dynamic [NP]
 getNP q = gets (getNP' q)
 
 getDefinite :: CN' -> Dynamic Object
@@ -659,7 +660,8 @@ type Pron = NP
 
 qPron :: ObjQuery -> Pron
 qPron q = do
-  np <- getNP q
+  nps <- getNP q
+  np <- afromList nps
   np
 
 sheRefl_Pron :: Pron
@@ -1063,7 +1065,7 @@ sentence :: S -> Phr
 sentence = Sentence
 
 question :: S -> Phr
-question _ = Sentence (return TRUE) -- not sure about anything (but we keep the effects! so we know what we're talking about)
+question s = Sentence (s >> return TRUE) -- not sure about "TRUE" (but we keep the effects! so we know what we're talking about)
 
 pSentence :: PConj -> S -> Phr
 pSentence _ x = Sentence x
