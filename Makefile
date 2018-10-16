@@ -7,3 +7,5 @@ FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
 test: Bank.hs
 	ghc Tests -e main
 
+clean:
+	rm -f *.hi *.o Bank.hs
