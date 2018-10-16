@@ -51,9 +51,9 @@ data Op = THE
 
 opPrc :: Op -> Int
 opPrc = \case
-  THE -> 0
   Fld _ -> 1
   App -> 2
+  THE -> 3
   Not -> 3
   And -> 4
   Or -> 5
@@ -97,6 +97,7 @@ pattern x :∧ y = Op And [x,y]
 
 (∧) :: Exp -> Exp -> Exp
 TRUE ∧ y = y
+y ∧ TRUE = y
 (x :∧ y) ∧ z = x :∧ (y ∧ z)
 x ∧ y = x :∧ y
 (∨) :: Exp -> Exp -> Exp
