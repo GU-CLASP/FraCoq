@@ -665,7 +665,7 @@ qPron :: ObjQuery -> Pron
 qPron q = do
   nps <- getNP q
   np <- afromList nps
-  np
+  protected np
 
 sheRefl_Pron :: Pron
 sheRefl_Pron = qPron $ all' [isFemale, isSingular, isCoArgument]
