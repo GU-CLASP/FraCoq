@@ -82,7 +82,7 @@ data Env = Env {vpEnv :: VPEnv
                ,objEnv :: ObjEnv
                ,cnEnv :: NounEnv
                ,sEnv :: S
-               ,envThings :: Exp -> Object -- map from CN to pure objects
+               ,envDefinites :: Exp -> Object -- map from CN to pure objects
                ,envSloppyFeatures :: Bool
                ,freshVars :: [String]}
          -- deriving Show
@@ -132,18 +132,18 @@ getNP q = gets (getNP' q)
 
 getDefinite :: CN' -> Dynamic Object
 getDefinite (cn',_gender) = do
-  things <- gets envThings
+  things <- gets envDefinites
   return (things (lam cn'))
 
 -------------------------------
 -- Pushes
 
 
-pushThing :: (Object -> Prop) -> Var -> Env -> Env
-pushThing source target Env{..} = Env{envThings = \x ->
+pushDefinite :: (Object -> Prop) -> Var -> Env -> Env
+pushDefinite source target Env{..} = Env{envDefinites = \x ->
                                                     if eqExp 0 x (lam source)
                                                     then Var target
-                                                    else envThings x,..}
+                                                    else envDefinites x,..}
 
 pushNP :: Descriptor -> NP -> Env -> Env
 pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
@@ -235,7 +235,7 @@ assumed = Env {
               ,objEnv = []
               ,sEnv = return (constant "assumedS")
               ,cnEnv = []
-              ,envThings = \x -> Op THE [x]
+              ,envDefinites = \x -> Op THE [x]
               ,envSloppyFeatures = False
               ,freshVars = allVars}
 
@@ -343,6 +343,7 @@ lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,lam vp,y]
 lexemePN :: String -> PN
 lexemePN x@"smith_PN" = (x,[Female],Singular)
 lexemePN x@"itel_PN" = (x,[Neutral],Plural)
+lexemePN x@"bt_PN" = (x,[Neutral],Plural)
 lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 
 type Prep = Dynamic (Object -> VP' -> VP')
@@ -351,6 +352,7 @@ lexemePrep "before_Prep" = before_Prep
 lexemePrep "to_Prep"  = return $ \x vp subj -> toPrep x vp subj
 lexemePrep prep  = return $ \x vp subj -> apps (Con prep) [x, lam vp, subj]
 
+-- ALT: Do it in Coq/HOL
 before_Prep :: Prep
 before_Prep = return $ \x vp'' subj -> Con "before_Subj" `apps` [vp'' subj, vp'' x]
 
@@ -460,6 +462,9 @@ n_twenty = 20
 
 lexemeN :: String -> N
 lexemeN "one_N" = one_N
+lexemeN x@"line_N" = genderedN x [Neutral]
+lexemeN x@"department_N" = genderedN x [Neutral]
+lexemeN x@"sales_department_N" = genderedN x [Neutral]
 lexemeN x@"invoice_N" = genderedN x [Neutral]
 lexemeN x@"meeting_N" = genderedN x [Neutral]
 lexemeN x@"report_N" = genderedN x [Neutral]
@@ -498,7 +503,12 @@ type AdvV = ADV
 type AdV = ADV
 
 lexemeAdv :: String -> Adv
+lexemeAdv "too_Adv" = uninformativeAdv
+lexemeAdv "also_AdV" = uninformativeAdv
 lexemeAdv adv = return $ \vp subj -> apps (Con adv) [lam vp, subj]
+
+uninformativeAdv :: Adv
+uninformativeAdv = return $ \vp x -> vp x -- ALT: Coq/HOL
 
 lexemeAdV :: String -> AdV
 lexemeAdV = lexemeAdv
@@ -1105,6 +1115,7 @@ every_Quant :: Quant
 every_Quant = \number (cn',gender) role -> do
   x <- getFresh
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  modify (pushDefinite cn' x)
   return $ \vp' -> (Forall x (cn' (Var x)) (vp' (Var x)))
 
 some_Quant :: Quant
@@ -1124,14 +1135,14 @@ indefArt :: Quant
 indefArt number (cn',gender) role = do
   x <- getFresh
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
-  modify (pushThing cn' x)
+  modify (pushDefinite cn' x)
   return (\vp' -> Exists x (cn' (Var x)) (vp' (Var x)))
 
 several_Quant :: Quant
 several_Quant number (cn',gender) role = do
   x <- getFresh
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
-  modify (pushThing cn' x)
+  modify (pushDefinite cn' x)
   return (\vp' -> SEVERAL x (cn' (Var x)) (vp' (Var x)))
 
 
@@ -1286,7 +1297,7 @@ most (cn) role = do
 --   x <- getFresh
 --   (cn',gender,number) <- cn
 --   modify (pushNP (Descriptor gender number Subject) (pureVar x))
---   modify (pushThing cn' x)
+--   modify (pushDefinite cn' x)
 --   return (Exists x cn' (isHere (Var x)))
 
 
