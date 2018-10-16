@@ -13,7 +13,7 @@ module MS where
 import Prelude hiding (pred)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
-import Data.List (intersect)
+import Data.List (intersect,nub)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
@@ -343,6 +343,7 @@ lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,lam vp,y]
 
 lexemePN :: String -> PN
 lexemePN x@"smith_PN" = (x,[Female],Singular)
+lexemePN x@"john_PN" = (x,[Male],Singular)
 lexemePN x@"itel_PN" = (x,[Neutral],Plural)
 lexemePN x@"bt_PN" = (x,[Neutral],Plural)
 lexemePN x = (x,[Male,Female,Neutral],Unspecified)
@@ -629,14 +630,16 @@ relNPa np rs = do
 conjNP2 :: Conj -> NP -> NP -> NP
 conjNP2 c np1 np2 = do
   MkNP num1 q1 (cn1,gender1) <- np1
-  MkNP _num2 q2 (cn2,_gender2) <- np2
+  MkNP _num2 q2 (cn2,gender2) <- np2
+  modify (pushNP (Descriptor (nub (gender1 ++ gender2)) Plural Other) (conjNP2 c np1 np2))
   return $ MkNP (num1) {- FIXME add numbers? min? max? -}
                 -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
                 (\num' cn' role -> do
-                    p1 <- q1 num' cn' role
-                    p2 <- q2 num' cn' role
+                    p1 <- q1 num' (cn1,gender1) role
+                    p2 <- q2 num' (cn2,gender2) role
                     return $ \vp -> apConj2 c (p1 vp) (p2 vp))
                 (\x -> cn1 x ∨ cn2 x, gender1) -- FIXME: problem 128, etc.
+  
 
 conjNP3 :: Conj -> NP -> NP -> NP -> NP
 conjNP3 c np1 np2 np3 = do
