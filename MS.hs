@@ -32,8 +32,6 @@ protected a = do
   put s
   return x
 
-not' :: Exp -> Exp
-not' x = Op Not [x]
 
 imply :: Monad m => (t1 -> t -> b) -> m t1 -> m t -> m b
 imply implication a b = do
@@ -236,7 +234,7 @@ assumed = Env {
               ,objEnv = []
               ,sEnv = return (constant "assumedS")
               ,cnEnv = []
-              ,envDefinites = \x -> Op THE [x]
+              ,envDefinites = The
               ,envSloppyFeatures = False
               ,freshVars = allVars}
 
@@ -364,8 +362,7 @@ toPrep x vp subj = toto x (vp subj)
 -- | Heavy machinery for rewriting prepositions into arguments of predicates.
 toto :: Exp -> Exp -> Exp
 toto whom (Quant a p x dom body) = Quant a p x dom (toto whom body)
-toto whom (Op App [f,x]) = toto whom f `app` x
-toto whom (Op And xs) = Op And (map (toto whom) xs)
+-- toto whom (Op App [f,x]) = toto whom f `app` x
 toto whom (Con "deliver_V2") = Con "deliver_V3" `app` whom
 toto whom (Con "go8walk_V") = Con "go8walk_V2" `app` whom
 toto whom s =  Con "TO_PREP" `apps` [whom,s]
@@ -1170,7 +1167,7 @@ possess :: Object -> Object -> Prop
 possess = mkRel2 "have_V2" -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
 of_ :: (Object -> Prop) -> Object -> Object
-of_ cn owner = Op THE [Lam $ \x -> possess owner x ∧ cn x]
+of_ cn owner = The (Lam $ \x -> possess owner x ∧ cn x)
 
 the_other_Q :: Quant
 the_other_Q _number _cn _role = return $ \vp -> apps (Con "theOtherQ") [lam vp]

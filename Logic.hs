@@ -9,10 +9,11 @@ import Data.List
 import Control.Applicative
 import Control.Monad
 import Control.Monad.State
+import Control.Arrow (second)
 
 type Var = String
 
-data Exp = Op Op [Exp]
+data Exp = Op Op [(String,Exp)]
          | Var Var
          | Con String
          | Lam (Exp -> Exp)
@@ -22,7 +23,7 @@ data Exp = Op Op [Exp]
 
 
 eqExp :: Int -> Exp -> Exp -> Bool
-eqExp n (Op op1 exps1) (Op op2 exps2) = op1 == op2 && and (zipWith (eqExp n) exps1 exps2)
+eqExp n (Op op1 exps1) (Op op2 exps2) = op1 == op2 && map fst exps1 == map fst exps2 && and (zipWith (eqExp n) (map snd exps1) (map snd exps2))
 eqExp n (Quant a1 p1 v1 t1 b1) (Quant a2 p2 v2 t2 b2) = a1 == a2 && p1 == p2 && v1 == v2 && eqExp n t1 t2 && eqExp n b1 b2
 eqExp n (Lam f1) (Lam f2) = eqExp (n+1) (f1 x) (f2 x)
   where x = Var $ "_V" ++ show n
@@ -37,8 +38,8 @@ newtype Nat = Nat Integer deriving (Show,Eq,Num)
 data Amount = One | Few | Several | Exact Nat -- amount for the *positive* polarity
   deriving (Eq,Show)
 
-data Op = THE
-        | Fld String -- ^ field lookup
+data Op = Fld String -- ^ field lookup
+        | Custom String
         | App
         | Not
         | And
@@ -51,9 +52,9 @@ data Op = THE
 
 opPrc :: Op -> Int
 opPrc = \case
+  (Custom _) -> 1
   Fld _ -> 1
   App -> 2
-  THE -> 3
   Not -> 3
   And -> 4
   Or -> 5
@@ -68,16 +69,25 @@ pattern TRUE = Con "true"
 pattern FALSE :: Exp
 pattern FALSE = Con "false"
 
+pattern APP :: Exp -> Exp -> Exp
+pattern APP f x = BinOp App f x
+
+pattern NOT :: Exp -> Exp
+pattern NOT x = UnOp Not x
+
+not' :: Exp -> Exp
+not' = NOT
+
 lam :: (Exp -> Exp) -> Exp
 lam f = case f (Var eta) of
-           Op App [b,Var "__ETA__"] | not (eta `elem` freeVars b) -> b
+           APP b (Var "__ETA__") | not (eta `elem` freeVars b) -> b
            _ -> Lam f
   where eta = "__ETA__"
 
 
 app :: Exp -> Exp -> Exp
 app (Lam f) x = f x
-app f x = Op App [f,x]
+app f x = APP f x
 
 apps :: Exp -> [Exp] -> Exp
 apps f args = foldl app f args
@@ -86,14 +96,20 @@ true :: Exp
 true = TRUE
 
 pattern Proj :: Exp -> String -> Exp
-pattern Proj e f = Op (Fld f) [e]
+pattern Proj e f = Op (Fld f) [("rec",e)]
+
+pattern BinOp :: Op -> Exp -> Exp -> Exp
+pattern BinOp op x y = Op op [("left",x),("right",y)]
+
+pattern UnOp :: Op -> Exp -> Exp
+pattern UnOp op x = Op op [("arg",x)]
 
 (-->),(~~>) :: Exp -> Exp -> Exp
-x --> y = Op Implies [x,y]
-x ~~> y = Op ImpliesOften [x,y]
+x --> y = BinOp Implies x y
+x ~~> y = BinOp ImpliesOften x y
 
 pattern (:∧) :: Exp -> Exp -> Exp
-pattern x :∧ y = Op And [x,y]
+pattern x :∧ y = BinOp And x y
 
 (∧) :: Exp -> Exp -> Exp
 TRUE ∧ y = y
@@ -101,7 +117,7 @@ y ∧ TRUE = y
 (x :∧ y) ∧ z = x :∧ (y ∧ z)
 x ∧ y = x :∧ y
 (∨) :: Exp -> Exp -> Exp
-x ∨ y = Op Or [x,y]
+x ∨ y = BinOp Or x y
 
 data Pol = Pos | Neg | Both deriving (Eq,Ord,Show)
 
@@ -113,7 +129,7 @@ subst f (Lam t) = Lam (\x -> subst f (t x))
 subst f (Quant a p v t b) = Quant a p v (subst f t) (subst f b)
 subst f (Var x) = f x
 subst _ (Con x) = Con x
-subst f (Op o xs) = Op (substOp f o) (map (subst f) xs)
+subst f (Op o xs) = Op (substOp f o) (map (second (subst f)) xs)
 
 dualize :: Pol -> Pol
 dualize Pos = Neg
@@ -143,49 +159,48 @@ quoteTex = concatMap q
 
 ppOp :: Op -> [Char]
 ppOp o = case o of
-  THE -> "THE"
   Not -> "NOT"
   And -> "/\\"
   Or -> "\\/"
   Implies -> "->"
   ImpliesOften -> "~>"
-  _ -> error "cannot print op"
+  Custom n -> n
+  App -> "@"
+  _ -> error ("cannot print op:" ++ show o)
 
 
 varName :: Int -> String
 varName n = "x" ++ show n
 
 ppExp :: Int -> Op -> Exp -> String
-ppExp _ _ (Var x) = x
-ppExp n _ (Lam f) = parens ("fun " ++ varName n ++ " => " ++ ppExp (n+1) THE (f (Var (varName n))))
-ppExp _ _ (Con x) = x
-ppExp n op (Proj e f) = ppExp n op e ++ "." ++ f
--- ppExp _ (Op op@(Custom _) args) = ppOp op ++ "(" ++ intercalate "," (map (ppExp op) args) ++ ")"
-ppExp n ctx (Quant k p v dom body) = prns (o ++ " " ++ v ++ ", " ++ ppExp n LAST_OPERATOR (dom `c` body))
-  where o = case (k,p) of
-              (One,Neg) -> "forall"
-              (One,Pos) -> "exists"
-              (Few,Pos) -> "FEW"
-              (Few,Neg) -> "MOST"
-              (Several,Pos) -> "SEVERAL"
-              _ -> show (k,p)
-        c = case p of
-              Neg -> (-->)
-              _ -> (∧)
-        prns x = if needsParens ctx LAST_OPERATOR then parens x else x
-ppExp n ctx (Op App (f:args)) = prns $ ppExp n Not f ++ concatMap ((" "++) . ppExp n App) args
-  where prns x = if needsParens ctx App then parens x else x
-ppExp n ctx (Op op args) = prns $ case args of
-  [x,y] -> ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
-  [x] -> ppOp op ++ " " ++ ppExp n op x
-  where prns x = if needsParens ctx op then parens x else x
+ppExp n ctx e0 =
+  let prns op x = if needsParens ctx op then parens x else x
+  in case e0 of
+      (Lam f) -> parens ("fun " ++ varName n ++ " => " ++ ppExp (n+1) LAST_OPERATOR (f (Var (varName n))))
+      (Con x) -> x
+      (Var x) -> x
+      (Proj e f) -> ppExp n (Fld "f") e ++ "." ++ f
+      (Quant k p v dom body) -> prns LAST_OPERATOR (o ++ " " ++ v ++ ", " ++ ppExp n LAST_OPERATOR (dom `c` body))
+          where o = case (k,p) of
+                   (One,Neg) -> "forall"
+                   (One,Pos) -> "exists"
+                   (Few,Pos) -> "FEW"
+                   (Few,Neg) -> "MOST"
+                   (Several,Pos) -> "SEVERAL"
+                   _ -> show (k,p)
+                c = case p of
+                   Neg -> (-->)
+                   _ -> (∧)
+      (APP f arg) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
+      (BinOp op x y) -> ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
+      (Op op args) -> ppOp op ++ "(" ++ intercalate "," [aname ++ "=" ++ ppExp n op a | (aname,a) <- args] ++ ")"
 
 
 parens :: [Char] -> [Char]
 parens x = "(" ++ x ++ ")"
 
 pattern The :: Exp -> Exp
-pattern The body =  Op THE [body]
+pattern The body =  APP (Con "THE") body
 pattern Forall :: Var -> Type -> Exp -> Exp
 pattern Forall x dom body = Quant One Neg x dom body
 pattern Exists :: Var -> Type -> Exp -> Exp
@@ -245,14 +260,14 @@ freeVars (Con _x) = []
 freeVars (Lam f) = freeVars (f (Con "__FREE__"))
 freeVars (Var x) = [x]
 freeVars (Quant _ _ x dom body) = (freeVars dom ++ nub (freeVars body)) \\ [x]
-freeVars (Op _ xs) = (concatMap freeVars xs)
+freeVars (Op _ xs) = (concatMap (freeVars . snd) xs)
 
 boundVars :: Exp -> [Var]
 boundVars (Var _) = []
 boundVars (Lam f) = boundVars (f (Con "__BOUND__")) 
 boundVars (Con _) = []
 boundVars (Quant _ _ x dom body) = x:boundVars dom++boundVars body
-boundVars (Op _ xs) = concatMap boundVars xs
+boundVars (Op _ xs) = concatMap (boundVars . snd) xs
 
 negativeContext :: (Num a, Eq a) => Op -> a -> Bool
 negativeContext Implies 0 = True
@@ -266,43 +281,44 @@ isQuant x' e = case e of
   (Quant One _ x _ _) -> x `elem` x'
   _ -> False
 
-matchQuantArg :: Alternative m => Monad m => [Var] -> [Exp] -> m ([Exp],Exp,[Exp])
-matchQuantArg _ [] = fail "not found"
-matchQuantArg x' (a:as) = (guard (isQuant x' a) >> return ([],a,as)) <|> do
-  (l,q,r) <- matchQuantArg x' as
-  return (a:l,q,r)
-
-liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp -> m Exp
-liftQuantifiers _ (Var x) = return (Var x)
-liftQuantifiers _ (Con x) = return (Con x)
-liftQuantifiers xs (Op op args) = do
-  (l,Quant One pol x dom body,r) <- matchQuantArg xs args
-  let pol' = if negativeContext op (length l) then dualize pol else pol
-  return (Quant One pol' x dom (Op op (l++body:r)))
-
-bottomUp :: (Monad m) => (Exp -> m Exp) -> (Exp -> m Exp)
-bottomUp f (Var x) = f (Var x)
-bottomUp f (Con x) = f (Con x)
-bottomUp f (Op op args) = do
-  r <- Op op <$> mapM (bottomUp f) args
-  f r
-
-anywhere :: Alternative m => (Monad m) => (Exp -> m Exp) -> (Exp -> m Exp)
-anywhere f (Var x) = f (Var x)
-anywhere f (Con x) = f (Con x)
-anywhere f e@(Op op args) = f e <|> Op op <$> mapM (anywhere f) args
+-- matchQuantArg :: Alternative m => Monad m => [Var] -> [Exp] -> m ([Exp],Exp,[Exp])
+-- matchQuantArg _ [] = fail "not found"
+-- matchQuantArg x' (a:as) = (guard (isQuant x' a) >> return ([],a,as)) <|> do
+--   (l,q,r) <- matchQuantArg x' as
+--   return (a:l,q,r)
 
 
-liftQuantifiersAnyWhere :: (Monad m, Alternative m) => [Var] -> Exp -> m Exp
-liftQuantifiersAnyWhere x = anywhere (liftQuantifiers x)
+-- liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp -> m Exp
+-- liftQuantifiers _ (Var x) = return (Var x)
+-- liftQuantifiers _ (Con x) = return (Con x)
+-- liftQuantifiers xs (Op op args) = do
+--   (l,Quant One pol x dom body,r) <- matchQuantArg xs args
+--   let pol' = if negativeContext op (length l) then dualize pol else pol
+--   return (Quant One pol' x dom (Op op (l++body:r)))
+
+-- bottomUp :: (Monad m) => (Exp -> m Exp) -> (Exp -> m Exp)
+-- bottomUp f (Var x) = f (Var x)
+-- bottomUp f (Con x) = f (Con x)
+-- bottomUp f (Op op args) = do
+--   r <- Op op <$> mapM (bottomUp f) args
+--   f r
+
+-- anywhere :: Alternative m => (Monad m) => (Exp -> m Exp) -> (Exp -> m Exp)
+-- anywhere f (Var x) = f (Var x)
+-- anywhere f (Con x) = f (Con x)
+-- anywhere f e@(Op op args) = f e <|> Op op <$> mapM (anywhere f) args
 
 
-extendAllScopes :: Exp -> Exp
-extendAllScopes e = case freeVars e `intersect` boundVars e of
-  [] -> e
-  xs -> case liftQuantifiersAnyWhere xs e of
-    Nothing -> error "freevars, but nothing to lift!"
-    -- Just e' -> if e == e' then e else extendAllScopes e'
+-- liftQuantifiersAnyWhere :: (Monad m, Alternative m) => [Var] -> Exp -> m Exp
+-- liftQuantifiersAnyWhere x = anywhere (liftQuantifiers x)
+
+
+-- extendAllScopes :: Exp -> Exp
+-- extendAllScopes e = case freeVars e `intersect` boundVars e of
+--   [] -> e
+--   xs -> case liftQuantifiersAnyWhere xs e of
+--     Nothing -> error "freevars, but nothing to lift!"
+--     -- Just e' -> if e == e' then e else extendAllScopes e'
 
 type Subst = Var -> Exp
 
@@ -334,7 +350,7 @@ repairInnerfields (Quant k pol x dom body) = do
   modify (mkSubst [(y,Proj (Var x) y) | y <- recordFields dom] `after`)
   Quant k pol x dom' <$> repairInnerfields body
 
-repairInnerfields (Op op as) = Op op <$> mapM repairInnerfields as
+-- repairInnerfields (Op op as) = Op op <$> mapM repairInnerfields as
 -- Fixme: repair op too
 
 repairFields :: Exp -> Exp
