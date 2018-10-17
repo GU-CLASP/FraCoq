@@ -1125,12 +1125,23 @@ some_Quant = \number (cn',gender) role -> do
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   return (\vp' -> Exists x (cn' (Var x)) (vp' (Var x)))
 
+eType :: ([Char] -> Exp -> Exp -> Exp) -> [Char] -> Var -> (Exp -> Exp) -> (Exp -> Exp) -> Exp
+eType quant x z cn' vp' = quant x (cn' (Var x)) (vp' (Var x)) ∧ Forall z ((cn' (Var z)) ∧ (vp' (Var z))) true
+
 most_Quant :: Quant
 most_Quant number  (cn',gender) role = do
   x <- getFresh
   z <- getFresh
-  modify (pushNP (Descriptor gender Plural role) (pureVar x number (cn',gender)))
-  return $ \vp' -> MOST x (cn' (Var x)) (vp' (Var x)) ∧ Forall z ((cn' (Var z)) ∧ (vp' (Var z))) true
+  modify (pushNP (Descriptor gender Plural role) (pureVar z number (cn',gender)))
+  return $ eType MOST x z cn'
+
+
+several_Quant :: Quant
+several_Quant number (cn',gender) role = do
+  x <- getFresh
+  z <- getFresh
+  modify (pushNP (Descriptor gender Plural role) (pureVar z number (cn',gender)))
+  return (eType SEVERAL x z cn')
 
 indefArt :: Quant
 indefArt number (cn',gender) role = do
@@ -1138,13 +1149,6 @@ indefArt number (cn',gender) role = do
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   modify (pushDefinite cn' x)
   return (\vp' -> Exists x (cn' (Var x)) (vp' (Var x)))
-
-several_Quant :: Quant
-several_Quant number (cn',gender) role = do
-  x <- getFresh
-  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
-  modify (pushDefinite cn' x)
-  return (\vp' -> SEVERAL x (cn' (Var x)) (vp' (Var x)))
 
 
 -- | Definite which looks up in the environment.
