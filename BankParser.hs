@@ -135,4 +135,4 @@ overrides (177,1,"p")= Just "s_177_1_p_NEW"
 overrides _ = Nothing
 
 disabledProblems :: [Int]
-disabledProblems = [167,168,171,172]
+disabledProblems = [168,171,172]

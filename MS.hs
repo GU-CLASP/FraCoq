@@ -1058,7 +1058,7 @@ questVP = predVP
 
 --------------------
 -- Phr
-data Phr = Sentence S | Adverbial Adv | PAdverbial Conj Adv
+data Phr = Sentence S | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
 
 sentence :: S -> Phr
 sentence = Sentence
@@ -1074,6 +1074,9 @@ adverbial = Adverbial
 
 pAdverbial :: Conj -> Adv -> Phr
 pAdverbial = PAdverbial
+
+pNounphrase :: Conj -> NP -> Phr
+pNounphrase = PNounPhrase
 
 phrToEff :: Phr -> Effect
 phrToEff p = case p of
@@ -1096,7 +1099,10 @@ x ### (PAdverbial conj adv) = Sentence $ do
   return (apConj2 conj x' (adv' (\_ -> x') (Con "IMPERSONAL")))
   -- FIXME: the adverbs should be pushed to the VP. It should be
   -- possible to do that on the semantics (modify the predicate)
-
+x ### (PNounPhrase conj np) = Sentence $ do
+  x' <- phrToEff x
+  y' <- predVP np doesTooVP
+  return (apConj2 conj x' y')
 
 -------------------------
 -- Quant
@@ -1186,6 +1192,9 @@ most_Predet (MkNP n _q cn) = MkNP n most_Quant cn
 
 all_Predet :: Predet
 all_Predet  (MkNP n _q cn) = MkNP n every_Quant cn
+
+only_Predet :: Predet
+only_Predet = exactly_Predet
 
 exactly_Predet :: Predet
 exactly_Predet (MkNP n _q cn) = MkNP n q cn where
