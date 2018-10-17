@@ -193,7 +193,7 @@ ppExp n ctx e0 =
                    Neg -> (-->)
                    _ -> (∧)
       (APP f arg) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
-      (BinOp op x y) -> ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
+      (BinOp op x y) -> prns op $ ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
       (Op op args) -> ppOp op ++ "(" ++ intercalate "," [aname ++ "=" ++ ppExp n op a | (aname,a) <- args] ++ ")"
 
 
