@@ -33,7 +33,7 @@ eqExp _ _ _ = False
 
 type Type = Exp
 
-newtype Nat = Nat Integer deriving (Show,Eq,Num)
+newtype Nat = Nat Integer deriving (Show,Eq,Num,Enum,Integral,Ord,Real)
 
 data Amount = One | Few | Several | Exact Nat -- amount for the *positive* polarity
   deriving (Eq,Show)
@@ -187,6 +187,7 @@ ppExp n ctx e0 =
                    (Few,Pos) -> "FEW"
                    (Few,Neg) -> "MOST"
                    (Several,Pos) -> "SEVERAL"
+                   (Exact n,Both) -> "exact(" ++ show (toInteger n) ++ ")"
                    _ -> show (k,p)
                 c = case p of
                    Neg -> (-->)
