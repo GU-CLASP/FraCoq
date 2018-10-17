@@ -1251,9 +1251,6 @@ herNP = pron (all' [isFemale, isSingular, isNotSubject])
 themSingNP :: NP -- as in everyone owns their book 
 themSingNP = pron (all' [isSingular, isNotSubject])
 
--- nthNP :: Int -> Role -> VP -> Env -> (Prop, Env)
--- nthNP n = \role vp ρ -> (getNthNP n ρ) role vp ρ
-
 his :: CN2 -> NP
 his cn2 role = do
   (isSloppy :: Bool) <- gets envSloppyFeatures

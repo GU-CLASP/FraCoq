@@ -6,7 +6,7 @@ import Bank
 main :: IO ()
 main = do
   suite >> putStrLn "----------"
-  evalDbg (p_180)
+  evalDbg (p_196)
 
 
 
@@ -21,10 +21,17 @@ ouch122 = evalDbg (phrToEff s_122_4_h)
 
 
 
--- Analysis for 132.  In h2, a plural they is used to refer to a
+
+-- Analysis for 132.  In h2, a plural "they" is used to refer to a
 -- singular object introduced with indefArt. When the scope of
 -- "forall" is closed (when the sentence is finished), the singular
 -- existential should be transformed to plurals.
 
-
 -- Analysis for 181. IMO it can be "yes" on some reading.
+
+-- Analysis for 183. Strict identity not implemented.
+
+-- Analysis for 190. Strict identity not implemented.
+
+
+
