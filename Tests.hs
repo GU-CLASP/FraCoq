@@ -5,60 +5,26 @@ import Bank
 
 main :: IO ()
 main = do
-  suite
-  print "----------"
-  evalDbg p_122
-
--- >>> evalDbg (s_120_1_p ### s_120_2_p)
--- ((EXISTS a:(meeting_N a). (attend_V2 smith_PN a)) /\ (chair_V2 smith_PN a))
-
-
--- Analysis for 122
-
-
--- forall a, committee_N a -> (exists b, chairman_N b /\ have_V2 a b)
--- by8agent_Prep (THE (fun x1 => (have_V2 a x1 /\ member_N x1))) (fun x1 => (exists c, appoint_V2 x1 c)) b
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
--- forall d, committee_N d -> (exists g, chairman_N g /\ (exists e, appoint_V2 e g) /\ (exists f, possess_Prep d member_N f /\ by8agent_Prep f (have_V2 d) g))
-
-
--- committee_N d
--- forall a, committee_N a -> (exists b, chairman_N b /\ have_V2 a b)
--- by8agent_Prep (THE (fun x1 => (have_V2 a x1 /\ member_N x1))) (fun x1 => (exists c, appoint_V2 x1 c)) b
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
--- (exists g, chairman_N g /\ (exists e, appoint_V2 e g) /\ (exists f, possess_Prep d member_N f /\ by8agent_Prep f (have_V2 d) g))
-
-
-
--- d : indiv
--- committee_N d
--- exists b, chairman_N b /\ have_V2 d b
--- by8agent_Prep (THE (fun x1 => (have_V2 a x1 /\ member_N x1))) (fun x1 => (exists c, appoint_V2 x1 c)) b
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
--- (exists g, chairman_N g /\ (exists e, appoint_V2 e g) /\ (exists f, possess_Prep d member_N f /\ by8agent_Prep f (have_V2 d) g))
-
-
--- d : indiv
--- b : indiv
--- committee_N d
--- chairman_N b
--- have_V2 d b
--- by8agent_Prep (THE (fun x1 => (have_V2 a x1 /\ member_N x1))) (fun x1 => (exists c, appoint_V2 x1 c)) b
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
--- (exists g, chairman_N g /\ (exists e, appoint_V2 e g) /\ (exists f, possess_Prep d member_N f /\ by8agent_Prep f (have_V2 d) g))
-
-
--- d : indiv
--- b : indiv
--- committee_N d
--- chairman_N b
--- have_V2 d b
--- by8agent_Prep (THE (fun x1 => (have_V2 a x1 /\ member_N x1))) (fun x1 => (exists c, appoint_V2 x1 c)) b
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
--- (exists e, appoint_V2 e b) /\ (exists f, possess_Prep d member_N f /\ by8agent_Prep f (have_V2 d) b))
+  suite >> putStrLn "----------"
+  evalDbg (p_180)
 
 
 
 
+-- Analysis for 122. Conclusion (H) parse tree is beyond idiotic,
+-- can't be fixed at the semantic level:
+
+-- (Every committee) (has (((a chairman) appointed) (by (members of the committee))))
+
+ouch122 :: IO ()
+ouch122 = evalDbg (phrToEff s_122_4_h)
 
 
+
+-- Analysis for 132.  In h2, a plural they is used to refer to a
+-- singular object introduced with indefArt. When the scope of
+-- "forall" is closed (when the sentence is finished), the singular
+-- existential should be transformed to plurals.
+
+
+-- Analysis for 181. IMO it can be "yes" on some reading.

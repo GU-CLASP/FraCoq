@@ -464,6 +464,7 @@ lexemeN x@"sales_department_N" = genderedN x [Neutral]
 lexemeN x@"invoice_N" = genderedN x [Neutral]
 lexemeN x@"meeting_N" = genderedN x [Neutral]
 lexemeN x@"report_N" = genderedN x [Neutral]
+lexemeN x@"car_N" = genderedN x [Neutral]
 lexemeN x@"chairman_N" = genderedN x [Male]
 lexemeN x = genderedN x [Male,Female,Neutral]
 
