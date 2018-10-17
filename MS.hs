@@ -103,10 +103,10 @@ isPerson :: Descriptor -> Bool
 isPerson = const True -- FIXME
 
 isSingular :: Descriptor -> Bool
-isSingular Descriptor {..} = dNumber `elem` [Singular, Unspecified]
+isSingular Descriptor {..} = dNumber `elem` [Singular, Cardinal 1, Unspecified]
 
 isPlural :: Descriptor -> Bool
-isPlural Descriptor {..} = dNumber `elem` [Plural, Unspecified] -- FIXME
+isPlural Descriptor {..} = dNumber `elem` [Plural, Unspecified] -- FIXME: many more cases
 
 isNotSubject :: Descriptor -> Bool
 isNotSubject = (/= Subject) . dRole
@@ -201,16 +201,8 @@ constant x = Con x
 pureObj :: Exp -> Number -> CN' -> NP
 pureObj x number cn  = return $ MkNP number (\_number _cn _role -> return $ \vp -> vp x) cn
 
--- _ _ return (\vp -> vp (x))
-
 pureVar :: Var -> Number -> CN' -> NP
 pureVar x = pureObj (Var x)
-
--- pureIntersectiveAP :: (Object -> Prop) -> AP
--- pureIntersectiveAP q = do
---   modify (pushAP (pureIntersectiveAP q))
---   x <- getFresh
---   return (\typ -> Sigma x typ (q (Var x)))
 
 getFresh :: Dynamic String
 getFresh = do
@@ -263,9 +255,6 @@ type VV = Dynamic (VP' -> Object -> Prop)
 type SC = Dynamic (VP')
 type VS = Dynamic (S' -> VP')
 
--- Definition NP0 := VP ->Prop.
--- Definition NP1 := (object -> Prop) ->Prop.
-
 type Cl =  Dynamic Prop
 type Temp = Prop -> Prop
 type Ord = Dynamic  A'
@@ -280,9 +269,9 @@ type Pol = Prop -> Prop
 
 
 data Number where
+  Unspecified :: Number
   Singular :: Number
   Plural   :: Number
-  Unspecified :: Number
   MoreThan :: Number -> Number
   Cardinal :: Nat -> Number
   deriving (Show,Eq)
@@ -545,7 +534,7 @@ relCN cn rs = do
   (cn',gender) <- cn
   rs' <- rs
   return $ (\x -> cn' x ∧ rs' x, gender)
-   -- GF FIXME: Relative clauses should apply to NPs. See 013, 027, 044.  
+   -- GF FIXME: Relative clauses should apply to NPs. See 013, 027, 044
 
 advCN :: CN -> Adv -> CN
 advCN cn adv = do
@@ -579,7 +568,7 @@ usePN (o,g,n) = pureNP (Con o) g n Subject -- FIXME: role
 pureNP :: Object -> [Gender] -> Number -> Role -> NP
 pureNP o dGender dNumber dRole = do
   modify (pushNP (Descriptor{..}) (pureNP o dGender dNumber dRole))
-  return $ MkNP Singular q (\_ -> true,dGender)
+  return $ MkNP dNumber q (\_ -> true,dGender)
   where q :: Quant
         q _dNumber _oClass _dRole = do
           return (\vp -> vp o)
@@ -595,7 +584,7 @@ detCN (num,quant) cn = do
   return (MkNP num quant cn')
 
 usePron :: Pron -> NP
-usePron = id 
+usePron = id
 
 advNP :: NP -> Adv -> NP
 advNP np adv = do
@@ -689,7 +678,7 @@ itRefl_Pron :: Pron
 itRefl_Pron = qPron $ all' [isNeutral, isSingular, isCoArgument]
 
 they_Pron :: Pron
-they_Pron = qPron $ isPlural
+they_Pron = qPron $ isPlural -- can be singular they.
 
 someone_Pron :: Pron
 someone_Pron = qPron $ all' [isSingular, isPerson]
@@ -719,7 +708,7 @@ every_Det :: Det
 every_Det = (Unspecified,every_Quant)
 
 each_Det :: Det
-each_Det = (Singular,every_Quant)
+each_Det = (Unspecified,every_Quant)
 
 somePl_Det :: Det
 somePl_Det = (Plural,indefArt)
@@ -1034,7 +1023,7 @@ extAdvS :: Adv -> S -> S
 extAdvS adv s = do
   adv' <- adv
   s' <- s
-  return $ adv' (\_ -> s') (Con "IMPERSONAL")
+  return $ adv' (\_ -> s') (Con "IMPERSONAL") -- FIXME: use prep pushing
 
 
 useCl :: Temp -> Pol -> Cl -> S
