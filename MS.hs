@@ -702,7 +702,16 @@ everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,F
 type Det = (Number,Quant)
 
 detQuant :: Quant -> Number -> Det
+detQuant _ (Cardinal n) = (Cardinal n,atLeastQuant n)
 detQuant q n = (n,q)
+
+
+atLeastQuant :: Nat -> Number -> (Object -> Prop, [Gender]) -> Role -> Dynamic ((Exp -> Exp) -> Exp)
+atLeastQuant n' number (cn',gender) role = do
+      x <- getFresh
+      modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+      return (\vp' -> Quant (AtLeast n') Pos x (cn' (Var x)) (vp' (Var x)))
+
 
 every_Det :: Det
 every_Det = (Unspecified,every_Quant)
@@ -1197,9 +1206,10 @@ only_Predet :: Predet
 only_Predet = exactly_Predet
 
 exactly_Predet :: Predet
-exactly_Predet (MkNP n _q cn) = MkNP n q cn where
-  q :: Quant
-  q number@(Cardinal n') (cn',gender) role = do
+exactly_Predet (MkNP n _q cn) = MkNP n exactlyQuant cn where
+
+exactlyQuant :: Number -> (Object -> Prop, [Gender]) -> Role -> Dynamic ((Exp -> Exp) -> Exp)
+exactlyQuant number@(Cardinal n') (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
       return (\vp' -> Quant (Exact n') Both x (cn' (Var x)) (vp' (Var x)))

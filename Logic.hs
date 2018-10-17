@@ -35,7 +35,7 @@ type Type = Exp
 
 newtype Nat = Nat Integer deriving (Show,Eq,Num,Enum,Integral,Ord,Real)
 
-data Amount = One | Few | Several | Exact Nat -- amount for the *positive* polarity
+data Amount = One | Few | Several | Exact Nat | AtLeast Nat -- amount for the *positive* polarity
   deriving (Eq,Show)
 
 data Op = Fld String -- ^ field lookup
