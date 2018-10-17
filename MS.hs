@@ -336,7 +336,7 @@ lexemeV2V :: String -> V2V
 lexemeV2V v2v = return $ \x vp y -> apps (Con v2v) [x,lam vp,y]
 
 lexemePN :: String -> PN
-lexemePN x@"smith_PN" = (x,[Female],Singular)
+lexemePN x@"smith_PN" = (x,[Male,Female],Singular) -- smith is female in 123 but male in 182 and following
 lexemePN x@"john_PN" = (x,[Male],Singular)
 lexemePN x@"itel_PN" = (x,[Neutral],Plural)
 lexemePN x@"bt_PN" = (x,[Neutral],Plural)
