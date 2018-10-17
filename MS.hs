@@ -869,6 +869,7 @@ complVS :: VS -> S -> VP
 complVS vs s = do
   vs' <- vs
   s' <- s
+  modify (pushVP (complVS vs s))
   return (vs' s')
 
 complVSa :: VS -> S -> VP
