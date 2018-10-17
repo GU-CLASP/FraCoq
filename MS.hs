@@ -757,8 +757,10 @@ compNP np = do
 compAdv :: Adv -> Comp
 compAdv adv = do
   adv' <- adv
-  return $ \x -> adv' (\y -> (Con "_BE_" `apps` [y])) x
+  return $ \x -> adv' beVerb x
 
+beVerb :: VP'
+beVerb y = Con "_BE_" `apps` [y]
 
 ---------------------------
 -- V2
@@ -930,7 +932,7 @@ impersCl vp = do
 existNP :: NP -> Cl
 existNP np = do
   np' <- interpNP np Other
-  return $ (np' $ \_ -> TRUE)
+  return $ (np' beVerb)
 
 predVP :: NP -> VP -> Cl
 predVP np vp = do
@@ -1305,15 +1307,6 @@ most (cn) role = do
   (cn',gender,Plural) <- cn
   modify (pushNP (Descriptor gender Plural role) (pureVar x))
   return $ \vp' -> MOST x cn' (vp' (Var x)) ∧ Forall z (Sigma x cn' (vp' (Var x))) true
-
--- thereIs :: CN -> S
--- thereIs cn = do
---   x <- getFresh
---   (cn',gender,number) <- cn
---   modify (pushNP (Descriptor gender number Subject) (pureVar x))
---   modify (pushDefinite cn' x)
---   return (Exists x cn' (isHere (Var x)))
-
 
 thatOf :: NP -> NP
 thatOf x role = do
