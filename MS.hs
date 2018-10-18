@@ -311,9 +311,11 @@ pureV3 v3 = do
 
 -----------------
 -- Lexemes
-
+meta :: Exp
+meta = Con "META"
 
 lexemeV :: String -> V
+lexemeV "go8walk_V" = return $ (namedRel2  "go8walk_V2" "to" "who" meta)
 lexemeV x = return $ mkPred x
 
 lexemeA :: String -> A
@@ -325,7 +327,7 @@ lexemeV3 x = return $ mkRel3 x
 
 lexemeV2 :: String -> V2
 lexemeV2 x@"appoint_V2" = pureV2 (namedRel2 x "by" "who")
-lexemeV2 "deliver_V2" = pureV2 (namedRel3 "deliver_V3" "to" "what" "who" (Con "META")) 
+lexemeV2 "deliver_V2" = pureV2 (namedRel3 "deliver_V3" "to" "what" "who" meta) 
 lexemeV2 x = pureV2 (mkRel2 x)
 
 lexemeV2S :: String -> V2S
@@ -712,7 +714,7 @@ detQuant q n = (n,q)
 atLeastQuant :: Nat -> Number -> (Object -> Prop, [Gender]) -> Role -> Dynamic ((Exp -> Exp) -> Exp)
 atLeastQuant n' number (cn',gender) role = do
       x <- getFresh
-      modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+      modify (pushNP (Descriptor gender Plural role) (pureVar x number (cn',gender)))
       return (\vp' -> Quant (AtLeast n') Pos x (cn' (Var x)) (vp' (Var x)))
 
 
