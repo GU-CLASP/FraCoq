@@ -1244,6 +1244,23 @@ know_VQ qs = do
   qs' <- qs
   return $ \x -> Con "knowVQ" `apps` [qs',x]
 
+------------------
+-- Additional combinators
+
+
+a2np :: V2 -> NP -> RCl
+a2np v2 np = do
+  v2' <- v2
+  np' <- interpNP np Other
+  return (\x -> np' (v2' x))
+
+cnap :: CN -> RCl -> CN
+cnap cn rcl = do
+  (cn',gender) <- cn
+  rcl' <- rcl
+  return (\x -> cn' x ∧ rcl' x, gender)
+
+
 {-
 
 himNP :: NP
