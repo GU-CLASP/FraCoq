@@ -56,8 +56,8 @@ data Role where
 
 -- first :: (t2 -> t1) -> (t2, t) -> (t1, t)
 -- first f (x,y) = (f x,y)
--- second :: forall t t1 t2. (t2 -> t1) -> (t, t2) -> (t, t1)
--- second f (x,y) = (x,f y)
+second :: forall t t1 t2. (t2 -> t1) -> (t, t2) -> (t, t1)
+second f (x,y) = (x,f y)
 
 data Descriptor = Descriptor {dGender :: [Gender]
                              ,dNumber :: Number
@@ -320,10 +320,12 @@ lexemeA :: String -> A
 lexemeA a = return $ \cn obj -> apps (Con a) [lam cn, obj]
 
 lexemeV3 :: String -> V3
+lexemeV3 "deliver_V3" = pureV3 (namedRel3 "deliver_V3" "to" "what" "who")
 lexemeV3 x = return $ mkRel3 x
 
 lexemeV2 :: String -> V2
 lexemeV2 x@"appoint_V2" = pureV2 (namedRel2 x "by" "who")
+lexemeV2 "deliver_V2" = pureV2 (namedRel3 "deliver_V3" "to" "what" "who" (Con "META")) 
 lexemeV2 x = pureV2 (mkRel2 x)
 
 lexemeV2S :: String -> V2S
@@ -360,8 +362,8 @@ modifyingPrep aname x vp subj = toto (aname,x) (vp subj)
 toto :: (String,Exp) -> Exp -> Exp
 toto whom (Quant a p x dom body) = Quant a p x dom (toto whom body)
 toto whom (Op op@(Custom _) args) = Op op (nubBy ((==) `on` fst) (whom:args))
+toto whom (Op op args) = Op op (map (second (toto whom)) args)
 toto (aname,whom) s =  Con (aname ++ "_PREP")  `apps` [whom,s]
-
 
 
 type RP = ()
