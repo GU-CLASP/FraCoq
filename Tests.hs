@@ -24,10 +24,12 @@ main = do
 -- (Every committee) (has (a (chairman (appointed (by (members of the committee))))))
 
 -- The key constructions from the resource library are:
--- mkAP 	A2 -> NP -> AP     married to her
+-- relA2 	RP -> A2 -> NP -> RCl    ... that is married to her
+-- relCN         CN -> RS -> CN     person (married to her)
 
--- This one appears to be missing (but we will add it anyway, and say so.)
--- mkCN         CN -> AP -> CN     person (married to her)
+-- It appears that the omitted RP is not in GF, and that is what causes the parsing problem. (added as implicitRP below)
+-- With explicit RP:
+-- (Every committee) (has (a (chairman (that is (appointed (by (members of the committee)))))))
 
 ouch122 :: IO ()
 ouch122 = evalDbg (phrToEff s_122_4_h)
@@ -36,7 +38,7 @@ membersOfTheComittee :: NP
 membersOfTheComittee = (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "committee_N")))) (numPl)) (useN (lexemeN "member_N")))
 
 chairman_etc :: NP
-chairman_etc = detCN (detQuant (indefArt) (numSg)) (cnap (useN (lexemeN "chairman_N")) (a2np (lexemeV2 "appoint_V2") membersOfTheComittee))
+chairman_etc = detCN (detQuant (indefArt) (numSg)) (relCN (useN (lexemeN "chairman_N")) (relA2 implicitRP (lexemeV2 "appoint_V2") membersOfTheComittee))
 
 s_122_4_h_ALT :: Phr
 s_122_4_h_ALT = (sentence (useCl (present) (pPos) (predVP (detCN (every_Det) (useN (lexemeN "committee_N"))) (complSlash (slashV2a (lexemeV2 "have_V2")) chairman_etc ))))

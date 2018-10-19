@@ -375,6 +375,9 @@ lexemeRP _ = ()
 idRP :: RP
 idRP = ()
 
+implicitRP :: RP
+implicitRP = ()
+
 ---------------------
 -- Unimplemented categories
 
@@ -559,6 +562,7 @@ elliptic_CN = do
   cns <- gets getCN
   cn <- afromList cns
   cn
+
 
 ------------------------
 -- NP
@@ -867,9 +871,6 @@ useV v = do
   modify (pushVP (useV v))
   v
 
-relVP :: RP->VP->RCl
-relVP _ vp = vp
-
 complVS :: VS -> S -> VP
 complVS vs s = do
   vs' <- vs
@@ -972,6 +973,18 @@ relSlash _rpIgnored cl = cl
 
 strandRelSlash :: RP -> ClSlash -> RCl
 strandRelSlash _rp cl = cl
+
+
+type A2 = V2
+
+relA2 :: RP -> A2 -> NP -> RCl
+relA2 _ v2 np = do
+  v2' <- v2
+  np' <- interpNP np Other
+  return (\x -> np' (v2' x))
+
+relVP :: RP->VP->RCl
+relVP _ vp = vp
 
 
 --------------------
@@ -1246,19 +1259,6 @@ know_VQ qs = do
 
 ------------------
 -- Additional combinators
-
-
-a2np :: V2 -> NP -> RCl
-a2np v2 np = do
-  v2' <- v2
-  np' <- interpNP np Other
-  return (\x -> np' (v2' x))
-
-cnap :: CN -> RCl -> CN
-cnap cn rcl = do
-  (cn',gender) <- cn
-  rcl' <- rcl
-  return (\x -> cn' x ∧ rcl' x, gender)
 
 
 {-
