@@ -8,8 +8,8 @@ main = do
   -- suite >> putStrLn "----------"
   evalDbg (phrToEff s_122_4_h_ALT)
 
+-- Input the gender of PNs and CNs
 -- Many: need to have multiple readings. Interpreted as disjunctions.
-
 
 
 -- 121: Works now with "hack". The difficulty here is that the object is applied before the object.
