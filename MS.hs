@@ -343,6 +343,7 @@ lexemePN :: String -> PN
 lexemePN x@"smith_PN" = (x,[Male,Female],Singular) -- smith is female in 123 but male in 182 and following
 lexemePN x@"john_PN" = (x,[Male],Singular)
 lexemePN x@"itel_PN" = (x,[Neutral],Plural)
+lexemePN x@"gfi_PN" = (x,[Neutral],Singular)
 lexemePN x@"bt_PN" = (x,[Neutral],Plural)
 lexemePN x = (x,[Male,Female,Neutral],Unspecified)
 
@@ -467,11 +468,15 @@ lexemeN "one_N" = one_N
 lexemeN x@"line_N" = genderedN x [Neutral]
 lexemeN x@"department_N" = genderedN x [Neutral]
 lexemeN x@"committee_N" = genderedN x [Neutral]
+lexemeN x@"customer_N" = genderedN x [Male,Female]
+lexemeN x@"executive_N" = genderedN x [Male,Female]
 lexemeN x@"sales_department_N" = genderedN x [Neutral]
 lexemeN x@"invoice_N" = genderedN x [Neutral]
 lexemeN x@"meeting_N" = genderedN x [Neutral]
 lexemeN x@"report_N" = genderedN x [Neutral]
+lexemeN x@"laptop_computer_N" = genderedN x [Neutral]
 lexemeN x@"car_N" = genderedN x [Neutral]
+lexemeN x@"company_N" = genderedN x [Neutral]
 lexemeN x@"chairman_N" = genderedN x [Male]
 lexemeN x = genderedN x [Male,Female,Neutral]
 
@@ -687,10 +692,12 @@ itRefl_Pron :: Pron
 itRefl_Pron = qPron $ all' [isNeutral, isSingular, isCoArgument]
 
 they_Pron :: Pron
-they_Pron = qPron $ isPlural -- can be singular they.
+they_Pron = qPron $ all' [isPlural
+                         , not . isCoArgument -- this form excludes "themselves"
+                         ]
 
 someone_Pron :: Pron
-someone_Pron = qPron $ all' [isSingular, isPerson]
+someone_Pron = return $ MkNP Singular indefArt (mkPred "Person_N",[Male,Female])
 
 maximallySloppyPron :: Pron
 maximallySloppyPron = qPron $ const True
@@ -719,6 +726,7 @@ atLeastQuant :: Nat -> Number -> (Object -> Prop, [Gender]) -> Role -> Dynamic (
 atLeastQuant n' number (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor gender Plural role) (pureVar x number (cn',gender)))
+      -- modify (pushDefinite cn' x)
       return (\vp' -> Quant (AtLeast n') Pos x (cn' (Var x)) (vp' (Var x)))
 
 
@@ -981,7 +989,7 @@ relA2 :: RP -> A2 -> NP -> RCl
 relA2 _ v2 np = do
   v2' <- v2
   np' <- interpNP np Other
-  return (\x -> np' (v2' x))
+  return (\x -> np' (flip v2' x))
 
 relVP :: RP->VP->RCl
 relVP _ vp = vp

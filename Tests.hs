@@ -6,7 +6,7 @@ import Bank
 main :: IO ()
 main = do
   -- suite >> putStrLn "----------"
-  evalDbg (phrToEff s_122_4_h_ALT)
+  evalDbg p_141
 
 -- Input the gender of PNs and CNs
 -- Many: need to have multiple readings. Interpreted as disjunctions.
@@ -43,8 +43,12 @@ chairman_etc = detCN (detQuant (indefArt) (numSg)) (relCN (useN (lexemeN "chairm
 s_122_4_h_ALT :: Phr
 s_122_4_h_ALT = (sentence (useCl (present) (pPos) (predVP (detCN (every_Det) (useN (lexemeN "committee_N"))) (complSlash (slashV2a (lexemeV2 "have_V2")) chairman_etc ))))
 
--- >>> evalDbg (phrToEff s_122_4_h_ALT)
--- (forall a, committee_N a -> (exists b, chairman_N b /\ appoint_V2(by=b,who=(THE (fun x1 => have_V2 a x1 /\ member_N x1))) /\ have_V2 b a))
+p_122_ALT :: Effect
+p_122_ALT = phrToEff (s_122_1_p ### s_122_2_p) ==> phrToEff s_122_4_h_ALT
+
+-- >>> evalDbg p_122_ALT
+-- ((forall a, committee_N a -> (exists b, chairman_N b /\ have_V2 b a)) /\ appoint_V2(by=(THE (fun x1 => have_V2 a x1 /\ member_N x1)),who=b)
+-- -> (forall c, committee_N c -> (exists d, chairman_N d /\ appoint_V2(by=(THE (fun x1 => have_V2 c x1 /\ member_N x1)),who=d) /\ have_V2 d c)))
 
 
 -- 125: GF: Both "two" and "ten" introduce a quantifier. "They" can refer
@@ -65,6 +69,13 @@ s_122_4_h_ALT = (sentence (useCl (present) (pPos) (predVP (detCN (every_Det) (us
 -- singular object introduced with indefArt. When the scope of
 -- "forall" is closed (when the sentence is finished), the singular
 -- existential should be transformed to plurals.
+
+-- 137.
+-- a) "There are 100" --> should in general be interpreted as "at least", until we see in P4 the mention of "the other 99", implying an exact interpretation.
+-- b) Difficulty to relate "THE company_N" to the set introduced in the first premise.
+-- c) Difficult to interpret: (advNP (detNP (anySg_Det)) (prepNP (lexemePrep "part_Prep") (detCN (detQuant (possPron (itRefl_Pron)) (numPl)) (useN (lexemeN "computer_N")))))
+
+-- 
 
 -- Analysis for 181. IMO it can be "yes" on some reading.
 
