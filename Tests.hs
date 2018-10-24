@@ -6,16 +6,12 @@ import Bank
 main :: IO ()
 main = do
   -- suite >> putStrLn "----------"
-  evalDbg p_141
+  evalDbg p_121
 
 -- Input the gender of PNs and CNs
 -- Many: need to have multiple readings. Interpreted as disjunctions.
 
 -- Many: new handling of adverbs, prepositions. See type VP'
-
--- 121: Works now with "hack". The difficulty here is that the object is applied before the object.
--- Alternative is to make the vp "lazy", and wait for the last moment until the components are applied to it.
-
 
 -- Analysis for 122. Conclusion (H) parse tree is wrong, it can't be fixed at the semantic level:
 
