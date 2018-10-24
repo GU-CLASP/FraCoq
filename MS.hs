@@ -851,8 +851,8 @@ elliptic_VP = doesTooVP
 passV2s :: V2 -> VP
 passV2s v2 = do
   v2' <- v2
-  -- x <- getFresh; return $ \object -> Exists x true (v2' object (Var x)) -- alternative with quantifier
-  return $ \object -> (v2' meta object)
+  x <- getFresh; return $ \object eos -> Exists x true (v2' object (Var x) eos) -- alternative with quantifier
+  -- return $ \object -> (v2' meta object)
 
 passVPSlash :: VPSlash -> VP
 passVPSlash = passV2s
