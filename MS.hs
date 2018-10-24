@@ -133,15 +133,15 @@ getNP q = gets (getNP' q)
 getDefinite :: CN' -> Dynamic Object
 getDefinite (cn',_gender) = do
   things <- gets envDefinites
-  return (things (lam cn'))
+  return (things (lam (\x -> noExtraObjs (cn' x))))
 
 -------------------------------
 -- Pushes
 
 
-pushDefinite :: (Object -> Prop) -> Var -> Env -> Env
+pushDefinite :: (Object -> S') -> Var -> Env -> Env
 pushDefinite source target Env{..} = Env{envDefinites = \x ->
-                                                    if eqExp 0 x (lam source)
+                                                    if eqExp 0 x (lam (\x' -> noExtraObjs (source x')))
                                                     then Var target
                                                     else envDefinites x,..}
 
@@ -223,7 +223,7 @@ assumedPred predName = do
   return $ \x -> (mkPred predName x)
 
 assumedCN :: CN'
-assumedCN = (mkPred' "assumedCN", [Male,Female,Neutral])
+assumedCN = (mkPred "assumedCN", [Male,Female,Neutral])
 
 assumedNumber :: Number
 assumedNumber = Singular
@@ -248,7 +248,7 @@ type S' = [(Var,Object)] -> Prop -- the list of objects corresponds to eventual 
 type S = Dynamic S'
 type V2 = Dynamic (Object -> Object -> S') --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> S')
-type CN' = (Object -> Prop,[Gender])
+type CN' = (Object -> S',[Gender])
 type CN = Dynamic CN'
 type AP = Dynamic A'
 type CN2 = Dynamic ((Object -> Type),Gender,Number)
@@ -301,7 +301,7 @@ any' fs x = any ($ x) fs
 genderedN :: String -> [Gender] -> CN
 genderedN s gender =
   do modify (pushCN (genderedN s gender))
-     return (mkPred' s,gender)
+     return (mkPred s,gender)
 
 pureV2 :: (Object -> Object -> S') -> V2
 pureV2 v2 = do
@@ -544,21 +544,23 @@ relCN :: CN->RS->CN
 relCN cn rs = do
   (cn',gender) <- cn
   rs' <- rs
-  return $ (\x -> cn' x ∧ rs' x, gender)
+  return $ (\x eos -> cn' x eos ∧ rs' x, gender)
    -- GF FIXME: Relative clauses should apply to NPs. See 013, 027, 044
 
 advCN :: CN -> Adv -> CN
 advCN cn adv = do
   (cn',gender) <- cn
   adv' <- adv
-  return (\x -> noExtraObjs (adv' $ \_extraObjs -> cn' x ),gender) -- FIXME: lift cn
+  return (\x eos -> adv' (cn' x) eos ,gender) -- FIXME: lift cn
+
+
 
 adjCN :: A -> CN -> CN
 adjCN a cn = do
   a' <- a
   (cn',gendr) <- cn
   modify (pushCN (adjCN a cn))
-  return $ (a' cn',gendr)
+  return $ (\x eos -> a' (flip cn' eos) x,gendr)
 
 elliptic_CN :: CN
 elliptic_CN = do
@@ -580,7 +582,7 @@ usePN (o,g,n) = pureNP (Con o) g n Subject -- FIXME: role
 pureNP :: Object -> [Gender] -> Number -> Role -> NP
 pureNP o dGender dNumber dRole = do
   modify (pushNP (Descriptor{..}) (pureNP o dGender dNumber dRole))
-  return $ MkNP dNumber q (\_ -> true,dGender)
+  return $ MkNP dNumber q (\_ _ -> true,dGender)
   where q :: Quant
         q _dNumber _oClass _dRole = do
           return (\vp -> vp o)
@@ -616,7 +618,7 @@ predetNP f np = do
 -- FIXME: WTF?
 detNP :: Det -> NP
 detNP (number,quant) =
-  return (MkNP number quant (const TRUE {- fixme -},[Male,Female,Neutral]))
+  return (MkNP number quant (const (const TRUE) {- fixme -},[Male,Female,Neutral]))
 
 
 pPartNP :: NP -> V2 -> NP  -- Word of warning: in FraCas partitives always behave like intersection, which is probably not true in general
@@ -624,13 +626,13 @@ pPartNP np v2 = do
   MkNP num q (cn,gender) <- np
   v2' <- v2
   subject <- getFresh
-  return $ MkNP num q ((\x -> cn x ∧ Exists subject true (noExtraObjs (v2' x (Var subject)))),gender)
+  return $ MkNP num q ((\x eos -> (cn x eos)  ∧ Exists subject true (noExtraObjs (v2' x (Var subject)))),gender)
 
 relNPa :: NP -> RS -> NP
 relNPa np rs = do
   MkNP num q (cn,gender) <- np
   rs' <- rs
-  return $ MkNP num q (\x -> cn x ∧ rs' x, gender)
+  return $ MkNP num q (\x eos -> cn x eos ∧ rs' x, gender)
 
 
 conjNP2 :: Conj -> NP -> NP -> NP
@@ -644,7 +646,7 @@ conjNP2 c np1 np2 = do
                     p1 <- q1 num' (cn1,gender1) role
                     p2 <- q2 num' (cn2,gender2) role
                     return $ \vp -> apConj2 c (p1 vp) (p2 vp))
-                (\x -> cn1 x ∨ cn2 x, gender1) -- FIXME: problem 128, etc.
+                (\x eos -> cn1 x eos ∨ cn2 x eos, gender1) -- FIXME: problem 128, etc.
   
 
 conjNP3 :: Conj -> NP -> NP -> NP -> NP
@@ -659,7 +661,7 @@ conjNP3 c np1 np2 np3 = do
                     p2 <- q2 num' (cn2,gender2) role
                     p3 <- q3 num' (cn3,gender3) role
                     return $ \vp -> apConj3 c (p1 vp) (p2 vp) (p3 vp))
-                (\x -> cn1 x ∨ cn2 x ∨ cn3 x, gender1)
+                (\x eos -> cn1 x eos ∨ cn2 x eos ∨ cn3 x eos, gender1)
 
 
 ----------------------
@@ -695,13 +697,13 @@ they_Pron = qPron $ all' [isPlural
                          ]
 
 someone_Pron :: Pron
-someone_Pron = return $ MkNP Singular indefArt (mkPred' "Person_N",[Male,Female])
+someone_Pron = return $ MkNP Singular indefArt (mkPred "Person_N",[Male,Female])
 
 maximallySloppyPron :: Pron
 maximallySloppyPron = qPron $ const True
 
 everyone_Pron :: Pron
-everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred' "Person_N",[Male,Female])
+everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,Female])
 
 
 -- his :: CN2 -> NP
@@ -720,12 +722,12 @@ detQuant _ (Cardinal n) = (Cardinal n,atLeastQuant n)
 detQuant q n = (n,q)
 
 
-atLeastQuant :: Nat -> Number -> (Object -> Prop, [Gender]) -> Role -> Dynamic ((Exp -> S') -> S')
+atLeastQuant :: Nat -> Number -> CN' -> Role -> Dynamic ((Exp -> S') -> S')
 atLeastQuant n' number (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor gender Plural role) (pureVar x number (cn',gender)))
       -- modify (pushDefinite cn' x)
-      return (\vp' extraObjs -> Quant (AtLeast n') Pos x (cn' (Var x)) (vp' (Var x) extraObjs))
+      return (\vp' extraObjs -> Quant (AtLeast n') Pos x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
 
 
 every_Det :: Det
@@ -758,7 +760,7 @@ useComp c = do
 compCN :: CN -> Comp
 compCN cn = do
   (cn',_gender) <- cn
-  return cn'
+  return (\x -> noExtraObjs (cn' x))
 
 compAP :: AP -> Comp
 compAP ap = do
@@ -1172,16 +1174,19 @@ every_Quant = \number (cn',gender) role -> do
   x <- getFresh
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   modify (pushDefinite cn' x)
-  return $ \vp' eos -> (Forall x (cn' (Var x)) (vp' (Var x) eos))
+  return $ \vp' eos -> (Forall x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos))
 
 some_Quant :: Quant
 some_Quant = \number (cn',gender) role -> do
   x <- getFresh
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
-  return (\vp' eos -> Exists x (cn' (Var x)) (vp' (Var x) eos))
+  return (\vp' eos -> Exists x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos))
 
-eType :: ([Char] -> Exp -> Exp -> Exp) -> [Char] -> Var -> (Exp -> Exp) -> (Exp -> S') -> S'
-eType quant x z cn' vp' eos = quant x (cn' (Var x)) (vp' (Var x) eos) ∧ Forall z ((cn' (Var z)) ∧ (vp' (Var z) eos)) true
+eType :: ([Char] -> Prop -> Exp -> Exp) -> [Char] -> Var -> (Exp -> S') -> (Exp -> t -> Exp) -> t -> Exp
+eType quant x z cn' vp' eos = quant x (nos cn' (Var x)) (vp' (Var x) eos) ∧ Forall z ((nos cn' (Var z)) ∧ (vp' (Var z) eos)) true
+
+nos :: (t -> S') -> t -> Prop
+nos f a = noExtraObjs (f a)
 
 most_Quant :: Quant
 most_Quant number  (cn',gender) role = do
@@ -1203,7 +1208,7 @@ indefArt number (cn',gender) role = do
   x <- getFresh
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   modify (pushDefinite cn' x)
-  return (\vp' eos -> Exists x (cn' (Var x)) (vp' (Var x) eos))
+  return (\vp' eos -> Exists x (nos cn' (Var x)) (vp' (Var x) eos))
 
 
 -- | Definite which looks up in the environment.
@@ -1219,7 +1224,7 @@ defArt number (cn',gender) role = do
 genNP :: NP -> Quant
 genNP np _number (cn',_gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
-  return (\vp' -> them $ \y -> vp' (cn' `of_` y))
+  return (\vp' -> them $ \y -> vp' (nos cn' `of_` y))
 
 possess :: Object -> Object -> Prop
 possess x y = mkRel2 "have_V2" x y [] -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
@@ -1248,11 +1253,11 @@ only_Predet = exactly_Predet
 exactly_Predet :: Predet
 exactly_Predet (MkNP n _q cn) = MkNP n exactlyQuant cn where
 
-exactlyQuant :: Number -> (Object -> Prop, [Gender]) -> Role -> Dynamic NP'
+exactlyQuant :: Number -> (Object -> S', [Gender]) -> Role -> Dynamic NP'
 exactlyQuant number@(Cardinal n') (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
-      return (\vp' extraObjs -> Quant (Exact n') Both x (cn' (Var x)) (vp' (Var x) extraObjs))
+      return (\vp' extraObjs -> Quant (Exact n') Both x (nos cn' (Var x)) (vp' (Var x) extraObjs))
 
 ------------------------
 --
