@@ -11,6 +11,7 @@ main = do
 -- Input the gender of PNs and CNs
 -- Many: need to have multiple readings. Interpreted as disjunctions.
 
+-- Many: new handling of adverbs, prepositions. See type VP'
 
 -- 121: Works now with "hack". The difficulty here is that the object is applied before the object.
 -- Alternative is to make the vp "lazy", and wait for the last moment until the components are applied to it.
