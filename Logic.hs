@@ -13,7 +13,7 @@ import Control.Arrow (second)
 
 type Var = String
 
-data Exp = Op Op [(String,Exp)]
+data Exp = Op Op [Exp]
          | Var Var
          | Con String
          | Lam (Exp -> Exp)
@@ -23,7 +23,7 @@ data Exp = Op Op [(String,Exp)]
 
 
 eqExp :: Int -> Exp -> Exp -> Bool
-eqExp n (Op op1 exps1) (Op op2 exps2) = op1 == op2 && map fst exps1 == map fst exps2 && and (zipWith (eqExp n) (map snd exps1) (map snd exps2))
+eqExp n (Op op1 exps1) (Op op2 exps2) = op1 == op2 && length exps1 == length exps2 && and (zipWith (eqExp n) (exps1) (exps2))
 eqExp n (Quant a1 p1 v1 t1 b1) (Quant a2 p2 v2 t2 b2) = a1 == a2 && p1 == p2 && v1 == v2 && eqExp n t1 t2 && eqExp n b1 b2
 eqExp n (Lam f1) (Lam f2) = eqExp (n+1) (f1 x) (f2 x)
   where x = Var $ "_V" ++ show n
@@ -96,13 +96,13 @@ true :: Exp
 true = TRUE
 
 pattern Proj :: Exp -> String -> Exp
-pattern Proj e f = Op (Fld f) [("rec",e)]
+pattern Proj e f = Op (Fld f) [e]
 
 pattern BinOp :: Op -> Exp -> Exp -> Exp
-pattern BinOp op x y = Op op [("left",x),("right",y)]
+pattern BinOp op x y = Op op [(x),(y)]
 
 pattern UnOp :: Op -> Exp -> Exp
-pattern UnOp op x = Op op [("arg",x)]
+pattern UnOp op x = Op op [(x)]
 
 (-->),(~~>) :: Exp -> Exp -> Exp
 x --> y = BinOp Implies x y
@@ -129,7 +129,7 @@ subst f (Lam t) = Lam (\x -> subst f (t x))
 subst f (Quant a p v t b) = Quant a p v (subst f t) (subst f b)
 subst f (Var x) = f x
 subst _ (Con x) = Con x
-subst f (Op o xs) = Op (substOp f o) (map (second (subst f)) xs)
+subst f (Op o xs) = Op (substOp f o) (map (subst f) xs)
 
 dualize :: Pol -> Pol
 dualize Pos = Neg
@@ -194,7 +194,7 @@ ppExp n ctx e0 =
                    _ -> (∧)
       (APP f arg) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
       (BinOp op x y) -> prns op $ ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
-      (Op op args) -> ppOp op ++ "(" ++ intercalate "," [aname ++ "=" ++ ppExp n op a | (aname,a) <- args] ++ ")"
+      (Op op args) -> ppOp op ++ "(" ++ intercalate "," [ppExp n op a | (a) <- args] ++ ")"
 
 
 parens :: [Char] -> [Char]
@@ -261,14 +261,14 @@ freeVars (Con _x) = []
 freeVars (Lam f) = freeVars (f (Con "__FREE__"))
 freeVars (Var x) = [x]
 freeVars (Quant _ _ x dom body) = (freeVars dom ++ nub (freeVars body)) \\ [x]
-freeVars (Op _ xs) = (concatMap (freeVars . snd) xs)
+freeVars (Op _ xs) = (concatMap (freeVars) xs)
 
 boundVars :: Exp -> [Var]
 boundVars (Var _) = []
 boundVars (Lam f) = boundVars (f (Con "__BOUND__")) 
 boundVars (Con _) = []
 boundVars (Quant _ _ x dom body) = x:boundVars dom++boundVars body
-boundVars (Op _ xs) = concatMap (boundVars . snd) xs
+boundVars (Op _ xs) = concatMap (boundVars) xs
 
 negativeContext :: (Num a, Eq a) => Op -> a -> Bool
 negativeContext Implies 0 = True
@@ -277,25 +277,26 @@ negativeContext Not _ = True
 negativeContext _ _ = False
 
 -- FIMXE: rename
-isQuant :: [Var] -> Exp -> Bool
-isQuant x' e = case e of
+isQuant :: [Var] -> Arg -> Bool
+isQuant x' (e) = case e of
   (Quant One _ x _ _) -> x `elem` x'
   _ -> False
 
--- matchQuantArg :: Alternative m => Monad m => [Var] -> [Exp] -> m ([Exp],Exp,[Exp])
--- matchQuantArg _ [] = fail "not found"
--- matchQuantArg x' (a:as) = (guard (isQuant x' a) >> return ([],a,as)) <|> do
---   (l,q,r) <- matchQuantArg x' as
---   return (a:l,q,r)
+type Arg = (Exp)
+matchQuantArg :: Alternative m => Monad m => [Var] -> [Arg] -> m ([Arg],Arg,[Arg])
+matchQuantArg _ [] = fail "not found"
+matchQuantArg x' (a:as) = (guard (isQuant x' a) >> return ([],a,as)) <|> do
+  (l,q,r) <- matchQuantArg x' as
+  return (a:l,q,r)
 
 
--- liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp -> m Exp
--- liftQuantifiers _ (Var x) = return (Var x)
--- liftQuantifiers _ (Con x) = return (Con x)
--- liftQuantifiers xs (Op op args) = do
---   (l,Quant One pol x dom body,r) <- matchQuantArg xs args
---   let pol' = if negativeContext op (length l) then dualize pol else pol
---   return (Quant One pol' x dom (Op op (l++body:r)))
+liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp -> m Exp
+liftQuantifiers _ (Var x) = return (Var x)
+liftQuantifiers _ (Con x) = return (Con x)
+liftQuantifiers xs (Op op args) = do
+  (l,(Quant One pol x dom body),r) <- matchQuantArg xs args
+  let pol' = if negativeContext op (length l) then dualize pol else pol
+  return (Quant One pol' x dom (Op op (l++(body):r)))
 
 -- bottomUp :: (Monad m) => (Exp -> m Exp) -> (Exp -> m Exp)
 -- bottomUp f (Var x) = f (Var x)
@@ -330,35 +331,6 @@ mkSubst s x' = case lookup x' s of
 
 after :: Subst -> Subst -> Subst
 (s1 `after` s2) x = subst s1 (s2 x)
-
--- FIXME: there are actually accessible fields in the domain here. Are
--- they handled otherwise thanks to the substituting mechanism?
-recordFields :: Exp -> [Var]
-recordFields (Quant _ Pos y _ t) = y:recordFields t
-recordFields _ = []
-
-repairInnerfields :: MonadState Subst m => Exp -> m Exp
-repairInnerfields (Con c) = return (Con c)
-repairInnerfields (Var v) = do
-  σ <- get
-  return (σ v)
-repairInnerfields (Quant k pol x dom body) = do
-  dom' <- repairInnerfields dom
-  -- Here, all the objects bound in the domain become inaccessible in
-  -- the body; furthermore, no scope extension will make them visible
-  -- again. But they are in fact easily accessible by taking a record
-  -- projection IF the domain is a record. So we make sure that it is so at (1)
-  modify (mkSubst [(y,Proj (Var x) y) | y <- recordFields dom] `after`)
-  Quant k pol x dom' <$> repairInnerfields body
-
--- repairInnerfields (Op op as) = Op op <$> mapM repairInnerfields as
--- Fixme: repair op too
-
-repairFields :: Exp -> Exp
-repairFields e = evalState (repairInnerfields e) Var
-
-substRepairFields :: Exp -> Subst
-substRepairFields e = execState (repairInnerfields e) Var
 
 unsupported :: Exp
 unsupported = Var "unsupported"

@@ -13,11 +13,11 @@ module MS where
 import Prelude hiding (pred)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
-import Data.List (intersect,nub,nubBy)
+import Data.List (intersect,nub)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
-import Data.Function (on)
+-- import Data.Function (on)
 
 type Object = Exp
 type Prop = Exp
@@ -180,24 +180,24 @@ allInterpretations (Dynamic x) = (observeAll (evalStateT x assumed))
 
 type Effect = Dynamic Prop
 
-mkPred :: String -> Object -> S'
-mkPred p x extraObjs = Con p `apps` (map snd extraObjs ++ [x])
+appArgs :: String -> [Object] -> [(String, Object)] -> Prop
+appArgs nm objs extraObjs = Con (nm ++ concatMap fst extraObjs) `apps` (map snd extraObjs ++ objs)
 
-mkPred' :: String -> Object -> Prop
-mkPred' p x = Con p `apps` [x]
+mkPred :: String -> Object -> S'
+mkPred p x extraObjs = appArgs p [x] extraObjs
 
 
 mkRel2 :: String -> Object -> Object -> S'
-mkRel2 p x y extraObjs = Con p `apps` (map snd extraObjs ++ [x,y])
+mkRel2 p x y extraObjs = appArgs p [x,y] extraObjs
 
-namedRel2 :: String -> String -> String -> Object -> Object -> S'
-namedRel2 p a b x y extraObjs  = Op (Custom p) (extraObjs ++ [(a,x),(b,y)])
+-- namedRel2 :: String -> String -> String -> Object -> Object -> S'
+-- namedRel2 p a b x y extraObjs  = Op (Custom p) (map snd extraObjs ++ [(a,x),(b,y)])
 
-namedRel3 :: String -> String -> String -> String -> Object -> Object -> Object -> S'
-namedRel3 p a b c x y z extraObjs = Op (Custom p) (extraObjs ++ [(a,x),(b,y),(c,z)])
+-- namedRel3 :: String -> String -> String -> String -> Object -> Object -> Object -> S'
+-- namedRel3 p a b c x y z extraObjs = Op (Custom p) (map snd extraObjs ++ [(a,x),(b,y),(c,z)])
 
 mkRel3 :: String -> Object -> Object -> Object -> S'
-mkRel3 p x y z extraObjs = Con p `apps` (map snd extraObjs ++ [x,y,z])
+mkRel3 p x y z extraObjs = appArgs p [x,y,z] extraObjs
 
 constant :: String -> Exp
 constant x = Con x
@@ -319,19 +319,19 @@ meta :: Exp
 meta = Con "META"
 
 lexemeV :: String -> V
-lexemeV "go8walk_V" = return $ (namedRel2  "go8walk_V2" "to" "who" meta)
+-- lexemeV "go8walk_V" = return $ (mkRel2  "go8walk_V" "to" "who")
 lexemeV x = return $ mkPred x
 
 lexemeA :: String -> A
 lexemeA a = return $ \cn obj -> apps (Con a) [lam cn, obj]
 
 lexemeV3 :: String -> V3
-lexemeV3 "deliver_V3" = pureV3 (namedRel3 "deliver_V3" "to" "what" "who")
+-- lexemeV3 "deliver_V3" = pureV3 (namedRel3 "deliver_V3" "to" "what" "who")
 lexemeV3 x = return $ mkRel3 x
 
 lexemeV2 :: String -> V2
-lexemeV2 x@"appoint_V2" = pureV2 (namedRel2 x "by" "who")
-lexemeV2 "deliver_V2" = pureV2 (namedRel2 "deliver_V2" "what" "who") 
+-- lexemeV2 x@"appoint_V2" = pureV2 (namedRel2 x "by" "who")
+-- lexemeV2 "deliver_V2" = pureV2 (namedRel2 "deliver_V2" "what" "who") 
 lexemeV2 x = pureV2 (mkRel2 x)
 
 lexemeV2S :: String -> V2S
@@ -852,7 +852,7 @@ passV2s :: V2 -> VP
 passV2s v2 = do
   v2' <- v2
   -- x <- getFresh; return $ \object -> Exists x true (v2' object (Var x)) -- alternative with quantifier
-  return $ \object -> (v2' (Con "META") object)
+  return $ \object -> (v2' meta object)
 
 passVPSlash :: VPSlash -> VP
 passVPSlash = passV2s
