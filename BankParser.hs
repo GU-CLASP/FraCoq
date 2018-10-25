@@ -51,11 +51,10 @@ bank = do
 
 
 processSuite :: [[(HypID,SExpr)]] -> [String]
-processSuite pbs = "suite :: IO ()" :
-                   "suite = do" :
+processSuite pbs = "suite :: (Int -> Effect -> IO ()) -> IO ()" :
+                   "suite handleProblem = do" :
                    concat
-                     [["  putStrLn " ++ show (show pb),
-                       "  evalDbg " ++ pbName pb] | (((pb,_,_),_):_) <- pbs ]
+                     [["  handleProblem " ++ show pb ++ " " ++ pbName pb] | (((pb,_,_),_):_) <- pbs ]
 
 parseBank :: IO (ParseResult SourcePos [(String, SExpr)])
 parseBank = parseFromFile bank longestResult "FraCaS-treebank/src/FraCaSBankI.gf"

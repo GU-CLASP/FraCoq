@@ -180,14 +180,16 @@ ppExp n ctx e0 =
       (Con x) -> x
       (Var x) -> x
       (Proj e f) -> ppExp n (Fld "f") e ++ "." ++ f
-      (Quant k p v dom body) -> prns LAST_OPERATOR (o ++ " " ++ v ++ ", " ++ ppExp n LAST_OPERATOR (dom `c` body))
-          where o = case (k,p) of
-                   (One,Neg) -> "forall"
-                   (One,Pos) -> "exists"
+      (Quant k p v dom body) -> parens (o ++ " " ++ ppFun dom ++ " " ++ ppFun body)
+          where ppFun t = parens("fun " ++ v ++ "=>" ++ ppExp n LAST_OPERATOR t)
+                o = case (k,p) of
+                   (One,Neg) -> "FORALL"
+                   (One,Pos) -> "EXISTS"
                    (Few,Pos) -> "FEW"
                    (Few,Neg) -> "MOST"
                    (Several,Pos) -> "SEVERAL"
-                   (Exact n,Both) -> "exact(" ++ show (toInteger n) ++ ")"
+                   (Exact n,Both) -> "EXACT (" ++ show (toInteger n) ++ ")"
+                   (AtLeast n,Both) -> "ATLEAST (" ++ show (toInteger n) ++ ")"
                    _ -> show (k,p)
                 c = case p of
                    Neg -> (-->)
