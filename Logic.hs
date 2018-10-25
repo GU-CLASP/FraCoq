@@ -64,10 +64,10 @@ opPrc = \case
 
 
 pattern TRUE :: Exp
-pattern TRUE = Con "true"
+pattern TRUE = Con "True"
 
 pattern FALSE :: Exp
-pattern FALSE = Con "false"
+pattern FALSE = Con "False"
 
 pattern APP :: Exp -> Exp -> Exp
 pattern APP f x = BinOp App f x

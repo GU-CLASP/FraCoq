@@ -577,7 +577,7 @@ interpNP np role = do
   q n c role
 
 usePN ::  PN -> NP
-usePN (o,g,n) = pureNP (Con o) g n Subject -- FIXME: role
+usePN (o,g,n) = pureNP (Con (parens ("PN2object " ++ o))) g n Subject -- FIXME: role
 
 pureNP :: Object -> [Gender] -> Number -> Role -> NP
 pureNP o dGender dNumber dRole = do
