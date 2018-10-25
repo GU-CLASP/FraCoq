@@ -1406,15 +1406,6 @@ andVP np1 np2 = do
 
 
 -}
-evalDbg :: Effect -> IO ()
-evalDbg e = do
-  let ps = allInterpretations e
-  --     q = extendAllScopes r
-  forM_ ps print
-  -- print r
-  -- print q
-  -- print (freeVars q)
-
 
 _TRUE :: Effect -> Prop
 _TRUE e = foldr (∨) FALSE (allInterpretations e)
