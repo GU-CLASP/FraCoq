@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
@@ -13,25 +15,7 @@ import Control.Arrow (second)
 
 type Var = String
 
-data Exp = Op Op [Exp]
-         | Var Var
-         | Con String
-         | Lam (Exp -> Exp)
-         | Quant Amount Pol Var Exp Exp
-
-
-
-
-eqExp :: Int -> Exp -> Exp -> Bool
-eqExp n (Op op1 exps1) (Op op2 exps2) = op1 == op2 && length exps1 == length exps2 && and (zipWith (eqExp n) (exps1) (exps2))
-eqExp n (Quant a1 p1 v1 t1 b1) (Quant a2 p2 v2 t2 b2) = a1 == a2 && p1 == p2 && v1 == v2 && eqExp n t1 t2 && eqExp n b1 b2
-eqExp n (Lam f1) (Lam f2) = eqExp (n+1) (f1 x) (f2 x)
-  where x = Var $ "_V" ++ show n
-eqExp _ (Var x) (Var x') = x == x'
-eqExp _ (Con x) (Con x') = x == x'
-eqExp _ _ _ = False
-
-type Type = Exp
+data Next v = Here | There v deriving Eq
 
 newtype Nat = Nat Integer deriving (Show,Eq,Num,Enum,Integral,Ord,Real)
 
@@ -48,6 +32,30 @@ data Op = Fld String -- ^ field lookup
         | ImpliesOften
         | LAST_OPERATOR
   deriving (Eq,Show)
+
+data Pol = Pos | Neg | Both deriving (Eq,Ord,Show)
+
+data Exp v where
+  Op :: Op -> [Exp v] -> Exp v
+  Con :: String -> Exp v
+  Var :: v -> Exp v
+  Lam :: Exp (Next v) -> Exp v
+  Quant :: Amount -> Pol -> (Exp (Next v)) -> (Exp (Next v)) -> Exp v
+  deriving Eq
+
+
+{-
+
+eqExp :: Int -> Exp -> Exp -> Bool
+eqExp n (Op op1 exps1) (Op op2 exps2) = op1 == op2 && length exps1 == length exps2 && and (zipWith (eqExp n) (exps1) (exps2))
+eqExp n (Quant a1 p1 v1 t1 b1) (Quant a2 p2 v2 t2 b2) = a1 == a2 && p1 == p2 && v1 == v2 && eqExp n t1 t2 && eqExp n b1 b2
+eqExp n (Lam f1) (Lam f2) = eqExp (n+1) (f1 x) (f2 x)
+  where x = Var $ "_V" ++ show n
+eqExp _ (Var x) (Var x') = x == x'
+eqExp _ (Con x) (Con x') = x == x'
+eqExp _ _ _ = False
+
+type Type = Exp
 
 
 opPrc :: Op -> Int
@@ -119,7 +127,6 @@ x ∧ y = x :∧ y
 (∨) :: Exp -> Exp -> Exp
 x ∨ y = BinOp Or x y
 
-data Pol = Pos | Neg | Both deriving (Eq,Ord,Show)
 
 substOp :: Subst -> Op -> Op
 substOp _ op = op
@@ -279,7 +286,7 @@ negativeContext Not _ = True
 negativeContext _ _ = False
 
 -- FIMXE: rename
-isQuant :: [Var] -> Arg -> Bool
+isQuant :: [Var] -> Exp -> Bool
 isQuant x' (e) = case e of
   (Quant One _ x _ _) -> x `elem` x'
   _ -> False
@@ -291,14 +298,20 @@ matchQuantArg x' (a:as) = (guard (isQuant x' a) >> return ([],a,as)) <|> do
   (l,q,r) <- matchQuantArg x' as
   return (a:l,q,r)
 
+negativePol :: Pol -> Bool
+negativePol = \case
+  Neg -> True
+  _ -> False
 
 liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp -> m Exp
-liftQuantifiers _ (Var x) = return (Var x)
-liftQuantifiers _ (Con x) = return (Con x)
+liftQuantifiers xs (Quant amount pol x dom inner@(Quant a' pol' x' dom' body))
+  | isQuant xs inner = return (Quant a' (maybeDual pol') x' dom' (Quant amount pol x dom body))
+    where maybeDual = if negativePol pol then dualize else id
 liftQuantifiers xs (Op op args) = do
   (l,(Quant One pol x dom body),r) <- matchQuantArg xs args
   let pol' = if negativeContext op (length l) then dualize pol else pol
   return (Quant One pol' x dom (Op op (l++(body):r)))
+liftQuantifiers _ e = return e
 
 -- bottomUp :: (Monad m) => (Exp -> m Exp) -> (Exp -> m Exp)
 -- bottomUp f (Var x) = f (Var x)
@@ -307,12 +320,16 @@ liftQuantifiers xs (Op op args) = do
 --   r <- Op op <$> mapM (bottomUp f) args
 --   f r
 
--- anywhere :: Alternative m => (Monad m) => (Exp -> m Exp) -> (Exp -> m Exp)
--- anywhere f (Var x) = f (Var x)
--- anywhere f (Con x) = f (Con x)
--- anywhere f e@(Op op args) = f e <|> Op op <$> mapM (anywhere f) args
+-}
 
+-- (Exp -> Exp) -> m (Exp -> Exp)
+anywhere :: Alternative m => (Monad m) => (forall v. Exp v -> m (Exp v)) -> (Exp v -> m (Exp v))
+anywhere f (Var x) = f (Var x)
+anywhere f e@(Lam q) = f e <|> (Lam <$> f q )
+anywhere f (Con x) = f (Con x)
+anywhere f e@(Op op args) = f e <|> Op op <$> mapM (anywhere f) args
 
+{-
 -- liftQuantifiersAnyWhere :: (Monad m, Alternative m) => [Var] -> Exp -> m Exp
 -- liftQuantifiersAnyWhere x = anywhere (liftQuantifiers x)
 
@@ -337,3 +354,4 @@ after :: Subst -> Subst -> Subst
 unsupported :: Exp
 unsupported = Var "unsupported"
 
+-}
