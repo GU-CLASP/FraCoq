@@ -19,8 +19,8 @@ import Control.Applicative
 import Control.Applicative.Alternative
 -- import Data.Function (on)
 
-type Object = Exp
-type Prop = Exp
+type Object = AExp
+type Prop = AExp
 
 
 --------------------------------
@@ -77,11 +77,11 @@ type VPEnv = [VP]
 data Env = Env {vpEnv :: VPEnv
                ,vp2Env :: V2
                ,apEnv :: AP
-               ,cn2Env :: CN2
+               -- ,cn2Env :: CN2
                ,objEnv :: ObjEnv
                ,cnEnv :: NounEnv
                ,sEnv :: S
-               ,envDefinites :: Exp -> Object -- map from CN to pure objects
+               ,envDefinites :: AExp -> Object -- map from CN to pure objects
                ,envSloppyFeatures :: Bool
                ,freshVars :: [String]}
          -- deriving Show
@@ -118,8 +118,8 @@ getCN :: Env -> [CN]
 getCN Env{cnEnv=cn:cns} = cn:cns
 getCN _ = [return assumedCN]
 
-getCN2 :: Env -> CN2
-getCN2 Env{cn2Env=cn} = cn
+-- getCN2 :: Env -> CN2
+-- getCN2 Env{cn2Env=cn} = cn
 
 getNP' :: ObjQuery -> Env -> [NP]
 getNP' q Env{objEnv=os,..} = case filter (q . fst) os of
@@ -141,7 +141,7 @@ getDefinite (cn',_gender) = do
 
 pushDefinite :: (Object -> S') -> Var -> Env -> Env
 pushDefinite source target Env{..} = Env{envDefinites = \x ->
-                                                    if eqExp 0 x (lam (\x' -> noExtraObjs (source x')))
+                                                    if x == (lam (\x' -> noExtraObjs (source x')))
                                                     then Var target
                                                     else envDefinites x,..}
 
@@ -160,8 +160,8 @@ pushV2 vp2 Env{..} = Env{vp2Env=vp2,..}
 pushAP :: AP -> Env -> Env
 pushAP a Env{..} = Env{apEnv=a,..}
 
-pushCN2 :: CN2 -> Env -> Env
-pushCN2 cn2 Env{..} = Env{cn2Env=cn2,..}
+-- pushCN2 :: CN2 -> Env -> Env
+-- pushCN2 cn2 Env{..} = Env{cn2Env=cn2,..}
 
 pushS :: S -> Env -> Env
 pushS s Env{..} = Env{sEnv=s,..}
@@ -181,7 +181,7 @@ allInterpretations (Dynamic x) = (observeAll (evalStateT x assumed))
 type Effect = Dynamic Prop
 
 appArgs :: String -> [Object] -> [(String, Object)] -> Prop
-appArgs nm objs extraObjs = Con (nm ++ concatMap fst extraObjs) `apps` (map snd extraObjs ++ objs)
+appArgs nm objs extraObjs = (con (nm ++ concatMap fst extraObjs) `apps` (map snd extraObjs ++ objs))
 
 mkPred :: String -> Object -> S'
 mkPred p x extraObjs = appArgs p [x] extraObjs
@@ -199,14 +199,14 @@ mkRel2 p x y extraObjs = appArgs p [x,y] extraObjs
 mkRel3 :: String -> Object -> Object -> Object -> S'
 mkRel3 p x y z extraObjs = appArgs p [x,y,z] extraObjs
 
-constant :: String -> Exp
-constant x = Con x
+constant :: String -> AExp
+constant x = AExp (Con x)
 
-pureObj :: Exp -> Number -> CN' -> NP
+pureObj :: AExp -> Number -> CN' -> NP
 pureObj x number cn  = return $ MkNP number (\_number _cn _role -> return $ \vp -> vp x) cn
 
 pureVar :: Var -> Number -> CN' -> NP
-pureVar x = pureObj (Var x)
+pureVar x = pureObj (AExp (Var x))
 
 getFresh :: Dynamic String
 getFresh = do
@@ -251,7 +251,7 @@ type V3 = Dynamic (Object -> Object -> Object -> S')
 type CN' = (Object -> S',[Gender])
 type CN = Dynamic CN'
 type AP = Dynamic A'
-type CN2 = Dynamic ((Object -> Type),Gender,Number)
+-- type CN2 = Dynamic ((Object -> Type),Gender,Number)
 type NP' = (Object -> S') -> S'
 type NP = Dynamic NPData
 
@@ -315,15 +315,15 @@ pureV3 v3 = do
 
 -----------------
 -- Lexemes
-meta :: Exp
-meta = Con "META"
+meta :: AExp
+meta = AExp (Con "META")
 
 lexemeV :: String -> V
 -- lexemeV "go8walk_V" = return $ (mkRel2  "go8walk_V" "to" "who")
 lexemeV x = return $ mkPred x
 
 lexemeA :: String -> A
-lexemeA a = return $ \cn obj -> apps (Con a) [lam cn, obj]
+lexemeA a = return $ \cn obj -> apps (con a) [lam cn, obj]
 
 lexemeV3 :: String -> V3
 -- lexemeV3 "deliver_V3" = pureV3 (namedRel3 "deliver_V3" "to" "what" "who")
@@ -722,7 +722,7 @@ detQuant _ (Cardinal n) = (Cardinal n,atLeastQuant n)
 detQuant q n = (n,q)
 
 
-atLeastQuant :: Nat -> Number -> CN' -> Role -> Dynamic ((Exp -> S') -> S')
+-- atLeastQuant :: Nat -> Number -> CN' -> Role -> Dynamic ((Exp -> S') -> S')
 atLeastQuant n' number (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor gender Plural role) (pureVar x number (cn',gender)))
@@ -1182,7 +1182,7 @@ some_Quant = \number (cn',gender) role -> do
   modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
   return (\vp' eos -> Exists x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos))
 
-eType :: ([Char] -> Prop -> Exp -> Exp) -> [Char] -> Var -> (Exp -> S') -> (Exp -> t -> Exp) -> t -> Exp
+-- eType :: ([Char] -> Prop -> Exp -> Exp) -> [Char] -> Var -> (Exp -> S') -> (Exp -> t -> Exp) -> t -> Exp
 eType quant x z cn' vp' eos = quant x (nos cn' (Var x)) (vp' (Var x) eos) ∧ Forall z ((nos cn' (Var z)) ∧ (vp' (Var z) eos)) true
 
 nos :: (t -> S') -> t -> Prop
