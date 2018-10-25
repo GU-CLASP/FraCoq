@@ -13,5 +13,5 @@ clean:
 	rm -f *.hi *.o Bank.hs
 
 
-FraCoq2.v: BankParser.hs FraCaS-treebank/src/FraCaSBankI.gf FraToCoq.hs
+FraCoq2.v: Bank.hs FraToCoq.hs MS.hs Logic.hs
 	ghc FraToCoq -e main  >$@
