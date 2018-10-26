@@ -131,6 +131,7 @@ type HypID = (Int, Int, [Char])
 
 overrides :: HypID -> Maybe String
 overrides (177,1,"p")= Just "s_177_1_p_NEW"
+overrides (122,4,"h")= Just "s_122_4_h_ALT"
 overrides _ = Nothing
 
 disabledProblems :: [Int]

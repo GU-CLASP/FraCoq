@@ -1228,7 +1228,8 @@ defArt number (cn',gender) role = do
 genNP :: NP -> Quant
 genNP np _number (cn',_gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
-  return (\vp' -> them $ \y -> vp' (nos cn' `of_` y))
+  x <- getFresh
+  return (\vp' -> them $ \y extraObjects -> Exists x (possess y (Var x) ∧ nos cn' (Var x)) (vp' (Var x) extraObjects))
 
 possess :: Object -> Object -> Prop
 possess x y = mkRel2 "have_V2" y x [] -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
@@ -1416,3 +1417,16 @@ _TRUE e = foldr (∨) FALSE (allInterpretations e)
 
 -- _ENV :: Effect -> Env
 -- _ENV x = execState x assumed
+
+------------------------
+
+
+membersOfTheComittee :: NP
+membersOfTheComittee = (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "committee_N")))) (numPl)) (useN (lexemeN "member_N")))
+
+chairman_etc :: NP
+chairman_etc = detCN (detQuant (indefArt) (numSg)) (relCN (useN (lexemeN "chairman_N")) (relA2 implicitRP (lexemeV2 "appoint_V2") membersOfTheComittee))
+
+s_122_4_h_ALT :: Phr
+s_122_4_h_ALT = (sentence (useCl (present) (pPos) (predVP (detCN (every_Det) (useN (lexemeN "committee_N"))) (complSlash (slashV2a (lexemeV2 "have_V2")) chairman_etc ))))
+
