@@ -135,4 +135,4 @@ overrides (122,4,"h")= Just "s_122_4_h_ALT"
 overrides _ = Nothing
 
 disabledProblems :: [Int]
-disabledProblems = [171,172]
+disabledProblems = [137,171,172]

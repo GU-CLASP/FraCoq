@@ -8,9 +8,9 @@ import LogicB
 handleProblem :: Int -> Effect -> IO ()
 handleProblem n e = do
   let ps = allInterpretations e
-  forM_ ps $ \p -> do
+  forM_ (zip ['a'..'z'] ps) $ \(v,p) -> do
     let q = (extendAllScopes (fromHOAS' p) :: Exp Zero)
-    putStrLn ("Definition Problem" ++ show n ++ ":= " ++ show q ++ ".")
+    putStrLn ("Definition Problem" ++ show n ++ [v] ++ ":= " ++ show q ++ ".")
     -- putStrLn $ "Abort All."
     putStrLn $ ""
 

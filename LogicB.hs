@@ -180,7 +180,7 @@ ppExp n ctx e0 =
                    (Few,Neg) -> "MOST"
                    (Several,Pos) -> "SEVERAL"
                    (Exact n,Both) -> "EXACT (" ++ show (toInteger n) ++ ")"
-                   (AtLeast n,Both) -> "ATLEAST (" ++ show (toInteger n) ++ ")"
+                   (AtLeast n,_) -> "ATLEAST (" ++ show (toInteger n) ++ ")"
                    _ -> show (k,p)
       (Op App [f,arg]) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
       (Op op [x,y]) -> prns op $ ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
