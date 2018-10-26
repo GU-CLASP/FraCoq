@@ -1,6 +1,7 @@
 import MS
 import Bank
 import LogicB
+import Logic hiding (Exp(..),freeVars)
 import Data.Foldable
 
 handleProblem :: Int -> Effect -> IO ()
@@ -11,21 +12,38 @@ handleProblem n e = do
     print p
     print (extendAllScopes (fromHOAS' p) :: Exp Zero)
 
-evalDbg :: Effect -> IO ()
-evalDbg e = do
+debug :: Effect -> IO ()
+debug e = do
   let ps = allInterpretations e
-  --     q = extendAllScopes r
-  forM_ ps print
-  -- print r
-  -- print q
-  -- print (freeVars q)
+  forM_ ps $ \p0 -> do
+    let p = (fromHOAS' p0) :: Exp Zero
+    putStrLn "Before extendAllScopes"
+    print p
+    putStr "Freevars: "
+    print (freeVars p)
+    let q = (extendAllScopes p)
+    putStrLn "After extendAllScopes"
+    print q
+    putStr "Freevars: "
+    print (freeVars q)
 
 
+testIt :: Exp Zero
+testIt = Op And [Op And [Quant One Pos "x" (Con "dom") (Con "body"), Var "x" ], Con "whatever"]
+
+tt :: Exp Zero
+tt = extendAllScopes testIt
+
+-- >>> tt
+-- ((EXISTS (fun x=>dom) (fun x=>body /\ x)) /\ whatever)
 
 main :: IO ()
 main = do
-  suite handleProblem >> putStrLn "----------"
-  evalDbg p_121
+  -- suite handleProblem >> putStrLn "----------"
+  debug p_122
+  -- handleProblem p
+
+-- >>> main
 
 -- Input the gender of PNs and CNs
 -- Many: need to have multiple readings. Interpreted as disjunctions.
@@ -48,19 +66,7 @@ main = do
 -- (Every committee) (has (a (chairman (that is (appointed (by (members of the committee)))))))
 
 ouch122 :: IO ()
-ouch122 = evalDbg (phrToEff s_122_4_h)
-
-membersOfTheComittee :: NP
-membersOfTheComittee = (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "committee_N")))) (numPl)) (useN (lexemeN "member_N")))
-
-chairman_etc :: NP
-chairman_etc = detCN (detQuant (indefArt) (numSg)) (relCN (useN (lexemeN "chairman_N")) (relA2 implicitRP (lexemeV2 "appoint_V2") membersOfTheComittee))
-
-s_122_4_h_ALT :: Phr
-s_122_4_h_ALT = (sentence (useCl (present) (pPos) (predVP (detCN (every_Det) (useN (lexemeN "committee_N"))) (complSlash (slashV2a (lexemeV2 "have_V2")) chairman_etc ))))
-
-p_122_ALT :: Effect
-p_122_ALT = phrToEff (s_122_1_p ### s_122_2_p) ==> phrToEff s_122_4_h_ALT
+ouch122 = debug (phrToEff s_122_4_h)
 
 -- >>> evalDbg p_122_ALT
 -- ((FORALL (fun a=>committee_N a) (fun a=>(EXISTS (fun b=>chairman_N b) (fun b=>have_V2 b a)))) /\ (EXISTS (fun c=>True) (fun c=>appoint_V2by (THE (fun x1 => have_V2 a x1 /\ member_N x1)) b c)) -> (FORALL (fun d=>committee_N d) (fun d=>(EXISTS (fun e=>chairman_N e /\ appoint_V2 (THE (fun x1 => have_V2 d x1 /\ member_N x1)) e) (fun e=>have_V2 e d)))))

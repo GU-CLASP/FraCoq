@@ -214,8 +214,8 @@ negativeContext _ _ = False
 
 -- FIMXE: rename
 isQuant :: [Var] -> Exp v -> Bool
-isQuant x' (e) = case e of
-  (Quant One _ x _ _) -> x `elem` x'
+isQuant x' e = case e of
+  (Quant _ _ x _ _) -> x `elem` x'
   _ -> False
 
 matchQuantArg :: Alternative m => Monad m => [Var] -> [Exp v] -> m ([Exp v],Exp v,[Exp v])
@@ -230,22 +230,26 @@ negativePol = \case
   _ -> False
 
 liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp v -> m (Exp v)
-liftQuantifiers xs (Quant amount pol x dom inner@(Quant a' pol' x' dom' body))
-  | isQuant xs inner = return (Quant a' (maybeDual pol') x' dom' (Quant amount pol x dom body))
+liftQuantifiers xs (Quant amount pol x dom (Quant a' pol' x' dom' body))
+  | x' `elem` xs = return (Quant a' (maybeDual pol') x' dom' (Quant amount pol x dom body))
     where maybeDual = if negativePol pol then dualize else id
 liftQuantifiers xs (Lam (Quant a p v d b))
   | v `elem` xs, There d' <- sequenceA d = return (Quant a p v d' (Lam b))
 liftQuantifiers xs (Op op args) = do
-  (l,(Quant One pol x dom body),r) <- matchQuantArg xs args
+  (l,(Quant a pol x dom body),r) <- matchQuantArg xs args
   let pol' = if negativeContext op (length l) then dualize pol else pol
-  return (Quant One pol' x dom (Op op (l++(body):r)))
-liftQuantifiers _ e = return e
+  return (Quant a pol' x dom (Op op (l++body:r)))
+liftQuantifiers _ _ = fail "no rewriting possible"
+
+anywhereList :: Alternative f => (a -> f a) -> [a] -> f [a]
+anywhereList _f [] = empty
+anywhereList f (x:xs) = ((: xs) <$> f x) <|> ((x:) <$> anywhereList f xs)
 
 anywhere :: Alternative m => (Monad m) => (forall w. Exp w -> m (Exp w)) -> (Exp v -> m (Exp v))
 anywhere f e = f e <|> case e of
-  (Quant a p v d b) -> Quant a p v <$> anywhere f d <*> anywhere f b
-  (Lam q) -> Lam <$> f q
-  (Op op args) -> Op op <$> mapM (anywhere f) args
+  Quant a p v d b -> (Quant a p v <$> anywhere f d <*> pure b) <|> (Quant a p v <$> pure d <*> anywhere f b) 
+  Lam q -> Lam <$> anywhere f q
+  Op op args -> Op op <$> anywhereList (anywhere f) args
   _ -> empty
 
 liftQuantifiersAnyWhere :: (Monad m, Alternative m) => [Var] -> (Exp v) -> m (Exp v)
@@ -256,7 +260,7 @@ extendAllScopes :: Eq v => Exp v -> Exp v
 extendAllScopes e = case freeVars e of
   [] -> e
   xs -> case liftQuantifiersAnyWhere xs e of
-    Nothing -> error "freevars, but nothing to lift!"
+    Nothing ->  e -- error "freevars, but nothing to lift!"
     Just e' -> if e == e' then e else extendAllScopes e'
 
 
