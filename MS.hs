@@ -323,7 +323,7 @@ lexemeV :: String -> V
 lexemeV x = return $ mkPred x
 
 lexemeA :: String -> A
-lexemeA a = return $ A' (\cn obj -> apps (Con a) [lam cn, obj])
+lexemeA a = return $ (\cn obj -> apps (Con "appA") [Con a,lam cn, obj])
 
 lexemeV3 :: String -> V3
 -- lexemeV3 "deliver_V3" = pureV3 (namedRel3 "deliver_V3" "to" "what" "who")
@@ -349,7 +349,7 @@ pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but
           ,("itel_PN" , ([Neutral],Plural))
           ,("gfi_PN" , ([Neutral],Singular))
           ,("bt_PN" , ([Neutral],Plural))
-          ,("mary_PN" , ([Female],Plural))]
+          ,("mary_PN" , ([Female],Singular))]
 
 lexemePN :: String -> PN
 lexemePN x = case lookup x pnTable of
@@ -489,7 +489,7 @@ one_N = elliptic_CN
 -- A
 
 type A = Dynamic A'
-newtype A' = A' ((Object -> Prop) -> (Object -> Prop))
+type A' = (Object -> Prop) -> (Object -> Prop)
 
 positA :: A -> A
 positA = id
@@ -558,15 +558,13 @@ advCN cn adv = do
   adv' <- adv
   return (\x eos -> adv' (cn' x) eos ,gender) -- FIXME: lift cn
 
-appA :: A' -> (Object -> Prop) -> Object -> Prop
-appA (A' f) cn x = Con "appA" `apps` [lam $ \cn' -> lam $ \x' -> f (app cn') x',lam cn,x]
 
 adjCN :: A -> CN -> CN
 adjCN a cn = do
   a' <- a
   (cn',gendr) <- cn
   modify (pushCN (adjCN a cn))
-  return $ (\x eos -> appA a' (flip cn' eos) x,gendr)
+  return $ (\x eos -> a' (flip cn' eos) x,gendr)
 
 elliptic_CN :: CN
 elliptic_CN = do
@@ -771,7 +769,7 @@ compCN cn = do
 compAP :: AP -> Comp
 compAP ap = do
   a' <- ap
-  return $ \x -> appA a' (const TRUE) x 
+  return $ \x -> a' (const TRUE) x 
 
 compNP :: NP -> Comp
 compNP np = do

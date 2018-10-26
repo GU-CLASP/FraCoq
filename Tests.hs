@@ -1,5 +1,3 @@
-module Tests where
-
 import MS
 import Bank
 import LogicB

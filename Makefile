@@ -9,9 +9,12 @@ FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
 test: Bank.hs
 	ghc Tests -e main
 
+
 clean:
 	rm -f *.hi *.o Bank.hs
 
+FraToCoq: Bank.hs FraToCoq.hs MS.hs Logic.hs
+	ghc --make FraToCoq
 
-FraCoq2.v: Bank.hs FraToCoq.hs MS.hs Logic.hs
-	ghc FraToCoq -e main  >$@
+FraCoq2.v: FraToCoq
+	./FraToCoq  >$@

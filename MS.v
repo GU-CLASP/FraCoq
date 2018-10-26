@@ -994,6 +994,7 @@ Parameter false_A : PrivativeA.
 Parameter fast_A : SubsectiveA .
 Parameter fat_A : ExtensionalSubsectiveA .
 Parameter female_A : IntersectiveA .
+Parameter neutral_A : IntersectiveA .
 Parameter former_A : PrivativeA .
 Parameter fourlegged_A : IntersectiveA .
 Parameter free_A : A .
@@ -1292,10 +1293,6 @@ destruct X.
 exact x.
 Qed.
 
-Definition appA : A -> (object -> Prop) -> (object -> Prop).
-cbv.
-intros.
-apply X.
-exact X0.
-exact X1.
-Qed.
+Definition appA : A -> (object -> Prop) -> (object -> Prop)
+ := fun a cn x => a cn x.
+
