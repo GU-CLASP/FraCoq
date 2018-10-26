@@ -323,7 +323,7 @@ lexemeV :: String -> V
 lexemeV x = return $ mkPred x
 
 lexemeA :: String -> A
-lexemeA a = return $ \cn obj -> apps (Con a) [lam cn, obj]
+lexemeA a = return $ A' (\cn obj -> apps (Con a) [lam cn, obj])
 
 lexemeV3 :: String -> V3
 -- lexemeV3 "deliver_V3" = pureV3 (namedRel3 "deliver_V3" "to" "what" "who")
@@ -343,13 +343,18 @@ lexemeVS vs = return $ \s x -> mkRel2 vs (noExtraObjs s) x
 lexemeV2V :: String -> V2V
 lexemeV2V v2v = return $ \x vp y extraObjs -> apps (Con v2v) (map snd extraObjs ++ [x,lam (\z -> noExtraObjs (vp z)),y])
 
+pnTable :: [(String,([Gender],Number))]
+pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following
+          ,("john_PN" , ([Male],Singular))
+          ,("itel_PN" , ([Neutral],Plural))
+          ,("gfi_PN" , ([Neutral],Singular))
+          ,("bt_PN" , ([Neutral],Plural))
+          ,("mary_PN" , ([Female],Plural))]
+
 lexemePN :: String -> PN
-lexemePN x@"smith_PN" = (x,[Male,Female],Singular) -- smith is female in 123 but male in 182 and following
-lexemePN x@"john_PN" = (x,[Male],Singular)
-lexemePN x@"itel_PN" = (x,[Neutral],Plural)
-lexemePN x@"gfi_PN" = (x,[Neutral],Singular)
-lexemePN x@"bt_PN" = (x,[Neutral],Plural)
-lexemePN x = (x,[Male,Female,Neutral],Unspecified)
+lexemePN x = case lookup x pnTable of
+  Just (g,n) -> (x,g,n)
+  Nothing -> (x,[Male,Female,Neutral],Unspecified)
 
 type Prep = Dynamic (Object -> S' -> S')
 lexemePrep :: String -> Prep
@@ -484,7 +489,7 @@ one_N = elliptic_CN
 -- A
 
 type A = Dynamic A'
-type A' = (Object -> Prop) -> (Object -> Prop)
+newtype A' = A' ((Object -> Prop) -> (Object -> Prop))
 
 positA :: A -> A
 positA = id
@@ -553,14 +558,15 @@ advCN cn adv = do
   adv' <- adv
   return (\x eos -> adv' (cn' x) eos ,gender) -- FIXME: lift cn
 
-
+appA :: A' -> (Object -> Prop) -> Object -> Prop
+appA (A' f) cn x = Con "appA" `apps` [lam $ \cn' -> lam $ \x' -> f (app cn') x',lam cn,x]
 
 adjCN :: A -> CN -> CN
 adjCN a cn = do
   a' <- a
   (cn',gendr) <- cn
   modify (pushCN (adjCN a cn))
-  return $ (\x eos -> a' (flip cn' eos) x,gendr)
+  return $ (\x eos -> appA a' (flip cn' eos) x,gendr)
 
 elliptic_CN :: CN
 elliptic_CN = do
@@ -765,7 +771,7 @@ compCN cn = do
 compAP :: AP -> Comp
 compAP ap = do
   a' <- ap
-  return $ \x -> a' (const TRUE) x 
+  return $ \x -> appA a' (const TRUE) x 
 
 compNP :: NP -> Comp
 compNP np = do
@@ -1227,7 +1233,7 @@ genNP np _number (cn',_gender) _role = do
   return (\vp' -> them $ \y -> vp' (nos cn' `of_` y))
 
 possess :: Object -> Object -> Prop
-possess x y = mkRel2 "have_V2" x y [] -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
+possess x y = mkRel2 "have_V2" y x [] -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
 of_ :: (Object -> Prop) -> Object -> Object
 of_ cn owner = The (Lam $ \x -> possess owner x ∧ cn x)
@@ -1418,8 +1424,6 @@ evalDbg e = do
 
 _TRUE :: Effect -> Prop
 _TRUE e = foldr (∨) FALSE (allInterpretations e)
-
-
 
 -- _ENV :: Effect -> Env
 -- _ENV x = execState x assumed
