@@ -9,7 +9,8 @@ handleProblem :: Int -> Effect -> IO ()
 handleProblem n e = do
   let ps = allInterpretations e
   forM_ ps $ \p -> do
-    putStrLn ("Definition Problem" ++ show n ++ ":= " ++ show p ++ ".")
+    let q = (extendAllScopes (fromHOAS' p) :: Exp Zero)
+    putStrLn ("Definition Problem" ++ show n ++ ":= " ++ show q ++ ".")
     -- putStrLn $ "Abort All."
     putStrLn $ ""
 

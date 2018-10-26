@@ -6,14 +6,16 @@ Bank.hs: BankParser.hs FraCaS-treebank/src/FraCaSBankI.gf
 FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
 	gawk -f $^ >$@
 
-test: Bank.hs
-	ghc Tests -e main
+test:: Tests
+	./Tests
 
+Tests: Bank.hs Tests.hs MS.hs Logic.hs LogicB.hs
+	ghc --make Tests
 
 clean:
 	rm -f *.hi *.o Bank.hs
 
-FraToCoq: Bank.hs FraToCoq.hs MS.hs Logic.hs
+FraToCoq: Bank.hs FraToCoq.hs MS.hs Logic.hs LogicB.hs
 	ghc --make FraToCoq
 
 FraCoq2.v: FraToCoq

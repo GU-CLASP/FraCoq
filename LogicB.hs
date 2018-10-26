@@ -195,7 +195,7 @@ freeVars (Con _x) = []
 freeVars (V _) = []
 freeVars (Lam f) = freeVars f
 freeVars (Var x) = [x]
-freeVars (Quant _ _ x dom body) = (freeVars dom ++ nub (freeVars body)) \\ [x]
+freeVars (Quant _ _ x dom body) = nub (freeVars dom ++ freeVars body) \\ [x]
 freeVars (Op _ xs) = (concatMap (freeVars) xs)
 
 boundVars :: forall t. Exp t -> [String]
@@ -253,7 +253,7 @@ liftQuantifiersAnyWhere x = anywhere (liftQuantifiers x)
 
 
 extendAllScopes :: Eq v => Exp v -> Exp v
-extendAllScopes e = case freeVars e `intersect` boundVars e of
+extendAllScopes e = case freeVars e of
   [] -> e
   xs -> case liftQuantifiersAnyWhere xs e of
     Nothing -> error "freevars, but nothing to lift!"
