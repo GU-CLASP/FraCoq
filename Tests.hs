@@ -50,6 +50,8 @@ main = do
 
 -- Many: new handling of adverbs, prepositions. See type VP'
 
+-- 116: Genders are given to PNs. One cannot assume that the context is empty and infer that Mary is female just from the example.
+
 -- Analysis for 122. Conclusion (H) parse tree is wrong, it can't be fixed at the semantic level:
 
 -- (Every committee) (has (((a chairman) appointed) (by (members of the committee))))
