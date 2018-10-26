@@ -1292,3 +1292,10 @@ destruct X.
 exact x.
 Qed.
 
+Definition appA : A -> (object -> Prop) -> (object -> Prop).
+cbv.
+intros.
+apply X.
+exact X0.
+exact X1.
+Qed.
