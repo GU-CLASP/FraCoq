@@ -1278,6 +1278,9 @@ Variable Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False
 
 Variable small_and_large_disjoint_K : forall cn o, getSubsectiveA small_A cn o /\ getSubsectiveA large_A cn o -> False.
 
+
+
+
 (* New combinators *)
 Definition EXISTS := fun (p : object -> Prop) (q : object -> Prop) => exists x, p x /\ q x.
 Definition FORALL := fun (p : object -> Prop) (q : object -> Prop) => forall x, p x -> q x.
@@ -1296,3 +1299,4 @@ Qed.
 Definition appA : A -> (object -> Prop) -> (object -> Prop)
  := fun a cn x => a cn x.
 
+Parameter appoint_V2by : V3.
