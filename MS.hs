@@ -359,8 +359,7 @@ lexemePN x = case lookup x pnTable of
 type Prep = Dynamic (Object -> S' -> S')
 lexemePrep :: String -> Prep
 lexemePrep "by8agent_Prep" = return (modifyingPrep "by")
-lexemePrep "to_Prep"  = return (modifyingPrep "to")
-lexemePrep prep  = return (modifyingPrep prep)
+lexemePrep prep  = return (modifyingPrep (takeWhile (/= '_') prep))
 
 
 modifyingPrep :: String -> Object -> S' -> S'

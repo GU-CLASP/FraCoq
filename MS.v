@@ -1300,3 +1300,5 @@ Definition appA : A -> (object -> Prop) -> (object -> Prop)
  := fun a cn x => a cn x.
 
 Parameter appoint_V2by : V3.
+Parameter _BE_ : V2.
+Parameter report_Nfrom : object -> object -> Prop.
