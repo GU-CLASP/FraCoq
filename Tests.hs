@@ -2,10 +2,31 @@ module Tests where
 
 import MS
 import Bank
+import LogicB
+import Data.Foldable
+
+handleProblem :: Int -> Effect -> IO ()
+handleProblem n e = do
+  let ps = allInterpretations e
+  forM_ ps $ \p -> do
+    print n
+    print p
+    print (extendAllScopes (fromHOAS' p) :: Exp Zero)
+
+evalDbg :: Effect -> IO ()
+evalDbg e = do
+  let ps = allInterpretations e
+  --     q = extendAllScopes r
+  forM_ ps print
+  -- print r
+  -- print q
+  -- print (freeVars q)
+
+
 
 main :: IO ()
 main = do
-  -- suite >> putStrLn "----------"
+  suite handleProblem >> putStrLn "----------"
   evalDbg p_121
 
 -- Input the gender of PNs and CNs
@@ -44,8 +65,7 @@ p_122_ALT :: Effect
 p_122_ALT = phrToEff (s_122_1_p ### s_122_2_p) ==> phrToEff s_122_4_h_ALT
 
 -- >>> evalDbg p_122_ALT
--- ((forall a, committee_N a -> (exists b, chairman_N b /\ have_V2 b a)) /\ appoint_V2(by=(THE (fun x1 => have_V2 a x1 /\ member_N x1)),who=b)
--- -> (forall c, committee_N c -> (exists d, chairman_N d /\ appoint_V2(by=(THE (fun x1 => have_V2 c x1 /\ member_N x1)),who=d) /\ have_V2 d c)))
+-- ((FORALL (fun a=>committee_N a) (fun a=>(EXISTS (fun b=>chairman_N b) (fun b=>have_V2 b a)))) /\ (EXISTS (fun c=>True) (fun c=>appoint_V2by (THE (fun x1 => have_V2 a x1 /\ member_N x1)) b c)) -> (FORALL (fun d=>committee_N d) (fun d=>(EXISTS (fun e=>chairman_N e /\ appoint_V2 (THE (fun x1 => have_V2 d x1 /\ member_N x1)) e) (fun e=>have_V2 e d)))))
 
 
 -- 125: GF: Both "two" and "ten" introduce a quantifier. "They" can refer
