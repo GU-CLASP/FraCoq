@@ -16,7 +16,12 @@ let myGHC = haskellPackages.ghcWithPackages
 
 in stdenv.mkDerivation {
   name = "fracoq-env-0";
-  buildInputs = [ coq haskellPackages.gf myGHC ];
+  buildInputs = [
+    coq haskellPackages.gf myGHC
+  ];
+  shellHook = ''
+    export LANG=en_US.UTF-8
+  '';
 }
 
 
