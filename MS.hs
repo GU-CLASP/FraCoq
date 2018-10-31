@@ -13,11 +13,11 @@ module MS where
 import Prelude hiding (pred)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
-import Data.List (intersect,nub,partition)
+import Data.List (intersect,nub,partition,nubBy)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
--- import Data.Function (on)
+import Data.Function (on)
 
 type Object = Exp
 type Prop = Exp
@@ -182,10 +182,11 @@ type Effect = Dynamic Prop
 
 appArgs :: String -> [Object] -> [(String, Object)] -> Prop
 appArgs nm objs@(_:_) extraObjs = foldr app prep'd (map snd adverbs) `app` directObject
-  where (adverbs,prepositions) = partition (("adv" ==) . fst) extraObjs
+  where (adverbs,prepositions0) = partition (("adv" ==) . fst) extraObjs
         prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
         indirectObjects = init objs
         directObject = last objs
+        prepositions = nubBy ((==) `on` fst) prepositions0
 
 mkPred :: String -> Object -> S'
 mkPred p x extraObjs = appArgs p [x] extraObjs
@@ -673,7 +674,8 @@ type Pron = NP
 
 qPron :: ObjQuery -> Pron
 qPron q = do
-  nps <- getNP q
+  (isSloppy :: Bool) <- gets envSloppyFeatures
+  nps <- getNP (\x -> isSloppy || q x)
   np <- afromList nps
   protected np
 
@@ -706,12 +708,6 @@ maximallySloppyPron = qPron $ const True
 
 everyone_Pron :: Pron
 everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,Female])
-
-
--- his :: CN2 -> NP
--- his cn2 role = do
---   (isSloppy :: Bool) <- gets envSloppyFeatures -- FIXME: put this in Pron -> NP
---   poss (pron (\x -> isSloppy || (all' [isMale, isSingular] x))) cn2 role
 
 
 ---------------------------
@@ -964,8 +960,8 @@ questCl :: Cl -> Cl
 questCl = id
 
 sloppily :: Dynamic a -> Dynamic a
--- sloppily (Dynamic x) = Dynamic (withStateT (\Env{..} -> Env{envSloppyFeatures = True,..}) x)
-sloppily = id
+sloppily (Dynamic x) = Dynamic (withStateT (\Env{..} -> Env{envSloppyFeatures = True,..}) x)
+-- sloppily = id
 
 soDoI :: NP -> Cl
 soDoI np = predVP np doesTooVP
