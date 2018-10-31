@@ -16,16 +16,11 @@ debug :: Effect -> IO ()
 debug e = do
   let ps = allInterpretations e
   forM_ ps $ \p0 -> do
+    putStrLn "-----------------"
     let p = (fromHOAS' p0) :: Exp Zero
-    putStrLn "Before extendAllScopes"
-    print p
-    putStr "Freevars: "
-    print (freeVars p)
-    let q = (extendAllScopes p)
-    putStrLn "After extendAllScopes"
-    print q
-    putStr "Freevars: "
-    print (freeVars q)
+    forM_ (extendAllScopesTrace p) $ \(fvs,q) -> do
+      putStrLn ("extendAllScopes Step. Freevars = " ++ show fvs)
+      putStrLn ("expression = " ++ show q)
 
 
 testIt :: Exp Zero
@@ -40,7 +35,8 @@ tt = extendAllScopes testIt
 main :: IO ()
 main = do
   -- suite handleProblem >> putStrLn "----------"
-  debug p_122
+  debug (phrToEff s_134_1_p)
+  -- debug p_134
   -- handleProblem p
 
 -- >>> main

@@ -213,14 +213,14 @@ negativeContext Not _ = True
 negativeContext _ _ = False
 
 -- FIMXE: rename
-isQuant :: [Var] -> Exp v -> Bool
-isQuant x' e = case e of
-  (Quant _ _ x _ _) -> x `elem` x'
+bindsAnyOf :: [Var] -> Exp v -> Bool
+bindsAnyOf x' e = case e of
+  (Quant _ _ x dom _) -> x `elem` x'
   _ -> False
 
 matchQuantArg :: Alternative m => Monad m => [Var] -> [Exp v] -> m ([Exp v],Exp v,[Exp v])
 matchQuantArg _ [] = fail "not found"
-matchQuantArg x' (a:as) = (guard (isQuant x' a) >> return ([],a,as)) <|> do
+matchQuantArg x' (a:as) = (guard (bindsAnyOf x' a) >> return ([],a,as)) <|> do
   (l,q,r) <- matchQuantArg x' as
   return (a:l,q,r)
 
@@ -230,11 +230,13 @@ negativePol = \case
   _ -> False
 
 liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp v -> m (Exp v)
-liftQuantifiers xs (Quant amount pol x dom (Quant a' pol' x' dom' body))
-  | x' `elem` xs = return (Quant a' (maybeDual pol') x' dom' (Quant amount pol x dom body))
+liftQuantifiers xs (Quant amount pol x dom q@(Quant a' pol' x' dom' body))
+  | bindsAnyOf xs q = return (Quant a' pol' x' dom' (Quant amount pol x dom body))
+liftQuantifiers xs (Quant amount pol x q@(Quant a' pol' x' dom' body') body)
+  | bindsAnyOf xs q = return (Quant a' (maybeDual pol') x' dom' (Quant amount pol x body' body))
     where maybeDual = if negativePol pol then dualize else id
-liftQuantifiers xs (Lam (Quant a p v d b))
-  | v `elem` xs, There d' <- sequenceA d = return (Quant a p v d' (Lam b))
+liftQuantifiers xs (Lam q@(Quant a p v d b))
+  | bindsAnyOf xs q, There d' <- sequenceA d = return (Quant a p v d' (Lam b))
 liftQuantifiers xs (Op op args) = do
   (l,(Quant a pol x dom body),r) <- matchQuantArg xs args
   let pol' = if negativeContext op (length l) then dualize pol else pol
@@ -257,11 +259,15 @@ liftQuantifiersAnyWhere x = anywhere (liftQuantifiers x)
 
 
 extendAllScopes :: Eq v => Exp v -> Exp v
-extendAllScopes e = case freeVars e of
-  [] -> e
+extendAllScopes e = snd $ last (extendAllScopesTrace e)
+
+
+extendAllScopesTrace :: Eq v => Exp v -> [([String],Exp v)]
+extendAllScopesTrace e = (freeVars e, e) : case freeVars e of
+  [] -> []
   xs -> case liftQuantifiersAnyWhere xs e of
-    Nothing ->  e -- error "freevars, but nothing to lift!"
-    Just e' -> if e == e' then e else extendAllScopes e'
+    Nothing -> []
+    Just e' -> extendAllScopesTrace e'
 
 
 fromHOAS' :: L.Exp -> Exp v
