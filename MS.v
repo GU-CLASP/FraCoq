@@ -1201,13 +1201,12 @@ Parameter report_Nfrom : object -> object -> Prop.
 
 Parameter most: (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter at_least: nat -> (object -> Prop) -> (object -> Prop) -> Prop.
-Parameter take_V2adv: Adv -> object -> object -> Prop.
 Parameter go8walk_Vto: object -> object -> Prop.
 Parameter several: (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter have_V2for : object -> object -> object ->  Prop.
 Parameter exact: nat ->  (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter take_V2to : object -> object -> object  -> Prop.
-Parameter take_V2at :   object -> object -> (object -> Prop)  ->   Prop. 
+Parameter take_V2at : object -> object -> object  -> Prop. 
 Parameter cover_page_Npossess: object -> object -> Prop.
 Parameter Person_N : N.
 Parameter speak_to_V2adv : Adv -> object -> object -> Prop. 

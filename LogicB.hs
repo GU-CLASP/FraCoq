@@ -235,8 +235,8 @@ liftQuantifiers xs (Quant amount pol x dom q@(Quant a' pol' x' dom' body))
 liftQuantifiers xs (Quant amount pol x q@(Quant a' pol' x' dom' body') body)
   | bindsAnyOf xs q = return (Quant a' (maybeDual pol') x' dom' (Quant amount pol x body' body))
     where maybeDual = if negativePol pol then dualize else id
-liftQuantifiers xs (Lam q@(Quant a p v d b))
-  | bindsAnyOf xs q, There d' <- sequenceA d = return (Quant a p v d' (Lam b))
+-- liftQuantifiers xs (Lam q@(Quant a p v d b))
+--   | bindsAnyOf xs q, There d' <- sequenceA d = return (Quant a p v d' (Lam b)) -- This rule changes the type; so we can't use it.
 liftQuantifiers xs (Op op args) = do
   (l,(Quant a pol x dom body),r) <- matchQuantArg xs args
   let pol' = if negativeContext op (length l) then dualize pol else pol
@@ -258,8 +258,8 @@ liftQuantifiersAnyWhere :: (Monad m, Alternative m) => [Var] -> (Exp v) -> m (Ex
 liftQuantifiersAnyWhere x = anywhere (liftQuantifiers x)
 
 
-extendAllScopes :: Eq v => Exp v -> Exp v
-extendAllScopes e = snd $ last (extendAllScopesTrace e)
+extendAllScopes :: Eq v => Exp v -> ([String],Exp v)
+extendAllScopes e = last (extendAllScopesTrace e)
 
 
 extendAllScopesTrace :: Eq v => Exp v -> [([String],Exp v)]

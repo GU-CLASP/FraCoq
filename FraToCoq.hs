@@ -9,8 +9,9 @@ handleProblem :: Int -> Effect -> IO ()
 handleProblem n e = do
   let ps = allInterpretations e
   forM_ (zip ['a'..'z'] ps) $ \(v,p) -> do
-    let q = (extendAllScopes (fromHOAS' p) :: Exp Zero)
-    putStrLn ("Definition Problem" ++ show n ++ [v] ++ ":= " ++ show q ++ ".")
+    case extendAllScopes ((fromHOAS' p) :: Exp Zero) of
+      ([],q) -> putStrLn ("Definition Problem" ++ show n ++ [v] ++ ":= " ++ show q ++ ".")
+      _ -> putStrLn ("(* Problem" ++ show n ++ [v] ++ " can't be scope-extended fully *)")
     -- putStrLn $ "Abort All."
     putStrLn $ ""
 
