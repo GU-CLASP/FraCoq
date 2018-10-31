@@ -45,6 +45,11 @@ main = do
 
 -- Many: new handling of adverbs, prepositions. See type VP'
 
+-- ???: scope extension from domain of quantifiers: (remember that each quantifier comes with a domain, not a type but a logical formula)
+   -- ∀x. (∃y. P(y) -> Q(x,y)) -> R(x,y)
+   -- can be rewritten to:
+   -- ∀y. P(y) -> ∀x. (TRUE -> Q(x,y)) -> R(x,y)
+
 -- 116: Genders are given to PNs. One cannot assume that the context is empty and infer that Mary is female just from the example.
 
 -- Analysis for 122. Conclusion (H) parse tree is wrong, it can't be fixed at the semantic level:
