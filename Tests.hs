@@ -10,7 +10,7 @@ handleProblem n e = do
   forM_ ps $ \p -> do
     print n
     print p
-    print (extendAllScopes (fromHOAS' p) :: Exp Zero)
+    print (extendAllScopes (fromHOAS' p :: Exp Zero))
 
 debug :: Effect -> IO ()
 debug e = do
@@ -26,8 +26,7 @@ debug e = do
 testIt :: Exp Zero
 testIt = Op And [Op And [Quant One Pos "x" (Con "dom") (Con "body"), Var "x" ], Con "whatever"]
 
-tt :: Exp Zero
-tt = extendAllScopes testIt
+tt = extendAllScopes (testIt :: Exp Zero)
 
 -- >>> tt
 -- ((EXISTS (fun x=>dom) (fun x=>body /\ x)) /\ whatever)
@@ -35,8 +34,8 @@ tt = extendAllScopes testIt
 main :: IO ()
 main = do
   -- suite handleProblem >> putStrLn "----------"
-  debug (phrToEff s_136_1_p)
-  -- debug p_134
+  -- debug (phrToEff s_136_1_p)
+  debug p_189
   -- handleProblem p
 
 -- >>> main
