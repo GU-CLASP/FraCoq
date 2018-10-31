@@ -1191,6 +1191,8 @@ destruct X.
 exact x.
 Qed.
 
+Parameter assumedNP : object.
+
 Definition appA : A -> (object -> Prop) -> (object -> Prop)
  := fun a cn x => a cn x.
 
@@ -1225,9 +1227,13 @@ Parameter speak_to_V2to : object -> object -> object -> Prop.
 Parameter work_Vadv : Adv -> object -> Prop.
 Parameter find_V2before : object -> object -> object -> Prop.
 Parameter go8walk_Vadv : Adv -> object -> Prop.
+Parameter suggest_to_V2Sto : object -> V2S.
+
 
 Definition  MOST:= fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
 Definition  ATLEAST:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ at_least n CN VP.
 
 Definition  SEVERALQ := fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
 Definition  EXACT:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ exact n CN VP.
+
+
