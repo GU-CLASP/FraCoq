@@ -1199,7 +1199,6 @@ Definition appA : A -> (object -> Prop) -> (object -> Prop)
 Parameter appoint_V2by : V3.
 Parameter _BE_ : VP.
 Parameter _BE_on : object -> VP.
-Parameter report_Nfrom : object -> object -> Prop.
 
 Parameter most: (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter at_least: nat -> (object -> Prop) -> (object -> Prop) -> Prop.
@@ -1237,3 +1236,4 @@ Definition  SEVERALQ := fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
 Definition  EXACT:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ exact n CN VP.
 
 
+Definition  report_Nfrom := fun x: object => fun y => report_N y.

@@ -11,11 +11,10 @@ Theorem T116a: Problem116a. cbv. intros.  split. apply mary_PN_Female. apply I. 
 Theorem T117a: Problem117a. cbv. intros.  elim H. intros. apply H. exact H1. Qed. 
 
 
-(*Theorem T123a: Problem123a. cbv. intros. destruct H. firstorder. Qed.                        
-*)
+Theorem T123a: Problem123a. cbv. intros. firstorder. 
+Qed. 
 
-
-Theorem T123b: Problem123b.   cbv.  intros. destruct H. Abort all.
+Theorem T123b: Problem123b.   cbv.  intros. destruct H. firstorder. Abort all.
 
 Theorem T124a: Problem124a.
 cbv. intros. elim H. intros. destruct H0. destruct H1. destruct H1. exists x.  firstorder. 
