@@ -13,7 +13,7 @@ module MS where
 import Prelude hiding (pred)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
-import Data.List (intersect,nub)
+import Data.List (intersect,nub,partition)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
@@ -181,7 +181,9 @@ allInterpretations (Dynamic x) = (observeAll (evalStateT x assumed))
 type Effect = Dynamic Prop
 
 appArgs :: String -> [Object] -> [(String, Object)] -> Prop
-appArgs nm objs extraObjs = Con (nm ++ concatMap fst extraObjs) `apps` (map snd extraObjs ++ objs)
+appArgs nm objs extraObjs = foldr app prep'd (map snd adverbs)
+  where (adverbs,prepositions) = partition (("adv" ==) . fst) extraObjs
+        prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ objs)
 
 mkPred :: String -> Object -> S'
 mkPred p x extraObjs = appArgs p [x] extraObjs
@@ -190,11 +192,6 @@ mkPred p x extraObjs = appArgs p [x] extraObjs
 mkRel2 :: String -> Object -> Object -> S'
 mkRel2 p x y extraObjs = appArgs p [x,y] extraObjs
 
--- namedRel2 :: String -> String -> String -> Object -> Object -> S'
--- namedRel2 p a b x y extraObjs  = Op (Custom p) (map snd extraObjs ++ [(a,x),(b,y)])
-
--- namedRel3 :: String -> String -> String -> String -> Object -> Object -> Object -> S'
--- namedRel3 p a b c x y z extraObjs = Op (Custom p) (map snd extraObjs ++ [(a,x),(b,y),(c,z)])
 
 mkRel3 :: String -> Object -> Object -> Object -> S'
 mkRel3 p x y z extraObjs = appArgs p [x,y,z] extraObjs
@@ -341,7 +338,7 @@ lexemeVS :: String -> VS
 lexemeVS vs = return $ \s x -> mkRel2 vs (noExtraObjs s) x
 
 lexemeV2V :: String -> V2V
-lexemeV2V v2v = return $ \x vp y extraObjs -> apps (Con v2v) (map snd extraObjs ++ [x,lam (\z -> noExtraObjs (vp z)),y])
+lexemeV2V v2v = return $ \x vp y -> appArgs v2v [x,lam (\z -> noExtraObjs (vp z)),y]
 
 pnTable :: [(String,([Gender],Number))]
 pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following
@@ -781,7 +778,7 @@ compAdv adv = do
   return $ \x -> noExtraObjs (adv' (beVerb x))
 
 beVerb :: VP'
-beVerb y extraObjs = Con "_BE_" `apps` (map snd extraObjs ++ [y])
+beVerb y = appArgs "_BE_" [y]
 
 ---------------------------
 -- V2
@@ -821,7 +818,7 @@ shall_VV :: VV
 shall_VV = lexemeVV "shall_VV"
 
 lexemeVV :: String -> VV
-lexemeVV vv = return $ \vp x extraObjs -> apps (Con vv) (map snd extraObjs ++ [lam (\subj -> noExtraObjs (vp subj) ), x])
+lexemeVV vv = return $ \vp x -> appArgs vv [lam (\subj -> noExtraObjs (vp subj) ), x]
 
 ---------------------------
 -- VP
@@ -1275,7 +1272,7 @@ questIAdv = id
 why_IAdv :: IAdv
 why_IAdv cl = do
   cl' <- cl
-  return (\extraObjs -> Con "WHY" `apps` (map snd extraObjs ++ [noExtraObjs cl']))
+  return (\extraObjs -> Con "WHY" `apps` [cl' extraObjs])
 
 ------------------------
 -- VQ
