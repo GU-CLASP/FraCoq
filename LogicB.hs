@@ -178,7 +178,7 @@ ppExp n ctx e0 =
                    (One,Pos) -> "EXISTS"
                    (Few,Pos) -> "FEW"
                    (Few,Neg) -> "MOST"
-                   (Several,Pos) -> "SEVERAL"
+                   (Several,Pos) -> "SEVERALQ"
                    (Exact n,Both) -> "EXACT (" ++ show (toInteger n) ++ ")"
                    (AtLeast n,_) -> "ATLEAST (" ++ show (toInteger n) ++ ")"
                    _ -> show (k,p)

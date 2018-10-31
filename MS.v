@@ -32,7 +32,7 @@ Definition QCl := Prop.
 Definition QS := Prop.
 Definition Subj := Prop -> Prop -> Prop.
 Definition CN:= object->Prop.
-Definition VP:= forall (subjectClass : CN), object -> Prop. (* subject *)
+Definition VP := object -> Prop. (* subject *)
 Definition SC := VP.
 Definition V := object -> Prop.
 Definition V2S := object -> S -> object -> Prop.
@@ -184,17 +184,7 @@ Parameter PositAdvAdj : A -> Adv .
 
 (* Definition VeridicalAdv := { adv : (object -> Prop) -> (object -> Prop) & forall (x : object) (v : object -> Prop), (adv v) x -> v x}. *)
 
-Definition apNP1 : NP -> NP1 := fun np => (fun k => apNP np (fun xClass x => k x)).
 
-Definition PrepNP : Prep -> NP -> VeridicalAdv.
-intros prepRecord np.
-destruct prepRecord as [prep prepVerid prepVeridCov].
-cbv.
-exists (prep (apNP1 np)).
-split.
-intros. apply prepVerid with (prepArg := apNP1 np). assumption.
-intros. apply prepVeridCov with (prepArg := apNP1 np) (v:=v). assumption. assumption.
-Defined.
 Definition SubjS : Subj -> S -> Adv := fun subj s vp x => subj s (vp x).
 
 
@@ -214,11 +204,9 @@ Definition NumCard : Card -> Num := fun x => x.
 (* CN *)
 Definition UseN: N->CN := fun n:N=>n.
 Definition AdjCN: AP->CN->CN:= fun a o x => a o x.
-Definition RelCN: CN->RS->CN:= fun cn rs x => cn x /\ rs cn x. (* GF FIXME: Relative clauses should apply to NPs. See 013, 027, 044.  *)
+Definition RelCN: CN->RS->CN:= fun cn rs x => cn x /\ rs x. (* GF FIXME: Relative clauses should apply to NPs. See 013, 027, 044.  *)
 
 Definition AdvCN : CN -> Adv -> CN := fun cn adv => adv cn.
-Definition ComplN2 : N2 -> NP -> CN
-                   := fun n2 np x => apNP np (fun _class y => n2 y x).
 
 Definition apConj2 : Conj -> Prop -> Prop -> Prop := fun c => match c with
   Associative c => c |
@@ -239,21 +227,11 @@ Parameter elliptic_CN : CN .
 (* SC *)
 Parameter EmbedPresPart : VP -> SC .
 (* Parameter EmbedQS : QS -> SC . *)
-Definition EmbedS : S -> SC := fun s _ _ => s.
-  (* Used in cases such as "it is true/likely/false/... that <clause>"
-     So we have a copula. Thus "x" is "it". (no info, can be ignored)
-     Likewise for the 'noun class' of it.
-     *)
 
 Definition EmbedVP : VP -> SC := fun vp => vp.
 
 (* NP *)
 Definition DetCN: Det->CN->NP:= fun det cn=> mkNP (fst det) (snd det) cn.
-Definition UsePN: PN->NP:=
-  
-  fun pn => let (o,oClass,_) := pn in mkNP singular (fun (num : Num) (cn : CN) (vp : VP) => vp cn o) oClass.
-Definition PredetNP: Predet -> NP -> NP
-                   := fun predet np => predet np.
 
 Definition   AdvNP : NP -> Adv -> NP
  := fun np adv => let (num,q,cn) := np in mkNP num (fun cn' k => q cn' (adv k)) cn. (* CHECK *)
@@ -285,7 +263,7 @@ Definition ConjNP3 : Conj -> NP -> NP -> NP -> NP
 Parameter DetNP : Det -> NP .
 (* Parameter ExtAdvNP : NP -> Adv -> NP . *)
 Definition MassNP : CN -> NP
-           := fun cn => mkNP singular (fun num cn' p => exists x, cn' x /\ p cn' x) cn. (* TODO: Check *)
+           := fun cn => mkNP singular (fun num cn' p => exists x, cn' x /\ p  x) cn. (* TODO: Check *)
 
 Definition PPartNP : NP -> V2 -> NP  (* Word of warning: in FraCas partitives always behave like intersection, which is probably not true in general *)
           := fun np v2 => let (num,q,cn) := np in
@@ -293,7 +271,7 @@ Definition PPartNP : NP -> V2 -> NP  (* Word of warning: in FraCas partitives al
 (* Parameter RelNP : NP -> RS -> NP . *)
 Definition RelNPa : NP -> RS -> NP
                  := fun np rs => let (num,q,cn) := np
-                                 in mkNP num q (fun x => cn x /\ rs cn x).
+                                 in mkNP num q (fun x => cn x /\ rs x).
 (* Parameter SelfNP : NP -> NP . *)
 Definition UsePron : Pron -> NP := fun pron => pron.
 (* AP *)
@@ -307,17 +285,17 @@ Definition AdvAP : AP -> Adv -> AP
   := fun adj adv cn x => AdvAP0 adj adv x.
 
 Definition ComparA : A -> NP -> AP
- := fun a np cn x => apNP np (fun _class y =>    (a cn y -> a cn x)
+ := fun a np cn x => apNP np (fun  y =>    (a cn y -> a cn x)
                                               /\ (not (a cn x) -> not (a cn y))).
 (* Remark: most of the time, the comparatives are used in a copula, and in that case the category comes from the NP.  *)
  (* x is faster than y  *)
  
 Definition ComparAsAs : A -> NP -> AP
- := fun a np cn x => apNP np (fun _class y => a cn x <-> a cn y).
-Definition ComplA2 : A2 -> NP -> AP := fun a2 np cn x => apNP np (fun yClass y => a2 y cn x).
+ := fun a np cn x => apNP np (fun y => a cn x <-> a cn y).
+Definition ComplA2 : A2 -> NP -> AP := fun a2 np cn x => apNP np (fun y => a2 y cn x).
 Parameter PartVP : VP -> AP .
 Definition SentAP : AP -> SC -> AP
-  := fun ap clause cn x => ap (fun y => clause cn y /\ cn y) x.
+  := fun ap clause cn x => ap (fun y => clause y /\ cn y) x.
 Parameter UseComparA : A -> AP.
 Definition UseComparA_prefix : A -> AP := fun adj cn x => adj cn x.
 (* Parameter UseA2 : A2 -> AP . *)
@@ -329,10 +307,6 @@ Definition UseComparA_prefix : A -> AP := fun adj cn x => adj cn x.
 (* Quant *)
 Parameter environment : (object -> Prop) -> object.
 Parameter OF : object -> object -> Prop.
-Definition GenNP: NP -> Quant := (* Genitive *)
-  fun np num cn vp => apNP np (fun ownerClass owner =>
-    let o := environment (fun x => OF owner x /\ cn x)
-    in vp cn o /\ OF owner o /\ cn o).
 
 
 Parameter CARD: CN -> nat.
@@ -347,13 +321,13 @@ intros. cbv. apply le_trans with (y := CARD a). apply MOST_ineq. apply CARD_mono
 Qed.
 
 Definition IndefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
-  cardinal n => CARD (fun x => P x /\ Q P x) = n |
-  moreThan n => interpAtLeast n (CARD (fun x => P x /\ Q P x)) | (* FIXME: add one here *)
-  _ => exists x, P x/\Q P x end. 
+  cardinal n => CARD (fun x => P x /\ Q x) = n |
+  moreThan n => interpAtLeast n (CARD (fun x => P x /\ Q x)) | (* FIXME: add one here *)
+  _ => exists x, P x/\Q x end. 
 Definition DefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
-   plural => (forall x, P x -> Q P x) /\ Q P (environment P) /\ P (environment P) |
+   plural => (forall x, P x -> Q x) /\ Q (environment P) /\ P (environment P) |
              (* The above implements definite plurals *)
-   _ => Q P (environment P) /\ P (environment P) end.
+   _ => Q (environment P) /\ P (environment P) end.
 
 
 
@@ -361,7 +335,7 @@ Definition DefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
   (* JP: "exists!" fails to identify that we refer to a thing outside the current NP ??? *)
 
 Parameter PossPron : Pron -> Quant .
-Definition  no_Quant : Quant:= fun num P Q=> forall x, not (P x -> Q P x) .
+Definition  no_Quant : Quant:= fun num P Q=> forall x, not (P x -> Q x) .
 (* Parameter that_Quant : Quant . *)
 Parameter the_other_Q : Quant .
 Parameter this_Quant : Quant .
@@ -372,7 +346,7 @@ Definition DetQuantOrd: Quant->Num->Ord->Det:= fun q n o =>(n,q). (* Ignoring th
 (* Parameter ConjDet : Conj -> ListDet -> Det . *)
 
 (* VPSlash *)
-Definition SlashV2a: V2->VPSlash:= fun v dobj sClass s => v dobj s.
+Definition SlashV2a: V2->VPSlash:= fun v dobj  s => v dobj s.
 
 (* Parameter AdVVPSlash : AdV -> VPSlash -> VPSlash . *)
 (* Parameter AdvVPSlash : VPSlash -> Adv -> VPSlash . *)
@@ -381,16 +355,15 @@ Definition SlashV2a: V2->VPSlash:= fun v dobj sClass s => v dobj s.
 (* Parameter SlashV2VNP : V2V -> NP -> VPSlash -> VPSlash . *)
 (* Parameter VPSlashPrep : VP -> Prep -> VPSlash . *)
 Definition Slash2V3 : V3 -> NP -> VPSlash
-                    := fun v np indirectObject subjectClass subject => apNP np (fun class directObject => v indirectObject directObject subject).
+                    := fun v np indirectObject subject => apNP np (fun  directObject => v indirectObject directObject subject).
 Definition Slash3V3 : V3 -> NP -> VPSlash
-                    := fun v np directObject subjectClass subject => apNP np (fun _class indirectObject => v indirectObject directObject subject).
+                    := fun v np directObject subject => apNP np (fun indirectObject => v indirectObject directObject subject).
 Definition SlashV2S : V2S -> S -> VPSlash
-                   := fun v2s s directObject subjectClass subject => v2s directObject s subject.
+                   := fun v2s s directObject subject => v2s directObject s subject.
 Definition SlashV2V : V2V -> VP -> VPSlash
-                    := fun v2v vp directObject subjectClass subject => v2v directObject vp subject.
+                    := fun v2v vp directObject subject => v2v directObject vp subject.
 Definition SlashVV : VV -> VPSlash -> VPSlash
-                   := fun vv v2 directObject subjectClass subject => vv (fun xClass x => v2 directObject xClass x) subject.
-Parameter elliptic_VPSlash : VPSlash .
+                   := fun vv v2 directObject subject => vv (fun x => v2 directObject x) subject.
 
 (* AdV *)
 
@@ -433,19 +406,19 @@ Parameter IdetCN : IDet -> CN -> IP .
 (* Parameter PrepIP : Prep -> IP -> IAdv . *)
 
 (* VP *)
-Definition ComplSlash: VPSlash->NP->VP:=fun v2 dobject subjectClass subject=> apNP dobject(fun oClass o => v2 o subjectClass subject).
+Definition ComplSlash: VPSlash->NP->VP:=fun v2 dobject  subject=> apNP dobject(fun  o => v2 o subject).
 Definition UseComp: Comp -> VP (* be ... *)
                   := fun p => p.
 Definition ComplVV: VV -> VP -> VP
-                  := fun vv vp xClass x => vv vp x.
+                  := fun vv vp x => vv vp x.
 
 Definition AdVVP : AdV -> VP -> VP
-                 := fun adV vp xClass x => adV (fun y => vp xClass y) x.
+                 := fun adV vp x => adV (fun y => vp y) x.
                  (* can inherit the class of x, because the new VP applies to x anyway *)
 
 
 
-Definition  AdvVP : VP -> Adv -> VP:= fun vp adV xClass x => adV (fun y => vp xClass y) x.
+Definition  AdvVP : VP -> Adv -> VP:= fun vp adV x => adV (fun y => vp y) x.
 (* Parameter ComplBareVS : VS -> S -> VP . *)
 Parameter ComplVQ : VQ -> QS -> VP .
 Definition ComplVS : VS -> S -> VP
@@ -458,24 +431,24 @@ Parameter PassVPSlash : VPSlash -> VP .
 (* Parameter ProgrVP : VP -> VP . *)
 Parameter ProgrVPa : VP -> VP .
 Definition ReflVP : VPSlash -> VP
-                 := fun v2 subjectClass subject => v2 subject subjectClass subject.
+                 := fun v2 subject => v2 subject subject.
 (* Parameter SelfAdVVP : VP -> VP . *)
 (* Parameter SelfAdvVP : VP -> VP . *)
 (* Parameter UseCopula : VP . *)
 Definition UseV : V -> VP
-                := fun v xClass x => v x.
+                := fun v x => v x.
 Parameter elliptic_VP : VP .
 
 (* Comp -- complement of copula*)
 Definition CompCN: CN -> Comp (* be a thing given by the CN *)
-                 := fun cn xClass x => cn x.
+                 := fun cn x => cn x.
 Definition CompNP: NP -> Comp (* be the thing given by the NP *)
-                 := fun np oClass o => apNP np (fun o'Class o' => o = o').
+                 := fun np o => apNP np (fun  o' => o = o').
 
-Definition CompAP: AP -> Comp (* have property given by the AP *)
-                 := fun ap xClass x => ap xClass x.
+(* Definition CompAP: AP -> Comp (* have property given by the AP *) *)
+(*                  := fun ap x => ap xClass x. *)
 
-Definition CompAdv : Adv -> Comp := fun adv xClass x => adv (fun _ => True) x.
+Definition CompAdv : Adv -> Comp := fun adv x => adv (fun _ => True) x.
 (* In the above we ignore the class, because test cases 027 and 044 seem to suggest that adverbs do not depend on the class of the object that they are applied to. This makes intuitive sense as adverbs to not expect a noun class, but rather a VP. (Actually, we could propagate the class and make use of it if it were not for relative clauses being applied to common nouns instead of NPs. See RelCN above.) *)
 
 
@@ -493,9 +466,9 @@ Definition PresentPerfect : Temp := fun p => p.
 
 (* Cl *)
 Definition PredVP: NP->VP->Cl:= fun np vp=> apNP np vp.
-Definition ExistNP: NP->Cl:= fun n=>apNP n (fun x xClass => True).
+Definition ExistNP: NP->Cl:= fun n=>apNP n (fun x => True).
 Parameter IMPERSONAL : object.
-Definition ImpersCl : VP -> Cl := fun vp => vp (fun x => True) IMPERSONAL.
+Definition ImpersCl : VP -> Cl := fun vp => vp IMPERSONAL.
 Parameter SoDoI : NP -> Cl .
 Parameter elliptic_Cl : Cl .
 (* Parameter CleftAdv : Adv -> S -> Cl . *)
@@ -510,7 +483,7 @@ Parameter elliptic_Cl : Cl .
 (* Parameter SlashPrep : Cl -> Prep -> ClSlash . *)
 (* Parameter SlashVS : NP -> VS -> SSlash -> ClSlash . *)
 Definition SlashVP : NP -> VPSlash -> ClSlash
-                   := fun np vp dobjectClass dobject => apNP np (fun subjectClass subject => vp dobject subjectClass subject).
+                   := fun np vp dobject => apNP np (fun subject => vp dobject subject).
 
 (* RCl *)
 Definition RelVP: RP->VP->RCl:= fun relativePronounIgnored => fun p => p.
@@ -521,7 +494,7 @@ Definition RelSlash : RP -> ClSlash -> RCl := fun rpIgnored cl => cl. (* TODO: C
 Definition StrandRelSlash : RP -> ClSlash -> RCl := fun rp cl => cl.
 
 (* RS *)
-Definition UseRCl: Temp->Pol->RCl->RS:=fun t p r xClass x => p (r xClass x).
+Definition UseRCl: Temp->Pol->RCl->RS:=fun t p r x => p (r x).
 
 (* RP *)
 (* Parameter FunRP : Prep -> NP -> RP -> RP . *)
@@ -536,8 +509,6 @@ Definition PNeg : Pol := UncNeg.
 (* VPS *)
 
 (* Parameter ConjVPS : Conj -> ListVPS -> VPS . *)
-Definition ConjVPS2 : Conj -> Temp -> Pol -> VP -> Temp -> Pol -> VP -> VPS
-  := fun conj _t1 pol1 vp1 _t2 pol2 vp2 xClass x => apConj2 conj (pol1 (vp1 xClass x)) (pol2 (vp2 xClass x)).
 
 (* Parameter MkVPS : Temp -> Pol -> VP -> VPS . *)
 
@@ -620,45 +591,15 @@ Parameter now_AdV : AdV .
 Parameter still_AdV : AdV .
 
 (*Definition a_few_Det : Det := (cardinal A_FEW, fun (num:Num) (cn : CN) (vp : VP) => (exists x, cn x /\ vp x)).*)
-Definition a_few_Det : Det := (cardinal A_FEW, fun (num:Num) (cn : CN) (vp : VP) =>
-   A_FEW = CARD (fun x => cn x /\ vp cn x) /\ exists x, cn x /\ vp cn x).
 
-Definition all_Quant : Quant :=fun (num:Num) (cn : CN) (vp : VP) => forall x, cn x->vp cn x.
 
-Definition  a_lot_of_Det : Det:= (singular, fun num cn vp => (exists x, cn x /\ LOTS_OF cn x /\ vp cn x)) . (* Because this is used for "a lot of" is a mass; it's still singular. *)
+(* Definition  a_lot_of_Det : Det:= (singular, fun num cn vp => (exists x, cn x /\ LOTS_OF cn x /\ vp cn x)) . (* Because this is used for "a lot of" is a mass; it's still singular. *) *)
 Parameter another_Det : Det .
 Parameter anyPl_Det : Det .
-Definition  both_Det :  Det:= (cardinal 2, fun num P Q=> exists x y, (P x /\ Q P x) /\ (P y /\ Q P y) /\ not(x = y)).
-Definition each_Det : Det := (unknownNum, all_Quant) .
-Definition anySg_Det : Det := each_Det.
 Parameter either_Det : Det .
-Definition  every_Det : Det:= each_Det.
-Definition  all_Det : Det:= every_Det.
-Definition few_Det : Det:= (cardinal A_FEW, fun num P Q => CARD (fun x => P x /\ Q P x) <= A_FEW). (* Some tests seem to suggest that "few" does not imply existence, see eg. 044, 076. *)
-(* DOUBLE NUM: Note that we ignore the cardinality in the Quantifier part, because "a few three men" make no sense. *)
 Set Implicit Arguments. 
 
-Definition  many_Det : Det:= (cardinal MANY, fun num P Q=> (exists x, P x /\ Q P x) /\ (CARD (fun x => P x /\ Q P x) >= MANY)). (* See DOUBLE NUM: above *)
-Parameter much_Det : Det .
-Definition neither_Det :  Det:= (cardinal 2, fun num P Q=> exists x y, P x /\ not (Q P x) /\ P y /\ not (Q P y) /\ not (x = y)). 
-Parameter one_or_more_Det : Det.
-Definition somePl_Det : Det:= (plural, fun num P Q=> (exists x,  P x /\ Q P x)) .
-(* One would prefer, in this case, to have the cardinality informtion as well, as follows:
-  Definition somePl_Det : Det:= (plural, fun num P Q=> (exists x,  P x /\ Q P x) /\ CARD ((fun x =>  P x /\ Q P x)) > 1) .
-  This information is tested in 109. But then again, 107 contradicts this interpretation, so we leave the simplest definition for the time being.
-*)
-Definition someSg_Det : Det:= (singular, fun num P Q=> exists x,  P x /\ Q P x ).
-Definition several_Det: Det:= (cardinal SEVERAL, fun num P Q=> (exists x,  P x /\ Q P x) /\ (CARD (fun x => P x /\ Q P x) >= SEVERAL)). (* See DOUBLE NUM: above *)
-Parameter twice_as_many_Det : Det .
 
-Parameter elliptic_NP_Pl : NP .
-Parameter elliptic_NP_Sg : NP .
-Parameter everybody_NP : NP .
-Parameter everything_NP : NP .
-Parameter nobody_NP : NP .
-Parameter nothing_NP : NP .
-Parameter somebody_NP : NP .
-Parameter something_NP : NP .
 
 (* AdA *)
 Parameter almost_AdA : AdA .
@@ -667,50 +608,6 @@ Parameter really_AdA : AdA .
 Parameter so_AdA : AdA .
 Parameter too_AdA : AdA .
 Parameter very_AdA : AdA .
-
-(* Pron *)
-Parameter anyone_Pron : Pron .
-Definition everyone_Pron : Pron := mkNP unknownNum (fun num (cn : CN) (vp : VP) => forall x, cn x -> vp cn x) person_N.
-Parameter heRefl_Pron : Pron .
-Parameter he_Pron : Pron .
-Parameter i_Pron : Pron .
-Parameter itRefl_Pron : Pron .
-Parameter it_Pron : Pron .
-Definition no_one_Pron : Pron := mkNP unknownNum (fun num (cn : CN) (vp : VP) => forall x, cn x -> not (vp cn x)) person_N.
-Parameter nobody_Pron : Pron .
-Parameter sheRefl_Pron : Pron .
-Parameter she_Pron : Pron .
-Definition someone_Pron:Pron:= mkNP singular (fun num (cn : CN) (vp : VP) => exists x, cn x /\ (vp cn x)) person_N.
-Parameter theyRefl_Pron : Pron .
-Parameter they_Pron : Pron .
-Parameter we_Pron : Pron .
-Parameter youPl_Pron : Pron .
-Parameter youPol_Pron : Pron .
-Parameter youSg_Pron : Pron .
-
-(* Predet *)
-Definition all_Predet : Predet
-  := fun np => let (num,qIGNORED,cn) := np
-               in mkNP num all_Quant cn.
-
-Definition at_least_Predet : Predet
-  := fun np => let (num,qIGNORED,cn) := np
-               in mkNP num (fun num cn vp => interpAtLeast num (CARD (fun x => cn x /\ vp cn x))) cn.
-Definition at_most_Predet : Predet := fun np => let (num,qIGNORED,cn) := np
-               in mkNP num (fun num cn vp => interpAtMost num (CARD (fun x => cn x /\ vp cn x))) cn.
-Definition exactly_Predet : Predet := fun np => let (num,qIGNORED,cn) := np
-               in mkNP num (fun num cn vp => interpExactly num (CARD (fun x => cn x /\ vp cn x))) cn.
-Definition just_Predet : Predet := exactly_Predet.
-
-Definition MOST_Quant : Quant :=
-    fun num (cn : CN) (vp : VP) => CARD (fun x => cn x /\ vp cn x) >= CARD_MOST cn /\ exists x, cn x /\ vp cn x.
-
-Definition  most_Predet : Predet
-  := fun np => let (num,qIGNORED,cn0) := np
-               in mkNP num MOST_Quant cn0.
-Parameter most_of_Predet : Predet .
-Parameter not_Predet : Predet .
-Parameter only_Predet : Predet .
 
 (* Subj *)
 
@@ -1202,10 +1099,8 @@ Parameter ITEL_XZ_COMPY : computer_N ITEL_XZ.
 Definition itel_xz_PN := mkPN ITEL_XZ computer_N ITEL_XZ_COMPY.
 (* Syntactic replacement FIXME: it could also be possible to add environment (pc6082_N) = itel_xz_PN ; but then we also need environment to return a default class. *)
 (* Definition the_pc6082_NP : NP := (DetCN (DetQuant (DefArt) (NumSg)) (UseN (pc6082_N))). *)
-Definition the_pc6082_NP : NP := UsePN pc_6082_PN.
 
 (* Definition the_itel_xz_NP : NP := (DetCN (DetQuant (DefArt) (NumSg)) (UseN (itelxz_N))). *)
-Definition the_itel_xz_NP : NP := UsePN itel_xz_PN.
 
 Parameter accept_V2 : V2 .
 Parameter answer_V2 : V2 .
@@ -1269,7 +1164,7 @@ Parameter write_V2 : V2 .
 Parameter write_to_V2 : V2 .
 
 (** Knowledge **)
-Parameter wantCovariant_K : forall p q:VP, forall s, (forall xClass x, p xClass x -> q xClass x) -> want_VV q s -> want_VV p s.
+Parameter wantCovariant_K : forall p q:VP, forall s, (forall x, p x -> q x) -> want_VV q s -> want_VV p s.
 
 Variable  person_K: forall x:object, chairman_N(x)-> person_N(x). 
 Variable  committee_member_person_K : forall x, committee_member_N x -> person_N x.
@@ -1300,5 +1195,40 @@ Definition appA : A -> (object -> Prop) -> (object -> Prop)
  := fun a cn x => a cn x.
 
 Parameter appoint_V2by : V3.
-Parameter _BE_ : V2.
+Parameter _BE_ : VP.
+Parameter _BE_on : object -> VP.
 Parameter report_Nfrom : object -> object -> Prop.
+
+Parameter most: (object -> Prop) -> (object -> Prop) -> Prop.
+Parameter at_least: nat -> (object -> Prop) -> (object -> Prop) -> Prop.
+Parameter take_V2adv: Adv -> object -> object -> Prop.
+Parameter go8walk_Vto: object -> object -> Prop.
+Parameter several: (object -> Prop) -> (object -> Prop) -> Prop.
+Parameter have_V2for : object -> object -> object ->  Prop.
+Parameter exact: nat ->  (object -> Prop) -> (object -> Prop) -> Prop.
+Parameter take_V2to : object -> object -> object  -> Prop.
+Parameter take_V2at :   object -> object -> (object -> Prop)  ->   Prop. 
+Parameter cover_page_Npossess: object -> object -> Prop.
+Parameter Person_N : N.
+Parameter speak_to_V2adv : Adv -> object -> object -> Prop. 
+Parameter  speak_to_V2advadv :Adv ->  Adv -> object -> object -> Prop. 
+Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
+Parameter go8travel_Vtoby8meansby8means : object -> object ->  object -> object -> Prop.
+Parameter go8travel_Vby8means : object -> object -> Prop. 
+Parameter go8travel_Vtoby8meansby8meansto : object -> object ->  object -> object -> object -> Prop. 
+Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> Prop.
+Parameter go8travel_Vby8meansto :  object ->  object -> object -> Prop.
+Parameter go8travel_Vtoto :  object ->  object -> object -> Prop.
+Parameter go8travel_Vto :  object -> object -> Prop.
+Parameter knowVQ : VS.
+Parameter WHY: Prop -> Prop.
+Parameter speak_to_V2to : object -> object -> object -> Prop.
+Parameter work_Vadv : Adv -> object -> Prop.
+Parameter find_V2before : object -> object -> object -> Prop.
+Parameter go8walk_Vadv : Adv -> object -> Prop.
+
+Definition  MOST:= fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
+Definition  ATLEAST:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ at_least n CN VP.
+
+Definition  SEVERALQ := fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
+Definition  EXACT:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ exact n CN VP.
