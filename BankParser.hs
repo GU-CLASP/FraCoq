@@ -111,7 +111,8 @@ main = do
                 | (x,e) <- inp,
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
                   pbNumber >= 114,
-                  pbNumber < 197,
+                  pbNumber <= 141,
+                  -- pbNumber < 197, -- end of ellipsis section
                   hypTyp /= "q"]
       problems = filter (not . (`elem` disabledProblems) . frst . fst  . head) $
                  groupBy ((==) `on` (frst . fst)) handled
