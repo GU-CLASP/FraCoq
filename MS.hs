@@ -181,9 +181,11 @@ allInterpretations (Dynamic x) = (observeAll (evalStateT x assumed))
 type Effect = Dynamic Prop
 
 appArgs :: String -> [Object] -> [(String, Object)] -> Prop
-appArgs nm objs extraObjs = foldr app prep'd (map snd adverbs)
+appArgs nm objs@(_:_) extraObjs = foldr app prep'd (map snd adverbs) `app` directObject
   where (adverbs,prepositions) = partition (("adv" ==) . fst) extraObjs
-        prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ objs)
+        prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
+        indirectObjects = init objs
+        directObject = last objs
 
 mkPred :: String -> Object -> S'
 mkPred p x extraObjs = appArgs p [x] extraObjs
