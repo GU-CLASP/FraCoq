@@ -18,6 +18,7 @@ import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
 import Data.Function (on)
+import Control.Arrow (first)
 
 type Object = Exp
 type Prop = Exp
@@ -59,7 +60,8 @@ data Role where
 second :: forall t t1 t2. (t2 -> t1) -> (t, t2) -> (t, t1)
 second f (x,y) = (x,f y)
 
-data Descriptor = Descriptor {dGender :: [Gender]
+data Descriptor = Descriptor {dPluralizable :: Bool
+                             ,dGender :: [Gender]
                              ,dNumber :: Number
                              ,dRole :: Role} deriving Show
 
@@ -72,6 +74,25 @@ clearRole :: Env -> Env
 clearRole Env{..} = Env{objEnv = map cr objEnv,..}
   where cr (d,np) = (d {dRole = Other},np)
 
+
+-- | After a sentence is closed, we may need to allow to refer certain objects by a plural.
+-- See fracas 131.
+pluralize :: Env -> Env
+pluralize Env{..} = Env{objEnv = map (first pl) objEnv,..}
+  where pl Descriptor{..} = Descriptor{dNumber = if dPluralizable then Unspecified else dNumber,..}
+  -- FIXME this should be done only on things that are introduced inside the sentence!
+
+withClause :: MonadState Env m => m b -> m b
+withClause e = do
+  pl <- gets envPluralizingQuantifier
+  x <- e
+  modify clearRole -- Once the sentence is complete, accusative pronouns can refer to the direct arguments.
+  modify pluralize
+  modify $ \Env{..} -> Env{envPluralizingQuantifier = pl,..}
+  return x
+
+
+
 type VPEnv = [VP]
 
 data Env = Env {vpEnv :: VPEnv
@@ -83,6 +104,7 @@ data Env = Env {vpEnv :: VPEnv
                ,sEnv :: S
                ,envDefinites :: Exp -> Object -- map from CN to pure objects
                ,envSloppyFeatures :: Bool
+               ,envPluralizingQuantifier :: Bool
                ,freshVars :: [String]}
          -- deriving Show
 
@@ -238,6 +260,7 @@ assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
                ,cnEnv = []
                ,envDefinites = The
                ,envSloppyFeatures = False
+               ,envPluralizingQuantifier = False
                ,freshVars = allVars}
 
 
@@ -581,11 +604,11 @@ interpNP np role = do
   q n c role
 
 usePN ::  PN -> NP
-usePN (o,g,n) = pureNP (Con (parens ("PN2object " ++ o))) g n Subject -- FIXME: role
+usePN (o,g,n) = pureNP False (Con (parens ("PN2object " ++ o))) g n Subject -- FIXME: role
 
-pureNP :: Object -> [Gender] -> Number -> Role -> NP
-pureNP o dGender dNumber dRole = do
-  modify (pushNP (Descriptor{..}) (pureNP o dGender dNumber dRole))
+pureNP :: Bool -> Object -> [Gender] -> Number -> Role -> NP
+pureNP dPluralizable o dGender dNumber dRole = do
+  modify (pushNP (Descriptor{..}) (pureNP dPluralizable o dGender dNumber dRole))
   return $ MkNP dNumber q (\_ _ -> true,dGender)
   where q :: Quant
         q _dNumber _oClass _dRole = do
@@ -643,7 +666,7 @@ conjNP2 :: Conj -> NP -> NP -> NP
 conjNP2 c np1 np2 = do
   MkNP num1 q1 (cn1,gender1) <- np1
   MkNP _num2 q2 (cn2,gender2) <- np2
-  modify (pushNP (Descriptor (nub (gender1 ++ gender2)) Plural Other) (conjNP2 c np1 np2))
+  modify (pushNP (Descriptor False (nub (gender1 ++ gender2)) Plural Other) (conjNP2 c np1 np2))
   return $ MkNP (num1) {- FIXME add numbers? min? max? -}
                 -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
                 (\num' cn' role -> do
@@ -724,7 +747,7 @@ detQuant q n = (n,q)
 atLeastQuant :: Nat -> Number -> CN' -> Role -> Dynamic ((Exp -> S') -> S')
 atLeastQuant n' number (cn',gender) role = do
       x <- getFresh
-      modify (pushNP (Descriptor gender Plural role) (pureVar x number (cn',gender)))
+      modify (pushNP (Descriptor False gender Plural role) (pureVar x number (cn',gender)))
       -- modify (pushDefinite cn' x)
       return (\vp' extraObjs -> Quant (AtLeast n') Pos x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
 
@@ -950,10 +973,9 @@ existNP np = do
   return $ (np' beVerb)
 
 predVP :: NP -> VP -> Cl
-predVP np vp = do
+predVP np vp = withClause $ do
   np' <- interpNP np Subject
   vp' <- vp
-  modify clearRole -- Once the sentence is complete, accusative pronouns can refer to the direct arguments.
   modify (pushS (predVP np vp))
   return (np' vp')
 
@@ -1078,10 +1100,9 @@ conjS2 :: Conj -> S -> S -> S
 conjS2 c s1 s2 = apConj2 c <$> s1 <*> s2
 
 predVPS :: NP -> VPS -> S
-predVPS np vp = do
+predVPS np vp = withClause $ do
   np' <- interpNP np Subject
   vp' <- vp
-  modify clearRole -- Once the sentence is complete, accusative pronouns can refer to the direct arguments.
   return (np' vp')
 
 --------------------
@@ -1171,14 +1192,17 @@ no_Quant num cn role = do
 every_Quant :: Quant
 every_Quant = \number (cn',gender) role -> do
   x <- getFresh
-  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  dPluralizable <- gets envPluralizingQuantifier
+  modify $ \Env {..} -> Env {envPluralizingQuantifier = True,..}
+  modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
   modify (pushDefinite cn' x)
   return $ \vp' eos -> (Forall x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos))
 
 some_Quant :: Quant
 some_Quant = \number (cn',gender) role -> do
   x <- getFresh
-  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  dPluralizable <- gets envPluralizingQuantifier
+  modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
   return (\vp' eos -> Exists x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos))
 
 eType :: ([Char] -> Prop -> Exp -> Exp) -> [Char] -> Var -> (Exp -> S') -> (Exp -> t -> Exp) -> t -> Exp
@@ -1191,7 +1215,7 @@ most_Quant :: Quant
 most_Quant number  (cn',gender) role = do
   x <- getFresh
   z <- getFresh
-  modify (pushNP (Descriptor gender Plural role) (pureVar z number (cn',gender)))
+  modify (pushNP (Descriptor False gender Plural role) (pureVar z number (cn',gender)))
   return $ eType MOST x z cn'
 
 
@@ -1199,13 +1223,14 @@ several_Quant :: Quant
 several_Quant number (cn',gender) role = do
   x <- getFresh
   z <- getFresh
-  modify (pushNP (Descriptor gender Plural role) (pureVar z number (cn',gender)))
+  modify (pushNP (Descriptor False gender Plural role) (pureVar z number (cn',gender)))
   return (eType SEVERAL x z cn')
 
 indefArt :: Quant
 indefArt number (cn',gender) role = do
   x <- getFresh
-  modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+  dPluralizable <- gets envPluralizingQuantifier
+  modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
   modify (pushDefinite cn' x)
   return (\vp' eos -> Exists x (nos cn' (Var x)) (vp' (Var x) eos))
 
@@ -1216,7 +1241,7 @@ defArt number (cn',gender) role = do
   it <- getDefinite (cn',gender) 
   -- note that here we push the actual object (it seems that the strict reading is preferred in this case)
   -- return (\vp' -> them $ \y -> Exists x (cn' (Var x) ∧ possess y (Var x)) (vp' (Var x))) -- Existence is another possibility (harder to work with)
-  _ <- pureNP it gender number role
+  _ <- pureNP False it gender number role
   return $ \vp' -> vp' it
 
 
@@ -1256,7 +1281,8 @@ exactly_Predet (MkNP n _q cn) = MkNP n exactlyQuant cn where
 exactlyQuant :: Number -> (Object -> S', [Gender]) -> Role -> Dynamic NP'
 exactlyQuant number@(Cardinal n') (cn',gender) role = do
       x <- getFresh
-      modify (pushNP (Descriptor gender number role) (pureVar x number (cn',gender)))
+      dPluralizable <- gets envPluralizingQuantifier
+      modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
       return (\vp' extraObjs -> Quant (Exact n') Both x (nos cn' (Var x)) (vp' (Var x) extraObjs))
 
 ------------------------
