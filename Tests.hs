@@ -106,5 +106,10 @@ ouch122 = debug (phrToEff s_122_4_h)
 
 -- Analysis for 190. Strict identity not implemented.
 
+-- Analysis for 191-195.
+-- a) I don't even understand the sentence
+-- b) "They" could refer to any subset of object introduced in the environment. Potentially very expensive computationally.
+--    (Potentially a lot of readings to deal with)
+
 
 
