@@ -1164,6 +1164,7 @@ Parameter write_to_V2 : V2 .
 
 (** Knowledge **)
 Parameter wantCovariant_K : forall p q:VP, forall s, (forall x, p x -> q x) -> want_VV q s -> want_VV p s.
+Parameter sayCovariant_K : forall p q:S, forall s, (p -> q) -> say_VS q s -> say_VS p s.
 
 Variable  person_K: forall x:object, chairman_N(x)-> person_N(x). 
 Variable  committee_member_person_K : forall x, committee_member_N x -> person_N x.

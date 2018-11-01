@@ -477,6 +477,7 @@ lexemeN x@"report_N" = genderedN x [Neutral]
 lexemeN x@"laptop_computer_N" = genderedN x [Neutral]
 lexemeN x@"car_N" = genderedN x [Neutral]
 lexemeN x@"company_N" = genderedN x [Neutral]
+lexemeN x@"proposal_N" = genderedN x [Neutral]
 lexemeN x@"chairman_N" = genderedN x [Male]
 lexemeN x = genderedN x [Male,Female,Neutral]
 

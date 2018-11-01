@@ -73,17 +73,16 @@ ouch122 = debug (phrToEff s_122_4_h)
 -- >>> evalDbg p_122_ALT
 -- ((FORALL (fun a=>committee_N a) (fun a=>(EXISTS (fun b=>chairman_N b) (fun b=>have_V2 b a)))) /\ (EXISTS (fun c=>True) (fun c=>appoint_V2by (THE (fun x1 => have_V2 a x1 /\ member_N x1)) b c)) -> (FORALL (fun d=>committee_N d) (fun d=>(EXISTS (fun e=>chairman_N e /\ appoint_V2 (THE (fun x1 => have_V2 d x1 /\ member_N x1)) e) (fun e=>have_V2 e d)))))
 
-
--- 125: GF: Both "two" and "ten" introduce a quantifier. "They" can refer
--- to either of the bound variables. Unclear what to do about this.
--- Really this set of examples should treat "two out of ten" as a
--- quantifier. (Needs another syntax) 
+-- 124-126: At least, we need to change the syntax so that "Two out of
+-- ten" is interpreted as a quantifier. At GF level: Both "two" and
+-- "ten" introduce a quantifier. "They" can refer to either of the
+-- bound variables. Unclear what to do about this.  Really this set of
+-- examples should treat "two out of ten" as a quantifier. (Needs
+-- another syntax)
 
 -- 126: incorrect interpretation, but correct conclusion.
 
--- 127: Two things are needed: 1. push "on_tuesday" down to the
--- verb. 2. "they" can refer to any disjunction of NPs introduced so
--- far.
+-- 127: We need "they" to refer to any disjunction of NPs introduced so -- far.
 
 -- Analysis for 130:  FRACAS. Incompatible with 129. (It should be sufficent
 -- that one reading allows to conclude.)
@@ -105,6 +104,11 @@ ouch122 = debug (phrToEff s_122_4_h)
 -- Analysis for 183. Strict identity not implemented.
 
 -- Analysis for 190. Strict identity not implemented.
+
+-- Analysis for 191-195.
+-- a) I don't even understand the sentence
+-- b) "They" could refer to any subset of object introduced in the environment. Potentially very expensive computationally.
+--    (Potentially a lot of readings to deal with) --- see 127
 
 
 

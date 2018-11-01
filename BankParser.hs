@@ -112,7 +112,7 @@ main = do
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
                   pbNumber >= 114,
                   -- pbNumber <= 141, -- end of anaphora section
-                  pbNumber < 197, -- end of ellipsis section
+                  pbNumber <= 196, -- end of ellipsis section
                   hypTyp /= "q"]
       problems = filter (not . (`elem` disabledProblems) . frst . fst  . head) $
                  groupBy ((==) `on` (frst . fst)) handled
@@ -136,4 +136,4 @@ overrides (122,4,"h")= Just "s_122_4_h_ALT"
 overrides _ = Nothing
 
 disabledProblems :: [Int]
-disabledProblems = [137,171,172]
+disabledProblems = [137,171,172,191,192,193,194,195]
