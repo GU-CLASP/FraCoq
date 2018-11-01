@@ -883,7 +883,7 @@ Parameter canadian_A : A .
 Parameter clever_A : SubsectiveA .
 Parameter competent_A : SubsectiveA .
 Parameter crucial_A : A .
-Parameter dedicated_A : A .
+Parameter dedicated_A : IntersectiveA .
 Parameter different_A : A .
 Parameter employed_A : A .
 Parameter excellent_A : SubsectiveA .
@@ -1107,7 +1107,6 @@ Parameter answer_V2 : V2 .
 Parameter appoint_V2 : V2 .
 Parameter arrive_in_V2 : V2 .
 Parameter attend_V2 : V2 .
-Parameter award_and_be_awarded_V2 : V2 .
 Parameter become_V2 : V2 .
 Parameter blame1_V2 : V2 .
 Parameter blame2_V2 : V2 .
@@ -1208,7 +1207,7 @@ Parameter have_V2for : object -> object -> object ->  Prop.
 Parameter exact: nat ->  (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter take_V2to : object -> object -> object  -> Prop.
 Parameter take_V2at : object -> object -> object  -> Prop. 
-Parameter cover_page_Npossess: object -> object -> Prop.
+Definition cover_page_Npossess:= fun x: object => fun y : object => cover_page_N x.
 Parameter Person_N : N.
 Parameter speak_to_V2adv : Adv -> object -> object -> Prop. 
 Parameter  speak_to_V2advadv :Adv ->  Adv -> object -> object -> Prop. 
@@ -1237,3 +1236,4 @@ Definition  EXACT:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ 
 
 
 Definition  report_Nfrom := fun x: object => fun y => report_N y.
+Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
