@@ -47,7 +47,7 @@ Theorem T126b: Problem126b.  cbv. intros.  elim H. intros.  destruct H0. destruc
 
  Theorem T130a: Problem130a. cbv. intros. destruct H0. destruct H1. destruct H2. Abort all.
 
- Theorem T131a: Problem131a. cbv. intros.  firstorder.  Abort all.
+ Theorem T131c: Problem131c. cbv. intros.  firstorder.  Qed. 
 
  Theorem T1312a: Problem132a. cbv. intros.  firstorder. Abort all. 
 
