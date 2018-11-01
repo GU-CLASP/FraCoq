@@ -17,7 +17,7 @@ Qed.
 Theorem T123b: Problem123b.   cbv.  intros. destruct H. firstorder. Abort all.
 
 Theorem T124a: Problem124a.
-cbv. intros. elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1. destruct H3. destruct H. destruct H. destruct H5. exists x. destruct H5. destruct H5. destruct H7. firstorder. 
+cbv. intros. elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1. destruct H3. destruct H. destruct H. destruct H5. exists x0. destruct H5. destruct H5. destruct H7. firstorder. 
    firstorder. Abort all. 
 
 Theorem T124b : Problem124b. 
@@ -43,4 +43,40 @@ Theorem T126b: Problem126b.  cbv. intros.  elim H. intros.  destruct H0. destruc
 
  Theorem T128a: Problem128a. cbv. intros. destruct H0. destruct H1. destruct H1. destruct H2. destruct H3. exists x1. firstorder. Qed.
 
- Theorem T129a: Problem129a. cbv. intros. firstorder. Qed. 
+ Theorem T129a: Problem129a. cbv. intros. firstorder. Qed.
+
+ Theorem T130a: Problem130a. cbv. intros. destruct H0. destruct H1. destruct H2. Abort all.
+
+ Theorem T131a: Problem131a. cbv. intros.  firstorder.  Abort all.
+
+ Theorem T1312a: Problem132a. cbv. intros.  firstorder. Abort all. 
+
+ Theorem T132b: Problem132b. cbv. intros. firstorder. Qed.
+
+ Theorem T133a: Problem133a. cbv. intros. destruct H. destruct H. destruct H. apply H1. exact H0. Qed.
+
+ Theorem T134a: Problem134a. cbv. intros. destruct H. destruct H1. destruct H2. destruct H2. destruct H3.  Abort all.
+
+ Theorem T134b: Problem134b. cbv. intros. firstorder. exists x. Abort all.
+
+ Theorem T135a: Problem135a. cbv. intros.  firstorder. Abort all.
+
+ Theorem T135b: Problem135b. cbv. intros. firstorder. Abort all.
+
+ Theorem T136A: Problem136a. cbv. intros. firstorder. Abort all.
+
+ Theorem T138a: Problem138a. cbv. intros.
+
+ Theorem T139a: Problem139a.
+cbv. destruct large_A as [large]. intros. destruct H. destruct H. destruct H0. firstorder. Qed. 
+
+ Theorem T140a: Problem140a. cbv.  intros.  firstorder. generalize H. apply sayCovariant_K. firstorder. Qed. 
+
+
+ Theorem T141a: Problem141a. cbv. 
+intros. firstorder. 
+ Abort all. (*unk*)
+
+ Theorem T142a: Problem142a. cbv. intros. firstorder. Qed.
+
+ Theorem T143a: Problem143a. cbv. intros. firstorder. Abort all. (*unk*)
