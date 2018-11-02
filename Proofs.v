@@ -93,9 +93,6 @@ Theorem T146a: Problem146a. cbv. intros. destruct H. exact H0. Qed.
 
 Abort all. 
 Definition Problem147c:= (on_monday_Adv (speak_to_V2 (PN2object mary_PN)) (PN2object john_PN) /\ NOT(speak_to_V2 (PN2object mary_PN) (PN2object bill_PN)) -> not (on_monday_Adv (speak_to_V2 (PN2object mary_PN)) (PN2object bill_PN))). (**fix the format of no sentences and unk, need to prove the negation in the first case, try both in unk**)
-Section on_mon.
-Variable on_monday: forall p: object -> Prop, forall x: object,  on_monday_Adv p x -> p x.
-Theorem T147a:  Problem147c. cbv. intro.  destruct H.  firstorder. Qed.  (**Fix verididal adverb problem, when on_monday is declared veridical, it does not parse, thus the variable fix**)
-End on_mon.
 
+Theorem T147a:  Problem147aFalse. cbv. intro.  destruct H.  destruct on_monday_Adv as [on_mon on_mon_ver]. firstorder. Qed.  (**Fix verididal adverb problem, when on_monday is declared veridical, it does not parse, thus the variable fix**)
 
