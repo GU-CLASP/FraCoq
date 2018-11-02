@@ -1091,7 +1091,7 @@ extAdvS adv s = do
 
 
 useCl :: Temp -> Pol -> Cl -> S
-useCl = \temp pol cl -> onS' temp <$> (onS' pol <$> cl)
+useCl = \temp pol cl -> onS' temp <$> (onS' pol <$> cl) -- FIXME: the polarity should apply to the vp.
 
 useQCl :: Temp -> Pol -> QCl -> QS
 useQCl = useCl
