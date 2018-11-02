@@ -10,15 +10,19 @@ prepare q = case extendAllScopes q of
       ([],p) -> Right p
       _ -> Left $ "(* Interpretation " ++ show q ++ " can't be scope-extended fully *)"
 
-handleProblem :: Int -> Effect -> IO ()
-handleProblem n e = do
-  let ps = nub $ map fromHOAS' $ allInterpretations e :: [Exp Zero]
-      qs = nub $ map prepare ps
-  forM_ (zip ['a'..'z'] qs) $ \(v,p) -> do
-    case p of
-      Right q -> putStrLn ("Definition Problem" ++ show n ++ [v] ++ ":= " ++ show q ++ ".")
-      Left err -> putStrLn err
-    putStrLn $ ""
+handleProblem :: Int -> (Phr,Phr,[Bool]) -> IO ()
+handleProblem n (premise,h,rs) = do
+  forM_ rs $ \r -> do
+    let e = case r of
+              True -> phrToEff premise ==> phrToEff h
+              False -> phrToEff premise ==> (pNeg <$> phrToEff h)
+    let ps = nub $ map fromHOAS' $ allInterpretations e :: [Exp Zero]
+        qs = nub $ map prepare ps
+    forM_ (zip ['a'..'z'] qs) $ \(v,p) -> do
+      case p of
+        Right q -> putStrLn ("Definition Problem" ++ show n ++ [v] ++ show r ++ ":= " ++ show q ++ ".")
+        Left err -> putStrLn err
+      putStrLn $ ""
 
 
 main :: IO ()

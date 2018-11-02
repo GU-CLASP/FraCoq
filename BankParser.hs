@@ -51,7 +51,7 @@ bank = do
 
 
 processSuite :: [[(HypID,SExpr)]] -> [String]
-processSuite pbs = "suite :: (Int -> Effect -> IO ()) -> IO ()" :
+processSuite pbs = "suite :: (Int -> (Phr,Phr,[Bool]) -> IO ()) -> IO ()" :
                    "suite handleProblem = do" :
                    concat
                      [["  handleProblem " ++ show pb ++ " " ++ pbName pb] | (((pb,_,_),_):_) <- pbs ]
@@ -65,10 +65,15 @@ processProblem defs = concatMap processDef defs ++ problemDef (reverse (map fst 
 pbName :: Int -> String
 pbName pb = "p_" ++ show pb
 
+
 problemDef :: [HypID] -> [String]
-problemDef (th@(pb,_,_):hs) = [pbName pb ++ " :: Effect"
-                              ,pbName pb ++ " = phrToEff (" ++ intercalate " ### " (map hypName hyps') ++ ") ==> phrToEff " ++ hypName th]
-                              where hyps' = [h | h@(_,_,[_]) <- reverse hs]
+problemDef ((th@(pb,_,_):hs))
+  = [pbName pb ++ " :: (Phr,Phr,[Bool])"
+    ,pbName pb ++ " = (" ++ intercalate " ### " (map hypName hyps') ++ "," ++ hypName th ++ "," ++ show rs ++ ")"]
+  where hyps' = [h | h@(_,_,[_]) <- reverse hs]
+        rs = case lookup pb expectResults of
+          Nothing -> [True]
+          Just x -> x
 problemDef [] = error "problem without hypothesis"
 
 hypName :: HypID -> String
@@ -129,6 +134,13 @@ parseHName x = case splitOn "_" x of
 
 type HypID = (Int, Int, [Char])
 
+
+expectResults :: [(Int, [Bool])]
+expectResults = [(119,[False])
+                ,(125,[True,False])
+                ,(130,[True,False])
+                ,(136,[True,False])
+                ,(141,[True,False])]
 
 overrides :: HypID -> Maybe String
 overrides (177,1,"p")= Just "s_177_1_p_NEW"
