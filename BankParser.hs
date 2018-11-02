@@ -140,7 +140,9 @@ expectResults = [(119,[False])
                 ,(125,[True,False])
                 ,(130,[True,False])
                 ,(136,[True,False])
-                ,(141,[True,False])]
+                ,(141,[True,False])
+                ,(147,[False])
+                ]
 
 overrides :: HypID -> Maybe String
 overrides (177,1,"p")= Just "s_177_1_p_NEW"
