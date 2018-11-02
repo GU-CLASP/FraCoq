@@ -538,9 +538,15 @@ type AdvV = ADV
 type AdV = ADV
 
 lexemeAdv :: String -> Adv
-lexemeAdv "too_Adv" = uninformativeAdv
-lexemeAdv "also_AdV" = uninformativeAdv
-lexemeAdv adv = return $ \s' extraObjs -> s' (("adv",Con adv):extraObjs)
+lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
+lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
+lexemeAdv adv = return $ \s' extraObjs -> s' (("adv",appAdverb' adv):extraObjs)
+
+appAdverb :: String -> (Object -> Prop) -> (Object -> Prop)
+appAdverb adv vp obj = apps (Con "appAdv") [Con adv,lam vp, obj]
+
+appAdverb' :: String -> Exp
+appAdverb' adv = Lam $ \vp -> Lam $ \obj -> appAdverb adv (app vp) obj
 
 uninformativeAdv :: Adv
 uninformativeAdv = return $ \vp x -> vp x -- ALT: Coq/HOL

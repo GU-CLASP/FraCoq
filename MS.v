@@ -814,7 +814,7 @@ Parameter long_Adv : Adv .
 Parameter on_friday_Adv : Adv .
 Parameter on_july_4th_1994_Adv : Adv .
 Parameter on_july_8th_1994_Adv : Adv .
-Parameter on_monday_Adv : Adv .
+Parameter on_monday_Adv : VeridicalAdv .
 Parameter on_the_5th_of_may_1995_Adv : Adv .
 Parameter on_the_7th_of_may_1995_Adv : Adv .
 Parameter on_thursday_Adv : Adv .
@@ -1195,6 +1195,9 @@ Parameter assumedNP : object.
 
 Definition appA : A -> (object -> Prop) -> (object -> Prop)
  := fun a cn x => a cn x.
+Definition appAdv : Adv -> (object -> Prop) -> (object -> Prop)
+ := fun a cn x => a cn x.
+
 
 Parameter appoint_V2by : V3.
 Parameter _BE_ : VP.
