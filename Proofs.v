@@ -80,3 +80,22 @@ intros. firstorder.
  Theorem T142a: Problem142a. cbv. intros. firstorder. Qed.
 
  Theorem T143a: Problem143a. cbv. intros. firstorder. Abort all. (*unk*)
+
+ Theorem T144a: Problem144a. cbv. intros. firstorder. Qed.
+
+ Theorem T144b: Problem144b. cbv. intros. firstorder. Abort all. (**wrong reading**)
+
+Theorem T145a: Problem145a. cbv. intros. firstorder. Abort all. (**wrong reading**)
+ 
+Theorem T145b: Problem145b. cbv. intros. destruct H. exact H0. Qed.
+
+Theorem T146a: Problem146a. cbv. intros. destruct H. exact H0. Qed.
+
+Abort all. 
+Definition Problem147c:= (on_monday_Adv (speak_to_V2 (PN2object mary_PN)) (PN2object john_PN) /\ NOT(speak_to_V2 (PN2object mary_PN) (PN2object bill_PN)) -> not (on_monday_Adv (speak_to_V2 (PN2object mary_PN)) (PN2object bill_PN))). (**fix the format of no sentences and unk, need to prove the negation in the first case, try both in unk**)
+Section on_mon.
+Variable on_monday: forall p: object -> Prop, forall x: object,  on_monday_Adv p x -> p x.
+Theorem T147a:  Problem147c. cbv. intro.  destruct H.  firstorder. Qed.  (**Fix verididal adverb problem, when on_monday is declared veridical, it does not parse, thus the variable fix**)
+End on_mon.
+
+
