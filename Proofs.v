@@ -1,98 +1,109 @@
 Load FraCoq2.
 
-Theorem T114a: Problem114a. cbv. intros. destruct H. destruct H. exists x. split. exact H. exists (PN2object mary_PN). split. apply I. exact H0. Qed. 
+Theorem T114a: Problem114aTrue. cbv. intros. destruct H. destruct H. exists x. split. exact H. exists (PN2object mary_PN). split. apply I. exact H0. Qed. 
 
 
-Theorem T115A: Problem115a. cbv. intros. destruct H. destruct H. destruct H.  exists x. split. exact H1. exact H. Qed. 
+Theorem T115A: Problem115aTrue. cbv. intros. destruct H. destruct H. destruct H.  exists x. split. exact H1. exact H. Qed. 
 
-Theorem T116a: Problem116a. cbv. intros.  split. apply mary_PN_Female. apply I. Qed.
-
-
-Theorem T117a: Problem117a. cbv. intros.  elim H. intros. apply H. exact H1. Qed. 
+Theorem T116a: Problem116aTrue. cbv. intros.  split. apply mary_PN_Female. apply I. Qed.
 
 
-Theorem T123a: Problem123a. cbv. intros. firstorder. 
+Theorem T117a: Problem117aTrue. cbv. intros.  elim H. intros. apply H. exact H1. Qed. 
+
+
+Theorem T123a: Problem123aTrue. cbv. intros. firstorder. 
 Qed. 
 
-Theorem T123b: Problem123b.   cbv.  intros. destruct H. firstorder. Abort all.
+Theorem T123b: Problem123bTrue.   cbv.  intros. destruct H. firstorder. Abort all.
 
-Theorem T124a: Problem124a.
+Theorem T124a: Problem124aTrue.
 cbv. intros. elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1. destruct H3. destruct H. destruct H. destruct H5. exists x0. destruct H5. destruct H5. destruct H7. firstorder. 
    firstorder. Abort all. 
 
-Theorem T124b : Problem124b. 
+Theorem T124b : Problem124bTrue. 
 cbv. intros. elim H.  
 intros.      destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1. destruct H3. destruct H. destruct H. destruct H5.       exists x.   split. assumption. split. exists x1. split. exact I. firstorder. destruct H5.  destruct H5. 
 destruct H5. destruct H8. firstorder. 
 destruct H1. firstorder. 
 Abort All. 
 
-Theorem T125a: Problem125a. 
-  cbv. intros. firstorder. Abort all. (**UNK so this is fine**)
+Theorem T125at: Problem125aTrue. 
+  cbv. intros. firstorder. Abort all.
 
-Theorem T125b: Problem125b.
+Theorem T125af: Problem125aFalse. 
+  cbv. intros. firstorder. Abort all.
+
+(**UNK so this is fine**)
+
+Theorem T125bt: Problem125bTrue.
   cbv. intros. firstorder. Abort all.  (**Ibid**)
 
-Theorem T126A: Problem126a. cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1.  destruct H. destruct H. destruct H5. destruct H5. destruct H5. destruct H5. destruct H8.  Abort all.  (**Needs to be fixed**)
 
-Theorem T126b: Problem126b.  cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1.  destruct H. destruct H. destruct H5. destruct H5. destruct H5. destruct H5. destruct H8.
+Theorem T125bf: Problem125bFalse.
+  cbv. intros. firstorder. Abort all.  (**Ibid**)
+
+Theorem T126A: Problem126aTrue. cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1.  destruct H. destruct H. destruct H5. destruct H5. destruct H5. destruct H5. destruct H8.  Abort all.  (**Needs to be fixed**)
+
+Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1.  destruct H. destruct H. destruct H5. destruct H5. destruct H5. destruct H5. destruct H8.
  exists x. Abort all. 
 
                              
- Theorem T127a: Problem127a. cbv. intros. Abort all.  (**This is marked yes on a distributive reading. One of the funny examples with two readings**)
+ Theorem T127a: Problem127aTrue. cbv. intros. Abort all.  (**This is marked yes on a distributive reading. One of the funny examples with two readings**)
 
- Theorem T128a: Problem128a. cbv. intros. destruct H0. destruct H1. destruct H1. destruct H2. destruct H3. exists x1. firstorder. Qed.
+ Theorem T128a: Problem128aTrue. cbv. intros. destruct H0. destruct H1. destruct H1. destruct H2. destruct H3. exists x1. firstorder. Qed.
 
- Theorem T129a: Problem129a. cbv. intros. firstorder. Qed.
+ Theorem T129a: Problem129aTrue. cbv. intros. firstorder. Qed.
 
- Theorem T130a: Problem130a. cbv. intros. destruct H0. destruct H1. destruct H2. Abort all.
+ Theorem T130at: Problem130aTrue. cbv. intros. destruct H0. destruct H1. destruct H2. Abort all.
 
- Theorem T131c: Problem131c. cbv. intros.  firstorder.  Qed. 
+ Theorem T130af: Problem130aFalse. cbv. intros. destruct H0.  firstorder. Abort all.   (**unk**)
 
- Theorem T1312a: Problem132a. cbv. intros.  firstorder. Abort all. 
+  
 
- Theorem T132b: Problem132b. cbv. intros. firstorder. Qed.
+ Theorem T131c: Problem131cTrue. cbv. intros.  firstorder.  Qed.  (**try 131a,b**)
 
- Theorem T133a: Problem133a. cbv. intros. destruct H. destruct H. destruct H. apply H1. exact H0. Qed.
+ Theorem T1312at: Problem132aTrue. cbv. intros.  firstorder. Abort all. 
 
- Theorem T134a: Problem134a. cbv. intros. destruct H. destruct H1. destruct H2. destruct H2. destruct H3.  Abort all.
+ Theorem T132bf: Problem132bTrue. cbv. intros. firstorder. Qed.
 
- Theorem T134b: Problem134b. cbv. intros. firstorder. exists x. Abort all.
+ Theorem T133a: Problem133aTrue. cbv. intros. destruct H. destruct H. destruct H. apply H1. exact H0. Qed.
 
- Theorem T135a: Problem135a. cbv. intros.  firstorder. Abort all.
+ Theorem T134a: Problem134aTrue. cbv. intros. destruct H. destruct H1. destruct H2. destruct H2. destruct H3.  Abort all. (**donkey sentence**)
 
- Theorem T135b: Problem135b. cbv. intros. firstorder. Abort all.
+ Theorem T134b: Problem134bTrue. cbv. intros. firstorder. exists x. Abort all.
 
- Theorem T136A: Problem136a. cbv. intros. firstorder. Abort all.
+ Theorem T135a: Problem135aTrue. cbv. intros.  firstorder. Abort all.
 
- Theorem T138a: Problem138a. cbv. intros.
+ Theorem T135b: Problem135bTrue. cbv. intros. firstorder. Abort all.
 
- Theorem T139a: Problem139a.
+ Theorem T136A: Problem136aTrue. cbv. intros. firstorder. Abort all.
+
+ Theorem T138a: Problem138aTrue. cbv. intros. Abort all. 
+
+ Theorem T139a: Problem139aTrue.
 cbv. destruct large_A as [large]. intros. destruct H. destruct H. destruct H0. firstorder. Qed. 
 
- Theorem T140a: Problem140a. cbv.  intros.  firstorder. generalize H. apply sayCovariant_K. firstorder. Qed. 
+ Theorem T140a: Problem140aTrue. cbv.  intros.  firstorder. generalize H. apply sayCovariant_K. firstorder. Qed. 
 
 
- Theorem T141a: Problem141a. cbv. 
+ Theorem T141a: Problem141aTrue. cbv. 
 intros. firstorder. 
  Abort all. (*unk*)
 
- Theorem T142a: Problem142a. cbv. intros. firstorder. Qed.
+ Theorem T142a: Problem142aTrue. cbv. intros. firstorder. Qed.
 
- Theorem T143a: Problem143a. cbv. intros. firstorder. Abort all. (*unk*)
+ Theorem T143a: Problem143aTrue. cbv. intros. firstorder. Abort all. (*unk*)
 
- Theorem T144a: Problem144a. cbv. intros. firstorder. Qed.
+ Theorem T144a: Problem144aTrue. cbv. intros. firstorder. Qed.
 
- Theorem T144b: Problem144b. cbv. intros. firstorder. Abort all. (**wrong reading**)
+ Theorem T144b: Problem144bTrue. cbv. intros. firstorder. Abort all. (**wrong reading**)
 
-Theorem T145a: Problem145a. cbv. intros. firstorder. Abort all. (**wrong reading**)
+Theorem T145a: Problem145aTrue. cbv. intros. firstorder. Abort all. (**wrong reading**)
  
-Theorem T145b: Problem145b. cbv. intros. destruct H. exact H0. Qed.
+Theorem T145b: Problem145bTrue. cbv. intros. destruct H. exact H0. Qed.
 
-Theorem T146a: Problem146a. cbv. intros. destruct H. exact H0. Qed.
+Theorem T146a: Problem146aTrue. cbv. intros. destruct H. exact H0. Qed.
 
-Abort all. 
-Definition Problem147c:= (on_monday_Adv (speak_to_V2 (PN2object mary_PN)) (PN2object john_PN) /\ NOT(speak_to_V2 (PN2object mary_PN) (PN2object bill_PN)) -> not (on_monday_Adv (speak_to_V2 (PN2object mary_PN)) (PN2object bill_PN))). (**fix the format of no sentences and unk, need to prove the negation in the first case, try both in unk**)
 
-Theorem T147a:  Problem147aFalse. cbv. intro.  destruct H.  destruct on_monday_Adv as [on_mon on_mon_ver]. firstorder. Qed.  (**Fix verididal adverb problem, when on_monday is declared veridical, it does not parse, thus the variable fix**)
 
+Theorem T147a:  Problem147aFalse. cbv. intro.  destruct H.  destruct on_monday_Adv as [on_mon on_mon_ver]. firstorder. Qed. 
