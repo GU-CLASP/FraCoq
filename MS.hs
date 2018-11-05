@@ -838,6 +838,15 @@ ordSuperl = return id -- FIXME
 
 type Det = (Num,Quant)
 
+another_Det :: Det
+another_Det = (Cardinal 1, anotherQuant)
+  where anotherQuant number (cn',gender) role = do
+          x <- getFresh
+          y <- getDefinite (cn',gender)
+          dPluralizable <- gets envPluralizingQuantifier
+          modify (pushNP (Descriptor dPluralizable gender Plural role) (pureVar x number (cn',gender)))
+          return $ \vp extraObjs -> Exists x (noExtraObjs (cn' (Var x)) ∧ not' (Var x === y)) (vp (Var x) extraObjs)
+
 detQuant :: Quant -> Num -> Det
 detQuant _ (Cardinal n) = (Cardinal n,atLeastQuant (Cardinal n))
 detQuant q n = (n,q)
