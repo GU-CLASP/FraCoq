@@ -4,13 +4,13 @@ import LogicB
 import Logic hiding (Exp(..),freeVars)
 import Data.Foldable
 
-handleProblem :: Int -> Effect -> IO ()
-handleProblem n e = do
-  let ps = allInterpretations e
-  forM_ ps $ \p -> do
-    print n
-    print p
-    print (extendAllScopes (fromHOAS' p :: Exp Zero))
+handleProblem :: Int -> (Phr,Phr,x) -> IO ()
+handleProblem n p = do
+  putStrLn "=========="
+  putStrLn ("== " ++ show n)
+  debug (probToEff p)
+
+probToEff (premise,h,_) = phrToEff premise ==> phrToEff h
 
 debug :: Effect -> IO ()
 debug e = do
@@ -34,8 +34,8 @@ tt = extendAllScopes (testIt :: Exp Zero)
 main :: IO ()
 main = do
   -- suite handleProblem >> putStrLn "----------"
-  -- debug (phrToEff s_136_1_p)
-  debug p_189
+  debug (phrToEff s_005_1_p)
+  -- debug (probToEff p_189)
   -- handleProblem p
 
 -- >>> main
