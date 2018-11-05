@@ -114,6 +114,7 @@ processExp (Atom s@(x:xs)) = case reverse s of
                                ('V':'d':'A':'_':_) -> "lexemeAdV " ++ show s
                                ('A':'d':'A':'_':_) -> "lexemeAdA " ++ show s
                                ('p':'e':'r':'P':'_':_) -> "lexemePrep " ++ show s
+                               ('j':'b':'u':'S':'_':_) -> "lexemeSubj " ++ show s
                                _ -> toLower x : xs
 processExp Variants = "variants"
 
@@ -126,9 +127,11 @@ main = do
   let handled = [((pbNumber,hypNumber,hypTyp),e)
                 | (x,e) <- inp,
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
-                  -- pbNumber >= 114,
+                  -- pbNumber >= 114, -- start of anaphora section
                   -- pbNumber <= 141, -- end of anaphora section
                   pbNumber <= 251, -- end of ellipsis section
+                  -- (pbNumber > 333) || (pbNumber < 311),
+                  
                   hypTyp /= "q"]
       problems = filter (not . (`elem` disabledProblems) . frst . fst  . head) $
                  groupBy ((==) `on` (frst . fst)) handled
@@ -163,9 +166,12 @@ overrides _ = Nothing
 disabledProblems :: [Int]
 disabledProblems =
   [137,171,172,191,192,193,194,195
-  ,276 -- degenerate problem
-  ,305 -- degenerate problem
   ,216,217 -- syntax wrong: should be (john is (fatter politician than
            -- bill)) not ((john is fatter politician) than bill)
-  ,230,231,232,233,234,235,236,237,238,239,240,241,243,244,245  -- syntax wrong 
+  ,230,231,232,233,234,235,236,237,238,239,240,241,243,244,245  -- syntax wrong
+  ,276 -- degenerate problem
+  ,285,286 -- incomprehensible syntax
+  ,305 -- degenerate problem
+  ,309 -- degenerate problem
+  ,310 -- degenerate problem
   ]

@@ -612,12 +612,8 @@ useComparA_prefix a = do
 -- Subjs
 type Subj = Dynamic (S' -> S' -> S')
 
-before_Subj :: Subj
-before_Subj = return $ \s1 s2 extraObjs -> (s1 extraObjs ∧ s2 extraObjs)  -- no tense
-
-if_Subj :: Subj
-if_Subj = return $ \s1 s2 extraObjs -> s1 extraObjs --> s2 extraObjs
-
+lexemeSubj :: String -> Subj
+lexemeSubj s = return $ \s1 s2 extraObjs -> Con s `apps` [s1 extraObjs, s2 extraObjs]
 
 --------------------
 -- AdA
@@ -729,16 +725,31 @@ sentCN cn sc = do
   sc' <- sc
   return $ (\x extraObjs -> apps (Con "SentCN") [lam (flip cn' extraObjs),lam (nos sc'),x],gender)
 
+--------------------
+-- SC
+
 embedVP :: VP -> SC
 embedVP = id
 
+embedPresPart :: VP -> SC
+embedPresPart = id
+
+embedS :: S -> SC
+embedS s = do
+  s' <- s
+  return $ \_x -> s' -- this is only used with an impersonal subject. so we can ignore it safely.
 
 ------------------------
 -- NP
+
+
 interpNP :: NP -> Role -> Dynamic NP'
 interpNP np role = do
   MkNP n q c <- np
   q n c role
+
+elliptic_NP_Sg :: NP
+elliptic_NP_Sg = qPron $ all' [isSingular]
 
 usePN ::  PN -> NP
 usePN (o,g,n) = pureNP False (Con (parens ("PN2object " ++ o))) g n Subject -- FIXME: role
@@ -873,12 +884,21 @@ maximallySloppyPron = qPron $ const True
 everyone_Pron :: Pron
 everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,Female])
 
+no_one_Pron :: Pron
+no_one_Pron = return $ MkNP Unspecified none_Quant (mkPred "Person_N",[Male,Female])
+
+nobody_Pron :: Pron
+nobody_Pron = no_one_Pron
+
 ----------------------------
 -- Ord
 type Ord = A' -- FIXME
 
 ordSuperl :: A -> Ord
 ordSuperl _ = return (\x _ -> x) -- FIXME
+
+ordNumeral :: Numeral -> Ord
+ordNumeral _ = return (\x _ -> x) -- FIXME
 
 ---------------------------
 -- Det
@@ -1279,6 +1299,9 @@ useRCl temp pol r = do
 --------------------
 -- S
 
+advS :: Adv -> S -> S
+advS = extAdvS
+
 extAdvS :: Adv -> S -> S
 extAdvS adv s = do
   adv' <- adv
@@ -1385,14 +1408,20 @@ no_Quant num cn role = do
   q <- every_Quant num cn role
   return $ \vp' -> q (\x -> onS' not' (vp' x))
 
-every_Quant :: Quant
-every_Quant = \number (cn',gender) role -> do
+universal_Quant :: Pol -> Quant
+universal_Quant pol number (cn',gender) role = do
   x <- getFresh
   dPluralizable <- gets envPluralizingQuantifier
   modify $ \Env {..} -> Env {envPluralizingQuantifier = True,..}
   modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
   modify (pushDefinite cn' x)
-  return $ \vp' eos -> (Forall x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos))
+  return $ \vp' eos -> (Forall x (noExtraObjs (cn' (Var x))) (pol (vp' (Var x) eos)))
+
+every_Quant :: Quant
+every_Quant = universal_Quant id
+
+none_Quant :: Quant
+none_Quant = universal_Quant (not')
 
 some_Quant :: Quant
 some_Quant = \number (cn',gender) role -> do
