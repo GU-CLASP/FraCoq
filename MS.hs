@@ -273,7 +273,6 @@ type V2 = Dynamic (Object -> Object -> S') --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> S')
 type CN' = (Object -> S',[Gender])
 type CN = Dynamic CN'
-type AP = Dynamic A'
 type CN2 = Dynamic ((Object -> Type),Gender,Number)
 type NP' = (Object -> S') -> S'
 type NP = Dynamic NPData
@@ -516,6 +515,19 @@ type A' = (Object -> Prop) -> (Object -> Prop)
 
 positA :: A -> A
 positA = id
+
+--------------------
+-- AP
+
+type AP = Dynamic A'
+
+
+comparA :: A -> NP -> AP
+comparA a np = do
+  a' <- a
+  np' <- interpNP np Other
+  return $ \cn' x -> noExtraObjs (np' (\y _extraObjs -> (a' cn' y --> a' cn' x) ∧ (not' (a' cn' x) --> not' (a' cn' y))))
+
 
 --------------------
 -- Subjs
@@ -1446,7 +1458,7 @@ _TRUE e = foldr (∨) FALSE (allInterpretations e)
 -- _ENV x = execState x assumed
 
 ------------------------
-
+-- Fracas overrides
 
 membersOfTheComittee :: NP
 membersOfTheComittee = (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "committee_N")))) (numPl)) (useN (lexemeN "member_N")))
