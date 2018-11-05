@@ -211,10 +211,8 @@ appArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs  (app prep'd) directObje
         prepositions = nubBy ((==) `on` fst) prepositions0
 
 appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
-appAdjArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs  (app prep'd) directObject
-  where prep'd = Con "appA"  `apps` (Con (nm ++ concatMap fst prepositions) : map snd prepositions ++ indirectObjects)
-        indirectObjects = init objs
-        directObject = last objs
+appAdjArgs nm [cn,obj] (prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj
+  where prep'd = Con "appA" `app` (Con (nm ++ concatMap fst prepositions) `apps` ((map snd prepositions)))
         prepositions = nubBy ((==) `on` fst) prepositions0
 
 mkPred :: String -> Object -> S'
@@ -307,6 +305,7 @@ data Num where
   Unspecified :: Num
   Singular :: Num
   Plural   :: Num
+  AFew :: Num
   MoreThan :: Num -> Num
   Cardinal :: Nat -> Num
   deriving (Show,Eq)
@@ -555,11 +554,11 @@ positA = id
 --------------
 -- A2
 
-type A2' = (Object -> Prop) -> Object -> Object -> Prop
+type A2' = Object -> (Object -> Prop) -> Object -> Prop
 type A2 = Dynamic A2'
 
 lexemeA2 :: String -> A2
-lexemeA2 a = return $ \cn x y -> Con a `apps` [lam cn,x,y]
+lexemeA2 a = return $ \x cn y -> Con a `apps` [x,lam cn,y]
 
 --------------------
 -- AP
@@ -582,7 +581,7 @@ complA2 :: A2 -> NP -> AP
 complA2 a2 np = do
   a2' <- a2
   np' <- interpNP np Other
-  return $ \cn x -> (np' (\y _extraObjs  -> a2' cn x y))
+  return $ \cn x -> (np' (\y _extraObjs  -> a2' x cn y))
 
 adAP :: AdA -> AP -> AP
 adAP ada a = do
@@ -906,12 +905,15 @@ detQuantOrd :: Quant->Num->Ord->Det
 detQuantOrd q n o = (n,q) -- FIXME: do not ignore the ord
 
 boundQuant :: Logic.Pol -> Num -> Quant
-boundQuant pol (Cardinal n') number (cn',gender) role = do
+boundQuant pol n0 number (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor False gender Plural role) (pureVar x number (cn',gender)))
       -- modify (pushDefinite cn' x)
-      return (\vp' extraObjs -> Quant (AtLeast n') pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
-boundQuant _ n _ _ _ = error ("atLeastQuant: unexpected number: " ++ show n)
+      return (\vp' extraObjs -> Quant n' pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
+  where n' = case n0 of
+          Cardinal n -> (AtLeast n)
+          AFew -> Few
+          _ -> error ("atLeastQuant: unexpected number: " ++ show n0)
 
 atLeastQuant :: Num -> Quant
 atLeastQuant = boundQuant Pos
@@ -939,10 +941,10 @@ many_Det :: Det
 many_Det = (Plural,eTypeQuant (Quant Many Pos))
 
 few_Det :: Det
-few_Det = (Plural,eTypeQuant (Quant Few Neg))
+few_Det = (AFew,eTypeQuant (Quant Few Neg))
 
 a_few_Det :: Det
-a_few_Det = (Plural,eTypeQuant (Quant Few Pos))
+a_few_Det = (AFew,eTypeQuant (Quant Few Pos))
 
 a_lot_of_Det :: Det
 a_lot_of_Det = (Plural,eTypeQuant (Quant Lots Pos))
@@ -982,6 +984,10 @@ compNP :: NP -> Comp
 compNP np = do
   np' <- interpNP np Other
   return $ \x -> noExtraObjs (np' (\y -> (mkRel2 "EQUAL" x y)))
+
+(===) :: Exp -> Exp -> Exp
+x === y = Con "EQUAL" `apps` [x,y]
+
 
 compAdv :: Adv -> Comp
 compAdv adv = do
