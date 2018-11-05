@@ -9,6 +9,7 @@ import Data.Char
 import Data.List
 import Data.Function
 import Data.List.Split
+import Text.Printf
 
 data SExpr = Atom String | SExpr [SExpr] | Variants deriving Show
 
@@ -49,6 +50,11 @@ bank = do
   keyword "}"
   return defs
 
+showPb :: Int -> String
+showPb n = printf "%03d" n
+
+-- >>> showPb 3
+-- "003"
 
 processSuite :: [[(HypID,SExpr)]] -> [String]
 processSuite pbs = "suite :: (Int -> (Phr,Phr,[Bool]) -> IO ()) -> IO ()" :
@@ -63,7 +69,7 @@ processProblem :: [(HypID,SExpr)] -> [String]
 processProblem defs = concatMap processDef defs ++ problemDef (reverse (map fst defs))
 
 pbName :: Int -> String
-pbName pb = "p_" ++ show pb
+pbName pb = "p_" ++ showPb pb
 
 
 problemDef :: [HypID] -> [String]
@@ -77,7 +83,7 @@ problemDef ((th@(pb,_,_):hs))
 problemDef [] = error "problem without hypothesis"
 
 hypName :: HypID -> String
-hypName (pb,h,t) = "s_" ++ show pb ++ "_" ++ show h ++ "_" ++ t
+hypName (pb,h,t) = "s_" ++ showPb pb ++ "_" ++ show h ++ "_" ++ t
 
 processDef :: (HypID, SExpr) -> [String]
 processDef (h,e) = [x ++ " :: Phr"
@@ -92,16 +98,20 @@ processExp (Atom []) = error "empty identifer"
 processExp (Atom s@(x:xs)) = case reverse s of
                                ('A':'_':_) -> "lexemeA " ++ show s
                                ('N':'_':_) -> "lexemeN " ++ show s
+                               ('2':'N':'_':_) -> "lexemeN2 " ++ show s
                                ('N':'P':'_':_) -> "lexemePN " ++ show s
                                ('P':'R':'_':_) -> "lexemeRP " ++ show s
                                ('V':'_':_) -> "lexemeV " ++ show s
+                               ('P':'V':'_':_) -> "lexemeVP " ++ show s
                                ('2':'V':'_':_) -> "lexemeV2 " ++ show s
+                               ('V':'V':'_':_) -> "lexemeVV " ++ show s
                                ('S':'2':'V':'_':_) -> "lexemeV2S " ++ show s
                                ('S':'V':'_':_) -> "lexemeVS " ++ show s
                                ('V':'2':'V':'_':_) -> "lexemeV2V " ++ show s
                                ('3':'V':'_':_) -> "lexemeV3 " ++ show s
                                ('v':'d':'A':'_':_) -> "lexemeAdv " ++ show s
                                ('V':'d':'A':'_':_) -> "lexemeAdV " ++ show s
+                               ('A':'d':'A':'_':_) -> "lexemeAdA " ++ show s
                                ('p':'e':'r':'P':'_':_) -> "lexemePrep " ++ show s
                                _ -> toLower x : xs
 processExp Variants = "variants"
@@ -156,5 +166,5 @@ disabledProblems =
   ,305 -- degenerate problem
   ,216,217 -- syntax wrong: should be (john is (fatter politician than
            -- bill)) not ((john is fatter politician) than bill)
-  ,230,231,232,233,234,235,238,239,240,241,244,245  -- syntax wrong 
+  ,230,231,232,233,234,235,236,237,238,239,240,241,243,244,245  -- syntax wrong 
   ]
