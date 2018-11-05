@@ -92,8 +92,6 @@ a <-> b = (a --> b) ∧ (b --> a)
 x --> y = BinOp Implies x y
 x ~~> y = BinOp ImpliesOften x y
 
-(===) :: Exp -> Exp -> Exp
-(===) = BinOp (Custom "EQUALS")
 
 pattern (:∧) :: Exp -> Exp -> Exp
 pattern x :∧ y = BinOp And x y
