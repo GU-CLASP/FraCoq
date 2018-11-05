@@ -1247,6 +1247,11 @@ Parameter blame1_V2for : object -> V2.
 Parameter blame2_V2on : object -> V2.
 Parameter client_Nat : object -> N.
 Parameter stock_market_trader_N : N.
+Parameter swim_Vto : object -> V.
+Parameter run_V2in : object -> V2.
+Parameter chain_Npart : object -> N.
+Parameter own_V2in : object -> V2.
+
 
 Definition QQ := CN -> VP -> Prop.
 Parameter MANYQ : QQ.

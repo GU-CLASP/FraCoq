@@ -129,9 +129,8 @@ main = do
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
                   -- pbNumber >= 114, -- start of anaphora section
                   -- pbNumber <= 141, -- end of anaphora section
-                  pbNumber <= 251, -- end of ellipsis section
-                  -- (pbNumber > 333) || (pbNumber < 311),
-                  
+                  -- pbNumber <= 251, -- end of ellipsis section
+                  (pbNumber > 333) || (pbNumber < 311),
                   hypTyp /= "q"]
       problems = filter (not . (`elem` disabledProblems) . frst . fst  . head) $
                  groupBy ((==) `on` (frst . fst)) handled
