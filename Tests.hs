@@ -90,7 +90,13 @@ ouch122 = debug (phrToEff s_122_4_h)
 -- Analysis for 131.  In H2, a plural "they" is used to refer to a
 -- singular object introduced with indefArt. When the scope of
 -- "forall" is closed (when the sentence is finished), the singular
--- existential should be transformed to plurals.
+-- existential is transformed to plurals. Existentially quantified
+-- variables are pushed with the "dPluralizable = True" flag if a
+-- universal was introduced in the sentence. When the sentence is
+-- closed, all dPluralizable entries in the environment are re-written
+-- to be accessible by a plural. To know if we have a pluralizable
+-- context, the envPluralizingQuantifier flag is used. It is set in
+-- the dyn. semantics of universals.
 
 -- 137.
 -- a) "There are 100" --> should in general be interpreted as "at least", until we see in P4 the mention of "the other 99", implying an exact interpretation.
