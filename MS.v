@@ -689,9 +689,7 @@ Parameter semicolon_and_Conj : Conj .
 
 Parameter can8know_VV : VV .
 Parameter can_VV : VV .
-Parameter do_VV : VV .
 Parameter finish_VV : VV .
-Parameter going_to_VV : VV .
 Parameter manage_VV : VV .
 Parameter must_VV : VV .
 Parameter need_VV : VV .
@@ -1230,6 +1228,7 @@ Parameter work_Vadv : Adv -> object -> Prop.
 Parameter find_V2before : object -> object -> object -> Prop.
 Parameter go8walk_Vadv : Adv -> object -> Prop.
 Parameter suggest_to_V2Sto : object -> V2S.
+Parameter have_V2in : object -> V2.
 
 
 Definition  MOST:= fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
@@ -1241,3 +1240,6 @@ Definition  EXACT:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ 
 
 Definition  report_Nfrom := fun x: object => fun y => report_N y.
 Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
+
+Definition going_to_VV : VV := fun v => v. (* FIXME: Ignoring tense *)
+Definition do_VV : VV := fun v => v.
