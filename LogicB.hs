@@ -178,11 +178,14 @@ ppExp n ctx e0 =
                 o = case (k,p) of
                    (One,Neg) -> "FORALL"
                    (One,Pos) -> "EXISTS"
-                   (Few,Pos) -> "FEW"
+                   (Few,Pos) -> "FEWQ"
+                   (Many,Pos) -> "MANYQ"
+                   (Lots,Pos) -> "LOTSQ"
                    (Few,Neg) -> "MOST"
                    (Several,Pos) -> "SEVERALQ"
                    (Exact n,Both) -> "EXACT (" ++ show (toInteger n) ++ ")"
                    (AtLeast n,_) -> "ATLEAST (" ++ show (toInteger n) ++ ")"
+                   
                    _ -> show (k,p)
       (Op App [f,arg]) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
       (Op op [x,y]) -> prns op $ ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
