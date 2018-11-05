@@ -10,9 +10,10 @@
 
 module MS where
 
-import Prelude hiding (pred)
+import Prelude hiding (pred,Ord,Num)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
+import qualified Logic
 import Data.List (intersect,nub,partition,nubBy)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
@@ -62,7 +63,7 @@ second f (x,y) = (x,f y)
 
 data Descriptor = Descriptor {dPluralizable :: Bool
                              ,dGender :: [Gender]
-                             ,dNumber :: Number
+                             ,dNum :: Num
                              ,dRole :: Role} deriving Show
 
 type ObjQuery = Descriptor -> Bool
@@ -79,7 +80,7 @@ clearRole Env{..} = Env{objEnv = map cr objEnv,..}
 -- See fracas 131.
 pluralize :: Env -> Env
 pluralize Env{..} = Env{objEnv = map (first pl) objEnv,..}
-  where pl Descriptor{..} = Descriptor{dNumber = if dPluralizable then Unspecified else dNumber,..}
+  where pl Descriptor{..} = Descriptor{dNum = if dPluralizable then Unspecified else dNum,..}
   -- FIXME this should be done only on things that are introduced inside the sentence!
 
 withClause :: MonadState Env m => m b -> m b
@@ -125,10 +126,10 @@ isPerson :: Descriptor -> Bool
 isPerson = const True -- FIXME
 
 isSingular :: Descriptor -> Bool
-isSingular Descriptor {..} = dNumber `elem` [Singular, Cardinal 1, Unspecified]
+isSingular Descriptor {..} = dNum `elem` [Singular, Cardinal 1, Unspecified]
 
 isPlural :: Descriptor -> Bool
-isPlural Descriptor {..} = dNumber `elem` [Plural, Unspecified] -- FIXME: many more cases
+isPlural Descriptor {..} = dNum `elem` [Plural, Unspecified] -- FIXME: many more cases
 
 isNotSubject :: Descriptor -> Bool
 isNotSubject = (/= Subject) . dRole
@@ -145,7 +146,7 @@ getCN2 Env{cn2Env=cn} = cn
 
 getNP' :: ObjQuery -> Env -> [NP]
 getNP' q Env{objEnv=os,..} = case filter (q . fst) os of
-  [] -> [return $ MkNP assumedNumber (\_num _cn _role -> return (\vp -> vp (constant "assumedNP"))) assumedCN]
+  [] -> [return $ MkNP assumedNum (\_num _cn _role -> return (\vp -> vp (constant "assumedNP"))) assumedCN]
   xs -> map snd xs
 
 
@@ -202,10 +203,9 @@ allInterpretations (Dynamic x) = (observeAll (evalStateT x assumed))
 
 type Effect = Dynamic Prop
 
-appArgs :: String -> [Object] -> [(String, Object)] -> Prop
-appArgs nm objs@(_:_) extraObjs = foldr app prep'd (map snd adverbs) `app` directObject
-  where (adverbs,prepositions0) = partition (("adv" ==) . fst) extraObjs
-        prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
+appArgs :: String -> [Object] -> ExtraArgs -> Prop
+appArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs  (app prep'd) directObject
+  where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
         indirectObjects = init objs
         directObject = last objs
         prepositions = nubBy ((==) `on` fst) prepositions0
@@ -224,10 +224,10 @@ mkRel3 p x y z extraObjs = appArgs p [x,y,z] extraObjs
 constant :: String -> Exp
 constant x = Con x
 
-pureObj :: Exp -> Number -> CN' -> NP
+pureObj :: Exp -> Num -> CN' -> NP
 pureObj x number cn  = return $ MkNP number (\_number _cn _role -> return $ \vp -> vp x) cn
 
-pureVar :: Var -> Number -> CN' -> NP
+pureVar :: Var -> Num -> CN' -> NP
 pureVar x = pureObj (Var x)
 
 getFresh :: Dynamic String
@@ -247,8 +247,8 @@ assumedPred predName = do
 assumedCN :: CN'
 assumedCN = (mkPred "assumedCN", [Male,Female,Neutral])
 
-assumedNumber :: Number
-assumedNumber = Singular
+assumedNum :: Num
+assumedNum = Singular
 
 assumed :: Env
 assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
@@ -267,13 +267,17 @@ assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
 onS' :: (Prop -> Prop) -> S' -> S'
 onS' f p eos = f (p eos)
 
-type S' = [(Var,Object)] -> Prop -- the list of objects corresponds to eventual prepositions.
+type ExtraArgs = ([(Var,Object)] -- prepositions
+                 ,(Object -> Prop) -> Object -> Prop) -- adverbs
+
+type S' = ExtraArgs -> Prop
 type S = Dynamic S'
 type V2 = Dynamic (Object -> Object -> S') --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> S')
 type CN' = (Object -> S',[Gender])
 type CN = Dynamic CN'
-type CN2 = Dynamic ((Object -> Type),Gender,Number)
+type CN2 = Dynamic CN2'
+type CN2' = (Object -> Object -> S',[Gender])
 type NP' = (Object -> S') -> S'
 type NP = Dynamic NPData
 
@@ -281,36 +285,34 @@ type V = Dynamic (Object -> S')
 type V2S = Dynamic (Object -> S' -> Object -> S')
 type V2V = Dynamic (Object -> VP' -> Object -> S')
 type VV = Dynamic (VP' -> Object -> S')
-type SC = Dynamic (VP')
+type SC = Dynamic VP'
 type VS = Dynamic (S' -> VP')
 
 type Cl =  Dynamic S'
 type Temp = Prop -> Prop
-type Ord = Dynamic  A'
 type Predet = NPData -> NPData
-type AdA  = Dynamic (A' -> A')
 type ClSlash  = Dynamic VP'
 type RCl  = Dynamic RCl'
 type RCl' = Object -> Prop
 type RS  = Dynamic RCl'
 
-data Number where
-  Unspecified :: Number
-  Singular :: Number
-  Plural   :: Number
-  MoreThan :: Number -> Number
-  Cardinal :: Nat -> Number
+data Num where
+  Unspecified :: Num
+  Singular :: Num
+  Plural   :: Num
+  MoreThan :: Num -> Num
+  Cardinal :: Nat -> Num
   deriving (Show,Eq)
 
-numSg,numPl :: Number
+numSg,numPl :: Num
 numSg = Singular
 numPl = Singular
 
 data NPData where
-  MkNP :: Number -> Quant -> CN' -> NPData
+  MkNP :: Num -> Quant -> CN' -> NPData
 
 type N = CN
-type PN = (String,[Gender],Number)
+type PN = (String,[Gender],Num)
 
 all' :: [a -> Bool] -> a -> Bool
 all' fs x = all ($ x) fs
@@ -324,6 +326,11 @@ genderedN :: String -> [Gender] -> CN
 genderedN s gender =
   do modify (pushCN (genderedN s gender))
      return (mkPred s,gender)
+
+genderedN2 :: String -> [Gender] -> CN2
+genderedN2 s gender =
+  do modify (pushCN2 (genderedN2 s gender))
+     return (mkRel2 s,gender)
 
 pureV2 :: (Object -> Object -> S') -> V2
 pureV2 v2 = do
@@ -341,19 +348,19 @@ meta :: Exp
 meta = Con "META"
 
 lexemeV :: String -> V
--- lexemeV "go8walk_V" = return $ (mkRel2  "go8walk_V" "to" "who")
 lexemeV x = return $ mkPred x
+
+lexemeVP :: String -> VP
+lexemeVP "elliptic_VP" = elliptic_VP
+lexemeVP x = return $ mkPred x
 
 lexemeA :: String -> A
 lexemeA a = return $ (\cn obj -> apps (Con "appA") [Con a,lam cn, obj])
 
 lexemeV3 :: String -> V3
--- lexemeV3 "deliver_V3" = pureV3 (namedRel3 "deliver_V3" "to" "what" "who")
 lexemeV3 x = return $ mkRel3 x
 
 lexemeV2 :: String -> V2
--- lexemeV2 x@"appoint_V2" = pureV2 (namedRel2 x "by" "who")
--- lexemeV2 "deliver_V2" = pureV2 (namedRel2 "deliver_V2" "what" "who") 
 lexemeV2 x = pureV2 (mkRel2 x)
 
 lexemeV2S :: String -> V2S
@@ -365,7 +372,7 @@ lexemeVS vs = return $ \s x -> mkRel2 vs (noExtraObjs s) x
 lexemeV2V :: String -> V2V
 lexemeV2V v2v = return $ \x vp y -> appArgs v2v [x,lam (\z -> noExtraObjs (vp z)),y]
 
-pnTable :: [(String,([Gender],Number))]
+pnTable :: [(String,([Gender],Num))]
 pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following
           ,("john_PN" , ([Male],Singular))
           ,("itel_PN" , ([Neutral],Plural))
@@ -385,7 +392,7 @@ lexemePrep prep  = return (modifyingPrep (takeWhile (/= '_') prep))
 
 
 modifyingPrep :: String -> Object -> S' -> S'
-modifyingPrep aname x s extraObjs = s ((aname,x):extraObjs)
+modifyingPrep aname x s (preps,adv) = s ((aname,x):preps,adv)
 
 type RP = ()
 lexemeRP :: String -> RP
@@ -423,7 +430,7 @@ uncNeg = pNeg
 -----------------
 -- Card
 
-type Card = Number
+type Card = Num
 
 adNum :: AdN -> Card -> Card
 adNum = id
@@ -439,9 +446,9 @@ more_than_AdN :: AdN
 more_than_AdN = MoreThan
 
 -----------------
--- Numbers
+-- Nums
 
-numCard :: Card -> Number
+numCard :: Card -> Num
 numCard = id
 
 type Numeral = Nat
@@ -499,6 +506,11 @@ n_three = 3
 n_twenty :: Nat
 n_twenty = 20
 
+-------------------
+-- N2
+lexemeN2 :: String -> N2
+lexemeN2 x = genderedN2 x [Male,Female,Neutral]
+
 --------------------
 -- N
 
@@ -538,6 +550,8 @@ positA = id
 
 type AP = Dynamic A'
 
+adAP :: AdA -> AP -> AP
+adAP ada a = ada <*> a
 
 comparA :: A -> NP -> AP
 comparA a np = do
@@ -568,11 +582,19 @@ before_Subj = return $ \s1 s2 extraObjs -> (s1 extraObjs ∧ s2 extraObjs)  -- n
 if_Subj :: Subj
 if_Subj = return $ \s1 s2 extraObjs -> s1 extraObjs --> s2 extraObjs
 
+
+--------------------
+-- AdA
+
+type AdA  = Dynamic (A' -> A')
+
+lexemeAdA :: String -> AdA
+lexemeAdA ada = return $ \a cn x -> Con ada `apps` [Lam $ \cn2 -> Lam $ \x2 -> a (app cn2) x2,Lam cn,x]
+
 --------------------
 -- Adv
 
 type ADV' = S' -> S'
-
 type ADV = Dynamic ADV'
 type Adv = ADV
 type AdvV = ADV
@@ -581,13 +603,18 @@ type AdV = ADV
 lexemeAdv :: String -> Adv
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
-lexemeAdv adv = return $ \s' extraObjs -> s' (("adv",appAdverb' adv):extraObjs)
+lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
+
+sentenceApplyAdv :: ((Object -> Prop) -> Object -> Prop) -> S' -> S'
+sentenceApplyAdv adv = \s' (preps,adv') -> s' (preps,adv . adv')
 
 appAdverb :: String -> (Object -> Prop) -> (Object -> Prop)
 appAdverb adv vp obj = apps (Con "appAdv") [Con adv,lam vp, obj]
 
-appAdverb' :: String -> Exp
-appAdverb' adv = Lam $ \vp -> Lam $ \obj -> appAdverb adv (app vp) obj
+positAdvAdj :: A -> Adv
+positAdvAdj a = do
+  a' <- a
+  return $ sentenceApplyAdv a'
 
 uninformativeAdv :: Adv
 uninformativeAdv = return $ \vp x -> vp x -- ALT: Coq/HOL
@@ -642,6 +669,22 @@ elliptic_CN = do
   cn <- afromList cns
   cn
 
+type N2 = CN2
+complN2 :: N2 -> NP -> CN
+complN2 n2 np = do
+  (n2',gender) <- n2
+  np' <- interpNP np Other
+  return (\y -> np' $ \x -> n2' y x, gender)
+
+sentCN :: CN -> SC -> CN
+sentCN cn sc = do
+  (cn',gender) <- cn
+  sc' <- sc
+  return $ (\x extraObjs -> apps (Con "SentCN") [Lam (flip cn' extraObjs),Lam (nos sc'),x],gender)
+
+embedVP :: VP -> SC
+embedVP = id
+
 
 ------------------------
 -- NP
@@ -653,12 +696,12 @@ interpNP np role = do
 usePN ::  PN -> NP
 usePN (o,g,n) = pureNP False (Con (parens ("PN2object " ++ o))) g n Subject -- FIXME: role
 
-pureNP :: Bool -> Object -> [Gender] -> Number -> Role -> NP
-pureNP dPluralizable o dGender dNumber dRole = do
-  modify (pushNP (Descriptor{..}) (pureNP dPluralizable o dGender dNumber dRole))
-  return $ MkNP dNumber q (\_ _ -> true,dGender)
+pureNP :: Bool -> Object -> [Gender] -> Num -> Role -> NP
+pureNP dPluralizable o dGender dNum dRole = do
+  modify (pushNP (Descriptor{..}) (pureNP dPluralizable o dGender dNum dRole))
+  return $ MkNP dNum q (\_ _ -> true,dGender)
   where q :: Quant
-        q _dNumber _oClass _dRole = do
+        q _dNum _oClass _dRole = do
           return (\vp -> vp o)
 
 massNP :: CN -> NP
@@ -753,6 +796,9 @@ qPron q = do
 sheRefl_Pron :: Pron
 sheRefl_Pron = qPron $ all' [isFemale, isSingular, isCoArgument]
 
+theyRefl_Pron :: Pron
+theyRefl_Pron = qPron $ all' [isPlural, isCoArgument]
+
 heRefl_Pron :: Pron
 heRefl_Pron = qPron $ all' [isMale, isSingular, isCoArgument]
 
@@ -780,24 +826,39 @@ maximallySloppyPron = qPron $ const True
 everyone_Pron :: Pron
 everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,Female])
 
+----------------------------
+-- Ord
+type Ord = A' -- FIXME
+
+ordSuperl :: A -> Ord
+ordSuperl = return id -- FIXME
 
 ---------------------------
 -- Det
 
-type Det = (Number,Quant)
+type Det = (Num,Quant)
 
-detQuant :: Quant -> Number -> Det
+detQuant :: Quant -> Num -> Det
 detQuant _ (Cardinal n) = (Cardinal n,atLeastQuant (Cardinal n))
 detQuant q n = (n,q)
 
+detQuantOrd :: Quant->Num->Ord->Det
+detQuantOrd q n o = (n,q) -- FIXME: do not ignore the ord
 
-atLeastQuant :: Number -> Quant
-atLeastQuant (Cardinal n') number (cn',gender) role = do
+boundQuant :: Logic.Pol -> Num -> Quant
+boundQuant pol (Cardinal n') number (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor False gender Plural role) (pureVar x number (cn',gender)))
       -- modify (pushDefinite cn' x)
-      return (\vp' extraObjs -> Quant (AtLeast n') Pos x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
-atLeastQuant _ _ _ _ = error "atLeastQuant: unexpected number" 
+      return (\vp' extraObjs -> Quant (AtLeast n') pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
+boundQuant _ _ _ _ _ = error "atLeastQuant: unexpected number"
+
+atLeastQuant :: Num -> Quant
+atLeastQuant = boundQuant Pos
+
+atMostQuant :: Num -> Quant
+atMostQuant = boundQuant Neg
+
 
 every_Det :: Det
 every_Det = (Unspecified,every_Quant)
@@ -811,8 +872,26 @@ somePl_Det = (Plural,indefArt)
 someSg_Det :: Det
 someSg_Det = (Singular,indefArt)
 
-several_Det :: (Number, Quant)
+several_Det :: Det
 several_Det = (Plural,several_Quant)
+
+many_Det :: Det
+many_Det = (Plural,eTypeQuant (Quant Many Pos))
+
+few_Det :: Det
+few_Det = (Plural,eTypeQuant (Quant Few Neg))
+
+a_few_Det :: Det
+a_few_Det = (Plural,eTypeQuant (Quant Few Pos))
+
+a_lot_of_Det :: Det
+a_lot_of_Det = (Plural,eTypeQuant (Quant Lots Pos))
+
+both_Det :: Det
+both_Det = (Cardinal 2, bothQuant)
+
+neither_Det :: Det
+neither_Det = (Cardinal 2, neitherQuant)
 
 anySg_Det :: Det
 anySg_Det = each_Det
@@ -874,20 +953,6 @@ conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
 ---------------------------
 -- VV
 
-do_VV :: VV
-do_VV = return $ \vp x -> vp x
-
-going_to_VV :: VV
-going_to_VV = do_VV -- ignoring tense
-
-need_VV :: VV
-need_VV = lexemeVV "need_VV"
-
-want_VV :: VV
-want_VV = lexemeVV "want_VV"
-
-shall_VV :: VV
-shall_VV = lexemeVV "shall_VV"
 
 lexemeVV :: String -> VV
 lexemeVV vv = return $ \vp x -> appArgs vv [lam (\subj -> noExtraObjs (vp subj) ), x]
@@ -1231,7 +1296,7 @@ x ### (PNounPhrase conj np) = Sentence $ do
 -------------------------
 -- Quant
 
-type Quant' = (Number -> CN' -> Role -> Dynamic NP')
+type Quant' = (Num -> CN' -> Role -> Dynamic NP')
 type Quant = Quant'
 
 possPron :: Pron -> Quant
@@ -1265,19 +1330,17 @@ nos :: (t -> S') -> t -> Prop
 nos f a = noExtraObjs (f a)
 
 most_Quant :: Quant
-most_Quant number  (cn',gender) role = do
-  x <- getFresh
-  z <- getFresh
-  modify (pushNP (Descriptor False gender Plural role) (pureVar z number (cn',gender)))
-  return $ eType MOST x z cn'
-
+most_Quant = eTypeQuant MOST
 
 several_Quant :: Quant
-several_Quant number (cn',gender) role = do
+several_Quant = eTypeQuant SEVERAL
+
+eTypeQuant :: ([Char] -> Prop -> Exp -> Exp) -> Quant
+eTypeQuant q number (cn',gender) role = do
   x <- getFresh
   z <- getFresh
   modify (pushNP (Descriptor False gender Plural role) (pureVar z number (cn',gender)))
-  return (eType SEVERAL x z cn')
+  return (eType q x z cn') 
 
 indefArt :: Quant
 indefArt (MoreThan n) cn role = atLeastQuant n n cn role
@@ -1306,7 +1369,7 @@ genNP np _number (cn',_gender) _role = do
   return (\vp' -> them $ \y extraObjects -> Exists x (possess y (Var x) ∧ nos cn' (Var x)) (vp' (Var x) extraObjects))
 
 possess :: Object -> Object -> Prop
-possess x y = mkRel2 "have_V2" y x [] -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
+possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
 of_ :: (Object -> Prop) -> Object -> Object
 of_ cn owner = The (Lam $ \x -> possess owner x ∧ cn x)
@@ -1321,10 +1384,13 @@ most_of_Predet :: Predet
 most_of_Predet (MkNP n _q cn) = MkNP n most_Quant cn
 
 most_Predet :: Predet
-most_Predet (MkNP n _q cn) = MkNP n most_Quant cn 
+most_Predet (MkNP n _q cn) = MkNP n most_Quant cn
 
-at_least_Predet :: NPData -> NPData
+at_least_Predet :: Predet
 at_least_Predet (MkNP numb _q cn) = MkNP numb (atLeastQuant numb) cn
+
+at_most_Predet :: Predet
+at_most_Predet (MkNP numb _q cn) = MkNP numb (atMostQuant numb) cn
 
 all_Predet :: Predet
 all_Predet  (MkNP n _q cn) = MkNP n every_Quant cn
@@ -1335,12 +1401,25 @@ only_Predet = exactly_Predet
 exactly_Predet :: Predet
 exactly_Predet (MkNP n _q cn) = MkNP n exactlyQuant cn where
 
-exactlyQuant :: Number -> (Object -> S', [Gender]) -> Role -> Dynamic NP'
+exactlyQuant :: Num -> (Object -> S', [Gender]) -> Role -> Dynamic NP'
 exactlyQuant number@(Cardinal n') (cn',gender) role = do
       x <- getFresh
       dPluralizable <- gets envPluralizingQuantifier
       modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
       return (\vp' extraObjs -> Quant (Exact n') Both x (nos cn' (Var x)) (vp' (Var x) extraObjs))
+
+bothQuant :: Quant
+bothQuant _ (cn',_gender) _role = do
+  x <- getFresh
+  y <- getFresh
+  -- FIXME: this interpretation is incoherent with anaphora.
+  return $ \vp' extraObjs -> Exists x (nos cn' (Var x)) $ Exists y (nos cn' (Var y)) $ vp' (Var x) extraObjs ∧ vp' (Var y) extraObjs ∧ not' (Var x === Var y)
+
+
+neitherQuant :: Quant
+neitherQuant n cn role = do
+  r <- bothQuant n cn role
+  return $ \vp -> r (\x -> not' . vp x)
 
 ------------------------
 --
@@ -1367,7 +1446,7 @@ know_VQ qs = do
   return $ \x _extraObjs -> Con "knowVQ" `apps` [noExtraObjs qs',x]
 
 noExtraObjs :: S' -> Prop
-noExtraObjs f = f []
+noExtraObjs f = f ([],id)
 ------------------
 -- Additional combinators
 
@@ -1403,7 +1482,7 @@ negation x = not' <$> x
 -- pushes itself in the env for reference
 
 
-pureCN2 :: (Object -> Type) -> Gender -> Number -> CN2
+pureCN2 :: (Object -> Type) -> Gender -> Num -> CN2
 pureCN2 v gender number = do
   modify (pushCN2 (pureCN2 v gender number))
   return (v,gender,number)
