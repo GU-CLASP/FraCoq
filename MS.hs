@@ -545,10 +545,32 @@ type A' = (Object -> Prop) -> (Object -> Prop)
 positA :: A -> A
 positA = id
 
+--------------
+-- A2
+
+type A2' = (Object -> Prop) -> Object -> Object -> Prop
+type A2 = Dynamic A2'
+
+lexemeA2 :: String -> A2
+lexemeA2 a = return $ \cn x y -> Con a `apps` [Lam cn,x,y]
+
 --------------------
 -- AP
 
 type AP = Dynamic A'
+
+
+sentAP :: AP -> SC -> AP
+sentAP ap cl = do
+  ap' <- ap
+  cl' <- cl
+  return $ \cn x -> ap' (\y -> noExtraObjs (cl' y) ∧ cn y) x
+
+complA2 :: A2 -> NP -> AP
+complA2 a2 np = do
+  a2' <- a2
+  np' <- interpNP np Other
+  return $ \cn x -> noExtraObjs (np' (\y _extraObjs  -> a2' cn x y))
 
 adAP :: AdA -> AP -> AP
 adAP ada a = ada <*> a
@@ -641,6 +663,17 @@ subjS subj s = do
 
 useN :: N -> CN
 useN = id
+
+combineGenders :: [Gender] -> [Gender] -> [Gender]
+combineGenders g1 g2 = case intersect g1 g2 of
+  [] -> [Neutral]
+  i -> i
+
+conjCN2 :: Conj -> CN -> CN -> CN
+conjCN2 c cn1 cn2 = do
+  (c1,g1) <- cn1
+  (c2,g2) <- cn2
+  return (\x -> apConj2 c (c1 x) (c2 x),combineGenders g1 g2)
 
 relCN :: CN->RS->CN
 relCN cn rs = do
@@ -837,6 +870,9 @@ ordSuperl = return id -- FIXME
 -- Det
 
 type Det = (Num,Quant)
+
+one_or_more_Det :: Det
+one_or_more_Det = (Unspecified,atLeastQuant (Cardinal 1))
 
 another_Det :: Det
 another_Det = (Cardinal 1, anotherQuant)
@@ -1132,11 +1168,17 @@ relSlash _rpIgnored cl = emptyRelSlash cl
 strandRelSlash :: RP -> ClSlash -> RCl
 strandRelSlash _rp cl = emptyRelSlash cl
 
+-- Not found anywhere in fracas
+-- relA2 :: RP -> A2 -> NP -> RCl
+-- relA2 _ a2 np = do
+--   a2' <- a2
+--   MkNP n q c@(cn',_gender) <- np
+--   np' <- q n c Other
+--   return (\x -> noExtraObjs (np' (\y _extraObjs -> a2' (nos cn') x y)))
 
-type A2 = V2
 
-relA2 :: RP -> A2 -> NP -> RCl
-relA2 _ v2 np = do
+relV2 :: RP -> V2 -> NP -> RCl
+relV2 _ v2 np = do
   v2' <- v2
   np' <- interpNP np Other
   return (\x -> noExtraObjs (np' (flip v2' x)))
@@ -1166,8 +1208,14 @@ data Conj where
 and_Conj :: Conj
 and_Conj = RightAssoc (∧)
 
+andSg_Conj :: Conj
+andSg_Conj = and_Conj
+
 or_Conj :: Conj
 or_Conj = RightAssoc (∨)
+
+either7or_DConj :: Conj
+either7or_DConj = EitherOr
 
 comma_and_Conj :: Conj
 comma_and_Conj = RightAssoc (∧)
@@ -1389,6 +1437,9 @@ the_other_Q _number _cn _role = return $ \vp eos -> apps (Con "theOtherQ") [lam 
 -------------------------
 -- Predet
 
+just_Predet :: Predet
+just_Predet = exactly_Predet
+
 most_of_Predet :: Predet
 most_of_Predet (MkNP n _q cn) = MkNP n most_Quant cn
 
@@ -1591,7 +1642,7 @@ membersOfTheComittee :: NP
 membersOfTheComittee = (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "committee_N")))) (numPl)) (useN (lexemeN "member_N")))
 
 chairman_etc :: NP
-chairman_etc = detCN (detQuant (indefArt) (numSg)) (relCN (useN (lexemeN "chairman_N")) (relA2 implicitRP (lexemeV2 "appoint_V2") membersOfTheComittee))
+chairman_etc = detCN (detQuant (indefArt) (numSg)) (relCN (useN (lexemeN "chairman_N")) (relV2 implicitRP (lexemeV2 "appoint_V2") membersOfTheComittee))
 
 s_122_4_h_ALT :: Phr
 s_122_4_h_ALT = (sentence (useCl (present) (pPos) (predVP (detCN (every_Det) (useN (lexemeN "committee_N"))) (complSlash (slashV2a (lexemeV2 "have_V2")) chairman_etc ))))
