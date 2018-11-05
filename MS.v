@@ -1189,6 +1189,7 @@ destruct X.
 exact x.
 Qed.
 
+Parameter EQUAL : object -> object -> Prop.
 Parameter assumedNP : object.
 
 Definition appA : A -> (object -> Prop) -> (object -> Prop)
@@ -1200,6 +1201,9 @@ Definition appAdv : Adv -> (object -> Prop) -> (object -> Prop)
 Parameter appoint_V2by : V3.
 Parameter _BE_ : VP.
 Parameter _BE_on : object -> VP.
+Parameter _BE_in  : object -> VP.
+Parameter _BE_from : object -> VP.
+Parameter _BE_at : object -> VP.
 
 Parameter most: (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter at_least: nat -> (object -> Prop) -> (object -> Prop) -> Prop.
@@ -1229,7 +1233,25 @@ Parameter find_V2before : object -> object -> object -> Prop.
 Parameter go8walk_Vadv : Adv -> object -> Prop.
 Parameter suggest_to_V2Sto : object -> V2S.
 Parameter have_V2in : object -> V2.
+Parameter travel_Vwithin : object -> V.
+Parameter get_V2in : object -> V2.
+Parameter committee_member_Nfrom : object -> CN.
+Parameter live_Vin : object -> V.
+Parameter resident_Ain : object -> A.
+Parameter resident_Aoutside : object -> A.
 
+Parameter spend_V2part : object -> V2.
+Parameter item_Non : object -> N.
+Parameter vote_for_V2at : object -> V2.
+Parameter blame1_V2for : object -> V2.
+Parameter blame2_V2on : object -> V2.
+Parameter client_Nat : object -> N.
+Parameter stock_market_trader_N : N.
+
+Definition QQ := CN -> VP -> Prop.
+Parameter MANYQ : QQ.
+Parameter FEWQ : QQ.
+Parameter LOTSQ : QQ.
 
 Definition  MOST:= fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
 Definition  ATLEAST:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ at_least n CN VP.
@@ -1243,3 +1265,4 @@ Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
 
 Definition going_to_VV : VV := fun v => v. (* FIXME: Ignoring tense *)
 Definition do_VV : VV := fun v => v.
+
