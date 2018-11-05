@@ -31,7 +31,7 @@ type Type = Exp
 
 newtype Nat = Nat Integer deriving (Show,Eq,Num,Enum,Integral,Ord,Real)
 
-data Amount = One | Few | Several | Exact Nat | AtLeast Nat -- amount for the *positive* polarity
+data Amount = One | Few | Several | Many | Lots | Exact Nat | AtLeast Nat -- amount for the *positive* polarity
   deriving (Eq,Show)
 
 data Op = Fld String -- ^ field lookup
@@ -91,6 +91,9 @@ a <-> b = (a --> b) ∧ (b --> a)
 (-->),(~~>) :: Exp -> Exp -> Exp
 x --> y = BinOp Implies x y
 x ~~> y = BinOp ImpliesOften x y
+
+(===) :: Exp -> Exp -> Exp
+(===) = BinOp (Custom "EQUALS")
 
 pattern (:∧) :: Exp -> Exp -> Exp
 pattern x :∧ y = BinOp And x y
