@@ -23,7 +23,9 @@ data Next v = Here | There v deriving (Eq, Functor)
 data Zero
 
 deriving instance (Eq Zero)
-deriving instance (Show Zero)
+
+instance Show Zero where
+  show _ = "<<PANIC:Zero>>"
 
 instance Applicative Next where
   pure = There
@@ -275,12 +277,12 @@ fromHOAS' = fromHOAS 0 (error "nein!")
 
 fromHOAS :: Int -> (Int -> v) -> L.Exp -> Exp v
 fromHOAS n f = \case
-  (L.Op op args) -> Op op (map (fromHOAS n f) args)
-  (L.Con k) -> Con k
-  (L.Quant a p v d b) -> Quant a p v (fromHOAS n f d) (fromHOAS n f b)
-  (L.Var ('*':k)) -> V (f (read k))
+  L.Op op args -> Op op (map (fromHOAS n f) args)
+  L.Con k -> Con k
+  L.Quant a p v d b -> Quant a p v (fromHOAS n f d) (fromHOAS n f b)
+  L.Var ('*':k) -> V (f (read k))
   L.Var x -> Var x
-  L.Lam t -> Lam (fromHOAS (n+1) (\x -> if x == n then Here else There (f n)) (t (L.Var ('*':show n))))
+  L.Lam t -> Lam (fromHOAS (n+1) (\x -> if x == n then Here else There (f x)) (t (L.Var ('*':show n))))
 
 
 
