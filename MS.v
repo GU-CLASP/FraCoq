@@ -1180,7 +1180,7 @@ Definition FORALL := fun (p : object -> Prop) (q : object -> Prop) => forall x, 
 Parameter THE : (object -> Prop) -> object.
 
 Definition deliver_V2to := deliver_V3.
-Definition NOT := not.
+Definition Not := not.
 
 Definition PN2object : PN -> object.
 cbv.

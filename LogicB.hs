@@ -11,7 +11,7 @@
 module LogicB where
 
 import qualified Logic as L
-import Logic hiding (Exp(..), freeVars)
+import Logic hiding (Exp(..), freeVars,APP,apps)
 import Data.Char (toLower)
 import Data.List
 import Control.Applicative
@@ -44,6 +44,12 @@ data Exp v where
   Quant :: Amount -> Pol -> Var -> (Exp v) -> (Exp v) -> Exp v
   deriving (Eq, Functor)
 
+
+pattern APP :: forall t. Exp t -> Exp t -> Exp t
+pattern APP f x = Op App [f,x]
+
+apps :: Exp v -> [Exp v] -> Exp v
+apps f xs = foldl APP f xs
 
 type Type = Exp
 
@@ -189,7 +195,7 @@ ppExp n ctx e0 =
                    _ -> show (k,p)
       (Op App [f,arg]) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
       (Op op [x,y]) -> prns op $ ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
-      (Op op args) -> ppOp op ++ "(" ++ intercalate "," [ppExp n op a | (a) <- args] ++ ")"
+      (Op op args) -> ppExp n ctx (Con (show op) `apps` args)
 
 normalize :: [Char] -> [Char]
 normalize = map toLower
@@ -220,7 +226,7 @@ negativeContext _ _ = False
 -- FIMXE: rename
 bindsAnyOf :: [Var] -> Exp v -> Bool
 bindsAnyOf x' e = case e of
-  (Quant _ _ x dom _) -> x `elem` x'
+  (Quant _ _ x _dom _) -> x `elem` x'
   _ -> False
 
 matchQuantArg :: Alternative m => Monad m => [Var] -> [Exp v] -> m ([Exp v],Exp v,[Exp v])
