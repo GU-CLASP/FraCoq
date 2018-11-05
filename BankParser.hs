@@ -126,7 +126,7 @@ main = do
   let handled = [((pbNumber,hypNumber,hypTyp),e)
                 | (x,e) <- inp,
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
-                  pbNumber >= 114,
+                  -- pbNumber >= 114,
                   -- pbNumber <= 141, -- end of anaphora section
                   pbNumber <= 251, -- end of ellipsis section
                   hypTyp /= "q"]
