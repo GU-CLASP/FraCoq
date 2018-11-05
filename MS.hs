@@ -210,6 +210,13 @@ appArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs  (app prep'd) directObje
         directObject = last objs
         prepositions = nubBy ((==) `on` fst) prepositions0
 
+appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
+appAdjArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs  (app prep'd) directObject
+  where prep'd = Con "appA"  `apps` (Con (nm ++ concatMap fst prepositions) : map snd prepositions ++ indirectObjects)
+        indirectObjects = init objs
+        directObject = last objs
+        prepositions = nubBy ((==) `on` fst) prepositions0
+
 mkPred :: String -> Object -> S'
 mkPred p x extraObjs = appArgs p [x] extraObjs
 
@@ -355,7 +362,7 @@ lexemeVP "elliptic_VP" = elliptic_VP
 lexemeVP x = return $ mkPred x
 
 lexemeA :: String -> A
-lexemeA a = return $ (\cn obj -> apps (Con "appA") [Con a,lam cn, obj])
+lexemeA a = return $ (\cn obj -> appAdjArgs a [lam cn,obj])
 
 lexemeV3 :: String -> V3
 lexemeV3 x = return $ mkRel3 x
@@ -540,7 +547,7 @@ one_N = elliptic_CN
 -- A
 
 type A = Dynamic A'
-type A' = (Object -> Prop) -> (Object -> Prop)
+type A' = (Object -> Prop) -> Object -> S'
 
 positA :: A -> A
 positA = id
@@ -552,13 +559,18 @@ type A2' = (Object -> Prop) -> Object -> Object -> Prop
 type A2 = Dynamic A2'
 
 lexemeA2 :: String -> A2
-lexemeA2 a = return $ \cn x y -> Con a `apps` [Lam cn,x,y]
+lexemeA2 a = return $ \cn x y -> Con a `apps` [lam cn,x,y]
 
 --------------------
 -- AP
 
 type AP = Dynamic A'
 
+advAP :: AP -> Adv -> AP -- basically wrong syntax in the input. (Instead of AP we should have CN)
+advAP ap adv = do
+  adv' <- adv
+  ap' <- ap
+  return (\cn x -> adv' (ap' cn x))
 
 sentAP :: AP -> SC -> AP
 sentAP ap cl = do
@@ -570,22 +582,25 @@ complA2 :: A2 -> NP -> AP
 complA2 a2 np = do
   a2' <- a2
   np' <- interpNP np Other
-  return $ \cn x -> noExtraObjs (np' (\y _extraObjs  -> a2' cn x y))
+  return $ \cn x -> (np' (\y _extraObjs  -> a2' cn x y))
 
 adAP :: AdA -> AP -> AP
-adAP ada a = ada <*> a
+adAP ada a = do
+  ada' <- ada
+  a' <- a
+  return $ ada' a'
 
 comparA :: A -> NP -> AP
 comparA a np = do
   a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> noExtraObjs (np' (\y _extraObjs -> (a' cn' y --> a' cn' x) ∧ (not' (a' cn' x) --> not' (a' cn' y))))
+  return $ \cn' x -> (np' (\y extraObjs -> (a' cn' y extraObjs --> a' cn' x extraObjs) ∧ (not' (a' cn' x extraObjs) --> not' (a' cn' y extraObjs))))
 
 comparAsAs :: A -> NP -> AP
 comparAsAs a np = do
   a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> noExtraObjs $ np' (\ y _extraObjs -> a' cn' x <-> a' cn' y)
+  return $ \cn' x -> np' (\ y extraObjs -> a' cn' x extraObjs <-> a' cn' y extraObjs)
 
 -- FIXME: very questionable that this should even be in the syntax.
 useComparA_prefix :: A -> AP
@@ -609,9 +624,9 @@ if_Subj = return $ \s1 s2 extraObjs -> s1 extraObjs --> s2 extraObjs
 -- AdA
 
 type AdA  = Dynamic (A' -> A')
-
+ 
 lexemeAdA :: String -> AdA
-lexemeAdA ada = return $ \a cn x -> Con ada `apps` [Lam $ \cn2 -> Lam $ \x2 -> a (app cn2) x2,Lam cn,x]
+lexemeAdA ada = return $ \a cn x extraObjs -> Con ada `apps` [lam $ \cn2 -> lam $ \x2 -> a (app cn2) x2 extraObjs,lam cn,x]
 
 --------------------
 -- Adv
@@ -636,7 +651,7 @@ appAdverb adv vp obj = apps (Con "appAdv") [Con adv,lam vp, obj]
 positAdvAdj :: A -> Adv
 positAdvAdj a = do
   a' <- a
-  return $ sentenceApplyAdv a'
+  return $ sentenceApplyAdv (\p x -> noExtraObjs (a' p x) )
 
 uninformativeAdv :: Adv
 uninformativeAdv = return $ \vp x -> vp x -- ALT: Coq/HOL
@@ -694,7 +709,7 @@ adjCN a cn = do
   a' <- a
   (cn',gendr) <- cn
   modify (pushCN (adjCN a cn))
-  return $ (\x eos -> a' (flip cn' eos) x,gendr)
+  return $ (\x eos -> noExtraObjs (a' (flip cn' eos) x),gendr)
 
 elliptic_CN :: CN
 elliptic_CN = do
@@ -713,7 +728,7 @@ sentCN :: CN -> SC -> CN
 sentCN cn sc = do
   (cn',gender) <- cn
   sc' <- sc
-  return $ (\x extraObjs -> apps (Con "SentCN") [Lam (flip cn' extraObjs),Lam (nos sc'),x],gender)
+  return $ (\x extraObjs -> apps (Con "SentCN") [lam (flip cn' extraObjs),lam (nos sc'),x],gender)
 
 embedVP :: VP -> SC
 embedVP = id
@@ -864,7 +879,7 @@ everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,F
 type Ord = A' -- FIXME
 
 ordSuperl :: A -> Ord
-ordSuperl = return id -- FIXME
+ordSuperl _ = return (\x _ -> x) -- FIXME
 
 ---------------------------
 -- Det
@@ -896,7 +911,7 @@ boundQuant pol (Cardinal n') number (cn',gender) role = do
       modify (pushNP (Descriptor False gender Plural role) (pureVar x number (cn',gender)))
       -- modify (pushDefinite cn' x)
       return (\vp' extraObjs -> Quant (AtLeast n') pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
-boundQuant _ _ _ _ _ = error "atLeastQuant: unexpected number"
+boundQuant _ n _ _ _ = error ("atLeastQuant: unexpected number: " ++ show n)
 
 atLeastQuant :: Num -> Quant
 atLeastQuant = boundQuant Pos
@@ -961,7 +976,7 @@ compCN cn = do
 compAP :: AP -> Comp
 compAP ap = do
   a' <- ap
-  return $ \x -> a' (const TRUE) x 
+  return $ \x -> noExtraObjs (a' (const TRUE) x) 
 
 compNP :: NP -> Comp
 compNP np = do
@@ -1429,7 +1444,7 @@ possess :: Object -> Object -> Prop
 possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
 of_ :: (Object -> Prop) -> Object -> Object
-of_ cn owner = The (Lam $ \x -> possess owner x ∧ cn x)
+of_ cn owner = The (lam $ \x -> possess owner x ∧ cn x)
 
 the_other_Q :: Quant
 the_other_Q _number _cn _role = return $ \vp eos -> apps (Con "theOtherQ") [lam $ \x -> vp x eos]
