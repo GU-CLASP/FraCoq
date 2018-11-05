@@ -117,7 +117,7 @@ main = do
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
                   pbNumber >= 114,
                   -- pbNumber <= 141, -- end of anaphora section
-                  pbNumber <= 220, -- end of ellipsis section
+                  pbNumber <= 251, -- end of ellipsis section
                   hypTyp /= "q"]
       problems = filter (not . (`elem` disabledProblems) . frst . fst  . head) $
                  groupBy ((==) `on` (frst . fst)) handled
@@ -156,4 +156,5 @@ disabledProblems =
   ,305 -- degenerate problem
   ,216,217 -- syntax wrong: should be (john is (fatter politician than
            -- bill)) not ((john is fatter politician) than bill)
+  ,230,231,232,233,234,235,238,239,240,241,244,245  -- syntax wrong 
   ]

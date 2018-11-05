@@ -421,65 +421,82 @@ uncNeg :: Pol
 uncNeg = pNeg
 
 -----------------
+-- Card
+
+type Card = Number
+
+adNum :: AdN -> Card -> Card
+adNum = id
+
+numNumeral :: Numeral -> Card
+numNumeral = Cardinal
+
+--------------------
+-- AdN
+type AdN = Card -> Card
+
+more_than_AdN :: AdN
+more_than_AdN = MoreThan
+
+-----------------
 -- Numbers
 
-numCard :: Nat -> Number
-numCard = Cardinal
+numCard :: Card -> Number
+numCard = id
 
-numNumeral :: Integer -> Nat
-numNumeral = Nat
+type Numeral = Nat
 
-n_two :: Integer
+n_two :: Nat
 n_two = 2
-n_10 :: Integer
+n_10 :: Nat
 n_10 = 10
-n_100 :: Integer
+n_100 :: Nat
 n_100 = 100
-n_13 :: Integer
+n_13 :: Nat
 n_13 = 13
-n_14 :: Integer
+n_14 :: Nat
 n_14 = 14
-n_15 :: Integer
+n_15 :: Nat
 n_15 = 15
-n_150 :: Integer
+n_150 :: Nat
 n_150 = 150
-n_2 :: Integer
+n_2 :: Nat
 n_2 = 2
-n_2500 :: Integer
+n_2500 :: Nat
 n_2500 = 2500
-n_3000 :: Integer
+n_3000 :: Nat
 n_3000 = 3000
-n_4 :: Integer
+n_4 :: Nat
 n_4 = 4
-n_500 :: Integer
+n_500 :: Nat
 n_500 = 500
-n_5500 :: Integer
+n_5500 :: Nat
 n_5500 = 5500
-n_8 :: Integer
+n_8 :: Nat
 n_8 = 8
-n_99 :: Integer
+n_99 :: Nat
 n_99 = 99
-n_eight :: Integer
+n_eight :: Nat
 n_eight = 8
-n_eleven :: Integer
+n_eleven :: Nat
 n_eleven = 11
-n_five :: Integer
+n_five :: Nat
 n_five = 5
-n_fortyfive :: Integer
+n_fortyfive :: Nat
 n_fortyfive = 45
-n_four :: Integer
+n_four :: Nat
 n_four = 4
-n_one :: Integer
+n_one :: Nat
 n_one = 1
-n_six :: Integer
+n_six :: Nat
 n_six = 6
-n_sixteen :: Integer
+n_sixteen :: Nat
 n_sixteen = 16
-n_ten :: Integer
+n_ten :: Nat
 n_ten = 10
-n_three :: Integer
+n_three :: Nat
 n_three = 3
-n_twenty :: Integer
+n_twenty :: Nat
 n_twenty = 20
 
 --------------------
@@ -527,6 +544,18 @@ comparA a np = do
   a' <- a
   np' <- interpNP np Other
   return $ \cn' x -> noExtraObjs (np' (\y _extraObjs -> (a' cn' y --> a' cn' x) ∧ (not' (a' cn' x) --> not' (a' cn' y))))
+
+comparAsAs :: A -> NP -> AP
+comparAsAs a np = do
+  a' <- a
+  np' <- interpNP np Other
+  return $ \cn' x -> noExtraObjs $ np' (\ y _extraObjs -> a' cn' x <-> a' cn' y)
+
+-- FIXME: very questionable that this should even be in the syntax.
+useComparA_prefix :: A -> AP
+useComparA_prefix a = do
+  a' <- a
+  return $ \cn' x -> a' cn' x
 
 
 --------------------
@@ -758,17 +787,17 @@ everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,F
 type Det = (Number,Quant)
 
 detQuant :: Quant -> Number -> Det
-detQuant _ (Cardinal n) = (Cardinal n,atLeastQuant n)
+detQuant _ (Cardinal n) = (Cardinal n,atLeastQuant (Cardinal n))
 detQuant q n = (n,q)
 
 
-atLeastQuant :: Nat -> Number -> CN' -> Role -> Dynamic ((Exp -> S') -> S')
-atLeastQuant n' number (cn',gender) role = do
+atLeastQuant :: Number -> Quant
+atLeastQuant (Cardinal n') number (cn',gender) role = do
       x <- getFresh
       modify (pushNP (Descriptor False gender Plural role) (pureVar x number (cn',gender)))
       -- modify (pushDefinite cn' x)
       return (\vp' extraObjs -> Quant (AtLeast n') Pos x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
-
+atLeastQuant _ _ _ _ = error "atLeastQuant: unexpected number" 
 
 every_Det :: Det
 every_Det = (Unspecified,every_Quant)
@@ -778,6 +807,9 @@ each_Det = (Unspecified,every_Quant)
 
 somePl_Det :: Det
 somePl_Det = (Plural,indefArt)
+
+someSg_Det :: Det
+someSg_Det = (Singular,indefArt)
 
 several_Det :: (Number, Quant)
 several_Det = (Plural,several_Quant)
@@ -1060,6 +1092,9 @@ data Conj where
 and_Conj :: Conj
 and_Conj = RightAssoc (∧)
 
+or_Conj :: Conj
+or_Conj = RightAssoc (∨)
+
 comma_and_Conj :: Conj
 comma_and_Conj = RightAssoc (∧)
 
@@ -1245,6 +1280,7 @@ several_Quant number (cn',gender) role = do
   return (eType SEVERAL x z cn')
 
 indefArt :: Quant
+indefArt (MoreThan n) cn role = atLeastQuant n n cn role
 indefArt number (cn',gender) role = do
   x <- getFresh
   dPluralizable <- gets envPluralizingQuantifier
@@ -1286,6 +1322,9 @@ most_of_Predet (MkNP n _q cn) = MkNP n most_Quant cn
 
 most_Predet :: Predet
 most_Predet (MkNP n _q cn) = MkNP n most_Quant cn 
+
+at_least_Predet :: NPData -> NPData
+at_least_Predet (MkNP numb _q cn) = MkNP numb (atLeastQuant numb) cn
 
 all_Predet :: Predet
 all_Predet  (MkNP n _q cn) = MkNP n every_Quant cn

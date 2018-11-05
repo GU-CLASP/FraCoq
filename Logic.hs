@@ -85,6 +85,9 @@ pattern BinOp op x y = Op op [(x),(y)]
 pattern UnOp :: Op -> Exp -> Exp
 pattern UnOp op x = Op op [(x)]
 
+(<->) :: Exp -> Exp -> Exp
+a <-> b = (a --> b) ∧ (b --> a)
+
 (-->),(~~>) :: Exp -> Exp -> Exp
 x --> y = BinOp Implies x y
 x ~~> y = BinOp ImpliesOften x y
