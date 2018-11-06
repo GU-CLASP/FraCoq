@@ -1161,7 +1161,7 @@ Parameter write_V2 : V2 .
 Parameter write_to_V2 : V2 .
 
 (** Knowledge **)
-Parameter wantCovariant_K : forall p q:VP, forall s, (forall x, p x -> q x) -> want_VV q s -> want_VV p s.
+Parameter wantCovariant_K : forall p q:VP, forall s, (q s -> p s) -> want_VV q s -> want_VV p s.
 Parameter sayCovariant_K : forall p q:S, forall s, (p -> q) -> say_VS p s -> say_VS q s.
 
 Variable  person_K: forall x:object, chairman_N(x)-> person_N(x). 
@@ -1189,7 +1189,6 @@ destruct X.
 exact x.
 Qed.
 
-Parameter EQUAL : object -> object -> Prop.
 Parameter assumedNP : object.
 
 Definition appA : A -> (object -> Prop) -> (object -> Prop)
@@ -1199,7 +1198,7 @@ Definition appAdv : Adv -> (object -> Prop) -> (object -> Prop)
 
 
 Parameter appoint_V2by : V3.
-Parameter _BE_ : VP.
+Definition _BE_ : VP := fun x => True.
 Parameter _BE_on : object -> VP.
 Parameter _BE_in  : object -> VP.
 Parameter _BE_from : object -> VP.
@@ -1258,6 +1257,7 @@ Parameter MANYQ : QQ.
 Parameter FEWQ : QQ.
 Parameter LOTSQ : QQ.
 
+Definition EQUAL : object -> object -> Prop := fun x y => x = y.
 Definition  MOST:= fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
 Definition  ATLEAST:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ at_least n CN VP.
 
