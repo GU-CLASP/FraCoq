@@ -10,6 +10,7 @@ import Data.List
 import Data.Function
 import Data.List.Split
 import Text.Printf
+import AnswerTypes
 
 data SExpr = Atom String | SExpr [SExpr] | Variants deriving Show
 
@@ -149,13 +150,11 @@ type HypID = (Int, Int, [Char])
 
 
 expectResults :: [(Int, [Bool])]
-expectResults = [(119,[False])
-                ,(125,[True,False])
-                ,(130,[True,False])
-                ,(136,[True,False])
-                ,(141,[True,False])
-                ,(147,[False])
-                ]
+expectResults = [(i,case a of
+                     Yes -> [True]
+                     No  -> [False]
+                     _ -> [True,False])
+                | (i,a) <- answers]
 
 overrides :: HypID -> Maybe String
 overrides (177,1,"p")= Just "s_177_1_p_NEW"
@@ -173,4 +172,4 @@ disabledProblems =
   ,305 -- degenerate problem
   ,309 -- degenerate problem
   ,310 -- degenerate problem
-  ]
+  ] ++ [i | (i,Undef) <- answers]

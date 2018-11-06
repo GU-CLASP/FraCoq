@@ -2,6 +2,7 @@ module AnswerTypes where
 
 data Answer = Yes | No | Unknown | Undef | Unclear String deriving (Eq,Show,Ord)
 
+answers :: [(Int,Answer)]
 answers = 
    [ ( 1 , Yes )
    , ( 2 , Yes )
