@@ -4,6 +4,7 @@ import Bank
 import Data.Foldable
 import LogicB
 import Data.List
+import Text.Printf
 
 prepare :: Exp Zero -> Either String (Exp Zero)
 prepare q = case extendAllScopes q of
@@ -20,7 +21,7 @@ handleProblem n (premise,h,rs) = do
         qs = nub $ map prepare ps
     forM_ (zip ['a'..'z'] qs) $ \(v,p) -> do
       case p of
-        Right q -> putStrLn ("Definition Problem" ++ show n ++ [v] ++ show r ++ ":= " ++ show q ++ ".")
+        Right q -> putStrLn ("Definition Problem" ++ printf "%03d" n ++ [v] ++ show r ++ ":= " ++ show q ++ ".")
         Left err -> putStrLn err
       putStrLn $ ""
 
