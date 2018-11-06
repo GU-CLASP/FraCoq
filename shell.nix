@@ -12,6 +12,8 @@ let myGHC = haskellPackages.ghcWithPackages
                        split
                        logict
                        monadplus
+                       scalpel pretty-show  # to scrape answers from fracas.xml
+                       
                      ]);
 
 in stdenv.mkDerivation {
