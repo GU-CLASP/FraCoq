@@ -123,7 +123,7 @@ Theorem T151a: Problem151aTrue. cbv. intros. destruct H.  firstorder. Abort all.
 
 Theorem T151b: Problem151bTrue.  cbv. intros. destruct H. firstorder. Abort all.
 
-Theorem T151c: Problem151cTrue. cbv. intros. destruct H. firstorder. (**All three readings are incorrect! FIXME**)
+Theorem T151c: Problem151cTrue. cbv. intros. destruct H. firstorder. Abort all. (**All three readings are incorrect! FIXME**)
 Theorem T152a: Problem152aTrue. cbv. intros. destruct H. firstorder. Abort all. 
 
 Theorem T152b: Problem152bTrue.  cbv. intros. destruct H. Abort all.
@@ -131,3 +131,16 @@ Theorem T152b: Problem152bTrue.  cbv. intros. destruct H. Abort all.
  
 Theorem T152c: Problem152cTrue.  cbv.  intros. destruct H.    destruct H.  firstorder. Abort all.
 
+Theorem T153a: Problem153aTrue. cbv. intros. destruct H. 
+firstorder.  Abort all. 
+
+Theorem T153b: Problem153bTrue. cbv. intros. destruct H. 
+                                firstorder.  Qed.
+
+Theorem T153c: Problem153cTrue. cbv. intros. destruct H. firstorder. Abort all.
+
+Theorem T154a: Problem154aTrue. cbv. intros. destruct H. firstorder. Abort all.
+
+Theorem T154b: Problem154bTrue.  cbv. intros. destruct H. firstorder. Qed.
+
+ Theorem T154c: Problem154cTrue. cbv. intros. destruct H. firstorder. Abort all. 
