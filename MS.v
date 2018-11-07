@@ -1270,4 +1270,4 @@ Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
 
 Definition going_to_VV : VV := fun v => v. (* FIXME: Ignoring tense *)
 Definition do_VV : VV := fun v => v.
-
+Definition NOT:= not. 
