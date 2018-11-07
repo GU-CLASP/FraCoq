@@ -106,4 +106,28 @@ Theorem T146a: Problem146aTrue. cbv. intros. destruct H. exact H0. Qed.
 
 
 
-Theorem T147a:  Problem147aFalse. cbv. intro.  destruct H.  destruct on_monday_Adv as [on_mon on_mon_ver]. firstorder. Qed. 
+Theorem T147a:  Problem147aFalse. cbv. intro.  destruct H.  destruct on_monday_Adv as [on_mon on_mon_ver]. firstorder. Qed.
+
+Theorem T147b: Problem147bFalse. cbv. intro. destruct H.  destruct on_monday_Adv as [on_mon on_mon_ver]. firstorder. Qed.
+
+Theorem T148a: Problem148aTrue. cbv. intro. exact H. Qed.
+
+Theorem T149a: Problem149aTrue. cbv. intro. destruct H as [H1 H2]. exact H2. 
+Qed.
+
+Theorem T150a: Problem150aTrue.  cbv. intros. firstorder. Abort all. (**Wrong Reading**)
+
+Theorem T150b: Problem150bTrue.  cbv. intros. destruct H. apply H0.  Qed.
+
+Theorem T151a: Problem151aTrue. cbv. intros. destruct H.  firstorder. Abort all.
+
+Theorem T151b: Problem151bTrue.  cbv. intros. destruct H. firstorder. Abort all.
+
+Theorem T151c: Problem151cTrue. cbv. intros. destruct H. firstorder. (**All three readings are incorrect! FIXME**)
+Theorem T152a: Problem152aTrue. cbv. intros. destruct H. firstorder. Abort all. 
+
+Theorem T152b: Problem152bTrue.  cbv. intros. destruct H. Abort all.
+
+ 
+Theorem T152c: Problem152cTrue.  cbv.  intros. destruct H.    destruct H.  firstorder. Abort all.
+
