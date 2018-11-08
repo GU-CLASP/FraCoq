@@ -143,4 +143,9 @@ Theorem T154a: Problem154aTrue. cbv. intros. destruct H. firstorder. Abort all.
 
 Theorem T154b: Problem154bTrue.  cbv. intros. destruct H. firstorder. Qed.
 
- Theorem T154c: Problem154cTrue. cbv. intros. destruct H. firstorder. Abort all. 
+Theorem T154c: Problem154cTrue. cbv. intros. destruct H. firstorder. Abort all.
+
+Theorem T155a: Problem155aTrue. cbv. intros. firstorder. Abort all. (**Car info is lost**)
+
+Theorem T156a : Problem156aTrue. cbv. intros. firstorder. Abort all. (**UNK**)
+
