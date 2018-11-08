@@ -147,5 +147,7 @@ Theorem T154c: Problem154cTrue. cbv. intros. destruct H. firstorder. Abort all.
 
 Theorem T155a: Problem155aTrue. cbv. intros. firstorder. Abort all. (**Car info is lost**)
 
-Theorem T156a : Problem156aTrue. cbv. intros. firstorder. Abort all. (**UNK**)
+Theorem T156a : Problem156aTrue. cbv.  intros. firstorder. Abort all. (**UNK**)
+
+Theorem T157a: Problem157aTrue. cbv. intros. destruct H.  destruct H0. destruct H0. destruct H0. exists x. firstorder. Qed. (**Gets it right but the semantics are almost correct! John's car appears both blue and red (which I guess is a potential reading!**)
 
