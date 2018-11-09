@@ -742,6 +742,10 @@ embedS s = do
 ------------------------
 -- NP
 
+oneToo :: NP
+oneToo = do
+  cn' <- elliptic_CN
+  return $ MkNP Singular indefArt cn'
 
 interpNP :: NP -> Role -> Dynamic NP'
 interpNP np role = do
@@ -1697,3 +1701,6 @@ chairman_etc = detCN (detQuant (indefArt) (numSg)) (relCN (useN (lexemeN "chairm
 s_122_4_h_ALT :: Phr
 s_122_4_h_ALT = (sentence (useCl (present) (pPos) (predVP (detCN (every_Det) (useN (lexemeN "committee_N"))) (complSlash (slashV2a (lexemeV2 "have_V2")) chairman_etc ))))
 
+
+s_155_2_p_ALT :: Phr
+s_155_2_p_ALT = (sentence (useCl (present) (pPos) (predVP (usePN (lexemePN "bill_PN")) (complSlash (slashV2a (lexemeV2 "own_V2")) oneToo))))
