@@ -14,7 +14,7 @@ import Prelude hiding (pred,Ord,Num)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
 import qualified Logic
-import Data.List (intersect,nub,partition,nubBy)
+import Data.List (intersect,nub,partition,nubBy,sortBy)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
@@ -208,7 +208,7 @@ appArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs  (app prep'd) directObje
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
         indirectObjects = init objs
         directObject = last objs
-        prepositions = nubBy ((==) `on` fst) prepositions0
+        prepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) prepositions0
 
 appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
 appAdjArgs nm [cn,obj] (prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj
