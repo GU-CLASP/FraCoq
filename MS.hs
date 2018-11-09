@@ -398,7 +398,7 @@ lexemePrep prep  = return (modifyingPrep (takeWhile (/= '_') prep))
 
 
 modifyingPrep :: String -> Object -> S' -> S'
-modifyingPrep aname x s (preps,adv) = s ((aname,x):preps,adv)
+modifyingPrep aname x s (preps,adv) = s (preps++[(aname,x)],adv)
 
 type RP = ()
 lexemeRP :: String -> RP
