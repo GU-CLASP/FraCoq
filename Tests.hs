@@ -103,7 +103,7 @@ ouch122 = debug (phrToEff s_122_4_h)
 -- b) Difficulty to relate "THE company_N" to the set introduced in the first premise.
 -- c) Difficult to interpret: (advNP (detNP (anySg_Det)) (prepNP (lexemePrep "part_Prep") (detCN (detQuant (possPron (itRefl_Pron)) (numPl)) (useN (lexemeN "computer_N")))))
 
--- 155. Incorrect syntax (fixed)
+-- 155. Incorrect syntax (one anaphora not present, fixed now)
 
 -- Analysis for 181. IMO it can be "yes" on some reading.
 

@@ -119,17 +119,13 @@ Theorem T150a: Problem150aTrue.  cbv. intros. firstorder. Abort all. (**Wrong Re
 
 Theorem T150b: Problem150bTrue.  cbv. intros. destruct H. apply H0.  Qed.
 
-Theorem T151a: Problem151aTrue. cbv. intros. destruct H.  firstorder. Abort all.
+Theorem T151b: Problem151bTrue.  cbv. intros. destruct H. firstorder. Qed.
 
-Theorem T151b: Problem151bTrue.  cbv. intros. destruct H. firstorder. Abort all.
-
-Theorem T151c: Problem151cTrue. cbv. intros. destruct H. firstorder. Abort all. (**All three readings are incorrect! FIXME**)
-Theorem T152a: Problem152aTrue. cbv. intros. destruct H. firstorder. Abort all. 
+Theorem T152a: Problem152aTrue.  cbv. intros. destruct H. firstorder. Qed.
 
 Theorem T152b: Problem152bTrue.  cbv. intros. destruct H. Abort all.
 
  
-Theorem T152c: Problem152cTrue.  cbv.  intros. destruct H.    destruct H.  firstorder. Abort all.
 
 Theorem T153a: Problem153aTrue. cbv. intros. destruct H. 
 firstorder.  Abort all. 
@@ -149,5 +145,8 @@ Theorem T155a: Problem155aTrue. cbv. intros. firstorder. Abort all. (**Car info 
 
 Theorem T156a : Problem156aTrue. cbv.  intros. firstorder. Abort all. (**UNK**)
 
-Theorem T157a: Problem157aTrue. cbv. intros. destruct H.  destruct H0. destruct H0. destruct H0. exists x. firstorder. Qed. (**Gets it right but the semantics are almost correct! John's car appears both blue and red (which I guess is a potential reading!**)
+(** reading a: John's car appears both blue and red (which I guess is a potential reading!**)
+
+Theorem T157b: Problem157bTrue. cbv. intros. destruct H.  destruct H0. destruct H0.  firstorder. Qed.
+
 
