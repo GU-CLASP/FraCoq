@@ -1,5 +1,6 @@
 Load FraCoq2.
 
+Theorem T001a: Problem001aTrue. cbv. firstorder. Qed.
 
 Theorem T002a: Problem002aTrue.
 cbv. destruct great_A as [great].
