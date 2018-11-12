@@ -6,6 +6,7 @@ import AnswerTypes
 import Data.Char
 import Data.List
 import Data.Function
+import Data.Maybe
 
 data Result = Result
               {rNumber :: Int -- problem number
@@ -41,13 +42,26 @@ eval = map evalPb . groupBy ((==) `on` rNumber) . sortBy (compare `on` rNumber)
 ---------------------------------------------------------------
 -- turn the coq proofs (or lack thereof) into entailment values.
 
+compatible :: Answer -> Answer -> Bool
+compatible Undef _ = True
+compatible (Unclear _) _ = True
+compatible x y = x == y
+
 main :: IO ()
 main = do
   ws <- (concatMap words . lines) <$> readFile "Proofs.v"
   let proofs = eval $ parseWords Nothing ws 
-  mapM_ print [(n,a,lookup n proofs) | (n,a) <- answers]
+      consolidated = [(n,a,lookup n proofs) | (n,a) <- answers]
+      inRange x = x >= 114 && x <= 196
+      completed = [isJust a | (n,_,a) <- consolidated, inRange n]
+      correct = [() | (n,a,Just a') <- consolidated, inRange n, compatible a a']
+  putStrLn ("completed: "++show (length (filter id completed))++"/"++show(length completed))
+  putStrLn ("correct: "++show (length correct))
+  mapM_ print consolidated
 
 -- >>> main
+-- completed: 42/83
+-- correct: 37
 -- (1,Yes,Nothing)
 -- (2,Yes,Nothing)
 -- (3,Yes,Nothing)
