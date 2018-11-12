@@ -145,8 +145,31 @@ Theorem T155a: Problem155aTrue. cbv. intros. firstorder. Abort all. (**Car info 
 
 Theorem T156a : Problem156aTrue. cbv.  intros. firstorder. Abort all. (**UNK**)
 
-(** reading a: John's car appears both blue and red (which I guess is a potential reading!**)
+(** reading a: John's car appears both blue and red**)
 
 Theorem T157b: Problem157bTrue. cbv. intros. destruct H.  destruct H0. destruct H0.  firstorder. Qed.
 
 
+Theorem T158a: Problem158aTrue. cbv. intros. destruct H. destruct H0. destruct H0. firstorder. Qed. (**The example is UNK but it can be proven, since this gets the reading where Bill owns a car which is both red and blue!**)
+
+Theorem T158b: Problem158bTrue. cbv.  intros. destruct H. destruct H0. firstorder. Abort all. (**This is the correct reading!**)
+
+Theorem T159a: Problem159aTrue. cbv. intros. destruct fast_A.   destruct H.  firstorder. Abort all. (**Wrong reading**)
+
+
+Theorem T159b: Problem159bTrue. cbv. intros. destruct fast_A.   destruct H.  firstorder. Qed.
+
+Theorem T160a: Problem160aTrue. cbv. intros. firstorder. Qed.
+
+Theorem T160b: Problem160bTrue. cbv. intros. destruct fast_A. firstorder. Abort all. (**Wrong reading**)
+
+
+Theorem T161a: Problem161aTrue. cbv. intros. firstorder. Qed.
+
+Theorem T161b: Problem161bTrue. cbv. intros. destruct fast_A. firstorder. Abort all. (**This is the exact same example as the previous, FraCaS gives the other reading as UNK, which is this one**)
+
+
+Theorem T162a: Problem162aTrue. cbv. destruct fast_A. intros. firstorder. Abort all. (**Wrong reading**) 
+
+
+Theorem T162b: Problem162bTrue. cbv. destruct fast_A. intros. firstorder. Qed. 
