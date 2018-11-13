@@ -11,7 +11,7 @@ Theorem T116a: Problem116aTrue. cbv. intros.  split. apply mary_PN_Female. apply
 Theorem T117a: Problem117aTrue. cbv. intros.  elim H. intros. apply H. exact H1. Qed. 
 
 
-Theorem T123a: Problem123aTrue. cbv. intros. firstorder. 
+Theorem T123a: Problem123aTrue. cbv. intros. firstorder.
 Qed. 
 
 Theorem T123b: Problem123bTrue.   cbv.  intros. destruct H. firstorder. Abort all.
@@ -190,10 +190,13 @@ Theorem T169a: Problem169aTrue. cbv. intros. Abort all. (**FIXME: before_Subj, f
 
 Theorem T170a: Problem170aTrue. cbv. intros. Abort all. (**FIXME: ibid**)
 
-Section t171a.
-
+Section t173a.
  Variable personPN: forall x: PN, Person_N (PN2object x).
 
- Theorem T171a: Problem173aTrue. cbv. intros.  destruct H. apply H. firstorder. Qed. (**With a little help from my friend personPN**)
+ Theorem T173a: Problem173aTrue. cbv. intros.  destruct H. apply H. firstorder. Qed. (**With a little help from my friend personPN**)
+ 
+ Theorem T174a: Problem174aTrue. cbv. intros. firstorder. Abort all. (**unk**)
+
+ Theorem T174a: Problem174aFalse. cbv. intro. firstorder. Abort all.
 
  
