@@ -172,4 +172,28 @@ Theorem T161b: Problem161bTrue. cbv. intros. destruct fast_A. firstorder. Abort 
 Theorem T162a: Problem162aTrue. cbv. destruct fast_A. intros. firstorder. Abort all. (**Wrong reading**) 
 
 
-Theorem T162b: Problem162bTrue. cbv. destruct fast_A. intros. firstorder. Qed. 
+Theorem T162b: Problem162bTrue. cbv. destruct fast_A. intros. firstorder. Qed.
+
+Theorem T163d: Problem163dFalse. cbv. intro.  destruct H. exact H0. Qed. (**Correct reading**)
+
+Theorem T164a: Problem164aTrue. cbv. intros. firstorder. Abort all. (**FIXME: speak_to_V2to**)
+
+Theorem T165a: Problem165aTrue. cbv. intros. exact H. Qed. 
+
+Theorem T166a: Problem166aTrue. cbv. intros. firstorder. Abort all. (**FIXME**)
+
+Theorem T167a: Problem167aFalse. cbv. intro. firstorder.  Abort all. (**FIXME: Reasoning with cardinalities (also: only is taken to be exactly one here**)
+
+Theorem T168a: Problem168aTrue. cbv. intros. destruct H. exact H0. Qed.
+
+Theorem T169a: Problem169aTrue. cbv. intros. Abort all. (**FIXME: before_Subj, find_V2before**)
+
+Theorem T170a: Problem170aTrue. cbv. intros. Abort all. (**FIXME: ibid**)
+
+Section t171a.
+
+ Variable personPN: forall x: PN, Person_N (PN2object x).
+
+ Theorem T171a: Problem173aTrue. cbv. intros.  destruct H. apply H. firstorder. Qed. (**With a little help from my friend personPN**)
+
+ 
