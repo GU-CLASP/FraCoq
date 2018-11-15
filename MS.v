@@ -1178,6 +1178,13 @@ Variable small_and_large_disjoint_K : forall cn o, getSubsectiveA small_A cn o /
 Definition EXISTS := fun (p : object -> Prop) (q : object -> Prop) => exists x, p x /\ q x.
 Definition FORALL := fun (p : object -> Prop) (q : object -> Prop) => forall x, p x -> q x.
 Parameter THE : (object -> Prop) -> object.
+Variable THE_sat_exact : forall (q:object -> Prop), q (THE q).
+Lemma THE_sat : forall (p:object -> Prop) (q:object -> Prop), (forall x, q x -> p x) -> p (THE q).
+intros.
+apply H.
+apply THE_sat_exact.
+Qed.
+
 
 Definition deliver_V2to := deliver_V3.
 Definition Not := not.
