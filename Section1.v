@@ -108,6 +108,19 @@ firstorder.
 Theorem T018a: Problem018aTrue. cbv. firstorder. Qed.
 Theorem T019a: Problem019aTrue. cbv. firstorder. Qed.
 Theorem T020a: Problem020aTrue. cbv. firstorder. Qed.
+Theorem T021a: Problem021aTrue. cbv.
+destruct in_Prep as [inP inV inC].
+ destruct within_Prep as [within withinVerid withinCov].
+destruct europe_PN as [europe regionN].
+intro.
+destruct H as [P1 [P2 P3]].
+ firstorder.
+apply P3.
+firstorder.
+apply THE_sat.
+firstorder.
+Qed.
+
 Theorem T022a: Problem022aTrue. cbv. firstorder. Abort All.
 Theorem T022a: Problem022aFalse. cbv. firstorder. Abort All.
 Theorem T023a: Problem023aTrue. cbv.
