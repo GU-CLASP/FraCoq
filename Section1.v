@@ -57,3 +57,9 @@ cbv.
 firstorder.
 Qed.
 
+Theorem T008a: Problem008aTrue.
+cbv.
+firstorder.
+Qed.
+
+(* TODO MANYQ *)
