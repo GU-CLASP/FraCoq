@@ -57,9 +57,33 @@ cbv.
 firstorder.
 Qed.
 
-Theorem T008a: Problem008aTrue.
-cbv.
-firstorder.
-Qed.
+Theorem T008a: Problem008aTrue. cbv. firstorder. Abort All.
 
 (* TODO MANYQ *)
+
+Theorem T009a: Problem009aTrue. cbv. firstorder. Qed.
+Theorem T010a: Problem010aTrue. cbv. firstorder. Qed.
+Theorem T011a: Problem011aTrue.cbv.
+destruct great_A as [great].
+ firstorder. Abort All. (* TODO FEWQ *)
+Theorem T013a: Problem013aTrue. cbv.
+cbv.
+destruct leading_A as [leading].
+destruct indispensable_A as [indispensable].
+destruct excellent_A as [excellent].
+firstorder. exists x0. firstorder. exists x1. firstorder.
+
+
+(* FIXME: we're missing indispensable (excellent x) => indispensable x.
+For this, we need to interpret plural as universal.
+*)
+
+
+Theorem T014a: Problem014aFalse. cbv.
+destruct leading_A as [leading].
+intros.
+destruct H.
+firstorder.
+ Abort All.
+ 
+(* FIXME: one of the ... has a syntax which is difficult to interpret *)
