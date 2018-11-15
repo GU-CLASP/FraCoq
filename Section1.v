@@ -1,4 +1,3 @@
-
 Load FraCoq2.
 
 Theorem T001a: Problem001aTrue. cbv. firstorder. Qed.
@@ -59,13 +58,15 @@ Qed.
 
 Theorem T008a: Problem008aTrue. cbv. firstorder. Abort All.
 
-(* TODO MANYQ *)
+(* FIXME MANYQ *)
 
 Theorem T009a: Problem009aTrue. cbv. firstorder. Qed.
 Theorem T010a: Problem010aTrue. cbv. firstorder. Qed.
-Theorem T011a: Problem011aTrue.cbv.
+
+Theorem T011a: Problem011aTrue. cbv.
 destruct great_A as [great].
- firstorder. Abort All. (* TODO FEWQ *)
+ firstorder. Abort All. (* FIXME FEWQ *)
+ 
 Theorem T013a: Problem013aTrue. cbv.
 cbv.
 destruct leading_A as [leading].
@@ -87,3 +88,30 @@ firstorder.
  Abort All.
  
 (* FIXME: one of the ... has a syntax which is difficult to interpret *)
+
+Theorem T015a: Problem015aTrue. cbv. firstorder. Qed.
+Theorem T016a: Problem016aTrue. cbv.
+firstorder. exists x. firstorder.
+Abort All. (* FIXME: unresolved reference in P1 *)
+
+Theorem T017a: Problem017aTrue. cbv. firstorder.
+exists x.
+firstorder.
+exists (THE (fun x1 : object => exists x : object, literature_N x /\ nobel_prize_N2 x1 x)).
+firstorder.
+exists x.
+apply THE_sat.
+firstorder.
+
+(* FIXME: some problems with using "THE" *)
+
+Theorem T018a: Problem018aTrue. cbv. firstorder. Qed.
+Theorem T019a: Problem019aTrue. cbv. firstorder. Qed.
+Theorem T020a: Problem020aTrue. cbv. firstorder. Qed.
+Theorem T022a: Problem022aTrue. cbv. firstorder. Abort All.
+Theorem T022a: Problem022aFalse. cbv. firstorder. Abort All.
+Theorem T023a: Problem023aTrue. cbv.
+destruct on_time_Adv. firstorder. Qed.
+Theorem T024a: Problem024aTrue. cbv.
+(* FIXME MANYQ *)
+Abort All.
