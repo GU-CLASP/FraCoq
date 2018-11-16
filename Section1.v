@@ -1,4 +1,3 @@
-
 Load FraCoq2.
 
 Theorem T001a: Problem001aTrue. cbv. firstorder. Qed.
@@ -51,12 +50,15 @@ cbv.
 firstorder.
 Qed.
 
-Theorem T008a: Problem008aTrue. cbv. firstorder. Abort All.
 
-(* FIXME MANYQ *)
-
+Theorem T008a: Problem008aTrue. cbv. firstorder. Qed.
 Theorem T009a: Problem009aTrue. cbv. firstorder. Qed.
-Theorem T010a: Problem010aTrue. cbv. firstorder. Qed.
+
+
+Theorem T010a: Problem010aTrue. cbv.
+destruct great_A as [great]. firstorder.
+Qed.
+
 
 Theorem T011a: Problem011aTrue. cbv.
 destruct great_A as [great].
@@ -119,5 +121,10 @@ Theorem T022a: Problem022aFalse. cbv. firstorder. Abort All.
 Theorem T023a: Problem023aTrue. cbv.
 destruct on_time_Adv. firstorder. Qed.
 Theorem T024a: Problem024aTrue. cbv.
-(* FIXME MANYQ *)
-Abort All.
+intros.
+firstorder.
+generalize H0.
+apply le_mono.
+firstorder.
+Qed.
+

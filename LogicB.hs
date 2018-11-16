@@ -184,10 +184,11 @@ ppExp n ctx e0 =
                 o = case (k,p) of
                    (One,Neg) -> "FORALL"
                    (One,Pos) -> "EXISTS"
-                   (Few,Pos) -> "FEWQ"
+                   (Few,Pos) -> "AFEWQ"
                    (Many,Pos) -> "MANYQ"
                    (Lots,Pos) -> "LOTSQ"
-                   (Few,Neg) -> "MOST"
+                   (Few,Neg) -> "FEWQ"
+                   (Most,Neg) -> "MOSTQ"
                    (Several,Pos) -> "SEVERALQ"
                    (Exact n,Both) -> "EXACT (" ++ show (toInteger n) ++ ")"
                    (AtLeast n,_) -> "ATLEAST (" ++ show (toInteger n) ++ ")"

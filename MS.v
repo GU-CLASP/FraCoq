@@ -1211,7 +1211,6 @@ Parameter _BE_in  : object -> VP.
 Parameter _BE_from : object -> VP.
 Parameter _BE_at : object -> VP.
 
-Parameter most: (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter go8walk_Vto: object -> object -> Prop.
 Parameter several: (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter have_V2for : object -> object -> object ->  Prop.
@@ -1258,15 +1257,15 @@ Parameter own_V2in : object -> V2.
 
 
 Definition QQ := CN -> VP -> Prop.
-Parameter MANYQ : QQ.
-Parameter FEWQ : QQ.
+Definition FEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) <= A_FEW).
+Definition AFEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= A_FEW) /\ exists x, cn x /\ vp x.
 Parameter LOTSQ : QQ.
 
 Definition EQUAL : object -> object -> Prop := fun x y => x = y.
-Definition  MOST:= fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
-Definition  ATLEAST:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) >= n).
-
-Definition  SEVERALQ := fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
+Definition MOSTQ := fun cn => fun vp => CARD (fun x => cn x /\ vp x) >= CARD_MOST cn /\ exists x, cn x /\ vp x.
+Definition MANYQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= MANY)  /\ exists x, cn x /\ vp x.
+Definition SEVERALQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= SEVERAL)  /\ exists x, cn x /\ vp x.
+Definition ATLEAST:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) >= n).
 Definition  EXACT:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
 
 
@@ -1275,4 +1274,22 @@ Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
 
 Definition going_to_VV : VV := fun v => v. (* FIXME: Ignoring tense *)
 Definition do_VV : VV := fun v => v.
-Definition NOT:= not. 
+Definition NOT:= not.
+
+Lemma le_mono : forall n, forall (p q : CN), (forall x, p x -> q x) -> n <= CARD p -> n <= CARD q.
+intros.
+apply le_trans with (y := CARD p).
+assumption.
+apply CARD_monotonous.
+assumption.
+Qed.
+
+Lemma le_mono' : forall n, forall (p q : CN), (forall x, q x -> p x) -> CARD p <= n -> CARD q <= n.
+intros.
+apply le_trans with (y := CARD p).
+apply CARD_monotonous.
+assumption.
+assumption.
+Qed.
+
+Variable CARD_exists : forall P:(object -> Prop), 1 <= CARD P -> exists x, P x.

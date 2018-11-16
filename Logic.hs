@@ -34,7 +34,7 @@ type Type = Exp
 
 newtype Nat = Nat Integer deriving (Show,Eq,Num,Enum,Integral,Ord,Real)
 
-data Amount = One | Few | Several | Many | Lots | Exact Nat | AtLeast Nat -- amount for the *positive* polarity
+data Amount = One | Few | Several | Many | Most | Lots | Exact Nat | AtLeast Nat -- amount for the *positive* polarity
   deriving (Eq,Show)
 
 data Op = Fld String -- ^ field lookup
@@ -125,7 +125,7 @@ pattern Exists x dom body = Quant One Pos x dom body
 
 -- pattern Sigma x dom body = Quant Pi Pos x dom body
 pattern MOST :: Var -> Type -> Exp -> Exp
-pattern MOST x dom body = Quant Few Neg x dom  body
+pattern MOST x dom body = Quant Most Neg x dom  body
 pattern FEW :: Var -> Type -> Exp -> Exp
 pattern FEW x dom body = Quant Few Pos x dom  body
 pattern SEVERAL :: Var -> Type -> Exp -> Exp
