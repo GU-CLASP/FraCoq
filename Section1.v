@@ -1,3 +1,4 @@
+
 Load FraCoq2.
 
 Theorem T001a: Problem001aTrue. cbv. firstorder. Qed.
@@ -101,26 +102,17 @@ split.
 exists literature.
 Abort All.
 
-(* FIXME: some problems with using "THE" *)
-
 Theorem T018a: Problem018aTrue. cbv. firstorder. Qed.
 Theorem T019a: Problem019aTrue. cbv. firstorder. Qed.
 Theorem T020a: Problem020aTrue. cbv. firstorder. Qed.
+
+
 Theorem T021a: Problem021aTrue. cbv.
 destruct in_Prep as [inP inV inC].
  destruct within_Prep as [within withinVerid withinCov].
 destruct europe_PN as [europe regionN].
-
-intros residents isResident.
-intros rightToLiveInEurope isRTLiEurope.
-intros residents' isResident'.
-intro H.
-destruct H as [P1 [P2 P3]].
  firstorder.
-apply P3.
-firstorder.
-(* FIXME: should be exact P1, BUT something went wrong in the resolution of "the residents" -- the problem is that the quantified variable is counted as different. *)
-Abort All.
+Qed.
 
 Theorem T022a: Problem022aTrue. cbv. firstorder. Abort All.
 Theorem T022a: Problem022aFalse. cbv. firstorder. Abort All.

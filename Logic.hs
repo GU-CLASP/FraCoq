@@ -15,17 +15,20 @@ data Exp = Op Op [Exp]
          | Lam (Exp -> Exp)
          | Quant Amount Pol Var Exp Exp
 
+eqExp' :: Exp -> Exp -> Bool
+eqExp' = eqExp 0 []
+-- eqExp' _ _ = True
 
-
-
-eqExp :: Int -> Exp -> Exp -> Bool
-eqExp n (Op op1 exps1) (Op op2 exps2) = op1 == op2 && length exps1 == length exps2 && and (zipWith (eqExp n) (exps1) (exps2))
-eqExp n (Quant a1 p1 v1 t1 b1) (Quant a2 p2 v2 t2 b2) = a1 == a2 && p1 == p2 && v1 == v2 && eqExp n t1 t2 && eqExp n b1 b2
-eqExp n (Lam f1) (Lam f2) = eqExp (n+1) (f1 x) (f2 x)
-  where x = Var $ "_V" ++ show n
-eqExp _ (Var x) (Var x') = x == x'
-eqExp _ (Con x) (Con x') = x == x'
-eqExp _ _ _ = False
+eqExp :: Int -> [(Var,Var)] -> Exp -> Exp -> Bool
+eqExp n equs e1 e2 = case (e1,e2) of
+  (Op op1 exps1,Op op2 exps2) -> op1 == op2 && length exps1 == length exps2 && and (zipWith (eqExp n equs) (exps1) (exps2))
+  (Quant a1 p1 v1 t1 b1,Quant a2 p2 v2 t2 b2) -> a1 == a2 && p1 == p2 && eqExp n eq' t1 t2 && eqExp n eq' b1 b2
+    where eq' = (v1,v2):equs
+  (Lam f1,Lam f2) -> eqExp (n+1) equs (f1 x) (f2 x)
+     where x = Var $ "_V" ++ show n
+  (Var x,Var x') -> x == x' || (x,x') `elem` equs
+  (Con x,Con x') -> x == x'
+  _ -> False
 
 type Type = Exp
 

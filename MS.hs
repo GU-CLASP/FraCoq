@@ -158,7 +158,7 @@ getDefinite :: CN' -> Dynamic Object
 getDefinite (cn',_gender) = do
   things <- gets envDefinites
   let pred = lam (\x -> (noExtraObjs (cn' x)))
-  case find (eqExp 0 pred . fst) things of
+  case find (eqExp' pred . fst) things of
     Just (_,y) -> return y
     Nothing -> do
       y <- getFresh
