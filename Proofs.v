@@ -69,7 +69,11 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 
  Theorem T132bf: Problem132bTrue. cbv. intros. firstorder. Qed.
 
- Theorem T133a: Problem133aTrue. cbv. intros. destruct H. destruct H. destruct H. apply H1. exact H0. Qed.
+ Theorem T133a:
+ Problem133aTrue. cbv. intros. destruct H. destruct H. destruct H. apply H1. exact H0.
+ apply H1.
+ exact H0. 
+ Qed.
 
  Theorem T134a: Problem134aTrue. cbv. intros. destruct H. destruct H1. destruct H2. destruct H2. destruct H3.  Abort all. (**donkey sentence**)
 
@@ -197,10 +201,14 @@ Theorem T169a: Problem169aTrue. cbv. intros. Abort all. (**FIXME: before_Subj, f
 
 Theorem T170a: Problem170aTrue. cbv. intros. Abort all. (**FIXME: ibid**)
 
-Section t173a.
- Variable personPN: forall x: PN, Person_N (PN2object x).
+Theorem T173a: Problem173aTrue. cbv. intros.
+destruct john_PN.
+destruct bill_PN.
+destruct H. apply H.
+firstorder.
+exact MARY_PERSON.
+Qed. 
 
- Theorem T173a: Problem173aTrue. cbv. intros.  destruct H. apply H. firstorder. Qed. (**With a little help from my friend personPN**)
  
  Theorem T174a: Problem174aTrue. cbv. intros. firstorder. Abort all. (**unk**)
 

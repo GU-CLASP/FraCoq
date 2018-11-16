@@ -856,7 +856,9 @@ Parameter itel_PN : PN .
 Parameter john_PN : PN .
 Parameter katmandu_PN : PN .
 Parameter luxembourg_PN : PN .
-Parameter mary_PN : PN .
+Parameter MARY : object.
+Parameter MARY_PERSON : person_N MARY.
+Definition mary_PN : PN := mkPN MARY person_N MARY_PERSON  .
 Parameter mfi_PN : PN .
 Parameter mtalk_PN : PN .
 Parameter paris_PN : PN .
@@ -1194,7 +1196,8 @@ cbv.
 intros.
 destruct X.
 exact x.
-Qed.
+Defined.
+Opaque PN2object.
 
 Parameter assumedNP : object.
 
@@ -1217,7 +1220,6 @@ Parameter have_V2for : object -> object -> object ->  Prop.
 Parameter take_V2to : object -> object -> object  -> Prop.
 Parameter take_V2at : object -> object -> object  -> Prop. 
 Definition cover_page_Npossess:= fun x: object => fun y : object => cover_page_N x.
-Parameter Person_N : N.
 Parameter speak_to_V2adv : Adv -> object -> object -> Prop. 
 Parameter  speak_to_V2advadv :Adv ->  Adv -> object -> object -> Prop. 
 Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
