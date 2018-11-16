@@ -894,16 +894,16 @@ they_Pron = qPron $ all' [isPlural
                          ]
 
 someone_Pron :: Pron
-someone_Pron = return $ MkNP Singular indefArt (mkPred "Person_N",[Male,Female])
+someone_Pron = return $ MkNP Singular indefArt (mkPred "person_N",[Male,Female])
 
 maximallySloppyPron :: Pron
 maximallySloppyPron = qPron $ const True
 
 everyone_Pron :: Pron
-everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "Person_N",[Male,Female])
+everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "person_N",[Male,Female])
 
 no_one_Pron :: Pron
-no_one_Pron = return $ MkNP Unspecified none_Quant (mkPred "Person_N",[Male,Female])
+no_one_Pron = return $ MkNP Unspecified none_Quant (mkPred "person_N",[Male,Female])
 
 nobody_Pron :: Pron
 nobody_Pron = no_one_Pron
