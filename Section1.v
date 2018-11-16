@@ -38,12 +38,6 @@ Qed.
 Theorem T005a: Problem005aTrue.
 cbv.
 firstorder.
-exists (THE
-           (really_AdA
-              (fun (x1 : object -> Prop) (x : object) => ambitious_A x1 x) tenor_N)).
-firstorder.
-apply THE_sat.
-firstorder.
 Qed.
 
 Theorem T006a: Problem006aFalse.
@@ -94,14 +88,18 @@ Theorem T016a: Problem016aTrue. cbv.
 firstorder. exists x. firstorder.
 Abort All. (* FIXME: unresolved reference in P1 *)
 
-Theorem T017a: Problem017aTrue. cbv. firstorder.
-exists x.
+Theorem T017a: Problem017aTrue. cbv.
+intro the_nobel_prize.
+intros.
+destruct H as [literature].
+destruct H0 as [irishman]. 
+exists irishman.
+split.
 firstorder.
-exists (THE (fun x1 : object => exists x : object, literature_N x /\ nobel_prize_N2 x1 x)).
-firstorder.
-exists x.
-apply THE_sat.
-firstorder.
+exists the_nobel_prize.
+split.
+exists literature.
+Abort All.
 
 (* FIXME: some problems with using "THE" *)
 
@@ -112,14 +110,17 @@ Theorem T021a: Problem021aTrue. cbv.
 destruct in_Prep as [inP inV inC].
  destruct within_Prep as [within withinVerid withinCov].
 destruct europe_PN as [europe regionN].
-intro.
+
+intros residents isResident.
+intros rightToLiveInEurope isRTLiEurope.
+intros residents' isResident'.
+intro H.
 destruct H as [P1 [P2 P3]].
  firstorder.
 apply P3.
 firstorder.
-apply THE_sat.
-firstorder.
-Qed.
+(* FIXME: should be exact P1, BUT something went wrong in the resolution of "the residents" -- the problem is that the quantified variable is counted as different. *)
+Abort All.
 
 Theorem T022a: Problem022aTrue. cbv. firstorder. Abort All.
 Theorem T022a: Problem022aFalse. cbv. firstorder. Abort All.
