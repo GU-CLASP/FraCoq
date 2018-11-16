@@ -1212,11 +1212,9 @@ Parameter _BE_from : object -> VP.
 Parameter _BE_at : object -> VP.
 
 Parameter most: (object -> Prop) -> (object -> Prop) -> Prop.
-Parameter at_least: nat -> (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter go8walk_Vto: object -> object -> Prop.
 Parameter several: (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter have_V2for : object -> object -> object ->  Prop.
-Parameter exact: nat ->  (object -> Prop) -> (object -> Prop) -> Prop.
 Parameter take_V2to : object -> object -> object  -> Prop.
 Parameter take_V2at : object -> object -> object  -> Prop. 
 Definition cover_page_Npossess:= fun x: object => fun y : object => cover_page_N x.
@@ -1266,10 +1264,10 @@ Parameter LOTSQ : QQ.
 
 Definition EQUAL : object -> object -> Prop := fun x y => x = y.
 Definition  MOST:= fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
-Definition  ATLEAST:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ at_least n CN VP.
+Definition  ATLEAST:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) >= n).
 
 Definition  SEVERALQ := fun CN=> fun VP=>  exists x, CN x /\ VP x /\ most CN VP.
-Definition  EXACT:= fun n : nat => fun CN=> fun VP=>  exists x, CN x /\ VP x /\ exact n CN VP.
+Definition  EXACT:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
 
 
 Definition  report_Nfrom := fun x: object => fun y => report_N y.
