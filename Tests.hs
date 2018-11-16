@@ -45,6 +45,8 @@ main = do
 
 -- Many: new handling of adverbs, prepositions. See type VP'
 
+-- Many: if ``The CN'' is not found in the environment, then forall x. cn x -> ... is introduced at the top-level.
+
 -- ???: scope extension from domain of quantifiers: (remember that each quantifier comes with a domain, not a type but a logical formula)
    -- ∀x. (∃y. P(y) -> Q(x,y)) -> R(x,y)
    -- can be rewritten to:

@@ -1,5 +1,8 @@
 Load FraCoq2.
 
+Require Import Omega.
+
+
 Theorem T114a: Problem114aTrue. cbv. intros. destruct H. destruct H. exists x. split. exact H. exists (PN2object mary_PN). split. apply I. exact H0. Qed. 
 
 
@@ -112,8 +115,7 @@ Theorem T147b: Problem147bFalse. cbv. intro. destruct H.  destruct on_monday_Adv
 
 Theorem T148a: Problem148aTrue. cbv. intro. exact H. Qed.
 
-Theorem T149a: Problem149aTrue. cbv. intro. destruct H as [H1 H2]. exact H2. 
-Qed.
+Theorem T149a: Problem149aTrue. cbv. firstorder. Qed.
 
 Theorem T150a: Problem150aTrue.  cbv. intros. firstorder. Abort all. (**Wrong Reading**)
 
@@ -127,13 +129,12 @@ Theorem T152b: Problem152bTrue.  cbv. intros. destruct H. Abort all.
 
  
 
-Theorem T153a: Problem153aTrue. cbv. intros. destruct H. 
-firstorder.  Abort all. 
+Theorem T153a: Problem153aTrue. cbv. intros. firstorder.  Abort all. 
 
-Theorem T153b: Problem153bTrue. cbv. intros. destruct H. 
+Theorem T153b: Problem153bTrue. cbv. intros.  
                                 firstorder.  Qed.
 
-Theorem T153c: Problem153cTrue. cbv. intros. destruct H. firstorder. Abort all.
+Theorem T153c: Problem153cTrue. cbv. intro. firstorder. Abort all.
 
 Theorem T154a: Problem154aTrue. cbv. intros. destruct H. firstorder. Abort all.
 
@@ -150,7 +151,9 @@ Theorem T156a : Problem156aTrue. cbv.  intros. firstorder. Abort all. (**UNK**)
 Theorem T157b: Problem157bTrue. cbv. intros. destruct H.  destruct H0. destruct H0.  firstorder. Qed.
 
 
-Theorem T158a: Problem158aTrue. cbv. intros. destruct H. destruct H0. destruct H0. firstorder. Qed. (**The example is UNK but it can be proven, since this gets the reading where Bill owns a car which is both red and blue!**)
+
+Theorem T158a: Problem158aTrue. cbv. intros. destruct H. destruct H0. destruct H0. firstorder.
+Abort All. (**The example is UNK but it can be proven, since this gets the reading where Bill owns a car which is both red and blue!**) (* JP: apparently blue_A is now subsective? *)
 
 Theorem T158b: Problem158bTrue. cbv.  intros. destruct H. destruct H0. firstorder. Abort all. (**This is the correct reading!**)
 
@@ -182,7 +185,11 @@ Theorem T165a: Problem165aTrue. cbv. intros. exact H. Qed.
 
 Theorem T166a: Problem166aTrue. cbv. intros. firstorder. Abort all. (**FIXME**)
 
-Theorem T167a: Problem167aFalse. cbv. intro. firstorder.  Abort all. (**FIXME: Reasoning with cardinalities (also: only is taken to be exactly one here**)
+Theorem T167a: Problem167aFalse. cbv.
+intros salesDept isSalesDept.
+intro H.
+firstorder.
+Qed.
 
 Theorem T168a: Problem168aTrue. cbv. intros. destruct H. exact H0. Qed.
 

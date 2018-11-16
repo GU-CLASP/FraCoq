@@ -115,9 +115,6 @@ quoteTex = concatMap q
 -- showTex :: Exp -> [Char]
 -- showTex = texExp LAST_OPERATOR
 
-
-pattern The :: Exp -> Exp
-pattern The body =  APP (Con "THE") body
 pattern Forall :: Var -> Type -> Exp -> Exp
 pattern Forall x dom body = Quant One Neg x dom body
 pattern Exists :: Var -> Type -> Exp -> Exp

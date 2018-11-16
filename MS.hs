@@ -14,7 +14,7 @@ import Prelude hiding (pred,Ord,Num)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
 import qualified Logic
-import Data.List (intersect,nub,partition,nubBy,sortBy)
+import Data.List (intersect,nub,partition,nubBy,sortBy,find)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
@@ -103,7 +103,8 @@ data Env = Env {vpEnv :: VPEnv
                ,objEnv :: ObjEnv
                ,cnEnv :: NounEnv
                ,sEnv :: S
-               ,envDefinites :: Exp -> Object -- map from CN to pure objects
+               ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
+               ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
                ,envSloppyFeatures :: Bool
                ,envPluralizingQuantifier :: Bool
                ,freshVars :: [String]}
@@ -156,17 +157,22 @@ getNP q = gets (getNP' q)
 getDefinite :: CN' -> Dynamic Object
 getDefinite (cn',_gender) = do
   things <- gets envDefinites
-  return (things (lam (\x -> noExtraObjs (cn' x))))
+  let pred = lam (\x -> (noExtraObjs (cn' x)))
+  case find (eqExp 0 pred . fst) things of
+    Just (_,y) -> return y
+    Nothing -> do
+      y <- getFresh
+      modify $ \Env {..} -> Env{envDefinites=(pred,Var y):envDefinites
+                               ,envMissing=(pred,y):envMissing,..}
+      return (Var y)
 
 -------------------------------
 -- Pushes
 
 
 pushDefinite :: (Object -> S') -> Var -> Env -> Env
-pushDefinite source target Env{..} = Env{envDefinites = \x ->
-                                                    if eqExp 0 x (lam (\x' -> noExtraObjs (source x')))
-                                                    then Var target
-                                                    else envDefinites x,..}
+pushDefinite source target Env{..} =
+  Env{envDefinites = (lam (\x' -> noExtraObjs (source x')),Var target):envDefinites,..}
 
 pushNP :: Descriptor -> NP -> Env -> Env
 pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
@@ -195,9 +201,16 @@ pushS s Env{..} = Env{sEnv=s,..}
 allVars :: [String]
 allVars = map (:[]) ['a'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
 
+quantifyMany :: [(Exp,Var)] -> Exp -> Exp
+quantifyMany [] e = e
+quantifyMany ((dom,x):xs) e = Forall x (dom `app` (Var x)) (quantifyMany xs e)
+
+evalDynamic :: Dynamic Exp -> [Exp]
+evalDynamic (Dynamic x) = do
+  (formula,Env {..}) <- observeAll (runStateT x assumed)
+  return (quantifyMany envMissing formula)
+
 newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
-allInterpretations :: Dynamic a -> [a]
-allInterpretations (Dynamic x) = (observeAll (evalStateT x assumed))
 
 -- newtype Dynamic a = Dynamic {fromDynamic :: LogicT (State Env) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
 
@@ -263,7 +276,8 @@ assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
                ,objEnv = []
                ,sEnv = return (\_ -> constant "assumedS")
                ,cnEnv = []
-               ,envDefinites = The
+               ,envDefinites = []
+               ,envMissing = []
                ,envSloppyFeatures = False
                ,envPluralizingQuantifier = False
                ,freshVars = allVars}
@@ -1482,9 +1496,6 @@ genNP np _number (cn',_gender) _role = do
 possess :: Object -> Object -> Prop
 possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
-of_ :: (Object -> Prop) -> Object -> Object
-of_ cn owner = The (lam $ \x -> possess owner x ∧ cn x)
-
 the_other_Q :: Quant
 the_other_Q _number _cn _role = return $ \vp eos -> apps (Con "theOtherQ") [lam $ \x -> vp x eos]
 
@@ -1684,7 +1695,7 @@ andVP np1 np2 = do
 -}
 
 _TRUE :: Effect -> Prop
-_TRUE e = foldr (∨) FALSE (allInterpretations e)
+_TRUE e = foldr (∨) FALSE (evalDynamic e)
 
 -- _ENV :: Effect -> Env
 -- _ENV x = execState x assumed

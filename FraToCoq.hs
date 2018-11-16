@@ -17,7 +17,7 @@ handleProblem n (premise,h,rs) = do
     let e = case r of
               True -> phrToEff premise ==> phrToEff h
               False -> phrToEff premise ==> (pNeg <$> phrToEff h)
-    let ps = nub $ map fromHOAS' $ allInterpretations e :: [Exp Zero]
+    let ps = nub $ map fromHOAS' $ evalDynamic e :: [Exp Zero]
         qs = nub $ map prepare ps
     forM_ (zip ['a'..'z'] qs) $ \(v,p) -> do
       case p of
