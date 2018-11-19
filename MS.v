@@ -102,7 +102,7 @@ Inductive Num : Type :=
 Definition Card := Num.
 Definition AdN : Type := Num -> Num.
 
-Parameter LOTS_OF : CN -> CN. (* "lots of" is treated like an adjective *)
+Parameter LOTS_OF : nat.
 Parameter MANY : nat.
 Parameter A_FEW : nat.
 Parameter SOME : nat. (* the plural number *)
@@ -1265,9 +1265,10 @@ Definition AFEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= A_FEW)
 Definition EQUAL : object -> object -> Prop := fun x y => x = y.
 Definition MOSTQ := fun cn => fun vp => CARD (fun x => cn x /\ vp x) >= CARD_MOST cn /\ exists x, cn x /\ vp x.
 Definition MANYQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= MANY)  /\ exists x, cn x /\ vp x.
-Definition LOTSQ := fun cn => fun vp => exists x, cn x /\ LOTS_OF cn x /\ vp x.
+Definition LOTSQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= LOTS_OF)  /\ exists x, cn x /\ vp x.
 Definition SEVERALQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= SEVERAL)  /\ exists x, cn x /\ vp x.
 Definition ATLEAST:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) >= n).
+Definition ATMOST:= fun n : nat => fun cn=> fun vp=> CARD (fun x => cn x /\ vp x) <= n.
 Definition  EXACT:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
 
 

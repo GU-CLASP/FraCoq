@@ -1,5 +1,6 @@
 Load FraCoq2.
 
+
 Theorem T017a: Problem017aTrue. cbv.
 intro the_nobel_prize.
 intros.
@@ -131,12 +132,16 @@ generalize H1. apply le_mono_right. firstorder.
 Qed.
 
 
-
 Theorem T032a: Problem032aTrue. cbv.
+destruct at_home_Adv as [atHome verid].
 firstorder.
-exists x.
+generalize H.
+apply le_mono_left.
+intro commiss.
 firstorder.
-generalize H1.
-apply le_mono_right.
+Abort All.
+
+Theorem T032a: Problem032aFalse. cbv.
+destruct at_home_Adv as [atHome verid].
 firstorder.
-Qed. (* FIXME *)
+Abort All.

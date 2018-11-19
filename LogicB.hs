@@ -191,7 +191,8 @@ ppExp n ctx e0 =
                    (Most,Neg) -> "MOSTQ"
                    (Several,Pos) -> "SEVERALQ"
                    (Exact n,Both) -> "EXACT (" ++ show (toInteger n) ++ ")"
-                   (AtLeast n,_) -> "ATLEAST (" ++ show (toInteger n) ++ ")"
+                   (AtLeast n,Pos) -> "ATLEAST (" ++ show (toInteger n) ++ ")"
+                   (AtLeast n,Neg) -> "ATMOST (" ++ show (toInteger n) ++ ")"
                    
                    _ -> show (k,p)
       (Op App [f,arg]) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
