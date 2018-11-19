@@ -914,7 +914,7 @@ Parameter male_A : IntersectiveA .
 Parameter many_A : IntersectiveA .
 Parameter missing_A : A .
 Parameter modest_A : A .
-Parameter national_A : A .
+Parameter national_A : SubsectiveA .
 Parameter new_A : A .
 Parameter north_american_A : IntersectiveA .
 Parameter noted_A : A .
@@ -1261,11 +1261,11 @@ Parameter own_V2in : object -> V2.
 Definition QQ := CN -> VP -> Prop.
 Definition FEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) <= A_FEW).
 Definition AFEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= A_FEW) /\ exists x, cn x /\ vp x.
-Parameter LOTSQ : QQ.
 
 Definition EQUAL : object -> object -> Prop := fun x y => x = y.
 Definition MOSTQ := fun cn => fun vp => CARD (fun x => cn x /\ vp x) >= CARD_MOST cn /\ exists x, cn x /\ vp x.
 Definition MANYQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= MANY)  /\ exists x, cn x /\ vp x.
+Definition LOTSQ := fun cn => fun vp => exists x, cn x /\ LOTS_OF cn x /\ vp x.
 Definition SEVERALQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= SEVERAL)  /\ exists x, cn x /\ vp x.
 Definition ATLEAST:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) >= n).
 Definition  EXACT:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
@@ -1300,3 +1300,7 @@ Definition before_PREP
   : object -> VP -> object -> Prop
   := fun arg vp subj => before_Subj (vp arg) (vp subj).
 
+Definition le_mono_right := le_mono.
+Definition le_mono_left := le_mono'.
+
+Variable usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x , use_VV p x -> use_VV q x.
