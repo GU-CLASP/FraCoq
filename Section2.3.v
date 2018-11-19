@@ -1,3 +1,4 @@
+
 Load FraCoq2.
 
 
@@ -11,5 +12,11 @@ Variable client_people_K : forall x, client_N x -> person_N x.
 
 Theorem T099a: Problem099aTrue. cbv.
 intros theSystem isSystem theDemo isDemo theClient.
+Abort All.
 (* FIXME: definite plural *)
+
+
+Theorem T100a: Problem100aTrue. cbv.
+(* FIXME: plural is existential whereas it should be universal. *)
+Abort All.
 

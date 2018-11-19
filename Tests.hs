@@ -120,7 +120,7 @@ ouch122 = debug (phrToEff s_122_4_h)
 
 
 
--- EXTRA Anaphoric problems: 014, 016, 046, 078
+-- EXTRA Anaphoric problems: 014, 016, 046, 078, 111, 113
 
 -- 014, 046:
 --   Need to interpret "the CNs" as a reference to both entities introduced with neither/both

@@ -88,5 +88,5 @@ firstorder.
 
 Theorem T015a: Problem015aTrue. cbv. firstorder. Qed.
 Theorem T016a: Problem016aTrue. cbv.
-firstorder. exists x. firstorder.
+firstorder.
 Abort All. (* FIXME: unresolved reference in P1 *)
