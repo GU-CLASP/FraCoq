@@ -1718,3 +1718,7 @@ s_122_4_h_ALT = (sentence (useCl (present) (pPos) (predVP (detCN (every_Det) (us
 
 s_155_2_p_ALT :: Phr
 s_155_2_p_ALT = (sentence (useCl (present) (pPos) (predVP (usePN (lexemePN "bill_PN")) (complSlash (slashV2a (lexemeV2 "own_V2")) oneToo))))
+
+
+s_086_2_h_ALT :: Phr
+s_086_2_h_ALT = (sentence (useCl (past) (pPos) (predVP (detCN (detQuant (indefArt) (numCard (numNumeral (n_six)))) (useN (lexemeN "lawyer_N"))) (complSlash (slashV2a (lexemeV2 "sign_V2")) (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "contract_N")))))))

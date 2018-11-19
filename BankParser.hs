@@ -160,6 +160,7 @@ overrides :: HypID -> Maybe String
 overrides (177,1,"p")= Just "s_177_1_p_NEW"
 overrides (122,4,"h")= Just "s_122_4_h_ALT"
 overrides (155,2,"p")= Just "s_155_2_p_ALT"
+overrides (086,3,"h")= Just "s_086_2_h_ALT" -- gf syntax has the wrong noun (accountant vs. lawyer)
 overrides _ = Nothing
 
 disabledProblems :: [Int]
