@@ -38,9 +38,6 @@ apply le_mono.
 firstorder.
 Qed.
 
-Variable getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_V2 result x.
-(* Analysis: In "get published", published should not be intersectional. *)
-
 Theorem T025a: Problem025aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.

@@ -927,7 +927,7 @@ Parameter present8current_A : A .
 Parameter previous_A : A .
 Parameter red_A : A .
 Parameter resident_A : A .
-Parameter scandinavian_A : A .
+Parameter scandinavian_A : SubsectiveA .
 Parameter serious_A : A .
 Parameter slow_A : SubsectiveA .
 Parameter small_A : SubsectiveA .
@@ -1309,3 +1309,6 @@ Definition le_mono_right := le_mono.
 Definition le_mono_left := le_mono'.
 
 Variable usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x , use_VV p x -> use_VV q x.
+
+Variable getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_V2 result x.
+(* Analysis: In "get published", published should not be intersectional. *)
