@@ -70,11 +70,7 @@ destruct large_A as [large].
 intros [[P1a P1b] [P2a P2]].
 cbv in slK.
 firstorder.
-Abort All.
-(* FIXME:
-  - maybe the class of comparison should be looked up in the context?
-   (Probably the best solution; currently the class of comparision is hardcoded in PNs, and is arbitrary.)
-*)
+Qed.
 
 
 Theorem FraCas210: Problem210aFalse. cbv. intros.
@@ -101,7 +97,7 @@ destruct small_A as [small].
 destruct large_A as [large].
 intros.
 firstorder.
-Abort All. (* Fixme, see 208 *)
+Qed. 
 
 Theorem FraCas213: Problem213aTrue.
 cbv.
@@ -151,8 +147,7 @@ Theorem FraCas218: Problem218aTrue. cbv.
 destruct kim_PN as [kim person].
 destruct clever_A.
 firstorder.
-Abort All.
- (* see above *)
+Qed.
  
 Theorem FraCas219: Problem219aTrue. cbv.
 destruct kim_PN as [kim person].

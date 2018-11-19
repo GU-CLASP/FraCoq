@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TupleSections #-}
@@ -216,8 +217,11 @@ newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,
 
 type Effect = Dynamic Prop
 
+filterKey :: Eq a => a -> [(a, b)] -> [(a, b)]
+filterKey k = filter ((/= k) . fst)
+
 appArgs :: String -> [Object] -> ExtraArgs -> Prop
-appArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs (app (pAdverbs prep'd)) directObject
+appArgs nm objs@(_:_) (filterKey "compClass" -> prepositions0,adverbs) = adverbs (app (pAdverbs prep'd)) directObject
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
         indirectObjects = init objs
         directObject = last objs
@@ -773,12 +777,12 @@ elliptic_NP_Sg :: NP
 elliptic_NP_Sg = qPron $ all' [isSingular]
 
 usePN ::  PN -> NP
-usePN (o,g,n) = pureNP False (Con (parens ("PN2object " ++ o))) g n Subject -- FIXME: role
+usePN (o,g,n) = pureNP False (app (Con (parens ("PN2Class " ++ o)))) (Con (parens ("PN2object " ++ o))) g n Subject -- FIXME: role
 
-pureNP :: Bool -> Object -> [Gender] -> Num -> Role -> NP
-pureNP dPluralizable o dGender dNum dRole = do
-  modify (pushNP (Descriptor{..}) (pureNP dPluralizable o dGender dNum dRole))
-  return $ MkNP dNum q (\_ _ -> true,dGender)
+pureNP :: Bool -> (Object -> Prop) -> Object -> [Gender] -> Num -> Role -> NP
+pureNP dPluralizable cn o dGender dNum dRole = do
+  modify (pushNP (Descriptor{..}) (pureNP dPluralizable cn o dGender dNum dRole))
+  return $ MkNP dNum q (\x _extraObjs -> cn x,dGender)
   where q :: Quant
         q _dNum _oClass _dRole = do
           return (\vp -> vp o)
@@ -1002,29 +1006,32 @@ anySg_Det = each_Det
 ----------------------------
 -- Comp
 
-type Comp' = Object -> Prop
+type Comp' = (Object -> Prop) -> Object -> Prop
 type Comp = Dynamic Comp'
 
 useComp :: Comp -> VP
 useComp c = do
   c' <- c
-  return (\x _extraObjs -> c' x)
+  return $ \x (extraObjs,_adv) ->
+    case lookup "compClass" extraObjs of
+      Nothing -> c' (const TRUE) x
+      Just xClass -> c' (app xClass) x
 
 -- | be a thing given by the CN
 compCN :: CN -> Comp
 compCN cn = do
   (cn',_gender) <- cn
-  return (\x -> noExtraObjs (cn' x))
+  return (\_xClass x -> noExtraObjs (cn' x))
 
 compAP :: AP -> Comp
 compAP ap = do
   a' <- ap
-  return $ \x -> noExtraObjs (a' (const TRUE) x) 
+  return $ \xClass x -> noExtraObjs (a' xClass x) 
 
 compNP :: NP -> Comp
 compNP np = do
   np' <- interpNP np Other
-  return $ \x -> noExtraObjs (np' (\y -> (mkRel2 "EQUAL" x y)))
+  return $ \_xClass x -> noExtraObjs (np' (\y -> (mkRel2 "EQUAL" x y)))
 
 (===) :: Exp -> Exp -> Exp
 x === y = Con "EQUAL" `apps` [x,y]
@@ -1033,7 +1040,7 @@ x === y = Con "EQUAL" `apps` [x,y]
 compAdv :: Adv -> Comp
 compAdv adv = do
   adv' <- adv
-  return $ \x -> noExtraObjs (adv' (beVerb x))
+  return $ \_xClass x -> noExtraObjs (adv' (beVerb x))
 
 beVerb :: VP'
 beVerb y = appArgs "_BE_" [y]
@@ -1188,7 +1195,7 @@ impersCl :: VP -> Cl
 impersCl vp = do
   vp' <- vp
   return (vp' (Con "IMPERSONAL"))
-  
+
 existNP :: NP -> Cl
 existNP np = do
   np' <- interpNP np Other
@@ -1196,10 +1203,11 @@ existNP np = do
 
 predVP :: NP -> VP -> Cl
 predVP np vp = withClause $ do
-  np' <- interpNP np Subject
+  MkNP n q (cn,gender) <- np
+  np' <- q n (cn,gender) Subject
   vp' <- vp
   modify (pushS (predVP np vp))
-  return (np' vp')
+  return $ modifyingPrep "compClass" (lam $ \x -> noExtraObjs (cn x)) (np' vp')
 
 questCl :: Cl -> Cl
 questCl = id
@@ -1486,7 +1494,7 @@ defArt number (cn',gender) role = do
   it <- getDefinite (cn',gender) 
   -- note that here we push the actual object (it seems that the strict reading is preferred in this case)
   -- return (\vp' -> them $ \y -> Exists x (cn' (Var x) ∧ possess y (Var x)) (vp' (Var x))) -- Existence is another possibility (harder to work with)
-  _ <- pureNP False it gender number role
+  _ <- pureNP False (noExtraObjs . cn') it gender number role
   return $ \vp' -> vp' it
 
 

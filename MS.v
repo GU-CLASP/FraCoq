@@ -1199,6 +1199,15 @@ exact x.
 Defined.
 Opaque PN2object.
 
+Definition PN2Class : PN -> (object -> Prop).
+cbv.
+intro x.
+destruct x.
+exact cn.
+Defined.
+Opaque PN2Class.
+
+
 Parameter assumedNP : object.
 
 Definition appA : A -> (object -> Prop) -> (object -> Prop)
