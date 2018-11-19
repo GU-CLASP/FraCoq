@@ -1253,7 +1253,8 @@ Parameter spend_V2part : object -> V2.
 Parameter item_Non : object -> N.
 Parameter vote_for_V2at : object -> V2.
 Parameter blame1_V2for : object -> V2.
-Parameter blame2_V2on : object -> V2.
+Definition blame2_V2on : object -> V2
+           := fun x y z => blame1_V2for y x z.
 Parameter client_Nat : object -> N.
 Parameter stock_market_trader_N : N.
 Parameter swim_Vto : object -> V.
@@ -1312,3 +1313,5 @@ Variable usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x ,
 
 Variable getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_V2 result x.
 (* Analysis: In "get published", published should not be intersectional. *)
+
+

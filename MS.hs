@@ -1722,3 +1722,6 @@ s_155_2_p_ALT = (sentence (useCl (present) (pPos) (predVP (usePN (lexemePN "bill
 
 s_086_2_h_ALT :: Phr
 s_086_2_h_ALT = (sentence (useCl (past) (pPos) (predVP (detCN (detQuant (indefArt) (numCard (numNumeral (n_six)))) (useN (lexemeN "lawyer_N"))) (complSlash (slashV2a (lexemeV2 "sign_V2")) (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "contract_N")))))))
+
+s_099_1_p_fixed :: Phr
+s_099_1_p_fixed = sentence (useCl (past) (pPos) (predVP (detCN (detQuant (defArt) (numPl)) (advCN (useN (lexemeN "client_N")) (prepNP (lexemePrep "at_Prep") (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "demonstration_N")))))) (adVVP (lexemeAdv "all_Adv") (useComp (compAP (complA2 (lexemeA2 "impressed_by_A2") (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "system_N")))) (numSg)) (useN (lexemeN "performance_N")))))))))
