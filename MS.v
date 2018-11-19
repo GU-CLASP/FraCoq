@@ -1295,3 +1295,8 @@ assumption.
 Qed.
 
 Variable CARD_exists : forall P:(object -> Prop), 1 <= CARD P -> exists x, P x.
+
+Definition before_PREP
+  : object -> VP -> object -> Prop
+  := fun arg vp subj => before_Subj (vp arg) (vp subj).
+

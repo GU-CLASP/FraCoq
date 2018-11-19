@@ -217,11 +217,14 @@ newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,
 type Effect = Dynamic Prop
 
 appArgs :: String -> [Object] -> ExtraArgs -> Prop
-appArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs  (app prep'd) directObject
+appArgs nm objs@(_:_) (prepositions0,adverbs) = adverbs (app (pAdverbs prep'd)) directObject
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
         indirectObjects = init objs
         directObject = last objs
-        prepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) prepositions0
+        cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) prepositions0
+        (adverbialPrepositions,prepositions) = partition ((== "before") . fst) cleanedPrepositions
+        pAdverbs x = foldr app x [Con (p ++ "_PREP") `app` arg | (p,arg) <- adverbialPrepositions]
+        
 
 appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
 appAdjArgs nm [cn,obj] (prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj

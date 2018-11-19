@@ -197,9 +197,10 @@ Qed.
 
 Theorem T168a: Problem168aTrue. cbv. intros. destruct H. exact H0. Qed.
 
-Theorem T169a: Problem169aTrue. cbv. intros. Abort all. (**FIXME: before_Subj, find_V2before**)
+Theorem T169a: Problem169aTrue. cbv. intros. firstorder. Qed.
 
-Theorem T170a: Problem170aTrue. cbv. intros. Abort all. (**FIXME: ibid**)
+Theorem T170a: Problem170aTrue. cbv. intros. Abort all.
+(** Doing this would require another syntax: 'John found Mary before Bill ELLIPTIC_VP' **)
 
 Theorem T173a: Problem173aTrue. cbv. intros.
 destruct john_PN.
