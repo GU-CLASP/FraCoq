@@ -211,8 +211,28 @@ exact MARY_PERSON.
 Qed. 
 
  
- Theorem T174a: Problem174aTrue. cbv. intros. firstorder. Abort all. (**unk**)
+Theorem T174a: Problem174aTrue. cbv. intros. firstorder. Abort all. (**unk**)
 
- Theorem T174a: Problem174aFalse. cbv. intro. firstorder. Abort all.
+Theorem T174a: Problem174aFalse. cbv. intro. firstorder. Abort all.
 
- 
+Theorem T175a: Problem175aTrue. cbv. intros. firstorder. Qed.
+
+Theorem T175b: Problem175bTrue. cbv. intros. firstorder. Abort all. (**Wrong reading**)
+
+Theorem T176a: Problem176aTrue. cbv. intros. firstorder.     Abort all. (**FIXME!**)
+
+Theorem T177a: Problem177aTrue. cbv. intros.  firstorder.  Abort all.
+
+Theorem T177b: Problem177aFalse. cbv. intros.  firstorder.  Abort all. (**unk**)
+
+Theorem T178a: Problem178aTrue. cbv. intros. destruct H as [H say]. exact say. Qed.
+
+Theorem T179a: Problem179aTrue. cbv. intros. destruct H as [H say]. firstorder.  Qed.
+
+Theorem T180a: Problem180aTrue. cbv. intros. destruct H as [H want]. exact want. Qed.
+
+Theorem T181a: Problem181aTrue. cbv. intros. destruct H as [H need]. exact need. Qed. (**this is unk in the suite, I think the analysis is correct, my intuition is YES**)
+
+
+
+
