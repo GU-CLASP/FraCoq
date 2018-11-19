@@ -132,3 +132,21 @@ Theorem T046a: Problem046aFalse. cbv.
 destruct at_home_Adv as [atHome [atHomeVerid atHomeVeridCov]].
 firstorder.
 Abort All.
+
+
+Theorem T047a: Problem047aTrue. cbv.
+destruct at_home_Adv as [atHome [atHomeVerid atHomeVeridCov]].
+firstorder.
+exists x.
+firstorder.
+Abort All.
+
+Theorem T047a: Problem047aFalse. cbv.
+destruct at_home_Adv as [atHome [atHomeVerid atHomeVeridCov]].
+firstorder.
+Abort All.
+
+Theorem T048a: Problem048aTrue. cbv.
+apply le_mono_left.
+firstorder.
+Qed.

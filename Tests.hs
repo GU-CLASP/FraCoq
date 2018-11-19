@@ -120,4 +120,9 @@ ouch122 = debug (phrToEff s_122_4_h)
 
 
 
--- EXTRA Anaphoric problems: 014, 016
+-- EXTRA Anaphoric problems: 014, 016, 046, 078
+
+-- 014, 046:
+--   Need to interpret "the CNs" as a reference to both entities introduced with neither/both
+--   Note: this should be easier by interpreting both/neither as exactly 2?
+--   Need to interpret "part_Prep np" as the predicate ()
