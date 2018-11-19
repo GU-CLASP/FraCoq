@@ -1240,7 +1240,11 @@ Parameter suggest_to_V2Sto : object -> V2S.
 Parameter have_V2in : object -> V2.
 Parameter travel_Vwithin : object -> V.
 Parameter get_V2in : object -> V2.
-Parameter committee_member_Nfrom : object -> CN.
+
+Definition committee_member_Nfrom origin x :=
+   _BE_from origin x /\ committee_member_N x.
+
+
 Parameter live_Vin : object -> V.
 Parameter resident_Ain : object -> A.
 Parameter resident_Aoutside : object -> A.
