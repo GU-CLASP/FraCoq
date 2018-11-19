@@ -8,7 +8,7 @@ Theorem T114a: Problem114aTrue. cbv. intros. destruct H. destruct H. exists x. s
 
 Theorem T115A: Problem115aTrue. cbv. intros. destruct H. destruct H. destruct H.  exists x. split. exact H1. exact H. Qed. 
 
-Theorem T116a: Problem116aTrue. cbv. intros.  split. apply mary_PN_Female. apply I. Qed.
+Theorem T116a: Problem116aTrue. cbv. intros.  split. apply mary_PN_Female.  destruct H.   destruct H. destruct mkPN. exact c. Qed.
 
 
 Theorem T117a: Problem117aTrue. cbv. intros.  elim H. intros. apply H. exact H1. Qed. 
