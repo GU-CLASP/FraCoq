@@ -1323,4 +1323,5 @@ Variable usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x ,
 Variable getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_V2 result x.
 (* Analysis: In "get published", published should not be intersectional. *)
 
+Variable client_people_K : forall x, client_N x -> person_N x.
 
