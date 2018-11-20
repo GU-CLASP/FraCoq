@@ -135,16 +135,62 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
  Theorem T132bf: Problem132bTrue. cbv. intros. firstorder. Qed.
 
  Theorem T133a:
- Problem133aTrue. cbv. intros. destruct H. destruct H. destruct H. apply H1. exact H0.
- apply H1.
- exact H0. 
+ Problem133aTrue. cbv.
+ intros x [P0 P1] [[P2a [z [P2b P2c]]] P2d] y P3. 
+ apply P2d.
+ rewrite P3.
+ split.
+ assumption.
+ assumption.
  Qed.
 
- Theorem T134a: Problem134aTrue. cbv. intros. destruct H. destruct H1. destruct H2. destruct H2. destruct H3.   Abort all. (**donkey sentence**)
 
- Theorem T134b: Problem134bTrue. cbv. intros. firstorder. exists x. Abort all.
+(* 134: Changed the interpretation of all_Predet to:
+all_Predet :: Predet
+all_Predet  (MkNP n q cn0) = MkNP n qq cn0
+  where qq num (cn',gender) role = do
+          np' <- q num (cn',gender) role
+          every_Quant num (\x -> np' (\y _extraArgs -> x === y),gender) role
 
-(* FIXME: check situation in MS.hs: why is the "its" pronoun not interpreted? *)
+This allows "all their x ..." to be interpreted *more or less* correctly.
+
+However:
+ - this is ugly
+ - does not always work.
+ - a better solution would be to have the quant take a "predet" as a modifier.
+
+
+and: own_V2 to have_V2
+
+
+*)
+Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
+
+Theorem T134b: Problem134bTrue. cbv.
+intros [P1 [P2a [compy P2]]].
+intros computer [computer' [H0 H1]].
+rewrite <- H1 in H0.
+cut (compy = computer).
+intro H.
+rewrite H in P2.
+destruct P2 as [A [B C]] .
+apply P1 with (x := computer).
+exact A.
+split.
+exact P2a.
+exact B.
+destruct P2 as [A [B C]] .
+generalize C.
+apply exactEqual.
+split.
+exact A.
+exact B.
+destruct H0.
+split.
+exact H0.
+exact H.
+Qed.
+
 
  Theorem T135a: Problem135aTrue. cbv. intros.  firstorder. Abort all.
 
@@ -336,6 +382,7 @@ Theorem T189a: Problem189aTrue. cbv. intros. destruct H. firstorder. Qed.
 
 Theorem T190b: Problem190bTrue. cbv. intros. destruct H. firstorder. Qed. (**reading b works!**)
 
-Theorem T196a: Problem196aTrue. cbv. intros. destruct H. firstorder. Qed. 
+
+Theorem T196a: Problem196aTrue. cbv. intro. firstorder. Qed. 
 
 

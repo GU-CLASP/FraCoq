@@ -1529,7 +1529,11 @@ at_most_Predet :: Predet
 at_most_Predet (MkNP numb _q cn) = MkNP numb (atMostQuant numb) cn
 
 all_Predet :: Predet
-all_Predet  (MkNP n _q cn) = MkNP n every_Quant cn
+all_Predet  (MkNP n q cn0) = MkNP n qq cn0
+  where qq num (cn',gender) role = do
+          np' <- q num (cn',gender) role
+          every_Quant num (\x -> np' (\y _extraArgs -> x === y),gender) role
+
 
 only_Predet :: Predet
 only_Predet = exactly_Predet
