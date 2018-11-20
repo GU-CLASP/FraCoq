@@ -918,7 +918,9 @@ Parameter national_A : SubsectiveA .
 Parameter new_A : A .
 Parameter north_american_A : IntersectiveA .
 Parameter noted_A : A .
-Parameter own_A : A .
+Definition own_A : A := fun cn b => True.
+  (* Ok, because at the moment "own" occurs only immediately after "his" (a possesive). It does not make syntactic sense otherwise.
+  Still it'd be nice to improve this --- in the GF syntax. *)
 Parameter poor8bad_A : A .
 Parameter poor8penniless_A : A .
 Parameter portuguese_A : IntersectiveA .
@@ -1165,6 +1167,8 @@ Parameter write_to_V2 : V2 .
 (** Knowledge **)
 Parameter wantCovariant_K : forall p q:VP, forall s, (q s -> p s) -> want_VV q s -> want_VV p s.
 Parameter sayCovariant_K : forall p q:S, forall s, (p -> q) -> say_VS p s -> say_VS q s.
+Parameter claimCovariant_K : forall p q:S, forall s, (p -> q) -> claim_VS p s -> claim_VS q s.
+
 
 Variable  person_K: forall x:object, chairman_N(x)-> person_N(x). 
 Variable  committee_member_person_K : forall x, committee_member_N x -> person_N x.

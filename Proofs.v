@@ -1,5 +1,7 @@
 Load FraCoq2.
 
+
+
 Require Import Omega.
 
 
@@ -219,7 +221,11 @@ Theorem T175a: Problem175aTrue. cbv. intros. firstorder. Qed.
 
 Theorem T175b: Problem175bTrue. cbv. intros. firstorder. Abort all. (**Wrong reading**)
 
-Theorem T176a: Problem176aTrue. cbv. intros. firstorder.     Abort all. (**FIXME!**)
+
+Theorem T176a: Problem176aTrue. cbv.
+apply sayCovariant_K.
+firstorder.
+Qed.
 
 Theorem T177a: Problem177aTrue. cbv. intros.  firstorder.  Abort all.
 
@@ -241,7 +247,12 @@ Theorem T184a: Problem184aTrue. cbv. intros. destruct H. firstorder.  Abort all.
 
 Theorem T184a: Problem184aFalse. cbv. intros. destruct H. firstorder.  Abort all.  (**unk**)
 
-Theorem T185a: Problem185aTrue. cbv. intros. destruct H. firstorder. firstorder.   Abort all. (**FIXME! None of the 12 readings seem to be working**)
+Theorem T185a: Problem185aTrue. cbv.
+intros [P1 P2].
+generalize P2.
+apply claimCovariant_K.
+firstorder.
+Qed.
 
 Theorem T186c: Problem186cTrue. cbv. intros. destruct H. firstorder. Qed. (**reading c  works!**)
 
@@ -249,7 +260,7 @@ Theorem T187d: Problem187dTrue. cbv. intros. destruct H. firstorder. Qed. (**rea
 
 Theorem T188c: Problem188cTrue. cbv. intros. destruct H. firstorder. Qed. (**reading c works while it is supposed to be unknown! System does a good job I think**)
 
-Theorem T189a: Problem189aTrue. cbv. intros. destruct H. firstorder. exists x0. firstorder. Abort all. (**Two readings, none works**)
+Theorem T189a: Problem189aTrue. cbv. intros. destruct H. firstorder. Qed.
 
 Theorem T190b: Problem190bTrue. cbv. intros. destruct H. firstorder. Qed. (**reading b works!**)
 
