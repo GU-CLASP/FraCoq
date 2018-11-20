@@ -913,7 +913,7 @@ Parameter major_A : SubsectiveA .
 Parameter male_A : IntersectiveA .
 Parameter many_A : IntersectiveA .
 Parameter missing_A : A .
-Parameter modest_A : A .
+Parameter modest_A : IntersectiveA .
 Parameter national_A : SubsectiveA .
 Parameter new_A : A .
 Parameter north_american_A : IntersectiveA .
