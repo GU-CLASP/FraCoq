@@ -241,6 +241,11 @@ Theorem T184a: Problem184aTrue. cbv. intros. destruct H. firstorder.  Abort all.
 
 Theorem T184a: Problem184aFalse. cbv. intros. destruct H. firstorder.  Abort all.  (**unk**)
 
+Theorem T185a: Problem185aTrue. cbv. intros. destruct H. firstorder. firstorder.   Abort all. (**FIXME! None of the 12 readings seem to be working**)
 
+Theorem T186c: Problem186cTrue. cbv. intros. destruct H. firstorder. Qed. (**reading c  works!**)
 
+Theorem T187d: Problem187dTrue. cbv. intros. destruct H. firstorder. Qed. (**reading d works**)
+
+Theorem T188c: Problem188cTrue. cbv. intros. destruct H. firstorder. Qed. (**reading c works**)
 
