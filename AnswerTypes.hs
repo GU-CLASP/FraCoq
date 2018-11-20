@@ -1,9 +1,15 @@
 module AnswerTypes where
-
+import Data.List
+import Data.Function
 data Answer = Yes | No | Unknown | Undef | Unclear String deriving (Eq,Show,Ord)
 
-answers :: [(Int,Answer)]
-answers = 
+answers :: [(Int, Answer)]
+answers = nubBy ((==) `on` fst) $
+  [(119, Unknown)] -- because mary could have used someone else's workstation
+  ++ officialAnswers
+
+officialAnswers :: [(Int,Answer)]
+officialAnswers = 
    [ ( 1 , Yes )
    , ( 2 , Yes )
    , ( 3 , Yes )

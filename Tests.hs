@@ -75,35 +75,7 @@ ouch122 = debug (phrToEff s_122_4_h)
 -- >>> evalDbg p_122_ALT
 -- ((FORALL (fun a=>committee_N a) (fun a=>(EXISTS (fun b=>chairman_N b) (fun b=>have_V2 b a)))) /\ (EXISTS (fun c=>True) (fun c=>appoint_V2by (THE (fun x1 => have_V2 a x1 /\ member_N x1)) b c)) -> (FORALL (fun d=>committee_N d) (fun d=>(EXISTS (fun e=>chairman_N e /\ appoint_V2 (THE (fun x1 => have_V2 d x1 /\ member_N x1)) e) (fun e=>have_V2 e d)))))
 
--- 124-126: At least, we need to change the syntax so that "Two out of
--- ten" is interpreted as a quantifier. At GF level: Both "two" and
--- "ten" introduce a quantifier. "They" can refer to either of the
--- bound variables. Unclear what to do about this.  Really this set of
--- examples should treat "two out of ten" as a quantifier. (Needs
--- another syntax)
 
--- 126: incorrect interpretation, but correct conclusion.
-
--- 127: We need "they" to refer to any disjunction of NPs introduced so -- far.
-
--- Analysis for 130:  FRACAS. Incompatible with 129. (It should be sufficent
--- that one reading allows to conclude.)
-
--- Analysis for 131.  In H2, a plural "they" is used to refer to a
--- singular object introduced with indefArt. When the scope of
--- "forall" is closed (when the sentence is finished), the singular
--- existential is transformed to plurals. Existentially quantified
--- variables are pushed with the "dPluralizable = True" flag if a
--- universal was introduced in the sentence. When the sentence is
--- closed, all dPluralizable entries in the environment are re-written
--- to be accessible by a plural. To know if we have a pluralizable
--- context, the envPluralizingQuantifier flag is used. It is set in
--- the dyn. semantics of universals.
-
--- 137.
--- a) "There are 100" --> should in general be interpreted as "at least", until we see in P4 the mention of "the other 99", implying an exact interpretation.
--- b) Difficulty to relate "THE company_N" to the set introduced in the first premise.
--- c) Difficult to interpret: (advNP (detNP (anySg_Det)) (prepNP (lexemePrep "part_Prep") (detCN (detQuant (possPron (itRefl_Pron)) (numPl)) (useN (lexemeN "computer_N")))))
 
 -- 155. Incorrect syntax (one anaphora not present, fixed now)
 

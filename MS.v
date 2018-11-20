@@ -1220,7 +1220,8 @@ Definition appAdv : Adv -> (object -> Prop) -> (object -> Prop)
  := fun a cn x => a cn x.
 
 
-Parameter appoint_V2by : V3.
+Definition appoint_V2by : V3
+  := fun x y _ => appoint_V2 x y.
 Definition _BE_ : VP := fun x => True.
 Parameter _BE_on : object -> VP.
 Parameter _BE_in  : object -> VP.

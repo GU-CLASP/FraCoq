@@ -1,7 +1,6 @@
 Load FraCoq2.
 
 
-
 Require Import Omega.
 
 
@@ -15,12 +14,59 @@ Theorem T116a: Problem116aTrue. cbv. intros.  split. apply mary_PN_Female.  dest
 
 Theorem T117a: Problem117aTrue. cbv. intros.  elim H. intros. apply H. exact H1. Qed. 
 
+Theorem T118a: Problem118aTrue.
+cbv.
+firstorder.
+Qed.
+
+Transparent PN2object.
+Theorem T119a: Problem119aTrue.
+cbv.
+firstorder.
+Abort All.
+
+Theorem T119a: Problem119aFalse.
+cbv.
+intros [P1 P2].
+intros [ws H].
+apply P1 with MARY.
+assumption.
+exists ws.
+split.
+split.
+Abort All.
+Opaque PN2object.
+
+Theorem T120a: Problem120aTrue.
+cbv.
+firstorder.
+Qed.
+
+Theorem T121a: Problem121aTrue.
+cbv.
+firstorder.
+Qed.
+
+Theorem T122a: Problem122aTrue.
+cbv.
+firstorder.
+Qed.
 
 Theorem T123a: Problem123aTrue. cbv. intros. firstorder.
 Qed. 
 
 Theorem T123b: Problem123bTrue.   cbv.  intros. destruct H. firstorder. Abort all.
 
+(*
+
+-- 124-126: At least, we need to change the syntax so that "Two out of
+-- ten" is interpreted as a quantifier. At GF level: Both "two" and
+-- "ten" introduce a quantifier. "They" can refer to either of the
+-- bound variables. Unclear what to do about this.  Really this set of
+-- examples should treat "two out of ten" as a quantifier. (Needs
+-- another syntax)
+
+*)
 Theorem T124a: Problem124aTrue.
 cbv. intros. elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1. destruct H3. destruct H. destruct H. destruct H5. exists x0. destruct H5. destruct H5. destruct H7. firstorder. 
    firstorder. Abort all. 
@@ -54,6 +100,8 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 
                              
  Theorem T127a: Problem127aTrue. cbv. intros. Abort all.  (**This is marked yes on a distributive reading. One of the funny examples with two readings**)
+(*-- 127: We need "they" to refer to any disjunction of NPs introduced so -- far.
+*)
 
  Theorem T128a: Problem128aTrue. cbv. intros. destruct H0. destruct H1. destruct H1. destruct H2. destruct H3. exists x1. firstorder. Qed.
 
@@ -63,9 +111,24 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 
  Theorem T130af: Problem130aFalse. cbv. intros. destruct H0.  firstorder. Abort all.   (**unk**)
 
-  
+(*-- Analysis for 130:  FRACAS. Incompatible with 129. (It should be sufficent
+-- that one reading allows to conclude.)
+*)  
 
  Theorem T131c: Problem131cTrue. cbv. intros.  firstorder.  Qed.  (**try 131a,b**)
+(*
+-- Analysis for 131.  In H2, a plural "they" is used to refer to a
+-- singular object introduced with indefArt. When the scope of
+-- "forall" is closed (when the sentence is finished), the singular
+-- existential is transformed to plurals. Existentially quantified
+-- variables are pushed with the "dPluralizable = True" flag if a
+-- universal was introduced in the sentence. When the sentence is
+-- closed, all dPluralizable entries in the environment are re-written
+-- to be accessible by a plural. To know if we have a pluralizable
+-- context, the envPluralizingQuantifier flag is used. It is set in
+-- the dyn. semantics of universals.
+-- (DONE)
+*)
 
  Theorem T1312at: Problem132aTrue. cbv. intros.  firstorder. Abort all. 
 
@@ -77,15 +140,24 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
  exact H0. 
  Qed.
 
- Theorem T134a: Problem134aTrue. cbv. intros. destruct H. destruct H1. destruct H2. destruct H2. destruct H3.  Abort all. (**donkey sentence**)
+ Theorem T134a: Problem134aTrue. cbv. intros. destruct H. destruct H1. destruct H2. destruct H2. destruct H3.   Abort all. (**donkey sentence**)
 
  Theorem T134b: Problem134bTrue. cbv. intros. firstorder. exists x. Abort all.
+
+(* FIXME: check situation in MS.hs: why is the "its" pronoun not interpreted? *)
 
  Theorem T135a: Problem135aTrue. cbv. intros.  firstorder. Abort all.
 
  Theorem T135b: Problem135bTrue. cbv. intros. firstorder. Abort all.
 
  Theorem T136A: Problem136aTrue. cbv. intros. firstorder. Abort all.
+
+(*
+-- 137.
+-- a) "There are 100" --> should in general be interpreted as "at least", until we see in P4 the mention of "the other 99", implying an exact interpretation.
+-- b) Difficulty to relate "THE company_N" to the set introduced in the first premise.
+-- c) Difficult to interpret: (advNP (detNP (anySg_Det)) (prepNP (lexemePrep "part_Prep") (detCN (detQuant (possPron (itRefl_Pron)) (numPl)) (useN (lexemeN "computer_N")))))
+*)
 
  Theorem T138a: Problem138aTrue. cbv. intros. Abort all. 
 

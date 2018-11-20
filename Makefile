@@ -1,6 +1,6 @@
 default:: FraCoq2.v
 
-Bank.hs: BankParser.hs FraCaS-treebank/src/FraCaSBankI.gf
+Bank.hs: AnswerTypes.hs BankParser.hs FraCaS-treebank/src/FraCaSBankI.gf
 	nix-shell --run "ghc BankParser -e main  >$@"
 
 FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
