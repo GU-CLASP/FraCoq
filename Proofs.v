@@ -233,6 +233,7 @@ Theorem T180a: Problem180aTrue. cbv. intros. destruct H as [H want]. exact want.
 
 Theorem T181a: Problem181aTrue. cbv. intros. destruct H as [H need]. exact need. Qed. (**this is unk in the suite, I think the analysis is correct, my intuition is YES**)
 
+Theorem T182a: Problem182aTrue. cbv. intros. destruct H. exact H0. Qed. 
 
-
+Theorem T183a: Problem183bTrue. cbv. intros. destruct H. firstorder.  Qed. 
 
