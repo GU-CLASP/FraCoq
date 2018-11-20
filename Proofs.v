@@ -247,5 +247,12 @@ Theorem T186c: Problem186cTrue. cbv. intros. destruct H. firstorder. Qed. (**rea
 
 Theorem T187d: Problem187dTrue. cbv. intros. destruct H. firstorder. Qed. (**reading d works**)
 
-Theorem T188c: Problem188cTrue. cbv. intros. destruct H. firstorder. Qed. (**reading c works**)
+Theorem T188c: Problem188cTrue. cbv. intros. destruct H. firstorder. Qed. (**reading c works while it is supposed to be unknown! System does a good job I think**)
+
+Theorem T189a: Problem189aTrue. cbv. intros. destruct H. firstorder. exists x0. firstorder. Abort all. (**Two readings, none works**)
+
+Theorem T190b: Problem190bTrue. cbv. intros. destruct H. firstorder. Qed. (**reading b works!**)
+
+Theorem T196a: Problem196aTrue. cbv. intros. destruct H. firstorder. Qed. 
+
 
