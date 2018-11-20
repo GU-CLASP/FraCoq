@@ -237,3 +237,10 @@ Theorem T182a: Problem182aTrue. cbv. intros. destruct H. exact H0. Qed.
 
 Theorem T183a: Problem183bTrue. cbv. intros. destruct H. firstorder.  Qed. 
 
+Theorem T184a: Problem184aTrue. cbv. intros. destruct H. firstorder.  Abort all.
+
+Theorem T184a: Problem184aFalse. cbv. intros. destruct H. firstorder.  Abort all.  (**unk**)
+
+
+
+
