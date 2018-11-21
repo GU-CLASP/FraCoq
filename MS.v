@@ -1288,7 +1288,8 @@ Definition ATMOST:= fun n : nat => fun cn=> fun vp=> CARD (fun x => cn x /\ vp x
 Definition  EXACT:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
 
 
-Definition  report_Nfrom := fun x: object => fun y => report_N y.
+Definition  report_Nfromon := fun source location report => report_N report /\
+send_V2 report source /\ _BE_on location report.
 Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
 
 Definition going_to_VV : VV := fun v => v. (* FIXME: Ignoring tense *)
@@ -1328,3 +1329,6 @@ Variable getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_
 Variable client_people_K : forall x, client_N x -> person_N x.
 
 Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
+
+Definition person_Nat : object -> CN :=
+  fun location person => person_N person /\ _BE_at location person.
