@@ -802,9 +802,9 @@ advNP np adv = do
   MkNP pre num1 q1 (cn1,gender1) <- np
   adv' <- adv
   return $ MkNP pre num1
-           (ObliviousQuant $ \num' cn' role -> do
-               p1 <- evalQuant pre q1 num' cn' role
-               return $ \vp -> adv' (p1 vp)) 
+           (ObliviousQuant $ \num' (cn',gender) role -> do
+               p1 <- evalQuant pre q1 num' (adv' . cn',gender) role
+               return $ \vp -> p1 vp) 
            (cn1,gender1)
 
 predetNP :: Predet -> NP -> NP
