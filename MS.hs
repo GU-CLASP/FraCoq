@@ -333,7 +333,7 @@ data Num where
 
 numSg,numPl :: Num
 numSg = Singular
-numPl = Singular
+numPl = Plural
 
 data NPData where
   MkNP :: [Predet] -> Num -> Quant -> CN' -> NPData
