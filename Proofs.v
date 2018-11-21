@@ -104,7 +104,7 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 
  Theorem T129a: Problem129aTrue. cbv. intros. firstorder. Qed.
 
- Theorem T130at: Problem130aTrue. cbv. intros. destruct H0. destruct H1. destruct H2. Abort all.
+ Theorem T130at: Problem130aTrue. cbv. intros. destruct H0. destruct H1. destruct H2. Abort All.
 
  Theorem T130af: Problem130aFalse. cbv. intros. destruct H0.  firstorder. Abort all.   (**unk**)
 
@@ -159,9 +159,9 @@ exact H0.
 Qed.
 
 
- Theorem T135a: Problem135aTrue. cbv. intros.  firstorder. Abort all.
+ Theorem T135a: Problem135aTrue. cbv. intros.  firstorder. Abort all. (* b is the correct reading *)
 
- Theorem T135b: Problem135bTrue. cbv. intros. firstorder. Abort all.
+ Theorem T135b: Problem135bTrue. cbv. intros. firstorder. Qed.
 
  Theorem T136A: Problem136aTrue. cbv. intros. firstorder. Abort all.
 
@@ -233,9 +233,11 @@ Theorem T154b: Problem154bTrue.  cbv. intros. destruct H. firstorder. Qed.
 
 Theorem T154c: Problem154cTrue. cbv. intros. destruct H. firstorder. Abort all.
 
-Theorem T155a: Problem155aTrue. cbv. intros. firstorder. Abort all. (**Car info is lost**)
+Theorem T155a: Problem155aTrue. cbv. intros. firstorder. Qed.
 
 Theorem T156a : Problem156aTrue. cbv.  intros. firstorder. Abort all. (**UNK**)
+
+Theorem T156a : Problem156aFalse. cbv.  intros. firstorder. Abort all. (**UNK**)
 
 (** reading a: John's car appears both blue and red**)
 
