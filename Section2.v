@@ -77,7 +77,19 @@ Qed.
 Multiple readings?
 *)
 
+Theorem T090a: Problem090aTrue. cbv.
+firstorder.
+Qed.
 
+Theorem T092a: Problem090aTrue. cbv.
+firstorder.
+Qed.
+
+Theorem T093a: Problem093aTrue. cbv.
+intros theMeeting isMeeting.
+intros P. 
+firstorder.
+Qed.
 
 Theorem T097a: Problem097aTrue. cbv.
 firstorder.
