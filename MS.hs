@@ -14,6 +14,7 @@ module MS where
 import Prelude hiding (pred,Ord,Num)
 import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
+import LogicB ()
 import qualified Logic
 import Data.List (intersect,nub,partition,nubBy,sortBy,find)
 import Control.Monad.Logic hiding (ap)
@@ -148,7 +149,7 @@ getCN2 Env{cn2Env=cn} = cn
 
 getNP' :: ObjQuery -> Env -> [NP]
 getNP' q Env{objEnv=os,..} = case filter (q . fst) os of
-  [] -> [return $ MkNP assumedNum (\_num _cn _role -> return (\vp -> vp (constant "assumedNP"))) assumedCN]
+  [] -> [return $ MkNP [] assumedNum (ObjectQuant (constant "assumedNP")) assumedCN]
   xs -> map snd xs
 
 
@@ -212,6 +213,7 @@ evalDynamic (Dynamic x) = do
   return (quantifyMany envMissing formula)
 
 newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
+instance Show (Dynamic a) where show _ = "<DYNAMIC>"
 
 -- newtype Dynamic a = Dynamic {fromDynamic :: LogicT (State Env) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
 
@@ -228,7 +230,6 @@ appArgs nm objs@(_:_) (filterKey "compClass" -> prepositions0,adverbs) = adverbs
         cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) prepositions0
         (adverbialPrepositions,prepositions) = partition ((== "before") . fst) cleanedPrepositions
         pAdverbs x = foldr app x [Con (p ++ "_PREP") `app` arg | (p,arg) <- adverbialPrepositions]
-        
 
 appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
 appAdjArgs nm [cn,obj] (prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj
@@ -250,7 +251,7 @@ constant :: String -> Exp
 constant x = Con x
 
 pureObj :: Exp -> Num -> CN' -> NP
-pureObj x number cn  = return $ MkNP number (\_number _cn _role -> return $ \vp -> vp x) cn
+pureObj x number cn = return $ MkNP [] number (ObjectQuant x) cn
 
 pureVar :: Var -> Num -> CN' -> NP
 pureVar x = pureObj (Var x)
@@ -316,7 +317,6 @@ type VS = Dynamic (S' -> VP')
 
 type Cl =  Dynamic S'
 type Temp = Prop -> Prop
-type Predet = NPData -> NPData
 type ClSlash  = Dynamic VP'
 type RCl  = Dynamic RCl'
 type RCl' = Object -> Prop
@@ -336,7 +336,7 @@ numSg = Singular
 numPl = Singular
 
 data NPData where
-  MkNP :: Num -> Quant -> CN' -> NPData
+  MkNP :: [Predet] -> Num -> Quant -> CN' -> NPData
 
 type N = CN
 type PN = (String,[Gender],Num)
@@ -766,12 +766,12 @@ embedS s = do
 oneToo :: NP
 oneToo = do
   cn' <- elliptic_CN
-  return $ MkNP Singular indefArt cn'
+  return $ MkNP [] Singular indefArt cn'
 
 interpNP :: NP -> Role -> Dynamic NP'
 interpNP np role = do
-  MkNP n q c <- np
-  q n c role
+  MkNP pre n q c <- np
+  evalQuant pre q n c role
 
 elliptic_NP_Sg :: NP
 elliptic_NP_Sg = qPron $ all' [isSingular]
@@ -782,84 +782,81 @@ usePN (o,g,n) = pureNP False (app (Con (parens ("PN2Class " ++ o)))) (Con (paren
 pureNP :: Bool -> (Object -> Prop) -> Object -> [Gender] -> Num -> Role -> NP
 pureNP dPluralizable cn o dGender dNum dRole = do
   modify (pushNP (Descriptor{..}) (pureNP dPluralizable cn o dGender dNum dRole))
-  return $ MkNP dNum q (\x _extraObjs -> cn x,dGender)
-  where q :: Quant
-        q _dNum _oClass _dRole = do
-          return (\vp -> vp o)
+  return $ MkNP [] dNum (ObjectQuant o) (\x _extraObjs -> cn x,dGender)
 
 massNP :: CN -> NP
 massNP cn = do
   cn' <- cn
-  return $ MkNP Singular some_Quant cn'
+  return $ MkNP [] Singular some_Quant cn'
 
 detCN :: Det -> CN -> NP
 detCN (num,quant) cn = do
   cn' <- cn
-  return (MkNP num quant cn')
+  return (MkNP [] num quant cn')
 
 usePron :: Pron -> NP
 usePron = id
 
 advNP :: NP -> Adv -> NP
 advNP np adv = do
-  MkNP num1 q1 (cn1,gender1) <- np
+  MkNP pre num1 q1 (cn1,gender1) <- np
   adv' <- adv
-  return $ MkNP num1
-           (\num' cn' role -> do
-               p1 <- q1 num' cn' role
+  return $ MkNP pre num1
+           (ObliviousQuant $ \num' cn' role -> do
+               p1 <- evalQuant pre q1 num' cn' role
                return $ \vp -> adv' (p1 vp)) 
            (cn1,gender1)
 
 predetNP :: Predet -> NP -> NP
 predetNP f np = do
-  np' <- np
-  return (f np')
+  MkNP pre n q cn  <- np
+  return $ MkNP (f:pre) n q cn
 
 -- FIXME: WTF?
 detNP :: Det -> NP
 detNP (number,quant) =
-  return (MkNP number quant (const (const TRUE) {- fixme -},[Male,Female,Neutral]))
+  return (MkNP [] number quant (const (const TRUE) {- fixme -},[Male,Female,Neutral]))
 
 
 pPartNP :: NP -> V2 -> NP  -- Word of warning: in FraCas partitives always behave like intersection, which is probably not true in general
 pPartNP np v2 = do
-  MkNP num q (cn,gender) <- np
+  MkNP pre num q (cn,gender) <- np
   v2' <- v2
   subject <- getFresh
-  return $ MkNP num q ((\x eos -> (cn x eos)  ∧ Exists subject true (noExtraObjs (v2' x (Var subject)))),gender)
+  return $ MkNP pre num q ((\x eos -> (cn x eos)  ∧ Exists subject true (noExtraObjs (v2' x (Var subject)))),gender)
 
 relNPa :: NP -> RS -> NP
 relNPa np rs = do
-  MkNP num q (cn,gender) <- np
+  MkNP pre num q (cn,gender) <- np
   rs' <- rs
-  return $ MkNP num q (\x eos -> cn x eos ∧ rs' x, gender)
+  return $ MkNP pre num q (\x eos -> cn x eos ∧ rs' x, gender)
 
 
 conjNP2 :: Conj -> NP -> NP -> NP
 conjNP2 c np1 np2 = do
-  MkNP num1 q1 (cn1,gender1) <- np1
-  MkNP _num2 q2 (cn2,gender2) <- np2
+  MkNP pre1 num1 q1 (cn1,gender1) <- np1
+  MkNP pre2 _num2 q2 (cn2,gender2) <- np2
   modify (pushNP (Descriptor False (nub (gender1 ++ gender2)) Plural Other) (conjNP2 c np1 np2))
-  return $ MkNP (num1) {- FIXME add numbers? min? max? -}
+  return $ MkNP (pre1++pre2) (num1) {- FIXME add numbers? min? max? -}
                 -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
-                (\num' cn' role -> do
-                    p1 <- q1 num' (cn1,gender1) role
-                    p2 <- q2 num' (cn2,gender2) role
+                (ObliviousQuant $ \num' cn' role -> do
+                    p1 <- evalQuant pre1 q1 num' (cn1,gender1) role
+                    p2 <- evalQuant pre2 q2 num' (cn2,gender2) role
                     return $ \vp -> apConj2 c (p1 vp) (p2 vp))
                 (\x eos -> cn1 x eos ∨ cn2 x eos, gender1) -- FIXME: problem 128, etc.
   
 
 conjNP3 :: Conj -> NP -> NP -> NP -> NP
 conjNP3 c np1 np2 np3 = do
-  MkNP num1 q1 (cn1,gender1) <- np1
-  MkNP _num2 q2 (cn2,gender2) <- np2
-  MkNP _num3 q3 (cn3,gender3) <- np3
-  return $ MkNP (num1) {- FIXME add numbers? min? max? -}
+  MkNP pre1 num1 q1 (cn1,gender1) <- np1
+  MkNP pre2 _num2 q2 (cn2,gender2) <- np2
+  MkNP pre3 _num3 q3 (cn3,gender3) <- np3
+  return $ MkNP (pre1++pre2++pre3) (num1) {- FIXME add numbers? min? max? -}
                 -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
-                (\num' cn' role -> do
-                    p1 <- q1 num' (cn1,gender1) role
-                    p2 <- q2 num' (cn2,gender2) role
-                    p3 <- q3 num' (cn3,gender3) role
+                (ObliviousQuant $ \num' cn' role -> do
+                    p1 <- evalQuant pre1 q1 num' (cn1,gender1) role
+                    p2 <- evalQuant pre2 q2 num' (cn2,gender2) role
+                    p3 <- evalQuant pre3 q3 num' (cn3,gender3) role
                     return $ \vp -> apConj3 c (p1 vp) (p2 vp) (p3 vp))
                 (\x eos -> cn1 x eos ∨ cn2 x eos ∨ cn3 x eos, gender1)
 
@@ -901,16 +898,16 @@ they_Pron = qPron $ all' [isPlural
                          ]
 
 someone_Pron :: Pron
-someone_Pron = return $ MkNP Singular indefArt (mkPred "person_N",[Male,Female])
+someone_Pron = return $ MkNP [] Singular indefArt (mkPred "person_N",[Male,Female])
 
 maximallySloppyPron :: Pron
 maximallySloppyPron = qPron $ const True
 
 everyone_Pron :: Pron
-everyone_Pron = return $ MkNP Unspecified every_Quant (mkPred "person_N",[Male,Female])
+everyone_Pron = return $ MkNP [] Unspecified every_Quant (mkPred "person_N",[Male,Female])
 
 no_one_Pron :: Pron
-no_one_Pron = return $ MkNP Unspecified none_Quant (mkPred "person_N",[Male,Female])
+no_one_Pron = return $ MkNP [] Unspecified none_Quant (mkPred "person_N",[Male,Female])
 
 nobody_Pron :: Pron
 nobody_Pron = no_one_Pron
@@ -931,40 +928,16 @@ ordNumeral _ = return (\x _ -> x) -- FIXME
 type Det = (Num,Quant)
 
 one_or_more_Det :: Det
-one_or_more_Det = (Unspecified,atLeastQuant (Cardinal 1))
+one_or_more_Det = (Unspecified,BoundQuant Pos 1)
 
 another_Det :: Det
-another_Det = (Cardinal 1, anotherQuant)
-  where anotherQuant number (cn',gender) role = do
-          x <- getFresh
-          y <- getDefinite (cn',gender)
-          dPluralizable <- gets envPluralizingQuantifier
-          modify (pushNP (Descriptor dPluralizable gender Plural role) (pureVar x number (cn',gender)))
-          return $ \vp extraObjs -> Exists x (noExtraObjs (cn' (Var x)) ∧ not' (Var x === y)) (vp (Var x) extraObjs)
+another_Det = (Cardinal 1, ObliviousQuant anotherQuant')
 
 detQuant :: Quant -> Num -> Det
-detQuant _ (Cardinal n) = (Cardinal n,atLeastQuant (Cardinal n))
 detQuant q n = (n,q)
 
 detQuantOrd :: Quant->Num->Ord->Det
 detQuantOrd q n o = (n,q) -- FIXME: do not ignore the ord
-
-boundQuant :: Logic.Pol -> Num -> Quant
-boundQuant pol n0 number (cn',gender) role = do
-      x <- getFresh
-      modify (pushNP (Descriptor False gender Plural role) (pureVar x number (cn',gender)))
-      -- modify (pushDefinite cn' x)
-      return (\vp' extraObjs -> Quant n' pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
-  where n' = case n0 of
-          Cardinal n -> (AtLeast n)
-          AFew -> Few
-          _ -> error ("atLeastQuant: unexpected number: " ++ show n0)
-
-atLeastQuant :: Num -> Quant
-atLeastQuant = boundQuant Pos
-
-atMostQuant :: Num -> Quant
-atMostQuant = boundQuant Neg
 
 
 every_Det :: Det
@@ -983,22 +956,22 @@ several_Det :: Det
 several_Det = (Plural,several_Quant)
 
 many_Det :: Det
-many_Det = (Plural,eTypeQuant (Quant Many Pos))
+many_Det = (Plural,ETypeQuant (Quant Many Pos))
 
 few_Det :: Det
-few_Det = (AFew,eTypeQuant (Quant Few Neg))
+few_Det = (AFew,ETypeQuant (Quant Few Neg))
 
 a_few_Det :: Det
-a_few_Det = (AFew,eTypeQuant (Quant Few Pos))
+a_few_Det = (AFew,ETypeQuant (Quant Few Pos))
 
 a_lot_of_Det :: Det
-a_lot_of_Det = (Plural,eTypeQuant (Quant Lots Pos))
+a_lot_of_Det = (Plural,ETypeQuant (Quant Lots Pos))
 
 both_Det :: Det
-both_Det = (Cardinal 2, bothQuant)
+both_Det = (Cardinal 2, ObliviousQuant bothQuant')
 
 neither_Det :: Det
-neither_Det = (Cardinal 2, neitherQuant)
+neither_Det = (Cardinal 2, ObliviousQuant neitherQuant')
 
 anySg_Det :: Det
 anySg_Det = each_Det
@@ -1203,8 +1176,8 @@ existNP np = do
 
 predVP :: NP -> VP -> Cl
 predVP np vp = withClause $ do
-  MkNP n q (cn,gender) <- np
-  np' <- q n (cn,gender) Subject
+  MkNP pre n q (cn,gender) <- np
+  np' <- evalQuant pre q n (cn,gender) Subject
   vp' <- vp
   modify (pushS (predVP np vp))
   return $ modifyingPrep "compClass" (lam $ \x -> noExtraObjs (cn x)) (np' vp')
@@ -1426,139 +1399,77 @@ x ### (PNounPhrase conj np) = Sentence $ do
 -------------------------
 -- Quant
 
+instance Show (a -> b) where show _ = "<FUNCTION>"
 type Quant' = (Num -> CN' -> Role -> Dynamic NP')
-type Quant = Quant'
+data Quant = PossQuant Pron | UniversalQuant Pol | ExistQuant | ETypeQuant ([Char] -> Prop -> Exp -> Exp) | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat | ObliviousQuant Quant' deriving Show
+
 
 possPron :: Pron -> Quant
-possPron np number cn role = genNP np number cn role
+possPron = PossQuant
 
 no_Quant :: Quant
-no_Quant num cn role = do
-  q <- every_Quant num cn role
-  return $ \vp' -> q (\x -> onS' not' (vp' x))
-
-universal_Quant :: Pol -> Quant
-universal_Quant pol number (cn',gender) role = do
-  x <- getFresh
-  dPluralizable <- gets envPluralizingQuantifier
-  modify $ \Env {..} -> Env {envPluralizingQuantifier = True,..}
-  modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
-  modify (pushDefinite cn' x)
-  return $ \vp' eos -> (Forall x (noExtraObjs (cn' (Var x))) (pol (vp' (Var x) eos)))
+no_Quant = UniversalQuant not'
 
 every_Quant :: Quant
-every_Quant = universal_Quant id
+every_Quant = UniversalQuant id
 
 none_Quant :: Quant
-none_Quant = universal_Quant (not')
+none_Quant = UniversalQuant (not')
 
 some_Quant :: Quant
-some_Quant = \number (cn',gender) role -> do
-  x <- getFresh
-  dPluralizable <- gets envPluralizingQuantifier
-  modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
-  return (\vp' eos -> Exists x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos))
-
-eType :: ([Char] -> Prop -> Exp -> Exp) -> [Char] -> Var -> (Exp -> S') -> (Exp -> t -> Exp) -> t -> Exp
-eType quant x z cn' vp' eos = quant x (nos cn' (Var x)) (vp' (Var x) eos) ∧ Forall z ((nos cn' (Var z)) ∧ (vp' (Var z) eos)) true
-
-nos :: (t -> S') -> t -> Prop
-nos f a = noExtraObjs (f a)
+some_Quant = ExistQuant
 
 most_Quant :: Quant
-most_Quant = eTypeQuant MOST
+most_Quant = ETypeQuant MOST
 
 several_Quant :: Quant
-several_Quant = eTypeQuant SEVERAL
-
-eTypeQuant :: ([Char] -> Prop -> Exp -> Exp) -> Quant
-eTypeQuant q number (cn',gender) role = do
-  x <- getFresh
-  z <- getFresh
-  modify (pushNP (Descriptor False gender Plural role) (pureVar z number (cn',gender)))
-  return (eType q x z cn') 
+several_Quant = ETypeQuant SEVERAL
 
 indefArt :: Quant
-indefArt (MoreThan n) cn role = atLeastQuant n n cn role
-indefArt number (cn',gender) role = do
-  x <- getFresh
-  dPluralizable <- gets envPluralizingQuantifier
-  modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
-  modify (pushDefinite cn' x)
-  return (\vp' eos -> Exists x (nos cn' (Var x)) (vp' (Var x) eos))
+indefArt = ExistQuant
 
-
--- | Definite which looks up in the environment.
 defArt :: Quant
-defArt number (cn',gender) role = do
-  it <- getDefinite (cn',gender) 
-  -- note that here we push the actual object (it seems that the strict reading is preferred in this case)
-  -- return (\vp' -> them $ \y -> Exists x (cn' (Var x) ∧ possess y (Var x)) (vp' (Var x))) -- Existence is another possibility (harder to work with)
-  _ <- pureNP False (noExtraObjs . cn') it gender number role
-  return $ \vp' -> vp' it
+defArt = DefiniteQuant
+-- | Definite which looks up in the environment.
 
+genNP :: Pron -> Quant
+genNP = PossQuant
 
-genNP :: NP -> Quant
-genNP np _number (cn',_gender) _role = do
-  them <- interpNP np Other -- only the direct arguments need to be referred by "self"
-  x <- getFresh
-  return (\vp' -> them $ \y extraObjects -> Exists x (possess y (Var x) ∧ nos cn' (Var x)) (vp' (Var x) extraObjects))
-
-possess :: Object -> Object -> Prop
-possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
 the_other_Q :: Quant
-the_other_Q _number _cn _role = return $ \vp eos -> apps (Con "theOtherQ") [lam $ \x -> vp x eos]
+the_other_Q = TheOtherQuant
 
 -------------------------
 -- Predet
 
+data Predet = JustPredet | MostPredet | AtLeastPredet | AtMostPredet | AllPredet | ExactlyPredet deriving Show
+
 just_Predet :: Predet
-just_Predet = exactly_Predet
+just_Predet = ExactlyPredet
 
 most_of_Predet :: Predet
-most_of_Predet (MkNP n _q cn) = MkNP n most_Quant cn
+most_of_Predet = MostPredet
 
 most_Predet :: Predet
-most_Predet (MkNP n _q cn) = MkNP n most_Quant cn
+most_Predet = MostPredet
 
 at_least_Predet :: Predet
-at_least_Predet (MkNP numb _q cn) = MkNP numb (atLeastQuant numb) cn
+at_least_Predet = AtLeastPredet
 
 at_most_Predet :: Predet
-at_most_Predet (MkNP numb _q cn) = MkNP numb (atMostQuant numb) cn
+at_most_Predet = AtMostPredet
 
 all_Predet :: Predet
-all_Predet  (MkNP n _q cn) = MkNP n every_Quant cn
+all_Predet = AllPredet
 
 only_Predet :: Predet
 only_Predet = exactly_Predet
 
 exactly_Predet :: Predet
-exactly_Predet (MkNP n _q cn) = MkNP n exactlyQuant cn where
-
-exactlyQuant :: Num -> (Object -> S', [Gender]) -> Role -> Dynamic NP'
-exactlyQuant number@(Cardinal n') (cn',gender) role = do
-      x <- getFresh
-      dPluralizable <- gets envPluralizingQuantifier
-      modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
-      return (\vp' extraObjs -> Quant (Exact n') Both x (nos cn' (Var x)) (vp' (Var x) extraObjs))
-
-bothQuant :: Quant
-bothQuant _ (cn',_gender) _role = do
-  x <- getFresh
-  y <- getFresh
-  -- FIXME: this interpretation is incoherent with anaphora.
-  return $ \vp' extraObjs -> Exists x (nos cn' (Var x)) $ Exists y (nos cn' (Var y)) $ vp' (Var x) extraObjs ∧ vp' (Var y) extraObjs ∧ not' (Var x === Var y)
-
-
-neitherQuant :: Quant
-neitherQuant n cn role = do
-  r <- bothQuant n cn role
-  return $ \vp -> r (\x -> not' . vp x)
+exactly_Predet = ExactlyPredet
 
 ------------------------
---
+-- QCl
 
 type IAdv = Cl -> QCl
 
@@ -1710,6 +1621,120 @@ _TRUE e = foldr (∨) FALSE (evalDynamic e)
 
 -- _ENV :: Effect -> Env
 -- _ENV x = execState x assumed
+
+
+----------------------
+-- Evaluation of (pre) determiners
+
+evalQuant :: [Predet] -> Quant -> Num -> CN' -> Role -> Dynamic NP'
+evalQuant [AllPredet] _ num cn role =  universal_Quant' id num cn role
+evalQuant [AllPredet] (PossQuant pron) num cn role = error "TODO: all his"
+evalQuant [ExactlyPredet] _ (Cardinal num) cn role = exactlyQuant' num cn role
+evalQuant [AtLeastPredet] _ num cn role = boundQuant' Pos num cn role
+evalQuant [AtMostPredet] _ num cn role = boundQuant' Neg num cn role
+evalQuant [MostPredet] _ num cn role = evalQuant [] (ETypeQuant MOST) num cn role
+evalQuant [] _ (Cardinal n) cn role = boundQuant' Pos (Cardinal n) cn role
+evalQuant [] (BoundQuant p n) _n cn role = boundQuant' p (Cardinal n) cn role
+evalQuant [] (ObjectQuant x) _number _cn _role = return $ \vp -> vp x
+evalQuant [] (UniversalQuant pol) num cn role = universal_Quant' pol num cn role
+evalQuant [] (PossQuant pron) num cn role = genNP' pron num cn role
+evalQuant [] ExistQuant  num cn role = some_Quant' num cn role
+evalQuant [] (ETypeQuant q) num cn role = eTypeQuant q num cn role
+evalQuant [] DefiniteQuant num cn role = defArt' num cn role
+evalQuant [] TheOtherQuant  num cn role = the_other_Q' num cn role
+evalQuant _ (ObliviousQuant q) num cn role = q num cn role
+evalQuant p q  num cn role = error $ "evalQuant: unsupported combination:" ++ show (p,q,num)
+
+universal_Quant' :: Pol -> Quant'
+universal_Quant' pol number (cn',gender) role = do
+  x <- getFresh
+  dPluralizable <- gets envPluralizingQuantifier
+  modify $ \Env {..} -> Env {envPluralizingQuantifier = True,..}
+  modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
+  modify (pushDefinite cn' x)
+  return $ \vp' eos -> (Forall x (noExtraObjs (cn' (Var x))) (pol (vp' (Var x) eos)))
+
+eType :: ([Char] -> Prop -> Exp -> Exp) -> [Char] -> Var -> (Exp -> S') -> (Exp -> t -> Exp) -> t -> Exp
+eType quant x z cn' vp' eos = quant x (nos cn' (Var x)) (vp' (Var x) eos) ∧ Forall z ((nos cn' (Var z)) ∧ (vp' (Var z) eos)) true
+
+nos :: (t -> S') -> t -> Prop
+nos f a = noExtraObjs (f a)
+
+eTypeQuant :: ([Char] -> Prop -> Exp -> Exp) -> Quant'
+eTypeQuant q number (cn',gender) role = do
+  x <- getFresh
+  z <- getFresh
+  modify (pushNP (Descriptor False gender Plural role) (pureVar z number (cn',gender)))
+  return (eType q x z cn') 
+
+some_Quant' :: Quant'
+some_Quant' = \number (cn',gender) role -> do
+  x <- getFresh
+  dPluralizable <- gets envPluralizingQuantifier
+  modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
+  modify (pushDefinite cn' x)
+  return (\vp' eos -> Exists x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos))
+
+defArt' :: Quant'
+defArt' number (cn',gender) role = do
+  it <- getDefinite (cn',gender) 
+  -- note that here we push the actual object (it seems that the strict reading is preferred in this case)
+  -- return (\vp' -> them $ \y -> Exists x (cn' (Var x) ∧ possess y (Var x)) (vp' (Var x))) -- Existence is another possibility (harder to work with)
+  _ <- pureNP False (noExtraObjs . cn') it gender number role
+  return $ \vp' -> vp' it
+
+genNP' :: NP -> Quant'
+genNP' np _number (cn',_gender) _role = do
+  them <- interpNP np Other -- only the direct arguments need to be referred by "self"
+  x <- getFresh
+  return (\vp' -> them $ \y extraObjects -> Exists x (possess y (Var x) ∧ nos cn' (Var x)) (vp' (Var x) extraObjects))
+
+possess :: Object -> Object -> Prop
+possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
+
+the_other_Q' :: Quant'
+the_other_Q' _number _cn _role = return $ \vp eos -> apps (Con "theOtherQ") [lam $ \x -> vp x eos]
+
+exactlyQuant' :: Nat -> (Object -> S', [Gender]) -> Role -> Dynamic NP'
+exactlyQuant' n' (cn',gender) role = do
+      x <- getFresh
+      dPluralizable <- gets envPluralizingQuantifier
+      modify (pushNP (Descriptor dPluralizable gender number role) (pureVar x number (cn',gender)))
+      return (\vp' extraObjs -> Quant (Exact n') Both x (nos cn' (Var x)) (vp' (Var x) extraObjs))
+   where number = Cardinal n'
+
+bothQuant' :: Quant'
+bothQuant' _ (cn',_gender) _role = do
+  x <- getFresh
+  y <- getFresh
+  -- FIXME: this interpretation is incoherent with anaphora.
+  return $ \vp' extraObjs -> Exists x (nos cn' (Var x)) $ Exists y (nos cn' (Var y)) $ vp' (Var x) extraObjs ∧ vp' (Var y) extraObjs ∧ not' (Var x === Var y)
+
+
+neitherQuant' :: Quant'
+neitherQuant' n cn role = do
+  r <- bothQuant' n cn role
+  return $ \vp -> r (\x -> not' . vp x)
+
+
+boundQuant' :: Logic.Pol -> Quant'
+boundQuant' pol number (cn',gender) role = do
+      x <- getFresh
+      modify (pushNP (Descriptor False gender Plural role) (pureVar x number (cn',gender)))
+      -- modify (pushDefinite cn' x)
+      return (\vp' extraObjs -> Quant n' pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
+  where n' = case number of
+          Cardinal n -> (AtLeast n)
+          AFew -> Few
+          _ -> error ("atLeastQuant: unexpected number: " ++ show number)
+
+anotherQuant' :: Quant'
+anotherQuant' number (cn',gender) role = do
+          x <- getFresh
+          y <- getDefinite (cn',gender)
+          dPluralizable <- gets envPluralizingQuantifier
+          modify (pushNP (Descriptor dPluralizable gender Plural role) (pureVar x number (cn',gender)))
+          return $ \vp extraObjs -> Exists x (noExtraObjs (cn' (Var x)) ∧ not' (Var x === y)) (vp (Var x) extraObjs)
 
 ------------------------
 -- Fracas overrides

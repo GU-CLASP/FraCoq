@@ -67,15 +67,13 @@ Theorem T123b: Problem123bTrue.   cbv.  intros. destruct H. firstorder. Abort al
 -- another syntax)
 
 *)
+
 Theorem T124a: Problem124aTrue.
-cbv. intros. elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1. destruct H3. destruct H. destruct H. destruct H5. exists x0. destruct H5. destruct H5. destruct H7. firstorder. 
-   firstorder. Abort all. 
+cbv. intros. elim H. intros.  destruct H0. destruct H1. destruct H1.  Abort all. 
 
 Theorem T124b : Problem124bTrue. 
 cbv. intros. elim H.  
-intros.      destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1. destruct H3. destruct H. destruct H. destruct H5.       exists x.   split. assumption. split. exists x1. split. exact I. firstorder. destruct H5.  destruct H5. 
-destruct H5. destruct H8. firstorder. 
-destruct H1. firstorder. 
+intros.      destruct H0. destruct H1. destruct H1.  
 Abort All. 
 
 Theorem T125at: Problem125aTrue. 
@@ -93,10 +91,9 @@ Theorem T125bt: Problem125bTrue.
 Theorem T125bf: Problem125bFalse.
   cbv. intros. firstorder. Abort all.  (**Ibid**)
 
-Theorem T126A: Problem126aTrue. cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1.  destruct H. destruct H. destruct H5. destruct H5. destruct H5. destruct H5. destruct H8.  Abort all.  (**Needs to be fixed**)
+Theorem T126A: Problem126aTrue. cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. Abort all.  (** FIXME Needs to be fixed**)
 
-Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. destruct H1.  destruct H. destruct H. destruct H5. destruct H5. destruct H5. destruct H5. destruct H8.
- exists x. Abort all. 
+Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.   Abort all. 
 
                              
  Theorem T127a: Problem127aTrue. cbv. intros. Abort all.  (**This is marked yes on a distributive reading. One of the funny examples with two readings**)
@@ -134,17 +131,38 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 
  Theorem T132bf: Problem132bTrue. cbv. intros. firstorder. Qed.
 
- Theorem T133a:
- Problem133aTrue. cbv. intros. destruct H. destruct H. destruct H. apply H1. exact H0.
- apply H1.
- exact H0. 
- Qed.
+ Theorem T133a: Problem133aTrue. cbv.
+  firstorder. Qed.
 
- Theorem T134a: Problem134aTrue. cbv. intros. destruct H. destruct H1. destruct H2. destruct H2. destruct H3.   Abort all. (**donkey sentence**)
+Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
 
- Theorem T134b: Problem134bTrue. cbv. intros. firstorder. exists x. Abort all.
-
-(* FIXME: check situation in MS.hs: why is the "its" pronoun not interpreted? *)
+Theorem T134b: Problem134bTrue. cbv.
+Abort All.
+(* WIP
+intros [P1 [P2a [compy P2]]].
+intros computer [computer' [H0 H1]].
+rewrite <- H1 in H0.
+cut (compy = computer).
+intro H.
+rewrite H in P2.
+destruct P2 as [A [B C]] .
+apply P1 with (x := computer).
+exact A.
+split.
+exact P2a.
+exact B.
+destruct P2 as [A [B C]] .
+generalize C.
+apply exactEqual.
+split.
+exact A.
+exact B.
+destruct H0.
+split.
+exact H0.
+exact H.
+Qed.
+*)
 
  Theorem T135a: Problem135aTrue. cbv. intros.  firstorder. Abort all.
 
@@ -336,6 +354,7 @@ Theorem T189a: Problem189aTrue. cbv. intros. destruct H. firstorder. Qed.
 
 Theorem T190b: Problem190bTrue. cbv. intros. destruct H. firstorder. Qed. (**reading b works!**)
 
-Theorem T196a: Problem196aTrue. cbv. intros. destruct H. firstorder. Qed. 
+
+Theorem T196a: Problem196aTrue. cbv. intro. firstorder. Qed. 
 
 
