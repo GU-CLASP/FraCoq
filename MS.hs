@@ -1640,10 +1640,11 @@ evalQuant [] (UniversalQuant pol) num cn role = universal_Quant' pol num cn role
 evalQuant [] (PossQuant pron) num cn role = genNP' Exists pron num cn role
 evalQuant [] ExistQuant  num cn role = some_Quant' num cn role
 evalQuant [] (ETypeQuant q) num cn role = eTypeQuant q num cn role
+evalQuant [] DefiniteQuant Plural cn role = universal_Quant' id Plural cn role
 evalQuant [] DefiniteQuant num cn role = defArt' num cn role
 evalQuant [] TheOtherQuant  num cn role = the_other_Q' num cn role
 evalQuant _ (ObliviousQuant q) num cn role = q num cn role
-evalQuant p q  num cn role = error $ "evalQuant: unsupported combination:" ++ show (p,q,num)
+evalQuant p q  num _cn _role = error $ "evalQuant: unsupported combination:" ++ show (p,q,num)
 
 universal_Quant' :: Pol -> Quant'
 universal_Quant' pol number (cn',gender) role = do
