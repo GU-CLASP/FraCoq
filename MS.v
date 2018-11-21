@@ -675,7 +675,9 @@ Parameter say_VS : VS .
 Parameter less_than_AdN : AdN .
 Definition more_than_AdN : AdN := moreThan .
 
-Parameter impressed_by_A2 : A2 .
+Parameter IMPRESSED_BY : object -> object -> Prop.
+Definition impressed_by_A2 : A2 :=
+   fun impressee class impressor => class impressee /\ IMPRESSED_BY impressee impressor.
 
 Definition andSg_Conj : Conj := Associative (fun p q => p /\ q).
 Definition and_Conj : Conj := Associative (fun p q => p /\ q).

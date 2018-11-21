@@ -1,5 +1,7 @@
 
 Load FraCoq2.
+
+
 Require Import Omega.
 
 Theorem T081a: Problem081aTrue. cbv.
@@ -96,11 +98,21 @@ firstorder.
 Qed.
 
 
-
+Transparent PN2object.
+Transparent PN2Class.
 Theorem T099a: Problem099aTrue. cbv.
-intros theSystem isSystem theDemo isDemo theClient.
-Abort All.
-(* FIXME: definite plural *)
+intros theSystem isSystem theDemo isDemo.
+intros [P1 P2].
+lapply (P1 SMITH).
+intros [thePerf [H1 [H2 H3]]].
+exists thePerf.
+split.
+exact H1.
+split.
+exact SMITH_PERSON.
+assumption.
+assumption.
+Qed.
 
 
 Theorem T100a: Problem100aTrue. cbv.
