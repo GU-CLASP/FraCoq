@@ -1139,7 +1139,7 @@ Parameter make8become_V2 : V2 .
 Parameter make8do_V2 : V2 .
 Parameter need_V2 : V2 .
 Parameter open_V2 : V2 .
-Parameter own_V2 : V2 .
+Definition own_V2 := have_V2 . (* This is because posessives are implemented with "have", and they sometimes imply ownership. See 134.*)
 Parameter pay_V2 : V2 .
 Parameter publish_V2 : V2 .
 Parameter read_V2 : V2 .
