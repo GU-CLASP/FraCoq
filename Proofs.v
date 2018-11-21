@@ -91,7 +91,7 @@ Theorem T125bt: Problem125bTrue.
 Theorem T125bf: Problem125bFalse.
   cbv. intros. firstorder. Abort all.  (**Ibid**)
 
-Theorem T126A: Problem126aTrue. cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. Abort all.  (** FIXME Needs to be fixed**)
+Theorem T126A: Problem126aTrue. cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.  destruct H1. Abort all.  (** Error **)
 
 Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. destruct H1. destruct H1.   Abort all. 
 
@@ -137,11 +137,8 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
 
 Theorem T134b: Problem134bTrue. cbv.
-Abort All.
-(* WIP
 intros [P1 [P2a [compy P2]]].
-intros computer [computer' [H0 H1]].
-rewrite <- H1 in H0.
+intros computer [H0 H1].
 cut (compy = computer).
 intro H.
 rewrite H in P2.
@@ -157,12 +154,11 @@ apply exactEqual.
 split.
 exact A.
 exact B.
-destruct H0.
 split.
+exact H1.
 exact H0.
-exact H.
 Qed.
-*)
+
 
  Theorem T135a: Problem135aTrue. cbv. intros.  firstorder. Abort all.
 
@@ -356,5 +352,4 @@ Theorem T190b: Problem190bTrue. cbv. intros. destruct H. firstorder. Qed. (**rea
 
 
 Theorem T196a: Problem196aTrue. cbv. intro. firstorder. Qed. 
-
 

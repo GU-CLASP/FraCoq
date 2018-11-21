@@ -1627,8 +1627,8 @@ _TRUE e = foldr (∨) FALSE (evalDynamic e)
 -- Evaluation of (pre) determiners
 
 evalQuant :: [Predet] -> Quant -> Num -> CN' -> Role -> Dynamic NP'
+evalQuant [AllPredet] (PossQuant pron) num cn role = genNP' Forall pron num cn role -- see FraCas 134
 evalQuant [AllPredet] _ num cn role =  universal_Quant' id num cn role
-evalQuant [AllPredet] (PossQuant pron) num cn role = error "TODO: all his"
 evalQuant [ExactlyPredet] _ (Cardinal num) cn role = exactlyQuant' num cn role
 evalQuant [AtLeastPredet] _ num cn role = boundQuant' Pos num cn role
 evalQuant [AtMostPredet] _ num cn role = boundQuant' Neg num cn role
@@ -1637,7 +1637,7 @@ evalQuant [] _ (Cardinal n) cn role = boundQuant' Pos (Cardinal n) cn role
 evalQuant [] (BoundQuant p n) _n cn role = boundQuant' p (Cardinal n) cn role
 evalQuant [] (ObjectQuant x) _number _cn _role = return $ \vp -> vp x
 evalQuant [] (UniversalQuant pol) num cn role = universal_Quant' pol num cn role
-evalQuant [] (PossQuant pron) num cn role = genNP' pron num cn role
+evalQuant [] (PossQuant pron) num cn role = genNP' Exists pron num cn role
 evalQuant [] ExistQuant  num cn role = some_Quant' num cn role
 evalQuant [] (ETypeQuant q) num cn role = eTypeQuant q num cn role
 evalQuant [] DefiniteQuant num cn role = defArt' num cn role
@@ -1683,11 +1683,11 @@ defArt' number (cn',gender) role = do
   _ <- pureNP False (noExtraObjs . cn') it gender number role
   return $ \vp' -> vp' it
 
-genNP' :: NP -> Quant'
-genNP' np _number (cn',_gender) _role = do
+genNP' :: (Var -> Type -> Exp -> Exp) -> NP -> Quant'
+genNP' quant np _number (cn',_gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
   x <- getFresh
-  return (\vp' -> them $ \y extraObjects -> Exists x (possess y (Var x) ∧ nos cn' (Var x)) (vp' (Var x) extraObjects))
+  return (\vp' -> them $ \y extraObjects -> quant x (possess y (Var x) ∧ nos cn' (Var x)) (vp' (Var x) extraObjects))
 
 possess :: Object -> Object -> Prop
 possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
