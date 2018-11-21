@@ -134,7 +134,6 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
  Theorem T133a: Problem133aTrue. cbv.
   firstorder. Qed.
 
-Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
 
 Theorem T134b: Problem134bTrue. cbv.
 intros [P1 [P2a [compy P2]]].
@@ -271,11 +270,14 @@ Theorem T162b: Problem162bTrue. cbv. destruct fast_A. intros. firstorder. Qed.
 
 Theorem T163d: Problem163dFalse. cbv. intro.  destruct H. exact H0. Qed. (**Correct reading**)
 
-Theorem T164a: Problem164aTrue. cbv. intros. firstorder. Abort all. (**FIXME: speak_to_V2to**)
+Theorem T164a: Problem164aTrue. cbv. intros. firstorder. Qed.
 
 Theorem T165a: Problem165aTrue. cbv. intros. exact H. Qed. 
 
-Theorem T166a: Problem166aTrue. cbv. intros. firstorder. Abort all. (**FIXME**)
+Theorem T166a: Problem166aTrue. cbv. 
+destruct on_thursday_Adv as [on_thu on_thu_verid]. (*JP: made on_thursday_Adv veridical *)
+firstorder.
+Qed.
 
 Theorem T167a: Problem167aFalse. cbv.
 intros salesDept isSalesDept.

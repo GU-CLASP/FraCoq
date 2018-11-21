@@ -815,7 +815,7 @@ Parameter on_july_8th_1994_Adv : Adv .
 Parameter on_monday_Adv : VeridicalAdv .
 Parameter on_the_5th_of_may_1995_Adv : Adv .
 Parameter on_the_7th_of_may_1995_Adv : Adv .
-Parameter on_thursday_Adv : Adv .
+Parameter on_thursday_Adv : VeridicalAdv .
 Parameter on_time_Adv : VeridicalAdv .
 Parameter on_tuesday_Adv : Adv .
 Parameter on_wednesday_Adv : Adv .
@@ -1234,19 +1234,16 @@ Parameter have_V2for : object -> object -> object ->  Prop.
 Parameter take_V2to : object -> object -> object  -> Prop.
 Parameter take_V2at : object -> object -> object  -> Prop. 
 Definition cover_page_Npossess:= fun x: object => fun y : object => cover_page_N x.
-Parameter speak_to_V2adv : Adv -> object -> object -> Prop. 
-Parameter  speak_to_V2advadv :Adv ->  Adv -> object -> object -> Prop. 
 Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
-Parameter go8travel_Vtoby8meansby8means : object -> object ->  object -> object -> Prop.
 Parameter go8travel_Vby8means : object -> object -> Prop. 
-Parameter go8travel_Vtoby8meansby8meansto : object -> object ->  object -> object -> object -> Prop. 
 Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> Prop.
 Parameter go8travel_Vby8meansto :  object ->  object -> object -> Prop.
-Parameter go8travel_Vtoto :  object ->  object -> object -> Prop.
 Parameter go8travel_Vto :  object -> object -> Prop.
 Parameter knowVQ : VS.
 Parameter WHY: Prop -> Prop.
-Parameter speak_to_V2to : object -> object -> object -> Prop.
+Definition speak_to_V2to : object -> object -> object -> Prop
+  := fun to _ subj => speak_to_V2 to subj.
+
 Parameter work_Vadv : Adv -> object -> Prop.
 Parameter find_V2before : object -> object -> object -> Prop.
 Parameter go8walk_Vadv : Adv -> object -> Prop.
@@ -1330,3 +1327,4 @@ Variable getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_
 
 Variable client_people_K : forall x, client_N x -> person_N x.
 
+Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
