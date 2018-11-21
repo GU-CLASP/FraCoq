@@ -835,28 +835,25 @@ relNPa np rs = do
 conjNP2 :: Conj -> NP -> NP -> NP
 conjNP2 c np1 np2 = do
   MkNP pre1 num1 q1 (cn1,gender1) <- np1
-  MkNP pre2 _num2 q2 (cn2,gender2) <- np2
+  MkNP pre2 num2 q2 (cn2,gender2) <- np2
   modify (pushNP (Descriptor False (nub (gender1 ++ gender2)) Plural Other) (conjNP2 c np1 np2))
-  return $ MkNP (pre1++pre2) (num1) {- FIXME add numbers? min? max? -}
-                -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
-                (ObliviousQuant $ \num' cn' role -> do
-                    p1 <- evalQuant pre1 q1 num' (cn1,gender1) role
-                    p2 <- evalQuant pre2 q2 num' (cn2,gender2) role
+  return $ MkNP [] (num1) {- FIXME add numbers? min? max? -}
+                (ObliviousQuant $ \_num _cn role -> do
+                    p1 <- evalQuant pre1 q1 num1 (cn1,gender1) role
+                    p2 <- evalQuant pre2 q2 num2 (cn2,gender2) role
                     return $ \vp -> apConj2 c (p1 vp) (p2 vp))
                 (\x eos -> cn1 x eos ∨ cn2 x eos, gender1) -- FIXME: problem 128, etc.
-  
 
 conjNP3 :: Conj -> NP -> NP -> NP -> NP
 conjNP3 c np1 np2 np3 = do
   MkNP pre1 num1 q1 (cn1,gender1) <- np1
-  MkNP pre2 _num2 q2 (cn2,gender2) <- np2
-  MkNP pre3 _num3 q3 (cn3,gender3) <- np3
-  return $ MkNP (pre1++pre2++pre3) (num1) {- FIXME add numbers? min? max? -}
-                -- (\num' cn' vp -> apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
-                (ObliviousQuant $ \num' cn' role -> do
-                    p1 <- evalQuant pre1 q1 num' (cn1,gender1) role
-                    p2 <- evalQuant pre2 q2 num' (cn2,gender2) role
-                    p3 <- evalQuant pre3 q3 num' (cn3,gender3) role
+  MkNP pre2 num2 q2 (cn2,gender2) <- np2
+  MkNP pre3 num3 q3 (cn3,gender3) <- np3
+  return $ MkNP [] (num1) {- FIXME add numbers? min? max? -}
+                (ObliviousQuant $ \_num _cn role -> do
+                    p1 <- evalQuant pre1 q1 num1 (cn1,gender1) role
+                    p2 <- evalQuant pre2 q2 num2 (cn2,gender2) role
+                    p3 <- evalQuant pre3 q3 num3 (cn3,gender3) role
                     return $ \vp -> apConj3 c (p1 vp) (p2 vp) (p3 vp))
                 (\x eos -> cn1 x eos ∨ cn2 x eos ∨ cn3 x eos, gender1)
 
@@ -1401,7 +1398,9 @@ x ### (PNounPhrase conj np) = Sentence $ do
 
 instance Show (a -> b) where show _ = "<FUNCTION>"
 type Quant' = (Num -> CN' -> Role -> Dynamic NP')
-data Quant = PossQuant Pron | UniversalQuant Pol | ExistQuant | ETypeQuant ([Char] -> Prop -> Exp -> Exp) | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat | ObliviousQuant Quant' deriving Show
+data Quant = PossQuant Pron | UniversalQuant Pol | ExistQuant | ETypeQuant ([Char] -> Prop -> Exp -> Exp) | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat
+  | ObliviousQuant Quant' -- ^ quantifier that ignores numbers and predeterminers.
+  deriving Show
 
 
 possPron :: Pron -> Quant
@@ -1627,6 +1626,7 @@ _TRUE e = foldr (∨) FALSE (evalDynamic e)
 -- Evaluation of (pre) determiners
 
 evalQuant :: [Predet] -> Quant -> Num -> CN' -> Role -> Dynamic NP'
+evalQuant _ (ObliviousQuant q) num cn role = q num cn role
 evalQuant [AllPredet] (PossQuant pron) num cn role = genNP' Forall pron num cn role -- see FraCas 134
 evalQuant [AllPredet] _ num cn role =  universal_Quant' id num cn role
 evalQuant [ExactlyPredet] _ (Cardinal num) cn role = exactlyQuant' num cn role
@@ -1643,7 +1643,6 @@ evalQuant [] (ETypeQuant q) num cn role = eTypeQuant q num cn role
 evalQuant [] DefiniteQuant Plural cn role = universal_Quant' id Plural cn role
 evalQuant [] DefiniteQuant num cn role = defArt' num cn role
 evalQuant [] TheOtherQuant  num cn role = the_other_Q' num cn role
-evalQuant _ (ObliviousQuant q) num cn role = q num cn role
 evalQuant p q  num _cn _role = error $ "evalQuant: unsupported combination:" ++ show (p,q,num)
 
 universal_Quant' :: Pol -> Quant'

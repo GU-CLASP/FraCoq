@@ -1,3 +1,4 @@
+
 Load FraCoq2.
 Require Import Omega.
 
@@ -22,7 +23,8 @@ firstorder.
 Abort All. (* FIXME: multiple readings? *)
 
 
-Theorem T085a: Problem085aFalse. cbv.
+Theorem T085a: Problem085aFalse.
+cbv.
 firstorder.
 Qed.
 
@@ -127,16 +129,5 @@ firstorder.
 Qed.
 
 Theorem T113a: Problem113aTrue. cbv.
-intros [contract [isContract [[H1 H2] HC]]].
-split;
-exists contract;
-split;
-try assumption;
-split;
-try assumption;
-generalize HC;
-apply le_mono_right;
 firstorder.
 Qed.
-
-
