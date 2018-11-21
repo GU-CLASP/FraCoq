@@ -66,7 +66,7 @@ main = do
 
 -- >>> main
 -- incomplete: 74/83
--- correct: 64/74
+-- correct: 69/74
 -- (119,True,Unknown,Just Unknown)
 -- (1,False,Yes,Nothing)
 -- (2,False,Yes,Nothing)
@@ -200,8 +200,8 @@ main = do
 -- (131,True,Yes,Just Yes)
 -- (132,True,Yes,Just Yes)
 -- (133,True,Yes,Just Yes)
--- (134,False,Yes,Just Unknown)
--- (135,False,Yes,Just Unknown)
+-- (134,True,Yes,Just Yes)
+-- (135,True,Yes,Just Yes)
 -- (136,True,Unknown,Just Unknown)
 -- (137,False,Yes,Nothing)
 -- (138,False,Yes,Just Unknown)
@@ -221,7 +221,7 @@ main = do
 -- (152,True,Yes,Just Yes)
 -- (153,True,Yes,Just Yes)
 -- (154,True,Yes,Just Yes)
--- (155,False,Yes,Just Unknown)
+-- (155,True,Yes,Just Yes)
 -- (156,False,Unknown,Nothing)
 -- (157,True,Yes,Just Yes)
 -- (158,True,Unknown,Just Unknown)
@@ -230,9 +230,9 @@ main = do
 -- (161,True,Unclear "Don't know, on one possible reading",Just Yes)
 -- (162,True,Yes,Just Yes)
 -- (163,True,No,Just No)
--- (164,False,Yes,Just Unknown)
+-- (164,True,Yes,Just Yes)
 -- (165,True,Yes,Just Yes)
--- (166,False,Yes,Just Unknown)
+-- (166,True,Yes,Just Yes)
 -- (167,True,No,Just No)
 -- (168,True,Yes,Just Yes)
 -- (169,True,Unclear "Yes, on one possible reading",Just Yes)
