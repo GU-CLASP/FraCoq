@@ -18,7 +18,7 @@ data Result = Result
 parseWords :: Maybe (Int,Bool) -> [String] -> [Result]
 parseWords c@(Just(rNumber,rPolarity)) ("Qed.":ws) = Result{rProven = True, ..}:parseWords c ws
 parseWords c@(Just(rNumber,rPolarity)) ("Abort":ws) = Result{rProven = False, ..}:parseWords c ws
-parseWords _ ("Theorem":_thmName:('P':'r':'o':'b':'l':'e':'m':pbInfo):ws) = parseWords (Just (rNumber,rPolarity)) ws
+parseWords _ ({-"Theorem":_thmName:-}('P':'r':'o':'b':'l':'e':'m':pbInfo):ws) = parseWords (Just (rNumber,rPolarity)) ws
   where (read -> rNumber,_variant:(read . takeWhile isAlpha -> rPolarity)) = span isDigit pbInfo
 parseWords c (_:ws) = parseWords c ws
 parseWords _ [] = []
@@ -60,13 +60,14 @@ main = do
       inRange x = x >= 114 && x <= 196
       correct = [ok | (n,ok,_,Just _) <- consolidated, inRange n]
       complete = [isJust a | (n,_ok,_,a) <- consolidated, inRange n]
+  -- mapM_ print (parseWords Nothing ws)
   putStrLn ("incomplete: "++count complete)
   putStrLn ("correct: "++ count correct)
   mapM_ print consolidated
 
 -- >>> main
--- incomplete: 74/83
--- correct: 69/74
+-- incomplete: 75/83
+-- correct: 70/75
 -- (119,True,Unknown,Just Unknown)
 -- (1,False,Yes,Nothing)
 -- (2,False,Yes,Nothing)
@@ -222,7 +223,7 @@ main = do
 -- (153,True,Yes,Just Yes)
 -- (154,True,Yes,Just Yes)
 -- (155,True,Yes,Just Yes)
--- (156,False,Unknown,Nothing)
+-- (156,True,Unknown,Just Unknown)
 -- (157,True,Yes,Just Yes)
 -- (158,True,Unknown,Just Unknown)
 -- (159,True,Yes,Just Yes)
