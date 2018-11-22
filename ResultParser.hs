@@ -48,7 +48,7 @@ eval = map evalPb . groupBy ((==) `on` rNumber) . sortBy (compare `on` rNumber)
 compatible :: Answer -> Maybe Answer -> Bool
 compatible _ Nothing = False
 compatible Undef _ = True
-compatible (Unclear _) _ = True
+compatible (Unclear _) _ = error "Unclear!"
 compatible x (Just y) = x == y
 
 countOk :: [Bool] -> Int
@@ -72,13 +72,17 @@ showScores consolidated sectionNumber = do
         correct = [ok | (n,ok,_,Just _) <- consolidated, inRange n]
         complete = [isJust a | (n,_ok,_,a) <- consolidated, inRange n]
 
+isClear :: Answer -> Bool
+isClear (Unclear _) = False
+isClear _ = True
+
 doIt :: [String] -> IO ()
 doIt args = do
   files <- mapM readFile args
   let ws = (concatMap words . concat . map lines) files
   let proofs = eval $ parseWords Nothing ws 
-      consolidated = [(n,compatible a proof,a,proof) | (n,a) <- answers, let proof = lookup n proofs]
-  -- mapM_ print (parseWords Nothing ws)
+      consolidated = [(n,compatible a proof,a,proof) | (n,a) <- answers, isClear a, let proof = lookup n proofs]
+  mapM_ print (parseWords Nothing ws)
   mapM_ print consolidated
   mapM_ (showScores consolidated) [1..7]
 

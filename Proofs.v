@@ -104,9 +104,8 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 
  Theorem T129a: Problem129aTrue. cbv. intros. firstorder. Qed.
 
- Theorem T130at: Problem130aTrue. cbv. intros. destruct H0. destruct H1. destruct H2. Abort All.
 
- Theorem T130af: Problem130aFalse. cbv. intros. destruct H0.  firstorder. Abort all.   (**unk**)
+ Theorem T130at: Problem130aTrue. cbv. intros. destruct H0. destruct H1. destruct H2. firstorder. Qed.
 
 (*-- Analysis for 130:  FRACAS. Incompatible with 129. (It should be sufficent
 -- that one reading allows to conclude.)
@@ -304,6 +303,7 @@ Theorem T168a: Problem168aTrue. cbv. intros. destruct H. exact H0. Qed.
 Theorem T169a: Problem169aTrue. cbv. intros. firstorder. Qed.
 
 Theorem T170a: Problem170aTrue. cbv. intros. Abort all.
+
 (** Doing this would require another syntax: 'John found Mary before Bill ELLIPTIC_VP' **)
 
 (* 171: too hard! *)

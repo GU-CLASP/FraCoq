@@ -5,8 +5,27 @@ data Answer = Yes | No | Unknown | Undef | Unclear String deriving (Eq,Show,Ord)
 
 answers :: [(Int, Answer)]
 answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
-  [(119, Unknown) -- because mary could have used someone else's workstation
-  ,(181, Yes)] -- this works for the same reason 180 works.
+  [
+  -- Overruled
+    (119, Unknown) -- because mary could have used someone else's workstation
+  ,(181, Yes)-- this works for the same reason 180 works.
+
+  -- Clarified
+  ,(127, Yes) -- meant but not written so in FraCas
+  ,(129, Yes) -- meant but not written so in FraCas
+  ,(130, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(160, Yes) -- meant but not written so in FraCas
+  ,(161, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(169, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(170, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(175, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(176, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(185, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(186, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(187, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(189, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(199, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ]
   ++ officialAnswers
 
 officialAnswers :: [(Int,Answer)]
