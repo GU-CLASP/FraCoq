@@ -7,10 +7,10 @@ FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
 	gawk -f $^ >$@
 
 results:: verify.txt ResultParser.hs
-	nix-shell --run "ghci -e main ResultParser.hs"
+	nix-shell --run "runhaskell ResultParser.hs Proofs.v Section*.v"
 
 verify.txt: Proofs.v MS.v FraCoq2.v
-	cocq Proofs.v > $@
+	coqc Proofs.v > $@
 
 test:: Tests
 	./Tests

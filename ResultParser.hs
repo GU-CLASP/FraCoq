@@ -7,6 +7,7 @@ import Data.Char
 import Data.List
 import Data.Function
 import Data.Maybe
+import System.Environment
 
 data Result = Result
               {rNumber :: Int -- problem number
@@ -50,14 +51,15 @@ compatible Undef _ = True
 compatible (Unclear _) _ = True
 compatible x (Just y) = x == y
 
+countOk :: [Bool] -> Int
 countOk = length . filter id
 
+count :: [Bool] -> [Char]
 count xs = show (countOk xs)++"/"++show (length xs)
 
 sectionStarts :: [Int]
 sectionStarts = [1,81,114,142,197,220,251,326,334,347]
 
--- showScores :: Int -> IO ()
 showScores :: [(Int, Bool, t, Maybe a)] -> Int -> IO ()
 showScores consolidated sectionNumber = do
   putStrLn (" ------ Section " ++ show sectionNumber)
@@ -70,14 +72,22 @@ showScores consolidated sectionNumber = do
         correct = [ok | (n,ok,_,Just _) <- consolidated, inRange n]
         complete = [isJust a | (n,_ok,_,a) <- consolidated, inRange n]
 
-main :: IO ()
-main = do
-  ws <- (concatMap words . lines) <$> readFile "Proofs.v"
+doIt :: [String] -> IO ()
+doIt args = do
+  files <- mapM readFile args
+  let ws = (concatMap words . concat . map lines) files
   let proofs = eval $ parseWords Nothing ws 
       consolidated = [(n,compatible a proof,a,proof) | (n,a) <- answers, let proof = lookup n proofs]
   -- mapM_ print (parseWords Nothing ws)
   mapM_ print consolidated
-  mapM_ (showScores consolidated) [1..7]  
+  mapM_ (showScores consolidated) [1..7]
+
+main :: IO ()
+main = do
+  args <- getArgs
+  doIt args
+
+
 
 -- >>> main
 -- incomplete: 75/83
