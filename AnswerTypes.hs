@@ -7,7 +7,8 @@ answers :: [(Int, Answer)]
 answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   [
   -- Overruled
-    (119, Unknown) -- because mary could have used someone else's workstation
+    (69, Unknown) -- because mary could have used someone else's workstation
+  ,(119, Unknown) -- because mary could have used someone else's workstation
   ,(181, Yes)-- this works for the same reason 180 works.
 
   -- Clarified

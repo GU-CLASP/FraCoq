@@ -499,6 +499,7 @@ Theorem T068a: Problem068aTrue. cbv.
 firstorder.
 Qed.
 
+Theorem T069a: Problem069aFalse. cbv. firstorder. Abort All.
 Theorem T069a: Problem069aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 intro right.

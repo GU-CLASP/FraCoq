@@ -83,7 +83,7 @@ doIt args = do
   mapM_ print (parseWords Nothing ws)
   mapM_ print consolidated
   mapM_ (showScores consolidated) (zip3 [1..] sectionStarts (tail sectionStarts))
-  (showScores consolidated) (0,0,400)
+  (showScores consolidated) (0,0,220)
 
 main :: IO ()
 main = do
