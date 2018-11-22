@@ -12,6 +12,11 @@ answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   ,(181, Yes)-- this works for the same reason 180 works.
 
   -- Clarified
+  ,(87 , Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(88 , Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(109, No)  -- meant but not written so in FraCas
+  ,(111, Yes)  -- meant but not written so in FraCas
+  ,(112, Yes)  -- meant but not written so in FraCas
   ,(127, Yes) -- meant but not written so in FraCas
   ,(129, Yes) -- meant but not written so in FraCas
   ,(130, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
