@@ -7,7 +7,7 @@ Theorem T198a: Problem198aFalse. cbv. firstorder.
 destruct john_PN as [john person].
 destruct former_A as [former]. firstorder. Qed.
 
-Theorem FraCas199: Problem199aTrue. cbv. destruct successful_A as [successful].  destruct former_A as [former]. firstorder. (** FIXME: This is YES in the suite, but is says "yes for a former university student", which is not what the conclusion actually says. If we were to fix the conclusion then the example becomes trivial."**) Abort All.
+Theorem FraCas199: Problem199aTrue. cbv. destruct successful_A as [successful].  destruct former_A as [former]. firstorder. (** FIXME: This is YES in the suite, but is says "yes for a former university student", which is not what the conclusion actually says. If we were to fix the conclusion then the example becomes trivial."**) Abort All.  (**I suggest we do not bother with this example**)
 
 
 Theorem FraCas200: Problem200aTrue. cbv. firstorder.  destruct successful_A as [successful]. destruct former_A as [former]. firstorder. Abort All.  (**UNK**)
@@ -60,7 +60,7 @@ Theorem FraCas207': Problem207aFalse. cbv. intros.
 destruct small_A.
 destruct large_A.
 firstorder.
- Abort All. (* UNK *)
+ Abort All. (* UNK *)  (**206 and 207 are correctly captured, they are marked as UNK, but the score calculation counts them as wrong**)
 
 Theorem FraCas208:Problem208aTrue.
 assert (slK := small_and_large_disjoint_K animal_N).
@@ -70,7 +70,7 @@ destruct large_A as [large].
 intros [[P1a P1b] [P2a P2]].
 cbv in slK.
 firstorder.
-Qed.
+Qed. (**Same here**)
 
 Theorem T209: Problem209aFalse. cbv. intros.  apply small_and_large_disjoint_K with (cn := animal_N) (o := MICKEY). destruct small_A. destruct large_A.
 firstorder. Qed. 
