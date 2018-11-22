@@ -45,9 +45,6 @@ Parameter VQ : Set.
 Definition VS := S -> VP.
 Parameter RP : Set.
 
-Inductive Conj : Type :=
-  Associative : (Prop -> Prop -> Prop) -> Conj |
-  EitherOr : Conj.
 Definition A := (object -> Prop) -> (object -> Prop).
 Definition A2 := object -> A.
 Definition IntersectiveA := object -> Prop.
@@ -107,33 +104,6 @@ Parameter MANY : nat.
 Parameter A_FEW : nat.
 Parameter SOME : nat. (* the plural number *)
 Parameter SEVERAL : nat.
-
-Fixpoint interpAtLeast (num:Num) (x:nat) :=
-  match num with
-  | singular => x >= 1
-  | plural   => x >= SOME
-  | unknownNum => True
-  | moreThan n => interpAtLeast n x
-  | cardinal n => x >= n
-  end.
-
-Definition interpAtMost : Num -> nat -> Prop :=
-  fun num x => match num with
-  | singular => x <= 1
-  | plural   => x <= SOME
-  | unknownNum => True
-  | moreThan _ => True
-  | cardinal n => x <= n
-  end.
-
-Definition interpExactly : Num -> nat -> Prop :=
-  fun num x => match num with
-  | singular => x = 1
-  | plural   => True
-  | unknownNum => True
-  | moreThan n => interpAtLeast n x
-  | cardinal n => x = n
-  end.
 
 Definition Numeral := nat.
 Definition NP0 := VP ->Prop.
@@ -208,13 +178,6 @@ Definition RelCN: CN->RS->CN:= fun cn rs x => cn x /\ rs x. (* GF FIXME: Relativ
 
 Definition AdvCN : CN -> Adv -> CN := fun cn adv => adv cn.
 
-Definition apConj2 : Conj -> Prop -> Prop -> Prop := fun c => match c with
-  Associative c => c |
-  EitherOr => fun p q => (p /\ not q ) \/ (not p /\ q)
-  end .
-
-Definition ConjCN2 : Conj -> CN -> CN -> CN
-                   := fun c n1 n2 o => apConj2 c (n1 o) (n2 o).
 
 (* Parameter PartNP : CN -> NP -> CN . *)
 Parameter SentCN : CN -> SC -> CN .
@@ -238,32 +201,6 @@ Definition   AdvNP : NP -> Adv -> NP
 (* Parameter ConjNP : Conj -> ListNP -> NP . *)
 
 
-Definition apConj3 : Conj -> Prop -> Prop -> Prop -> Prop := fun c => match c with
-  Associative c => fun p q r => c (c p q) r |
-  EitherOr => fun p q r => (p /\ not q /\ not r)\/ (not p /\ q /\ not r)\/ (not p /\ not q /\ r)
-  end .
-
-
-Definition ConjNP2 : Conj -> NP -> NP -> NP
-                   := fun c np1 np2 => let (num1, q1,cn1) := np1 in
-                                       let (num2, q2,cn2) := np2 in
-                                         mkNP (num1) (* FIXME add numbers? min? max? *)
-                                              (fun num' cn' vp => apConj2 c (q1 num' cn' vp) (q2 num' cn' vp))
-                                              (fun x => (cn1 x) \/ (cn2 x) ).
-
-Definition ConjNP3 : Conj -> NP -> NP -> NP -> NP
-                   := fun c np1 np2 np3 =>
-                         let (num1, q1,cn1) := np1 in
-                         let (num2, q2,cn2) := np2 in
-                         let (num3, q3,cn3) := np3 in
-                              mkNP (num1) (* FIXME add numbers? min? max? *)
-                                   (fun num' cn' vp => apConj3 c (q1 num' cn' vp) (q2 num' cn' vp) (q3 num' cn' vp))
-                                   (fun x => (cn1 x) \/ (cn2 x) \/ (cn3 x)).
-(* Parameter CountNP : Det -> NP -> NP . *)
-Parameter DetNP : Det -> NP .
-(* Parameter ExtAdvNP : NP -> Adv -> NP . *)
-Definition MassNP : CN -> NP
-           := fun cn => mkNP singular (fun num cn' p => exists x, cn' x /\ p  x) cn. (* TODO: Check *)
 
 Definition PPartNP : NP -> V2 -> NP  (* Word of warning: in FraCas partitives always behave like intersection, which is probably not true in general *)
           := fun np v2 => let (num,q,cn) := np in
@@ -320,15 +257,6 @@ Lemma most_card_mono1 : forall a b:CN, (forall x, a x -> b x) -> MOSTPART (CARD 
 intros. cbv. apply le_trans with (y := CARD a). apply MOST_ineq. apply CARD_monotonous. assumption.
 Qed.
 
-Definition IndefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
-  cardinal n => CARD (fun x => P x /\ Q x) = n |
-  moreThan n => interpAtLeast n (CARD (fun x => P x /\ Q x)) | (* FIXME: add one here *)
-  _ => exists x, P x/\Q x end. 
-Definition DefArt:Quant:= fun (num : Num) (P:CN)=> fun Q:VP=> match num with
-   plural => (forall x, P x -> Q x) /\ Q (environment P) /\ P (environment P) |
-             (* The above implements definite plurals *)
-   _ => Q (environment P) /\ P (environment P) end.
-
 
 
 (**Definition DefArt:Quant:= fun P:CN=> fun Q:object->Prop=>exists x,  P x/\ Q x.**)
@@ -367,13 +295,6 @@ Definition SlashVV : VV -> VPSlash -> VPSlash
 
 (* AdV *)
 
-
-(* QS *)
-(* Parameter ConjQS : Conj -> ListQS -> QS . *)
-Definition ConjQS2 : Conj -> QS -> QS -> QS
-                   := fun c => apConj2 c.
-(* Parameter ExtAdvQS : Adv -> QS -> QS . *)
-Parameter UseQCl : Temp -> Pol -> QCl -> QS .
 
 (* QCl *)
 (* Parameter ExistIP : IP -> QCl . *)
@@ -512,15 +433,6 @@ Definition PNeg : Pol := UncNeg.
 
 (* Parameter MkVPS : Temp -> Pol -> VP -> VPS . *)
 
-
-(* S *)
-Definition UseCl: Temp -> Pol -> Cl -> S := fun temp pol cl => temp (pol cl).
-Parameter AdvS : Adv -> S -> S .
-(* Parameter ConjS : Conj -> ListS -> S . *)
-Definition ConjS2 : Conj -> S -> S -> S
-                  := fun c s1 s2 => apConj2 c s1 s2.
-Definition ExtAdvS : Adv -> S -> S := fun adv s => adv (fun _ => s) IMPERSONAL.
-Definition PredVPS : NP -> VPS -> S := fun np vp => apNP np vp.
 
 (* Parameter RelS : S -> RS -> S . *)
 (* Parameter SSubjS : S -> Subj -> S -> S . *)
@@ -678,16 +590,6 @@ Definition more_than_AdN : AdN := moreThan .
 Parameter IMPRESSED_BY : object -> object -> Prop.
 Definition impressed_by_A2 : A2 :=
    fun impressee class impressor => class impressee /\ IMPRESSED_BY impressee impressor.
-
-Definition andSg_Conj : Conj := Associative (fun p q => p /\ q).
-Definition and_Conj : Conj := Associative (fun p q => p /\ q).
-(* Parameter both7and_DConj : Conj . *)
-Parameter comma_and_Conj : Conj .
-Definition either7or_DConj : Conj := EitherOr.
-Parameter if_comma_then_Conj : Conj .
-(* Parameter if_then_Conj : Conj . *)
-Definition or_Conj : Conj  := Associative (fun p q => p \/ q).
-Parameter semicolon_and_Conj : Conj .
 
 Parameter can8know_VV : VV .
 Parameter can_VV : VV .
@@ -1270,7 +1172,7 @@ Parameter blame1_V2for : object -> V2.
 Definition blame2_V2on : object -> V2
            := fun x y z => blame1_V2for y x z.
 Parameter client_Nat : object -> N.
-Parameter stock_market_trader_N : N.
+Definition stock_market_trader_N := stockmarket_trader_N. (* spelling *)
 Parameter swim_Vto : object -> V.
 Parameter run_V2in : object -> V2.
 Parameter chain_Npart : object -> N.
