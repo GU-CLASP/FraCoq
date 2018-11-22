@@ -60,15 +60,13 @@ count xs = show (countOk xs)++"/"++show (length xs)
 sectionStarts :: [Int]
 sectionStarts = [1,81,114,142,197,220,251,326,334,347]
 
-showScores :: [(Int, Bool, t, Maybe a)] -> Int -> IO ()
-showScores consolidated sectionNumber = do
+showScores :: [(Int, Bool, t, Maybe a)] -> (Int,Int,Int) -> IO ()
+showScores consolidated (sectionNumber,start,stop) = do
   putStrLn (" ------ Section " ++ show sectionNumber)
   putStrLn ("complete: "++count complete)
   putStrLn ("correct: "++ count correct)
   putStrLn ("score: " ++ show ((fromIntegral (countOk correct) :: Double) / (fromIntegral (length complete))))
-  where start = sectionStarts !! (sectionNumber - 1)
-        stop = sectionStarts !! sectionNumber
-        inRange x = x >= start && x < stop
+  where inRange x = x >= start && x < stop
         correct = [ok | (n,ok,_,Just _) <- consolidated, inRange n]
         complete = [isJust a | (n,_ok,_,a) <- consolidated, inRange n]
 
@@ -80,11 +78,12 @@ doIt :: [String] -> IO ()
 doIt args = do
   files <- mapM readFile args
   let ws = (concatMap words . concat . map lines) files
-  let proofs = eval $ parseWords Nothing ws 
+  let proofs = eval $ parseWords Nothing ws
       consolidated = [(n,compatible a proof,a,proof) | (n,a) <- answers, isClear a, let proof = lookup n proofs]
   mapM_ print (parseWords Nothing ws)
   mapM_ print consolidated
-  mapM_ (showScores consolidated) [1..7]
+  mapM_ (showScores consolidated) (zip3 [1..] sectionStarts (tail sectionStarts))
+  (showScores consolidated) (0,0,400)
 
 main :: IO ()
 main = do
