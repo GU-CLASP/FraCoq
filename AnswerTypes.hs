@@ -4,7 +4,7 @@ import Data.Function
 data Answer = Yes | No | Unknown | Undef | Unclear String deriving (Eq,Show,Ord)
 
 answers :: [(Int, Answer)]
-answers = nubBy ((==) `on` fst) $
+answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   [(119, Unknown)] -- because mary could have used someone else's workstation
   ++ officialAnswers
 

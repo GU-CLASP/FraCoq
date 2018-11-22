@@ -50,7 +50,9 @@ compatible Undef _ = True
 compatible (Unclear _) _ = True
 compatible x (Just y) = x == y
 
-count xs = show (length (filter id xs))++"/"++show (length xs)
+countOk = length . filter id
+
+count xs = show (countOk xs)++"/"++show (length xs)
 
 main :: IO ()
 main = do
@@ -61,9 +63,10 @@ main = do
       correct = [ok | (n,ok,_,Just _) <- consolidated, inRange n]
       complete = [isJust a | (n,_ok,_,a) <- consolidated, inRange n]
   -- mapM_ print (parseWords Nothing ws)
+  mapM_ print consolidated
   putStrLn ("incomplete: "++count complete)
   putStrLn ("correct: "++ count correct)
-  mapM_ print consolidated
+  putStrLn ("score: " ++ show ((fromIntegral (countOk correct) :: Double) / (fromIntegral (length complete))))
 
 -- >>> main
 -- incomplete: 75/83

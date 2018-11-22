@@ -1,10 +1,16 @@
-default:: FraCoq2.v
+default:: results
 
 Bank.hs: AnswerTypes.hs BankParser.hs FraCaS-treebank/src/FraCaSBankI.gf
 	nix-shell --run "ghc BankParser -e main  >$@"
 
 FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
 	gawk -f $^ >$@
+
+results:: verify.txt ResultParser.hs
+	nix-shell --run "ghci -e main ResultParser.hs"
+
+verify.txt: Proofs.v MS.v FraCoq2.v
+	cocq Proofs.v > $@
 
 test:: Tests
 	./Tests
