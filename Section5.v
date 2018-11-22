@@ -72,8 +72,10 @@ cbv in slK.
 firstorder.
 Qed.
 
+Theorem T209: Problem209aFalse. cbv. intros.  apply small_and_large_disjoint_K with (cn := animal_N) (o := MICKEY). destruct small_A. destruct large_A.
+firstorder. Qed. 
 
-Theorem FraCas210: Problem210aFalse. cbv. intros.
+Theorem FraCas210: Problem210aFalse. cbv. intros. 
 apply small_and_large_disjoint_K with (cn := animal_N) (o := MICKEY).
 destruct small_A.
 destruct large_A.
@@ -122,7 +124,7 @@ firstorder.
 (* UNK *)
 Abort All.
 
-(*Theorem FraCas216: Problem216aTrue. 
+(**Theorem FraCas216: Problem216aTrue. 
 cbv.
 intros P1.
 destruct fat_A as [fat fatP].
