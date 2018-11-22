@@ -6,6 +6,8 @@ Theorem T002a: Problem002aTrue.
 cbv. destruct great_A as [great].
 intro H.
 destruct H as [H1 [x [H2 H3]]].
+split.
+firstorder.
 exists x.
 split.
 split.
@@ -35,7 +37,8 @@ Qed.
 Theorem T005a: Problem005aTrue.
 cbv.
 firstorder.
-Qed.
+Abort All.
+(* JP: I disagree with FraCaS *)
 
 Theorem T006a: Problem006aFalse.
 cbv.
@@ -60,7 +63,7 @@ Qed.
 
 Theorem T011a: Problem011aTrue. cbv.
 destruct great_A as [great].
- firstorder. Abort All. (* FIXME FEWQ *)
+ firstorder. Qed.
  
 Theorem T013a: Problem013aTrue. cbv.
 cbv.
