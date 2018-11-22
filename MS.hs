@@ -1636,6 +1636,7 @@ evalQuant [AtLeastPredet] _ num cn role = boundQuant' Pos num cn role
 evalQuant [AtMostPredet] _ num cn role = boundQuant' Neg num cn role
 evalQuant [MostPredet] _ num cn role = evalQuant [] (ETypeQuant MOST) num cn role
 evalQuant [] _ (Cardinal n) cn role = boundQuant' Pos (Cardinal n) cn role
+evalQuant [] _ (MoreThan num) cn role = boundQuant' Pos (MoreThan num) cn role  -- FraCas 104
 evalQuant [] (BoundQuant p n) _n cn role = boundQuant' p (Cardinal n) cn role
 evalQuant [] (ObjectQuant x) _number _cn _role = return $ \vp -> vp x
 evalQuant [] (UniversalQuant pol) num cn role = universal_Quant' pol num cn role
@@ -1738,6 +1739,7 @@ boundQuant' pol number (cn',gender) role = do
       return (\vp' extraObjs -> Quant n' pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
   where n' = case number of
           Cardinal n -> (AtLeast n)
+          MoreThan (Cardinal n) -> (AtLeast (n+1))
           AFew -> Few
           _ -> error ("atLeastQuant: unexpected number: " ++ show number)
 

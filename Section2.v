@@ -128,9 +128,13 @@ Abort All.
 Theorem T103a: Problem103aTrue. cbv. firstorder.
 Qed. 
 
-Theorem T104a: Problem104aTrue. cbv. firstorder.
-Qed.
-(* We do not handle counting in this case *)
+Theorem T104a: Problem104aTrue. cbv.
+firstorder.
+Abort All.
+
+Theorem T104a: Problem104aFalse. cbv.
+firstorder.
+Abort All.
 
 Theorem T105a: Problem105aFalse. cbv.
 firstorder.
