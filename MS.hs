@@ -701,10 +701,12 @@ combineGenders g1 g2 = case intersect g1 g2 of
   i -> i
 
 conjCN2 :: Conj -> CN -> CN -> CN
-conjCN2 c cn1 cn2 = do
+conjCN2 _c cn1 cn2 = do
   (c1,g1) <- cn1
   (c2,g2) <- cn2
-  return (\x -> apConj2 c (c1 x) (c2 x),combineGenders g1 g2)
+  -- NOTE: the only meaningful conjuctions to use between CNs are 'and' or 'or'.
+  -- However, both of them the same thing. ("Or"). See FraCas 87 -- 89.
+  return (\x -> apConj2 or_Conj (c1 x) (c2 x),combineGenders g1 g2)
 
 relCN :: CN->RS->CN
 relCN cn rs = do
