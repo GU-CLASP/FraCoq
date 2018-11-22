@@ -1,8 +1,8 @@
 Load FraCoq2.
 
 
-Require Import Omega.
 
+Require Import Omega.
 
 Theorem T114a: Problem114aTrue. cbv. intros. destruct H. destruct H. exists x. split. exact H. exists (PN2object mary_PN). split. apply I. exact H0. Qed. 
 
@@ -363,7 +363,7 @@ Theorem T186c: Problem186cTrue. cbv. intros. destruct H. firstorder. Qed. (**rea
 
 Theorem T187d: Problem187dTrue. cbv. intros. destruct H. firstorder. Qed. (**reading d works**)
 
-Theorem T188c: Problem188bTrue. cbv. firstorder. Qed.
+Theorem T188c: Problem188cTrue. cbv. firstorder. Qed.
 (**reading c works while it is supposed to be unknown! System does a good job I think**)
 (* We never had a strict reading; however Jones is put into scope before the elliptic VP is evaluated.
 And, it must be done this way in order to support 182, 185 at least.*)
@@ -372,6 +372,13 @@ And, it must be done this way in order to support 182, 185 at least.*)
 Theorem T189a: Problem189aTrue. cbv. intros. destruct H. firstorder. Qed.
 
 Theorem T190b: Problem190bTrue. cbv. intros. destruct H. firstorder. Qed. (**reading b works!**)
+
+
+Theorem T192a: Problem192aTrue. cbv. firstorder. Abort All.
+Theorem T192a: Problem192aFalse. cbv. firstorder. Abort All.
+
+Theorem T194a: Problem194aTrue. cbv. firstorder. Abort All.
+Theorem T194a: Problem194aFalse. cbv. firstorder. Abort All.
 
 
 Theorem T196a: Problem196aTrue. cbv. intro. firstorder. Qed. 

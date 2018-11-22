@@ -5,8 +5,8 @@ data Answer = Yes | No | Unknown | Undef | Unclear String deriving (Eq,Show,Ord)
 
 answers :: [(Int, Answer)]
 answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
-  [(119, Unknown)] -- because mary could have used someone else's workstation
-  [(181, Yes)] -- this works for the same reason 180 works.
+  [(119, Unknown) -- because mary could have used someone else's workstation
+  ,(181, Yes)] -- this works for the same reason 180 works.
   ++ officialAnswers
 
 officialAnswers :: [(Int,Answer)]

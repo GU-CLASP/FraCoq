@@ -166,7 +166,7 @@ overrides _ = Nothing
 
 disabledProblems :: [Int]
 disabledProblems =
-  [137,171,172,191,192,193,194,195
+  [137,171,172
   ,216,217 -- syntax wrong: should be (john is (fatter politician than
            -- bill)) not ((john is fatter politician) than bill)
   ,230,231,232,233,234,235,236,237,238,239,240,241,243,244,245  -- syntax wrong

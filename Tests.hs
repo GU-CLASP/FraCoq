@@ -96,16 +96,7 @@ ouch122 = debug (phrToEff s_122_4_h)
 
 -- 155. Incorrect syntax (one anaphora not present, fixed now)
 
--- Analysis for 181. IMO it can be "yes" on some reading.
-
--- Analysis for 183. Strict identity not implemented.
-
 -- Analysis for 190. Strict identity not implemented.
-
--- Analysis for 191-195.
--- a) I don't even understand the sentence
--- b) "They" could refer to any subset of object introduced in the environment. Potentially very expensive computationally.
---    (Potentially a lot of readings to deal with) --- see 127
 
 
 
