@@ -1,4 +1,3 @@
-
 Load FraCoq2.
 
 
@@ -20,9 +19,18 @@ Theorem T083a: Problem083aFalse. cbv.
 firstorder.
 Abort All.
 
+Transparent PN2object.
 Theorem T084a: Problem084aTrue. cbv.
-firstorder.
-Abort All. (* FIXME: multiple readings? *)
+intros contract isContract.
+destruct jones_PN as [jones] .
+destruct smith_PN as [smith].
+destruct anderson_PN as [andersson].
+intros.
+elim H.
+intro.
+destruct H0.
+Abort All.
+(* FIXME: This example needs narrow scoping *)
 
 
 Theorem T085a: Problem085aFalse.
@@ -36,54 +44,27 @@ firstorder.
 Qed.
 
 Theorem T087a: Problem087aTrue. cbv.
-intros.
 firstorder.
-Abort All.
-(*
-FIXME
-Every representative and client in this reading means
-"Every representative and every client"
-but it seems that the parse tree says something else. Tricky.
-Use multiple readings for AND?
-*)
+Qed. 
 
 Theorem T088a: Problem088aTrue. cbv.
 intros.
 firstorder.
-Abort All.
-(*
-FIXME
-Every representative and client in this reading means
-"Every representative and every client"
-but it seems that the parse tree says something else. Tricky.
-Use multiple readings for AND?
-*)
-
-Theorem T088a': Problem088aFalse. cbv.
-intros.
-firstorder.
-Abort All.
-(*
-FIXME
-Every representative and client in this reading means
-"Every representative and every client"
-but it seems that the parse tree says something else. Tricky.
-Use multiple readings for AND?
-*)
+Qed. 
 
 Theorem T089a: Problem089aTrue. cbv.
 firstorder.
 Qed.
 
-(* Fixme Interpretation of "the" as coming from the environment is incorrect for every example in the section
-Multiple readings?
-*)
-
 Theorem T090a: Problem090aTrue. cbv.
 firstorder.
 Qed.
 
-Theorem T092a: Problem090aTrue. cbv.
+Theorem T091a: Problem091aTrue. cbv.
+firstorder.
+Qed.
+
+Theorem T092a: Problem092aTrue. cbv.
 firstorder.
 Qed.
 
@@ -93,10 +74,20 @@ intros P.
 firstorder.
 Qed.
 
+Theorem T094a: Problem094aFalse. cbv. firstorder. Abort All.
+Theorem T094a: Problem094aTrue. cbv. firstorder. Qed.
+
+Theorem T095a: Problem095aTrue. cbv. firstorder. Qed.
+
+Theorem T096a: Problem096aTrue. cbv. firstorder. Qed.
+
 Theorem T097a: Problem097aTrue. cbv.
+intros theFailure isFailure P1.
 firstorder.
 Qed.
 
+Theorem T098a: Problem098aTrue. cbv. firstorder. Abort All.
+Theorem T098a: Problem098aFalse. cbv. firstorder. Abort All.
 
 Transparent PN2object.
 Transparent PN2Class.
@@ -111,14 +102,35 @@ exact H1.
 split.
 exact SMITH_PERSON.
 assumption.
-assumption.
+firstorder.
 Qed.
 
-
 Theorem T100a: Problem100aTrue. cbv.
-(* FIXME: plural is existential whereas it should be universal. *)
+firstorder.
+apply most_card_mono1.
+firstorder.
+Qed.
+
+Variable likely_weakening_K : forall (p:CN) (x:object), p x -> apSubsectiveA likely_A p x.
+
+Theorem T101a: Problem101aTrue. cbv.
+firstorder.
+apply likely_weakening_K.
+firstorder.
+exact SMITH_PERSON.
+Qed.
+
+Theorem T102a: Problem102aTrue. cbv. firstorder.
+Abort All.
+Theorem T102a: Problem102aFalse. cbv. firstorder.
 Abort All.
 
+Theorem T103a: Problem103aTrue. cbv. firstorder.
+Qed. 
+
+Theorem T104a: Problem104aTrue. cbv. firstorder.
+Qed.
+(* We do not handle counting in this case *)
 
 Theorem T105a: Problem105aFalse. cbv.
 firstorder.
@@ -129,6 +141,8 @@ firstorder.
 Qed.
 
 Theorem T107a: Problem107aTrue. cbv.
+intros theMeeting isMeeting.
+intro P.
 firstorder.
 Qed.
 
@@ -145,7 +159,8 @@ firstorder.
 Qed.
 
 Theorem T111a: Problem111aTrue. cbv.
-(* FIXME: incorrect collective reading. *)
+firstorder.
+(*  incorrect collective reading. *)
 Abort All.
 
 Theorem T112a: Problem112aTrue. cbv.
