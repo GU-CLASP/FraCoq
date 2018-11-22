@@ -946,10 +946,10 @@ each_Det :: Det
 each_Det = (Unspecified,every_Quant)
 
 somePl_Det :: Det
-somePl_Det = (Plural,indefArt)
+somePl_Det = (Plural,ExistQuant)
 
 someSg_Det :: Det
-someSg_Det = (Singular,indefArt)
+someSg_Det = (Singular,ExistQuant)
 
 several_Det :: Det
 several_Det = (Plural,several_Quant)
@@ -1400,7 +1400,7 @@ x ### (PNounPhrase conj np) = Sentence $ do
 
 instance Show (a -> b) where show _ = "<FUNCTION>"
 type Quant' = (Num -> CN' -> Role -> Dynamic NP')
-data Quant = PossQuant Pron | UniversalQuant Pol | ExistQuant | ETypeQuant ([Char] -> Prop -> Exp -> Exp) | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat
+data Quant = PossQuant Pron | UniversalQuant Pol | IndefQuant | ExistQuant | ETypeQuant ([Char] -> Prop -> Exp -> Exp) | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat
   | ObliviousQuant Quant' -- ^ quantifier that ignores numbers and predeterminers.
   deriving Show
 
@@ -1427,7 +1427,7 @@ several_Quant :: Quant
 several_Quant = ETypeQuant SEVERAL
 
 indefArt :: Quant
-indefArt = ExistQuant
+indefArt = IndefQuant
 
 defArt :: Quant
 defArt = DefiniteQuant
@@ -1640,12 +1640,23 @@ evalQuant [] (BoundQuant p n) _n cn role = boundQuant' p (Cardinal n) cn role
 evalQuant [] (ObjectQuant x) _number _cn _role = return $ \vp -> vp x
 evalQuant [] (UniversalQuant pol) num cn role = universal_Quant' pol num cn role
 evalQuant [] (PossQuant pron) num cn role = genNP' Exists pron num cn role
+evalQuant [] IndefQuant Plural cn role = bothQuant cn role   -- FraCas 097 -- 101
+evalQuant [] IndefQuant  num cn role = some_Quant' num cn role
 evalQuant [] ExistQuant  num cn role = some_Quant' num cn role
 evalQuant [] (ETypeQuant q) num cn role = eTypeQuant q num cn role
 evalQuant [] DefiniteQuant Plural cn role = universal_Quant' id Plural cn role
 evalQuant [] DefiniteQuant num cn role = defArt' num cn role
 evalQuant [] TheOtherQuant  num cn role = the_other_Q' num cn role
 evalQuant p q  num _cn _role = error $ "evalQuant: unsupported combination:" ++ show (p,q,num)
+
+bothQuant :: CN' -> Role -> Dynamic NP'
+bothQuant (cn',gender) role = do -- always Plural
+  x <- getFresh
+  let dPluralizable = False
+  modify (pushNP (Descriptor dPluralizable gender Plural role) (pureVar x Plural (cn',gender)))
+  modify (pushDefinite cn' x)
+  return $ \vp' eos -> Forall x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos) ∧
+                       Exists x (noExtraObjs (cn' (Var x))) (vp' (Var x) eos)
 
 universal_Quant' :: Pol -> Quant'
 universal_Quant' pol number (cn',gender) role = do
@@ -1758,5 +1769,8 @@ s_155_2_p_ALT = (sentence (useCl (present) (pPos) (predVP (usePN (lexemePN "bill
 s_086_2_h_ALT :: Phr
 s_086_2_h_ALT = (sentence (useCl (past) (pPos) (predVP (detCN (detQuant (indefArt) (numCard (numNumeral (n_six)))) (useN (lexemeN "lawyer_N"))) (complSlash (slashV2a (lexemeV2 "sign_V2")) (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "contract_N")))))))
 
-s_099_1_p_fixed :: Phr
-s_099_1_p_fixed = sentence (useCl (past) (pPos) (predVP (detCN (detQuant (defArt) (numPl)) (advCN (useN (lexemeN "client_N")) (prepNP (lexemePrep "at_Prep") (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "demonstration_N")))))) (adVVP (lexemeAdv "all_Adv") (useComp (compAP (complA2 (lexemeA2 "impressed_by_A2") (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "system_N")))) (numSg)) (useN (lexemeN "performance_N")))))))))
+-- s_099_1_p_fixed :: Phr
+-- s_099_1_p_fixed = sentence (useCl (past) (pPos) (predVP (detCN (detQuant (defArt) (numPl)) (advCN (useN (lexemeN "client_N")) (prepNP (lexemePrep "at_Prep") (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "demonstration_N")))))) (adVVP (lexemeAdv "all_Adv") (useComp (compAP (complA2 (lexemeA2 "impressed_by_A2") (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "system_N")))) (numSg)) (useN (lexemeN "performance_N")))))))))
+
+-- s_101_1_p_fixed :: Phr
+-- s_101_1_p_fixed = sentence (useCl (present) (pPos) (predVP (detCN (detQuant (indefArt) (numPl)) (useN (lexemeN "university_graduate_N"))) (complSlash (slashV2a (lexemeV2 "make8become_V2")) (detCN (detQuant (indefArt) (numPl)) (adjCN (positA (lexemeA "poor8bad_A")) (useN (lexemeN "stockmarket_trader_N")))))))
