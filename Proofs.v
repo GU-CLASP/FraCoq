@@ -172,7 +172,19 @@ Qed.
 -- c) Difficult to interpret: (advNP (detNP (anySg_Det)) (prepNP (lexemePrep "part_Prep") (detCN (detQuant (possPron (itRefl_Pron)) (numPl)) (useN (lexemeN "computer_N")))))
 *)
 
- Theorem T138a: Problem138aTrue. cbv. intros. Abort all. 
+Theorem T138a: Problem138aTrue. cbv.
+ Abort all.
+(* FIXME:
+
+FORALL (fun c=>cover_page_Npossess (PN2object r95103_PN) c) (fun c=>
+  (FORALL (fun a=>report_N a) (fun a=>
+    (EXISTS (fun b=>cover_page_N b) (fun b=>have_V2 b a)))) /\
+  report_N (PN2object r95103_PN) /\
+  sign_V2 b (PN2object smith_PN) -> sign_V2 c (PN2object smith_PN))
+
+the EXISTS is moved upwards BUT alone.
+Instead, the "forall should be taken with it."
+*)
 
  Theorem T139a: Problem139aTrue.
 cbv. destruct large_A as [large]. intros. destruct H. destruct H. destruct H0. firstorder. Qed. 
@@ -294,13 +306,16 @@ Theorem T169a: Problem169aTrue. cbv. intros. firstorder. Qed.
 Theorem T170a: Problem170aTrue. cbv. intros. Abort all.
 (** Doing this would require another syntax: 'John found Mary before Bill ELLIPTIC_VP' **)
 
+(* 171: too hard! *)
+(* 172: too hard! *)
+
 Theorem T173a: Problem173aTrue. cbv. intros.
 destruct john_PN.
 destruct bill_PN.
 destruct H. apply H.
 firstorder.
 exact MARY_PERSON.
-Qed. 
+Qed.
 
  
 Theorem T174a: Problem174aTrue. cbv. intros. firstorder. Abort all. (**unk**)
@@ -348,7 +363,11 @@ Theorem T186c: Problem186cTrue. cbv. intros. destruct H. firstorder. Qed. (**rea
 
 Theorem T187d: Problem187dTrue. cbv. intros. destruct H. firstorder. Qed. (**reading d works**)
 
-Theorem T188c: Problem188cTrue. cbv. intros. destruct H. firstorder. Qed. (**reading c works while it is supposed to be unknown! System does a good job I think**)
+Theorem T188c: Problem188bTrue. cbv. firstorder. Qed.
+(**reading c works while it is supposed to be unknown! System does a good job I think**)
+(* We never had a strict reading; however Jones is put into scope before the elliptic VP is evaluated.
+And, it must be done this way in order to support 182, 185 at least.*)
+
 
 Theorem T189a: Problem189aTrue. cbv. intros. destruct H. firstorder. Qed.
 
