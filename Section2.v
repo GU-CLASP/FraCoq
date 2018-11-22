@@ -30,7 +30,7 @@ elim H.
 intro.
 destruct H0.
 Abort All.
-(* FIXME: This example needs narrow scoping *)
+(* FIXME: In H, the negation should distribute over 'and' ("narrow scoping") *)
 
 
 Theorem T085a: Problem085aFalse.
