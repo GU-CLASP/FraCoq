@@ -1162,7 +1162,9 @@ Definition committee_member_Nfrom origin x :=
 
 
 Parameter live_Vin : object -> V.
-Parameter resident_Ain : object -> A.
+Parameter RESIDENT_IN : object -> object -> Prop.
+Definition resident_Ain : object -> A :=
+  fun location pred x => RESIDENT_IN location x /\ pred x.
 Parameter resident_Aoutside : object -> A.
 
 Parameter spend_V2part : object -> V2.

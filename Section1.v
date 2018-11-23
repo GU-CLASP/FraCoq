@@ -159,8 +159,20 @@ Theorem T026a: Problem026aTrue. cbv.
 firstorder.
 generalize H.
 apply le_mono_right.
-firstorder.
-Abort All.
+intros european [isEuropean [isResident _]].
+lapply (H2 european).
+intros canTravel.
+split.
+assumption.
+assumption.
+split.
+apply H1.
+assumption.
+split.
+assumption.
+split.
+Qed.
+
 
 
 Theorem T027a: Problem027aTrue. cbv.
@@ -415,7 +427,7 @@ Theorem T054a: Problem054aFalse. cbv.
 firstorder.
 Abort All.
 
-Theorem T055a: Problem049aTrue. cbv.
+Theorem T055a: Problem055aTrue. cbv.
 firstorder.
 Qed.
 
