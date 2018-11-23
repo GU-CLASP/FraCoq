@@ -38,6 +38,11 @@ firstorder.
 Abort All.
 (* JP: I disagree with FraCaS *)
 
+Theorem T005a: Problem005aFalse.
+cbv.
+firstorder.
+Abort All.
+
 Theorem T006a: Problem006aFalse.
 cbv.
 destruct great_A as [great].
