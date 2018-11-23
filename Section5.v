@@ -38,29 +38,13 @@ destruct small_A.
 destruct large_A.
 firstorder. Qed.
 
-Theorem FraCas206:Problem206aTrue. cbv. intros.
-destruct small_A.
-destruct large_A.
-firstorder. 
-Abort All. (* UNK *)
+Theorem FraCas206:Problem206aTrue. cbv. intros. destruct small_A. destruct large_A. firstorder.  Abort All. (* UNK *)
 
-Theorem FraCas206':Problem206aFalse. cbv. intros.
-destruct small_A.
-destruct large_A.
-firstorder.
-Abort All. (* UNK *)
+Theorem FraCas206':Problem206aFalse. cbv. intros. destruct small_A. destruct large_A. firstorder. Abort All. (* UNK *)
 
-Theorem FraCas207t: Problem207aTrue. cbv. intros.
-destruct small_A.
-destruct large_A.
-firstorder.
-Abort All. (* UNK *)
+Theorem FraCas207t: Problem207aTrue. cbv. intros. destruct small_A. destruct large_A. firstorder. Abort All. (* UNK *)
 
-Theorem FraCas207f: Problem207aFalse. cbv. intros.
-destruct small_A.
-destruct large_A.
-firstorder.
- Abort All. (* UNK *)  (**206 and 207 are correctly captured, they are marked as UNK, but the score calculation counts them as wrong**)
+Theorem FraCas207f: Problem207aFalse. cbv. intros. destruct small_A. destruct large_A. firstorder.  Abort All. (* UNK *)  (**206 and 207 are correctly captured, they are marked as UNK, but the score calculation counts them as wrong**)
 
 Theorem FraCas208:Problem208aTrue.
 assert (slK := small_and_large_disjoint_K animal_N).
