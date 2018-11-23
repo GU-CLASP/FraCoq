@@ -50,13 +50,13 @@ destruct large_A.
 firstorder.
 Abort All. (* UNK *)
 
-Theorem T207a: Problem207aTrue. cbv. intros.
+Theorem FraCas207t: Problem207aTrue. cbv. intros.
 destruct small_A.
 destruct large_A.
 firstorder.
 Abort All. (* UNK *)
 
-Theorem T207': Problem207aFalse. cbv. intros.
+Theorem FraCas207f: Problem207aFalse. cbv. intros.
 destruct small_A.
 destruct large_A.
 firstorder.
