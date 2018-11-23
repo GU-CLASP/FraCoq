@@ -6,11 +6,11 @@ Bank.hs: AnswerTypes.hs BankParser.hs FraCaS-treebank/src/FraCaSBankI.gf
 FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
 	gawk -f $^ >$@
 
-results:: verify.txt ResultParser.hs
-	nix-shell --run "runhaskell ResultParser.hs Proofs.v Section*.v"
+results:: verify1.txt verify2.txt verify3.txt verify4.txt verify9.txt  ResultParser.hs
+	nix-shell --run "runhaskell ResultParser.hs Section?.v"
 
-verify.txt: Proofs.v MS.v FraCoq2.v
-	coqc Section1.v Section2.v Proofs.v > $@
+verify%.txt: Section%.v MS.v FraCoq2.v
+	coqc Section$*.v > $@
 
 test:: Tests
 	./Tests
