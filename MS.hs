@@ -1641,7 +1641,8 @@ evalQuant [] (BoundQuant p n) _n cn role = boundQuant' p (Cardinal n) cn role
 evalQuant [] (ObjectQuant x) _number _cn _role = return $ \vp -> vp x
 evalQuant [] (UniversalQuant pol) num cn role = universal_Quant' pol num cn role
 evalQuant [] (PossQuant pron) num cn role = genNP' Exists pron num cn role
-evalQuant [] IndefQuant Plural cn role = bothQuant cn role   -- FraCas 097 -- 101
+evalQuant [] IndefQuant Plural cn role@Subject = bothQuant cn role   -- Bare plural, FraCas 097 -- 101
+-- Note that the universal reading of a bare plural seem to happen only in subject position. See FraCas 040.
 evalQuant [] IndefQuant  num cn role = some_Quant' num cn role
 evalQuant [] ExistQuant  num cn role = some_Quant' num cn role
 evalQuant [] (ETypeQuant q) num cn role = eTypeQuant q num cn role
