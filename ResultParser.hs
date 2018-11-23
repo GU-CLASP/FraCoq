@@ -51,11 +51,11 @@ compatible Undef _ = True
 compatible (Unclear _) _ = error "Unclear!"
 compatible x (Just y) = x == y
 
-countOk :: [Bool] -> Int
-countOk = length . filter id
+countOk :: [(Bool,a)] -> Int
+countOk = length . filter fst
 
-count :: [Bool] -> [Char]
-count xs = show (countOk xs)++"/"++show (length xs)
+count :: Show a => [(Bool,a)] -> [Char]
+count xs = show (countOk xs)++"/"++show (length xs) ++ "   " ++ show (map snd $ filter (not . fst) xs)
 
 sectionStarts :: [Int]
 sectionStarts = [1,81,114,142,197,220,251,326,334,347]
@@ -67,8 +67,8 @@ showScores consolidated (sectionNumber,start,stop) = do
   putStrLn ("correct: "++ count correct)
   putStrLn ("score: " ++ show ((fromIntegral (countOk correct) :: Double) / (fromIntegral (length complete))))
   where inRange x = x >= start && x < stop
-        correct = [ok | (n,ok,_,Just _) <- consolidated, inRange n]
-        complete = [isJust a | (n,_ok,_,a) <- consolidated, inRange n]
+        correct = [(ok,n) | (n,ok,_,Just _) <- consolidated, inRange n]
+        complete = [(isJust a,n) | (n,_ok,_,a) <- consolidated, inRange n]
 
 isClear :: Answer -> Bool
 isClear (Unclear _) = False

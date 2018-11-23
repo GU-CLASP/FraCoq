@@ -7,10 +7,23 @@ answers :: [(Int, Answer)]
 answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   [
   -- Overruled
-    (69, Unknown) -- because mary could have used someone else's workstation
+    (005, Unknown) -- Missing hypothesis: there are italian tenors.
+   ,(056, Yes) -- From fracas.xml: This answer seems dubious to
+              -- me. Apparently the FraCaS people interpret "many" as
+              -- denoting a large proportion, whereas I interpret it
+              -- as denoting a large absolute number. That is, if
+              -- "many" is regarded as a binary generalized
+              -- quantifier, they want to say it's non-monotone in the
+              -- first argument (and upward-monotone in the second),
+              -- whereas I would say it's upward-monotone in both
+              -- arguments. Note that this problem is exactly the
+              -- inverse of problem fracas-72.
+  ,(069, Unknown) -- because mary could have used someone else's workstation
   ,(119, Unknown) -- because mary could have used someone else's workstation
-  ,(181, Yes)-- this works for the same reason 180 works.
+  ,(181, Yes) -- this works for the same reason 180 works.
 
+
+  
   -- Clarified
   ,(87 , Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ,(88 , Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.

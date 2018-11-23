@@ -10,7 +10,7 @@ results:: verify.txt ResultParser.hs
 	nix-shell --run "runhaskell ResultParser.hs Proofs.v Section*.v"
 
 verify.txt: Proofs.v MS.v FraCoq2.v
-	coqc Section2.v Proofs.v > $@
+	coqc Section1.v Section2.v Proofs.v > $@
 
 test:: Tests
 	./Tests

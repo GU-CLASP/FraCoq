@@ -924,7 +924,7 @@ Parameter moment_N : N .
 Parameter mortgage_interest_N : N .
 Parameter mouse_N : N .
 Parameter newspaper_N : N .
-Definition nobel_prize_N : N := fun o => exists x, nobel_prize_N2 x o.
+Definition nobel_prize_N : N := fun o => exists x, nobel_prize_N2 o x.
 Parameter note_N : N .
 Parameter novel_N : N .
 Parameter office_building_N : N .
@@ -1138,7 +1138,7 @@ Parameter have_V2for : object -> object -> object ->  Prop.
 Parameter take_V2to : object -> object -> object  -> Prop.
 Parameter take_V2at : object -> object -> object  -> Prop. 
 Definition cover_page_Npossess
-  := fun x: object => fun y : object => cover_page_N x /\ have_V2 y x.
+  := fun x: object => fun y : object => cover_page_N y /\ have_V2 y x.
 Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
 Parameter go8travel_Vby8means : object -> object -> Prop. 
 Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> Prop.
@@ -1162,7 +1162,9 @@ Definition committee_member_Nfrom origin x :=
 
 
 Parameter live_Vin : object -> V.
-Parameter resident_Ain : object -> A.
+Parameter RESIDENT_IN : object -> object -> Prop.
+Definition resident_Ain : object -> A :=
+  fun location pred x => RESIDENT_IN location x /\ pred x.
 Parameter resident_Aoutside : object -> A.
 
 Parameter spend_V2part : object -> V2.
