@@ -12,3 +12,5 @@
 /FraToCoq
 /Tests
 /verify.txt
+.*.aux
+# coq compiler?
