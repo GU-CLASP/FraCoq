@@ -41,7 +41,7 @@ firstorder. Qed.
 Theorem FraCas206:Problem206aTrue. cbv. intros.
 destruct small_A.
 destruct large_A.
-firstorder.
+firstorder. 
 Abort All. (* UNK *)
 
 Theorem FraCas206':Problem206aFalse. cbv. intros.
@@ -50,13 +50,13 @@ destruct large_A.
 firstorder.
 Abort All. (* UNK *)
 
-Theorem FraCas207: Problem207aTrue. cbv. intros.
+Theorem T207a: Problem207aTrue. cbv. intros.
 destruct small_A.
 destruct large_A.
 firstorder.
 Abort All. (* UNK *)
 
-Theorem FraCas207': Problem207aFalse. cbv. intros.
+Theorem T207': Problem207aFalse. cbv. intros.
 destruct small_A.
 destruct large_A.
 firstorder.
