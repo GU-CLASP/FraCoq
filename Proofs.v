@@ -171,9 +171,35 @@ Qed.
 -- c) Difficult to interpret: (advNP (detNP (anySg_Det)) (prepNP (lexemePrep "part_Prep") (detCN (detQuant (possPron (itRefl_Pron)) (numPl)) (useN (lexemeN "computer_N")))))
 *)
 
+Parameter reports_have_Single_Cover_Page_K : forall report cover1 cover2,
+  report_N report ->
+  cover_page_N cover1 ->
+  cover_page_N cover2 ->
+  have_V2 cover1 report ->
+  have_V2 cover2 report ->
+  (cover1 = cover2).
+(* A true fact *)
+Check reports_have_Single_Cover_Page_K.
+
 Theorem T138a: Problem138aTrue. cbv.
- Abort all.
-(* FIXME:
+intros coverPageOfR95103 [isCoverPage ofR95103].
+intro P.
+destruct P as [cover [isCover [repHasCover [isReport isSigned]]]].
+lapply (repHasCover (PN2object r95103_PN)).
+intro hasCover'.
+lapply (reports_have_Single_Cover_Page_K isReport isCover isCoverPage hasCover') .
+intro R.
+rewrite R in isSigned.
+exact isSigned.
+assumption.
+assumption.
+Qed.
+
+(* Commentary:
+  Even though we get the above correctly, there are some difficulties with the interpretation.
+
+  1. The logical formulation for the above problem states that all reports have the same cover page.
+
 
 FORALL (fun c=>cover_page_Npossess (PN2object r95103_PN) c) (fun c=>
   (FORALL (fun a=>report_N a) (fun a=>
@@ -183,6 +209,8 @@ FORALL (fun c=>cover_page_Npossess (PN2object r95103_PN) c) (fun c=>
 
 the EXISTS is moved upwards BUT alone.
 Instead, the "forall should be taken with it."
+
+  2. But, even if we were to fix this, the problem intends to detect the fact that "the cover page" implicitly refers to the cover page of a given report (which is elided:) "Smith signed *its* cover page."
 *)
 
  Theorem T139a: Problem139aTrue.

@@ -1138,7 +1138,7 @@ Parameter have_V2for : object -> object -> object ->  Prop.
 Parameter take_V2to : object -> object -> object  -> Prop.
 Parameter take_V2at : object -> object -> object  -> Prop. 
 Definition cover_page_Npossess
-  := fun x: object => fun y : object => cover_page_N x /\ have_V2 y x.
+  := fun x: object => fun y : object => cover_page_N y /\ have_V2 y x.
 Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
 Parameter go8travel_Vby8means : object -> object -> Prop. 
 Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> Prop.
