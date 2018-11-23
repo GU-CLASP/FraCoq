@@ -6,8 +6,6 @@ Theorem T002a: Problem002aTrue.
 cbv. destruct great_A as [great].
 intro H.
 destruct H as [H1 [x [H2 H3]]].
-split.
-firstorder.
 exists x.
 split.
 split.
@@ -66,7 +64,6 @@ destruct great_A as [great].
  firstorder. Qed.
  
 Theorem T013a: Problem013aTrue. cbv.
-cbv.
 destruct leading_A as [leading].
 destruct indispensable_A as [indispensable].
 destruct excellent_A as [excellent].
@@ -74,47 +71,50 @@ firstorder. exists x0. firstorder. exists x1. firstorder.
 
 
 (* FIXME: we're missing indispensable (excellent x) => indispensable x.
-For this, we need to interpret plural as universal.
+There seem to be a subltety about the kind of adjectives.
 *)
 
 
 Theorem T014a: Problem014aFalse. cbv.
 destruct leading_A as [leading].
-intros.
+intros [P1 P2] H.
 destruct H.
 firstorder.
  Abort All.
- 
-(* FIXME: one of the ... has a syntax which is difficult to interpret *)
+(* FIXME: one of the ... has a syntax which is difficult to interpret; P2 incorrect *)
 
 Theorem T015a: Problem015aTrue. cbv. firstorder. Qed.
 Theorem T016a: Problem016aTrue. cbv.
 firstorder.
-Abort All. (* FIXME: unresolved reference in P1 *)
+Abort All. (* Undef problem; unresolved reference in P1 *)
 
 Theorem T017a: Problem017aTrue. cbv.
 intro the_nobel_prize.
-intros.
-destruct H as [literature].
-destruct H0 as [irishman]. 
+intros H P1.
+destruct H as [literature [isLiterature isNobelPrize]].
+destruct P1 as [irishman [isIrish hasWon]]. 
 exists irishman.
 split.
-firstorder.
+assumption.
 exists the_nobel_prize.
 split.
 exists literature.
-Abort All.
+assumption.
+assumption.
+Qed.
 
 Theorem T018a: Problem018aTrue. cbv. firstorder. Qed.
 Theorem T019a: Problem019aTrue. cbv. firstorder. Qed.
 Theorem T020a: Problem020aTrue. cbv. firstorder. Qed.
 
-
 Theorem T021a: Problem021aTrue. cbv.
 destruct in_Prep as [inP inV inC].
  destruct within_Prep as [within withinVerid withinCov].
 destruct europe_PN as [europe regionN].
- firstorder.
+intros theRTLiE isRTLiE [P1 [P2 P3]].
+  firstorder.
+apply P3.
+firstorder.
 Qed.
 
 Theorem T022a: Problem022aTrue. cbv. firstorder. Abort All.
@@ -133,23 +133,25 @@ Theorem T025a: Problem025aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
 destruct in_Prep as [inPrep inVerid inVeridCov].
-intro result.
-intro H.
-destruct H as [isResult [somewhere [T0 isPublished]]].
-intro H.
-destruct H as [[H0 [delegate [isDelegate [newsPaper [H1 gotIn]]]]] H2].
+intros [[Pcard Pexist] Pc].
+clear Pc.
+destruct Pexist as [delegate [isDelegate [newsPaper [isNewsPaper gotIn]]]].
 split.
 split.
-generalize H0.
+generalize Pcard.
 apply le_mono_right.
-firstorder.
-generalize H6.
-apply getInK.
+intros deleg' [isDeleg [paper [isNewsPaper' gotIn']]].
+split.
+assumption.
+intros result [isresult [somewhere [triv isPublished]]].
+apply getInK with (newsPaper := paper).
 firstorder.
 exists delegate.
+split.
+assumption.
+intros result [isresult [somewhere [triv isPublished]]].
+apply getInK with (newsPaper := newsPaper).
 firstorder.
-generalize gotIn.
-apply getInK.
 firstorder.
 Qed.
 
@@ -313,7 +315,7 @@ Theorem T041a: Problem041aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
 firstorder.
-generalize H0.
+generalize H.
 apply le_mono_right.
 firstorder.
 Abort All.
@@ -323,9 +325,6 @@ destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
 firstorder.
 Abort All.
-
-
-
 
 Theorem T042a: Problem042aTrue. cbv.
 firstorder.
@@ -362,9 +361,10 @@ Abort All.
 
 Theorem T046a: Problem046aFalse. cbv.
 destruct at_home_Adv as [atHome [atHomeVerid atHomeVeridCov]].
-firstorder.
+intros P1 H.
+destruct P1 as [comis1 [isComis [comis2 [isComis2 [notime1 [notime2 noEq]]]]] ].
+(* "one of the" syntax difficult to interpret. *)
 Abort All.
-
 
 Theorem T047a: Problem047aTrue. cbv.
 destruct at_home_Adv as [atHome [atHomeVerid atHomeVeridCov]].
@@ -430,7 +430,7 @@ Theorem T057a: Problem057aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
 firstorder.
-generalize H0.
+generalize H.
 apply le_mono_right.
 firstorder.
 Qed.
@@ -542,7 +542,7 @@ Theorem T073a: Problem073aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national].
 firstorder.
-generalize H0.
+generalize H.
 apply le_mono_right.
 firstorder.
 Abort All.
