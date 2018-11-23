@@ -924,7 +924,7 @@ Parameter moment_N : N .
 Parameter mortgage_interest_N : N .
 Parameter mouse_N : N .
 Parameter newspaper_N : N .
-Definition nobel_prize_N : N := fun o => exists x, nobel_prize_N2 x o.
+Definition nobel_prize_N : N := fun o => exists x, nobel_prize_N2 o x.
 Parameter note_N : N .
 Parameter novel_N : N .
 Parameter office_building_N : N .
