@@ -68,7 +68,7 @@ destruct leading_A as [leading].
 destruct indispensable_A as [indispensable].
 destruct excellent_A as [excellent].
 firstorder. exists x0. firstorder. exists x1. firstorder.
-
+Abort All.
 
 (* FIXME: we're missing indispensable (excellent x) => indispensable x.
 There seem to be a subltety about the kind of adjectives.
@@ -403,6 +403,13 @@ Theorem T050a: Problem050aTrue. cbv.
 firstorder.
 Abort All.
 Theorem T050a: Problem050aFalse. cbv.
+firstorder.
+Abort All.
+
+Theorem T051a: Problem051aTrue. cbv.
+firstorder.
+Abort All.
+Theorem T051a: Problem051aFalse. cbv.
 firstorder.
 Abort All.
 
