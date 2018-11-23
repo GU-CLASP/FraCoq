@@ -86,6 +86,9 @@ problemDef [] = error "problem without hypothesis"
 hypName :: HypID -> String
 hypName (pb,h,t) = "s_" ++ showPb pb ++ "_" ++ show h ++ "_" ++ t
 
+oParens :: [Char] -> [Char]
+oParens x = "(" ++ x ++ ")"
+
 processDef :: (HypID, SExpr) -> [String]
 processDef (h,e) = [x ++ " :: Phr"
                    ,x ++ "=" ++ e']
@@ -94,9 +97,9 @@ processDef (h,e) = [x ++ " :: Phr"
                Nothing -> processExp e
                Just v -> v
 processExp :: SExpr -> String
-processExp (SExpr xs) = "(" ++ intercalate " " (map processExp xs) ++ ")"
+processExp (SExpr xs) = oParens (intercalate " " (map processExp xs))
 processExp (Atom []) = error "empty identifer"
-processExp (Atom s@(x:xs)) = case reverse s of
+processExp (Atom s@(x:xs)) = oParens $ case reverse s of
                                ('A':'_':_) -> "lexemeA " ++ show s
                                ('N':'_':_) -> "lexemeN " ++ show s
                                ('2':'N':'_':_) -> "lexemeN2 " ++ show s
@@ -131,7 +134,7 @@ main = do
                   -- pbNumber >= 114, -- start of anaphora section
                   -- pbNumber <= 141, -- end of anaphora section
                   -- pbNumber <= 251, -- end of ellipsis section
-                  (pbNumber > 333) || (pbNumber < 311),
+                  (pbNumber >= 326) || (pbNumber < 311),
                   hypTyp /= "q"]
       problems = filter (not . (`elem` disabledProblems) . frst . fst  . head) $
                  groupBy ((==) `on` (frst . fst)) handled
@@ -162,6 +165,8 @@ overrides (122,4,"h")= Just "s_122_4_h_ALT"
 overrides (155,2,"p")= Just "s_155_2_p_ALT"
 overrides (086,3,"h")= Just "s_086_2_h_ALT" -- gf syntax has the wrong noun (accountant vs. lawyer)
 -- overrides (099,1,"p")= Just "s_099_1_p_fixed" -- changed in FraCoq 1; but actually we had wrong interpretation for bare plurals.
+overrides (323,4,"h") = Just "s_323_4_h_NEW"
+overrides (323,1,"p") = Just "s_323_1_p_NEW"
 overrides _ = Nothing
 
 disabledProblems :: [Int]

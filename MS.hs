@@ -440,6 +440,7 @@ present = id
 presentPerfect = id
 pastPerfect = id
 future = id
+conditional = id
 
 ------------------
 -- Pol
@@ -471,6 +472,9 @@ type AdN = Card -> Card
 
 more_than_AdN :: AdN
 more_than_AdN = MoreThan
+
+-- less_than_AdN :: AdN
+-- less_than_AdN = LessThan
 
 -----------------
 -- Nums
@@ -1287,6 +1291,7 @@ but_PConj :: PConj
 but_PConj = and_Conj
 that_is_PConj :: PConj
 that_is_PConj = and_Conj
+then_PConj = and_Conj
 
 
 ----------------------

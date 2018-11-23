@@ -1064,6 +1064,7 @@ Parameter update_V2 : V2 .
 Parameter use_V2 : V2 .
 Parameter vote_for_V2 : V2 .
 Parameter win_V2 : V2 .
+Parameter win_V2from : object -> V2 .
 Parameter work_in_V2 : V2 .
 Parameter write_V2 : V2 .
 Parameter write_to_V2 : V2 .
