@@ -250,8 +250,8 @@ Parameter CARD: CN -> nat.
 Parameter MOSTPART: nat -> nat.
 Definition CARD_MOST := fun x => MOSTPART (CARD x).
 
-Variable MOST_ineq : forall x, MOSTPART x <= x.
-Variable CARD_monotonous : forall a b:CN, (forall x, a x -> b x) -> CARD a <= CARD b.
+Parameter MOST_ineq : forall x, MOSTPART x <= x.
+Parameter CARD_monotonous : forall a b:CN, (forall x, a x -> b x) -> CARD a <= CARD b.
 Parameter le_trans : forall x y z, x <= y -> y <= z -> x <= z.
 Lemma most_card_mono1 : forall a b:CN, (forall x, a x -> b x) -> MOSTPART (CARD a) <= CARD b.
 intros. cbv. apply le_trans with (y := CARD a). apply MOST_ineq. apply CARD_monotonous. assumption.
@@ -1063,12 +1063,12 @@ Parameter sayCovariant_K : forall p q:S, forall s, (p -> q) -> say_VS p s -> say
 Parameter claimCovariant_K : forall p q:S, forall s, (p -> q) -> claim_VS p s -> claim_VS q s.
 
 
-Variable  person_K: forall x:object, chairman_N(x)-> person_N(x). 
-Variable  committee_member_person_K : forall x, committee_member_N x -> person_N x.
+Parameter  person_K: forall x:object, chairman_N(x)-> person_N(x). 
+Parameter  committee_member_person_K : forall x, committee_member_N x -> person_N x.
 
-Variable Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False.
+Parameter Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False.
 
-Variable small_and_large_disjoint_K : forall cn o, getSubsectiveA small_A cn o /\ getSubsectiveA large_A cn o -> False.
+Parameter small_and_large_disjoint_K : forall cn o, getSubsectiveA small_A cn o /\ getSubsectiveA large_A cn o -> False.
 
 
 
@@ -1077,7 +1077,7 @@ Variable small_and_large_disjoint_K : forall cn o, getSubsectiveA small_A cn o /
 Definition EXISTS := fun (p : object -> Prop) (q : object -> Prop) => exists x, p x /\ q x.
 Definition FORALL := fun (p : object -> Prop) (q : object -> Prop) => forall x, p x -> q x.
 Parameter THE : (object -> Prop) -> object.
-Variable THE_sat_exact : forall (q:object -> Prop), q (THE q).
+Parameter THE_sat_exact : forall (q:object -> Prop), q (THE q).
 Lemma THE_sat : forall (p:object -> Prop) (q:object -> Prop), (forall x, q x -> p x) -> p (THE q).
 intros.
 apply H.
@@ -1208,7 +1208,7 @@ assumption.
 assumption.
 Qed.
 
-Variable CARD_exists : forall P:(object -> Prop), 1 <= CARD P -> exists x, P x.
+Parameter CARD_exists : forall P:(object -> Prop), 1 <= CARD P -> exists x, P x.
 
 Definition before_PREP
   : object -> VP -> object -> Prop
@@ -1217,12 +1217,12 @@ Definition before_PREP
 Definition le_mono_right := le_mono.
 Definition le_mono_left := le_mono'.
 
-Variable usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x , use_VV p x -> use_VV q x.
+Parameter usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x , use_VV p x -> use_VV q x.
 
-Variable getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_V2 result x.
+Parameter getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_V2 result x.
 (* Analysis: In "get published", published should not be intersectional. *)
 
-Variable client_people_K : forall x, client_N x -> person_N x.
+Parameter client_people_K : forall x, client_N x -> person_N x.
 
 Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
 
