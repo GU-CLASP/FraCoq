@@ -70,7 +70,7 @@ Add Printing Let SubsectiveA.
 Definition apSubsectiveA
             : SubsectiveA -> A
             := fun a => let (measure, threshold) := a in
-               fun cn x => measure cn x >= threshold.
+               fun cn x => threshold <= measure cn x /\ cn x.
 Definition getSubsectiveA := apSubsectiveA.
 Coercion apSubsectiveA : SubsectiveA >-> A.
 
@@ -235,14 +235,18 @@ Parameter AdvAP0 : AP -> Adv -> object -> Prop . (* We want to ignore the class 
 Definition AdvAP : AP -> Adv -> AP
   := fun adj adv cn x => AdvAP0 adj adv x.
 
-Definition ComparA : A -> NP -> AP
- := fun a np cn x => apNP np (fun  y =>    (a cn y -> a cn x)
-                                              /\ (not (a cn x) -> not (a cn y))).
+
+Definition ComparA : SubsectiveA -> NP -> AP
+ := fun a np cn x => let (measure,_thres) := a in
+    apNP np (fun y => (1 <= measure cn x - measure cn y)).
 (* Remark: most of the time, the comparatives are used in a copula, and in that case the category comes from the NP.  *)
  (* x is faster than y  *)
- 
-Definition ComparAsAs : A -> NP -> AP
- := fun a np cn x => apNP np (fun y => a cn x <-> a cn y).
+
+Definition compareGradableMore : SubsectiveA -> (object->Prop) -> object -> object -> Prop :=
+fun a cn x y => let (measure,_) := a in 1 <= measure cn x - measure cn y.
+Definition compareGradableEqual : SubsectiveA -> (object -> Prop) -> object -> object -> Prop :=
+fun a cn x y => let (measure,_) := a in measure cn x = measure cn y.
+
 Definition ComplA2 : A2 -> NP -> AP := fun a2 np cn x => apNP np (fun y => a2 y cn x).
 Parameter PartVP : VP -> AP .
 Definition SentAP : AP -> SC -> AP
@@ -1186,14 +1190,14 @@ Parameter own_V2in : object -> V2.
 
 Definition QQ := CN -> VP -> Prop.
 Definition FEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) <= A_FEW).
-Definition AFEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= A_FEW) /\ exists x, cn x /\ vp x.
+Definition AFEWQ  := fun cn => fun vp => A_FEW <= (CARD (fun x => cn x /\ vp x) ) /\ exists x, cn x /\ vp x.
 
 Definition EQUAL : object -> object -> Prop := fun x y => x = y.
-Definition MOSTQ := fun cn => fun vp => CARD (fun x => cn x /\ vp x) >= CARD_MOST cn /\ exists x, cn x /\ vp x.
-Definition MANYQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= MANY)  /\ exists x, cn x /\ vp x.
-Definition LOTSQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= LOTS_OF)  /\ exists x, cn x /\ vp x.
-Definition SEVERALQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= SEVERAL)  /\ exists x, cn x /\ vp x.
-Definition ATLEAST:= fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) >= n).
+Definition MOSTQ := fun cn => fun vp => CARD_MOST cn <= CARD (fun x => cn x /\ vp x)  /\ exists x, cn x /\ vp x.
+Definition MANYQ := fun cn => fun vp => (MANY <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
+Definition LOTSQ := fun cn => fun vp => (LOTS_OF <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
+Definition SEVERALQ := fun cn => fun vp => (SEVERAL <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
+Definition ATLEAST:= fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (n <= CARD (fun x => cn x /\ vp x)).
 Definition ATMOST:= fun n : Z => fun cn=> fun vp=> CARD (fun x => cn x /\ vp x) <= n.
 Definition  EXACT:= fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
 

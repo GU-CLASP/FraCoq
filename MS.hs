@@ -381,8 +381,18 @@ lexemeVP :: String -> VP
 lexemeVP "elliptic_VP" = elliptic_VP
 lexemeVP x = return $ mkPred x
 
-lexemeA :: String -> A
-lexemeA a = return $ (\cn obj -> appAdjArgs a [lam cn,obj])
+class IsAdj a where
+  fromAdj :: String -> a
+
+instance IsAdj A' where
+  fromAdj a = (\cn obj -> appAdjArgs a [lam cn,obj])
+
+newtype GradableA = GradableA String
+instance IsAdj GradableA where
+  fromAdj = GradableA
+
+lexemeA :: IsAdj a => String -> Dynamic a
+lexemeA a = return $ fromAdj a
 
 lexemeV3 :: String -> V3
 lexemeV3 x = return $ mkRel3 x
@@ -614,17 +624,17 @@ adAP ada a = do
   a' <- a
   return $ ada' a'
 
-comparA :: A -> NP -> AP
+comparA :: Dynamic GradableA -> NP -> AP
 comparA a np = do
-  a' <- a
+  GradableA a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> (np' (\y extraObjs -> (a' cn' y extraObjs --> a' cn' x extraObjs) ∧ (not' (a' cn' x extraObjs) --> not' (a' cn' y extraObjs))))
+  return $ \cn' x -> np' (\ y _extraObjs -> Con "compareGradableMore" `apps` [Con a',lam cn',x,y])
 
-comparAsAs :: A -> NP -> AP
+comparAsAs :: Dynamic GradableA -> NP -> AP
 comparAsAs a np = do
-  a' <- a
+  GradableA a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> np' (\ y extraObjs -> a' cn' x extraObjs <-> a' cn' y extraObjs)
+  return $ \cn' x -> np' (\ y _extraObjs -> Con "compareGradableEqual" `apps` [Con a',lam cn',x,y])
 
 -- FIXME: very questionable that this should even be in the syntax.
 useComparA_prefix :: A -> AP
