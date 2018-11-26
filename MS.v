@@ -1,3 +1,13 @@
+Close Scope nat_scope.
+Require Import ZArith.
+Open Scope Z_scope.
+
+Opaque Z.gt.
+Opaque Z.lt.
+Opaque Z.add.
+Opaque Z.sub.
+Opaque Z.ge.
+Opaque Z.le.
 
 (** Basic concepts **)
 Parameter object : Type.
@@ -54,35 +64,39 @@ Definition wkIntersectiveA
 Coercion wkIntersectiveA : IntersectiveA >-> A.
 
 Inductive SubsectiveA : Type :=
-  mkSubsective : ((object -> Prop) -> (object -> Prop)) -> SubsectiveA.
+  mkSubsective : forall (measure : (object -> Prop) -> object -> Z) (threshold : Z), SubsectiveA.
 Add Printing Let SubsectiveA.
 
 Definition apSubsectiveA
             : SubsectiveA -> A
-            := fun a cn (x:object) => let (aa) := a in
-                 aa cn x /\ cn x .
-Definition getSubsectiveA : SubsectiveA -> A.
-intro. destruct X. exact P. Defined.
+            := fun a => let (measure, threshold) := a in
+               fun cn x => measure cn x >= threshold.
+Definition getSubsectiveA := apSubsectiveA.
 Coercion apSubsectiveA : SubsectiveA >-> A.
 
 Inductive ExtensionalSubsectiveA : Type :=
-  mkExtensionalSubsective : forall (a : (object -> Prop) -> (object -> Prop)),
-     (forall (p q:object -> Prop), (forall x, p x -> q x) -> (forall x, q x -> p x) ->  forall x, a p x -> a q x)
+  mkExtensionalSubsective :
+     forall
+     (measure : (object -> Prop) -> object -> Z)
+     (threshold : Z),
+     (let a := fun cn x => (threshold <= measure cn x)
+     in (forall (p q:object -> Prop), (forall x, p x -> q x) -> (forall x, q x -> p x) ->  forall x, a p x -> a q x))
      -> ExtensionalSubsectiveA.
 
 Add Printing Let ExtensionalSubsectiveA.
 
 Definition apExtensionalSubsectiveA
-            : ExtensionalSubsectiveA -> A
-            := fun a cn (x:object) => let (aa,_) := a in
-                 aa cn x /\ cn x .
-Coercion apExtensionalSubsectiveA : ExtensionalSubsectiveA >-> A.
+            : ExtensionalSubsectiveA -> SubsectiveA
+            := fun a => let (measure,threshold,_) := a in
+                 mkSubsective measure threshold.
+Coercion apExtensionalSubsectiveA : ExtensionalSubsectiveA >-> SubsectiveA.
 
 Inductive PrivativeA : Type :=
   mkPrivativeA : ((object -> Prop) -> (object -> Prop)) -> PrivativeA.
 Add Printing Let PrivativeA.
 Definition wkPrivativeA : PrivativeA -> A
             := fun aa cn (x:object) => let (a) := aa in a cn x /\ not (cn x).
+
 Coercion wkPrivativeA : PrivativeA >-> A.
 Definition NonCommitalA := A.
 
@@ -95,17 +109,17 @@ Inductive Num : Type :=
   plural   : Num |
   unknownNum : Num |
   moreThan : Num -> Num |
-  cardinal : nat -> Num.
+  cardinal : Z -> Num.
 Definition Card := Num.
 Definition AdN : Type := Num -> Num.
 
-Parameter LOTS_OF : nat.
-Parameter MANY : nat.
-Parameter A_FEW : nat.
-Parameter SOME : nat. (* the plural number *)
-Parameter SEVERAL : nat.
+Parameter LOTS_OF : Z.
+Parameter MANY : Z.
+Parameter A_FEW : Z.
+Parameter SOME : Z. (* the plural number *)
+Parameter SEVERAL : Z.
 
-Definition Numeral := nat.
+Definition Numeral := Z.
 Definition NP0 := VP ->Prop.
 Definition NP1 := (object -> Prop) ->Prop.
 
@@ -246,8 +260,8 @@ Parameter environment : (object -> Prop) -> object.
 Parameter OF : object -> object -> Prop.
 
 
-Parameter CARD: CN -> nat.
-Parameter MOSTPART: nat -> nat.
+Parameter CARD: CN -> Z.
+Parameter MOSTPART: Z -> Z.
 Definition CARD_MOST := fun x => MOSTPART (CARD x).
 
 Parameter MOST_ineq : forall x, MOSTPART x <= x.
@@ -1179,9 +1193,9 @@ Definition MOSTQ := fun cn => fun vp => CARD (fun x => cn x /\ vp x) >= CARD_MOS
 Definition MANYQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= MANY)  /\ exists x, cn x /\ vp x.
 Definition LOTSQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= LOTS_OF)  /\ exists x, cn x /\ vp x.
 Definition SEVERALQ := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) >= SEVERAL)  /\ exists x, cn x /\ vp x.
-Definition ATLEAST:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) >= n).
-Definition ATMOST:= fun n : nat => fun cn=> fun vp=> CARD (fun x => cn x /\ vp x) <= n.
-Definition  EXACT:= fun n : nat => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
+Definition ATLEAST:= fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) >= n).
+Definition ATMOST:= fun n : Z => fun cn=> fun vp=> CARD (fun x => cn x /\ vp x) <= n.
+Definition  EXACT:= fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
 
 
 Definition  report_Nfromon := fun source location report => report_N report /\

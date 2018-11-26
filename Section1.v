@@ -72,7 +72,7 @@ Theorem T013a: Problem013aTrue. cbv.
 destruct leading_A as [leading].
 destruct indispensable_A as [indispensable].
 destruct excellent_A as [excellent].
-firstorder. exists x0. firstorder. exists x1. firstorder.
+(* SLOW: firstorder. exists x0. firstorder. exists x1. firstorder.*)
 Abort All.
 
 (* FIXME: we're missing indispensable (excellent x) => indispensable x.
@@ -130,9 +130,7 @@ Theorem T024a: Problem024aTrue. cbv.
 intros.
 firstorder.
 generalize H0.
-apply le_mono.
-firstorder.
-Qed.
+Abort All.
 
 Theorem T025a: Problem025aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
@@ -143,6 +141,7 @@ clear Pc.
 destruct Pexist as [delegate [isDelegate [newsPaper [isNewsPaper gotIn]]]].
 split.
 split.
+
 generalize Pcard.
 apply le_mono_right.
 intros deleg' [isDeleg [paper [isNewsPaper' gotIn']]].
