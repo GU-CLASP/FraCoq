@@ -899,9 +899,9 @@ Parameter invoice_N : N .
 Parameter irishman_N : N .
 Parameter italian_N : N .
 Parameter itel_computer_N : N .
-Parameter itelxz_N : N .
-Parameter itelzx_N : N .
-Parameter itelzy_N : N .
+Definition itelxz_N : N := computer_N. (* hack for sec. 6 to fix comparison class *)
+Definition itelzx_N : N := computer_N.
+Definition itelzy_N : N := computer_N.
 Parameter item_N : N .
 Parameter job_N : N .
 Parameter labour_mp_N : N .
@@ -932,7 +932,7 @@ Parameter one_N : N .
 Parameter order_N : N .
 Parameter paper_N : N .
 Parameter payrise_N : N .
-Parameter pc6082_N : N .
+Definition pc6082_N : N := computer_N.
 Parameter performance_N : N .
 Parameter philosopher_N : N .
 Parameter phone_N : N .
@@ -995,18 +995,6 @@ Definition smith_PN := mkPN SMITH person_N SMITH_PERSON.
 Parameter KIM : object.
 Parameter KIM_PERSON : person_N KIM.
 Definition kim_PN := mkPN KIM person_N KIM_PERSON.
-
-Parameter PC6082 : object.
-Parameter PC6082_COMPY : computer_N PC6082.
-Definition pc_6082_PN := mkPN PC6082 computer_N PC6082_COMPY.
-
-Parameter ITEL_XZ : object.
-Parameter ITEL_XZ_COMPY : computer_N ITEL_XZ.
-Definition itel_xz_PN := mkPN ITEL_XZ computer_N ITEL_XZ_COMPY.
-(* Syntactic replacement FIXME: it could also be possible to add environment (pc6082_N) = itel_xz_PN ; but then we also need environment to return a default class. *)
-(* Definition the_pc6082_NP : NP := (DetCN (DetQuant (DefArt) (NumSg)) (UseN (pc6082_N))). *)
-
-(* Definition the_itel_xz_NP : NP := (DetCN (DetQuant (DefArt) (NumSg)) (UseN (itelxz_N))). *)
 
 Parameter accept_V2 : V2 .
 Parameter answer_V2 : V2 .
