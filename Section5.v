@@ -25,44 +25,64 @@ Theorem FraCas202: Problem202aTrue. cbv.  firstorder. Qed.
 
 Theorem FraCas203: Problem203aTrue. cbv. firstorder. Qed.
 
-Theorem FraCas204: Problem204aFalse. cbv. intros.
-apply small_and_large_disjoint_K with (cn := animal_N) (o := MICKEY).
-destruct small_A.
-destruct large_A.
-firstorder. Qed.
+Require Import Psatz.
+
+Transparent PN2object.
+Theorem FraCas204: Problem204aFalse. 
+cbv. intros.
+assert (H' := small_and_large_opposite_K).
+destruct small_A as [smallness smallThres].
+destruct large_A as [largeness largeThres].
+destruct (H' animal_N MICKEY) as [neg disj].
+lia. Qed.
 
 
 Theorem FraCas205: Problem205aFalse. cbv. intros.
-apply small_and_large_disjoint_K with (cn := animal_N) (o := DUMBO).
-destruct small_A.
-destruct large_A.
-firstorder. Qed.
+cbv. intros.
+assert (H' := small_and_large_opposite_K).
+destruct small_A as [smallness smallThres].
+destruct large_A as [largeness largeThres].
+destruct (H' animal_N DUMBO) as [neg disj].
+lia. Qed.
 
-Theorem FraCas206:Problem206aTrue. cbv. intros. destruct small_A. destruct large_A. firstorder.  Abort All. (* UNK *)
+Theorem FraCas206: Problem206aTrue. cbv. intros. destruct small_A. destruct large_A. firstorder.  Abort All. (* UNK *)
 
-Theorem FraCas206':Problem206aFalse. cbv. intros. destruct small_A. destruct large_A. firstorder. Abort All. (* UNK *)
+Theorem FraCas206': Problem206aFalse. cbv. intros. destruct small_A. destruct large_A. firstorder. Abort All. (* UNK *)
 
 Theorem FraCas207: Problem207aTrue. cbv. intros. destruct small_A. destruct large_A. firstorder. Abort All. (* UNK *)
 
-Theorem FraCas207': Problem207aFalse. cbv. intros. destruct small_A. destruct large_A. firstorder.  Abort All. (* UNK *)  (**206 and 207 are correctly captured, they are marked as UNK, but the score calculation counts them as wrong**)
+Theorem FraCas207': Problem207aFalse. cbv. intros. destruct small_A. destruct large_A. firstorder. Abort All. (* UNK *)  (**206 and 207 are correctly captured, they are marked as UNK, but the score calculation counts them as wrong**)
 
-Theorem FraCas208:Problem208aTrue.
-assert (slK := small_and_large_disjoint_K animal_N).
+Transparent PN2Class.
+Theorem FraCas208: Problem208aTrue.
+assert (slK := small_and_large_opposite_K).
 cbv.
 destruct small_A as [small].
 destruct large_A as [large].
 intros [[P1a P1b] [P2a P2]].
-cbv in slK.
-firstorder.
-Qed. (**Same here**)
+destruct (slK animal_N DUMBO) as [neg disj].
+lia.
+Qed.
 
-Theorem T209: Problem209aFalse. cbv. intros.  apply small_and_large_disjoint_K with (cn := animal_N) (o := MICKEY). destruct small_A. destruct large_A.
-firstorder. Qed. 
+Theorem T209: Problem209aFalse.
+assert (slK := small_and_large_opposite_K).
+cbv.
+destruct small_A as [small].
+destruct large_A as [large].
+intros [[P1a P1b] [P2a P2]].
+destruct (slK animal_N DUMBO) as [neg disj].
+destruct (slK animal_N MICKEY) as [neg' disj'].
+lia.
+Qed. 
 
 Theorem FraCas210: Problem210aFalse. cbv. intros. 
 apply small_and_large_disjoint_K with (cn := animal_N) (o := MICKEY).
 destruct small_A.
 destruct large_A.
+firstorder.
+cbv.
+firstorder.
+cbv.
 firstorder.
 Qed.
 
@@ -77,12 +97,16 @@ firstorder.
 Qed.
 
 Theorem FraCas212: Problem212aTrue.
-assert (slK := small_and_large_disjoint_K).
-cbv. cbv in slK.
-destruct small_A as [small].
-destruct large_A as [large].
-intros.
-firstorder.
+cbv.
+assert (slK := small_and_large_opposite_K).
+destruct small_A as [small smallThreshold].
+destruct large_A as [large largeThreshold].
+intros [P1 [P2  [[largeM mouse] [smallD eleph]]]].
+destruct (slK animal_N DUMBO) as [neg disj].
+destruct (slK animal_N MICKEY) as [neg' disj'].
+destruct (P1 _ mouse) as [X Y].
+destruct (P2 _ eleph) as [Z W].
+lia.
 Qed. 
 
 Theorem FraCas213: Problem213aTrue.
@@ -91,7 +115,7 @@ destruct small_A as [small].
 destruct large_A as [large].
 intros.
 firstorder.
-Abort All.
+Qed.
 
 Theorem FraCas214: Problem214aTrue.
 cbv.

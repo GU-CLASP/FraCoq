@@ -1246,3 +1246,13 @@ Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun 
 
 Definition person_Nat : object -> CN :=
   fun location person => person_N person /\ _BE_at location person.
+
+Parameter slow_and_fast_disjoint_K : forall cn o, getSubsectiveA slow_A cn o /\ getSubsectiveA fast_A cn o -> False.
+Definition opposite_adjectives : SubsectiveA -> SubsectiveA -> Prop
+  := fun a1 a2 =>
+  forall cn o,  let (mSmall,threshSmall) := a1 in
+                let (mLarge,threshLarge) := a2 in
+               (   (mSmall cn o = - mLarge cn o)
+                /\ (1 <= threshLarge + threshSmall)).
+Parameter fast_and_slow_opposite_K  : opposite_adjectives slow_A  fast_A.
+Parameter small_and_large_opposite_K : opposite_adjectives small_A large_A.

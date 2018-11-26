@@ -101,8 +101,11 @@ Qed.
 
 Theorem T167a: Problem167aFalse. cbv.
 intros salesDept isSalesDept.
-intro H.
-firstorder.
+intros [P1 [woman [isWoman [works P2]]]].
+rewrite -> P2.
+intros [w' [isW' [works' H]]].
+destruct H.
+split.
 Qed.
 
 Theorem T168a: Problem168aTrue. cbv. intros. destruct H. exact H0. Qed.

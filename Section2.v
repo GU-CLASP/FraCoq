@@ -32,15 +32,25 @@ destruct H0.
 Abort All.
 (* FIXME: In H, the negation should distribute over 'and' ("narrow scoping") *)
 
+Require Import Psatz.
 
 Theorem T085a: Problem085aFalse.
 cbv.
-firstorder.
+intros contract isContract.
+intros [[lawyer [isLawyer [lsigned P1]]] P2].
+rewrite -> P1.
+intros [l' [isLawyer' [lsigned' H]]].
+destruct H.
+split.
 Qed.
 
 Theorem T086a: Problem086aFalse. cbv.
 intros contract isContract.
-firstorder.
+intros [[lawyer [isLawyer [lsigned P1]]] P2].
+rewrite -> P1.
+intros [l' [isLawyer' [lsigned' H]]].
+destruct H.
+split.
 Qed.
 
 Theorem T087a: Problem087aTrue. cbv.

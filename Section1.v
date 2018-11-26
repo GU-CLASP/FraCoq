@@ -197,7 +197,6 @@ Theorem T028a: Problem028aFalse. cbv.
 firstorder.
 Abort All.
 
-
 Theorem T029a: Problem029aTrue. cbv.
 firstorder. destruct leading_A as [leading].
 exists x.
@@ -215,16 +214,16 @@ Qed.
 
 
 Theorem T030a: Problem030aTrue. cbv.
-intros. destruct at_home_Adv. firstorder.
+intros. destruct at_home_Adv. (* SLOW: firstorder.
 exists x0.
 split.
 assumption.
-exists x1. firstorder. apply H3.
+exists x1. firstorder. apply H3. *)
 Abort All.
 
 Theorem T030a': Problem030aFalse. cbv.
 destruct at_home_Adv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T031a: Problem031aTrue. cbv.
@@ -243,55 +242,55 @@ firstorder.
 generalize H.
 apply le_mono_left.
 intro commiss.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T032a: Problem032aFalse. cbv.
 destruct at_home_Adv as [atHome verid].
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T033a: Problem033aTrue. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T033a: Problem033aFalse. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 
 Theorem T034a: Problem034aTrue. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T034a: Problem034aFalse. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 
 Theorem T035a: Problem035aTrue. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T035a: Problem035aFalse. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 
 Theorem T036a: Problem036aTrue. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T036a: Problem036aFalse. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T037a: Problem037aTrue. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T037a: Problem037aFalse. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 
@@ -300,16 +299,14 @@ destruct on_time_Adv as [adv verid].
 firstorder.
 Qed.
 
-
-
 Theorem T039a: Problem039aTrue. cbv.
 destruct on_time_Adv as [adv verid].
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T039a: Problem039aFalse. cbv.
 destruct on_time_Adv as [adv verid].
-firstorder.
+(* firstorder. *)
 Abort All.
 
 
@@ -318,7 +315,7 @@ destruct on_time_Adv as [adv verid].
 firstorder.
 generalize H0.
 apply le_mono_right.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T040a: Problem040aFalse. cbv.
@@ -339,23 +336,23 @@ Abort All.
 Theorem T041a: Problem041aFalse. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
-firstorder.
+(*firstorder.*)
 Abort All.
 
 Theorem T042a: Problem042aTrue. cbv.
-firstorder.
+(*firstorder.*)
 Abort All.
 
 Theorem T042a: Problem042aFalse. cbv.
-firstorder.
+(*firstorder.*)
 Abort All.
 
 Theorem T043a: Problem043aTrue. cbv.
-firstorder.
+(*firstorder.*)
 Abort All.
 
 Theorem T043a: Problem043aFalse. cbv.
-firstorder.
+(*firstorder.*)
 Abort All.
 
 Theorem T044a: Problem044aTrue. cbv.
@@ -367,12 +364,12 @@ Qed.
 
 Theorem T045a: Problem045aTrue. cbv.
 destruct leading_A as [leading].
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T045a: Problem045aFalse. cbv.
 destruct leading_A as [leading].
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T046a: Problem046aFalse. cbv.
@@ -391,7 +388,7 @@ Abort All.
 
 Theorem T047a: Problem047aFalse. cbv.
 destruct at_home_Adv as [atHome [atHomeVerid atHomeVeridCov]].
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T048a: Problem048aTrue. cbv.
@@ -571,7 +568,7 @@ firstorder.
 Abort All.
 
 Theorem T073a: Problem073aFalse. cbv.
-firstorder.
+(* firstorder. *)
 Abort All.
 
 Theorem T074a: Problem074aTrue. cbv.

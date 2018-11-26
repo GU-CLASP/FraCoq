@@ -85,7 +85,8 @@ Theorem T125af: Problem125aFalse.
 (**UNK so this is fine**)
 
 Theorem T125bt: Problem125bTrue.
-  cbv. intros. firstorder. Abort all.  (**Ibid**)
+  cbv. intros.
+  (*firstorder.*) Abort all.  (**Ibid**)
 
 
 Theorem T125bf: Problem125bFalse.
