@@ -15,3 +15,4 @@
 .*.aux
 # coq compiler?
 verify*.txt
+/.lia.cache
