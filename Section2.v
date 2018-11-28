@@ -166,7 +166,7 @@ Qed.
 
 Theorem T109a: Problem109aFalse. cbv.
 Abort All.
-(* FIXME "Some" plural ==> card > 1*)
+(* FIXME "Some" plural ==> card > 1 --- however, this makes many proofs much harder. Try this maybe after we have better automation? *)
 
 Theorem T110a: Problem110aTrue. cbv.
 firstorder.
