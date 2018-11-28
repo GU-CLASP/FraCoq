@@ -61,13 +61,16 @@ sectionStarts :: [Int]
 sectionStarts = [1,81,114,142,197,220,251,326,334,347]
 
 showScores :: [(Int, Bool, t, Maybe a)] -> (Int,Int,Int) -> IO ()
-showScores consolidated (sectionNumber,start,stop) = do
+showScores consolidated (sectionNumber,start,stop) = showScores' consolidated (sectionNumber,\ x -> x >= start && x < stop)
+        
+
+showScores' :: [(Int, Bool, t, Maybe a)] -> (Int,Int -> Bool) -> IO ()
+showScores' consolidated (sectionNumber,inRange) = do
   putStrLn (" ------ Section " ++ show sectionNumber)
   putStrLn ("complete: "++count complete)
   putStrLn ("correct: "++ count correct)
   putStrLn ("score: " ++ show ((fromIntegral (countOk correct) :: Double) / (fromIntegral (length complete))))
-  where inRange x = x >= start && x < stop
-        correct = [(ok,n) | (n,ok,_,Just _) <- consolidated, inRange n]
+  where correct = [(ok,n) | (n,ok,_,Just _) <- consolidated, inRange n]
         complete = [(isJust a,n) | (n,_ok,_,a) <- consolidated, inRange n]
 
 isClear :: Answer -> Bool
@@ -83,7 +86,7 @@ doIt args = do
   mapM_ print (parseWords Nothing ws)
   mapM_ print consolidated
   mapM_ (showScores consolidated) (zip3 [1..] sectionStarts (tail sectionStarts))
-  (showScores consolidated) (0,0,220)
+  (showScores' consolidated) (0,\x -> x < 251 || x >= 326)
 
 main :: IO ()
 main = do

@@ -147,7 +147,7 @@ firstorder.
  *)
 Abort All.
 
-Theorem FraCas217:s_217_1_p -> s_217_3_h.
+Theorem FraCas217: Problem217aTrue.
 cbv.
 (* FIXME: syntax wrong, see 216 *)
 Abort All.

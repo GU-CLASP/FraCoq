@@ -21,8 +21,8 @@ answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   ,(069, Unknown) -- because mary could have used someone else's workstation
   ,(119, Unknown) -- because mary could have used someone else's workstation
   ,(181, Yes) -- this works for the same reason 180 works.
-
-
+  ,(199, Unclear "FIXME: This is YES in the suite, but is says 'yes for a former university student', which is not what the conclusion actually says. If we were to fix the conclusion then the example becomes trivial.")
+  ,(226,Yes) -- should be obvious
   
   -- Clarified
   ,(87 , Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
@@ -44,6 +44,9 @@ answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   ,(187, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ,(189, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ,(199, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(244, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(245, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(250, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ]
   ++ officialAnswers
 

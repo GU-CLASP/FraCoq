@@ -113,6 +113,5 @@ left.
 split.
 assumption.
 
-(* FIXME: The syntax has an ellipsis (fixable).
-          The hypothesis has an inclusive or, but the conclusion has an exclusive or. So I don't think that we can conclude here! (Fracas wrong) *)
+(* FIXME: The hypothesis has an inclusive or, but the conclusion has an exclusive or. So I don't think that we can conclude here! (Fracas wrong) *)
 Abort All.
