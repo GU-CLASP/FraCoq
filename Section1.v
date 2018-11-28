@@ -130,7 +130,9 @@ Theorem T024a: Problem024aTrue. cbv.
 intros.
 firstorder.
 generalize H0.
-Abort All.
+apply le_mono_right.
+firstorder.
+Qed. 
 
 Theorem T025a: Problem025aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
