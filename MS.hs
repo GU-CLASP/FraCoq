@@ -1271,7 +1271,7 @@ or_Conj :: Conj
 or_Conj = RightAssoc (∨)
 
 either7or_DConj :: Conj
-either7or_DConj = EitherOr
+either7or_DConj = or_Conj -- this is what FraCas 346 seems to say. (And no other example contradicts it.)
 
 comma_and_Conj :: Conj
 comma_and_Conj = RightAssoc (∧)

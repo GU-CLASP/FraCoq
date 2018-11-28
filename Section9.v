@@ -103,15 +103,12 @@ destruct jones_PN as [jones person].
 firstorder.
 Qed.
 
+
 Theorem FraCaS346: Problem346aTrue.
 cbv.
 intros clause isClause.
 intros theContract isContract.
-intro P.
-destruct P.
-left.
-split.
-assumption.
+firstorder.
 
-(* FIXME: The hypothesis has an inclusive or, but the conclusion has an exclusive or. So I don't think that we can conclude here! (Fracas wrong) *)
+(* FIXME: ellipsis *)
 Abort All.
