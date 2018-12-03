@@ -12,6 +12,9 @@ Opaque Z.add.
 Opaque Z.sub.
 Opaque Z.ge.
 Opaque Z.le.
+
+
+
 Theorem T220a: Problem220aTrue. cbv.
 destruct fast_A as [fast].
 intros itelxz isCompy1 pc6083 isCompy2.
@@ -145,6 +148,94 @@ lia.
 Qed.
 *)
 Abort All.
+
+Theorem T230a: Problem230aTrue. cbv.
+intros n [P1a P1b].
+firstorder.
+Qed.
+
+Theorem T231a: Problem231aTrue. cbv.
+intros n [P1a P1b].
+firstorder.
+Abort All.
+
+Theorem T232a: Problem232aTrue. cbv.
+intros n [P1a [[orders P1c] [P1d P1e]]].
+exists orders.
+split.
+firstorder.
+split.
+firstorder.
+lia.
+Qed.
+
+
+Theorem T233a: Problem233aTrue. cbv.
+intros n P1.
+destruct P1 as [orders P1].
+firstorder.
+Qed.
+
+Theorem T234a: Problem234aTrue. cbv.
+firstorder.
+Abort All.
+
+Theorem T235a: Problem235aTrue. cbv.
+intros n [P1a [[orders P1c] [P1d P1e]]].
+exists orders.
+split.
+firstorder.
+split.
+firstorder.
+lia.
+Qed.
+
+Theorem T236a: Problem236bTrue. cbv.
+intros contract isContract P1.
+firstorder.
+Qed.
+
+Theorem T237a: Problem237bTrue. cbv.
+intros contract isContract [P1a [order P1b]].
+exists order.
+split.
+firstorder.
+split.
+firstorder.
+lia.
+Qed.
+
+Theorem T238a: Problem238aTrue. cbv.
+intros n [P1a [[order [isOrder [won P1]]] [order' [isOrder' [won' P2]]]]].
+exists order.
+split.
+firstorder.
+split.
+firstorder.
+lia.
+Qed.
+
+Theorem T239a: Problem239aTrue. cbv.
+intros n [P1a P1b].
+firstorder.
+Qed.
+
+Theorem T240a: Problem240aTrue. cbv.
+intros n [P1a [order P1b]].
+exists order.
+split.
+firstorder.
+Abort All.
+
+Theorem T241a: Problem241aTrue. cbv.
+intros n [P1a [[order [isOrder [won P1]]] [order' [isOrder' [lost P2]]]]].
+exists order.
+split.
+firstorder.
+split.
+firstorder.
+lia.
+Qed.
 
 Theorem T246a: Problem246aTrue. cbv.
 destruct fast_A as [fast] eqn:fst.
