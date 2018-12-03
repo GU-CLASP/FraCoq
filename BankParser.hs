@@ -1,4 +1,5 @@
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module BankParser where
 
@@ -97,6 +98,8 @@ processDef (h,e) = [x ++ " :: Phr"
                Nothing -> processExp e
                Just v -> v
 processExp :: SExpr -> String
+processExp (MoreThan cn s) = processExp (SExpr [Atom "MoreThanQuant",cn,s])
+  -- fix for problem 230 and following
 processExp (SExpr xs) = oParens (intercalate " " (map processExp xs))
 processExp (Atom []) = error "empty identifer"
 processExp (Atom s@(x:xs)) = oParens $ case reverse s of
@@ -122,12 +125,21 @@ processExp (Atom s@(x:xs)) = oParens $ case reverse s of
                                _ -> toLower x : xs
 processExp Variants = "variants"
 
+pattern MoreThan :: SExpr -> SExpr -> SExpr
+pattern MoreThan cn s = SExpr [Atom "DetCN",SExpr [Atom "DetQuant",SExpr [Atom "IndefArt"],SExpr [Atom "NumPl"]],SExpr [Atom "AdvCN",SExpr [Atom "AdjCN",SExpr [Atom "UseComparA_prefix",SExpr [Atom "many_A"]],cn],SExpr [Atom "SubjS",SExpr [Atom "than_Subj"],s]]]
+
 frst :: (t2, t1, t) -> t2
 frst (x,_,_) = x
 
 main :: IO ()
 main = do
   Right inp <- parseBank
+  let debugged = [((pbNumber,hypNumber,hypTyp),e)
+                | (x,e) <- inp,
+                  let (pbNumber, hypNumber, hypTyp) = parseHName x,
+                  (pbNumber >= 230) && (pbNumber < 232),
+                  hypTyp /= "q"]
+  -- mapM_ print debugged
   let handled = [((pbNumber,hypNumber,hypTyp),e)
                 | (x,e) <- inp,
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
@@ -174,7 +186,7 @@ disabledProblems =
   [137,171,172
   ,216,217 -- syntax wrong: should be (john is (fatter politician than
            -- bill)) not ((john is fatter politician) than bill)
-  ,230,231,232,233,234,235,236,237,238,239,240,241,243,244,245  -- syntax wrong
+  ,231,232,233,234,235,236,237,238,240,241,243,244,245  -- syntax wrong
   ,276 -- degenerate problem
   ,285,286 -- incomprehensible syntax
   ,305 -- degenerate problem
