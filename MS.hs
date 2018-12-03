@@ -796,8 +796,11 @@ oneToo = do
 
 interpNP :: NP -> Role -> Dynamic NP'
 interpNP np role = do
-  MkNP pre n q c <- np
-  evalQuant pre q n c role
+  np' <- np
+  evalNPData np' role
+
+evalNPData :: NPData -> Role -> Dynamic NP'
+evalNPData (MkNP pre n q c) = evalQuant pre q n c
 
 elliptic_NP_Sg :: NP
 elliptic_NP_Sg = qPron $ all' [isSingular]
@@ -1438,8 +1441,8 @@ elliptic_NP_Pl = do
   (amount,cn') <- getQuantity
   return $ MkNP [ExactlyPredet] (Cardinal amount) IndefQuant cn'
 
-moreThanQuant :: CN -> S -> NP
-moreThanQuant cn s = do
+relativeAmountQuant :: Logic.Pol -> (Nat -> Amount) -> CN -> S -> NP
+relativeAmountQuant pol f cn s = do
   (cn',gender) <- cn
   threshold <- getFresh
   modify (pushQuantity threshold (cn',gender)) -- priming "ellptic_NP_Pl"
@@ -1448,8 +1451,27 @@ moreThanQuant cn s = do
   let q :: Quant'
       q _num _cn _role = do
         x <- getFresh
-        return (\vp' extraObjs -> noExtraObjs s' ∧ Quant (AtLeast (1 + Nat (Var threshold))) Pos x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
+        return (\vp' extraObjs -> noExtraObjs s' ∧ Quant (f (Nat (Var threshold))) pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
   return $ MkNP [] Plural (ObliviousQuant q) (cn',gender)
+
+moreThanQuant :: CN -> S -> NP
+moreThanQuant = relativeAmountQuant Pos (\x -> AtLeast (1 + x))
+
+moreThanNPQuant :: CN -> NP -> NP
+moreThanNPQuant cn np = do
+  cn' <- cn
+  np' <- np
+  let q :: Quant'
+      q _num _cn role = do
+        np1 <- evalNPData np' role
+        np2 <- boundQuant' Pos (MoreThan (Cardinal 2)) cn' role
+        return $ \vp' extraObjs -> np1 vp' extraObjs ∧ np2 vp' extraObjs
+  moreThanQuant (pure cn') (predVP (pure np') elliptic_VP) -- as in FraCas 230-235
+    <|> return (MkNP [] Plural (ObliviousQuant q)  cn')    -- as in FraCas 236-237
+
+
+twiceAsManyAs :: CN -> NP -> NP
+twiceAsManyAs cn np = relativeAmountQuant Both (\x -> Exact (x + x)) cn (predVP np elliptic_VP)
 
 no_Quant :: Quant
 no_Quant = UniversalQuant not'

@@ -195,7 +195,7 @@ disabledProblems =
   [137,171,172
   ,216,217 -- syntax wrong: should be (john is (fatter politician than
            -- bill)) not ((john is fatter politician) than bill)
-  ,238,243,244,245  -- syntax wrong
+  ,243,244,245  -- syntax wrong
   ,276 -- degenerate problem
   ,285,286 -- incomprehensible syntax
   ,305 -- degenerate problem
