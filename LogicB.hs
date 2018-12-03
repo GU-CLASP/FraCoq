@@ -33,7 +33,6 @@ instance Applicative Next where
   _ <*> Here = Here
   There f <*> There a = There (f a)
 
-newtype Nat = Nat Integer deriving (Show,Eq,Num,Enum,Integral,Ord,Real)
 
 data Exp v where
   Op :: Op -> [Exp v] -> Exp v
@@ -41,7 +40,7 @@ data Exp v where
   V :: v -> Exp v
   Var :: String -> Exp v 
   Lam :: Exp (Next v) -> Exp v
-  Quant :: Amount -> Pol -> Var -> (Exp v) -> (Exp v) -> Exp v
+  Quant :: Amount' (Exp v) -> Pol -> Var -> (Exp v) -> (Exp v) -> Exp v
   deriving (Eq, Functor)
 
 
@@ -62,6 +61,7 @@ opPrc = \case
   Not -> 3
   And -> 4
   Or -> 5
+  Plus -> 5
   ImpliesOften -> 6
   Implies -> 6
   LAST_OPERATOR -> 7
@@ -90,7 +90,7 @@ instance Monad Exp where
     (Op p args) -> Op p (map (>>= f) args)
     (Con k) -> Con k
     (Var v) -> Var v
-    (Quant a p v dom body) -> Quant a p v (dom >>= f) (body >>= f)
+    (Quant a p v dom body) -> Quant ((>>= f) <$> a) p v (dom >>= f) (body >>= f)
     (Lam t) -> Lam (t >>= f')
       where f' :: Next v -> Exp (Next w)
             f' Here = V Here
@@ -104,7 +104,7 @@ instance Traversable Exp where
     (Op p args) -> Op p <$> traverse (traverse f) args
     (Con k) -> pure (Con k)
     (Var v) -> pure (Var v)
-    (Quant a p v d b) -> Quant a p v <$> traverse f d <*> traverse f b
+    (Quant a p v d b) -> Quant <$> (traverse (traverse f) a) <*> pure p <*> pure v <*> traverse f d <*> traverse f b
     V x -> V <$> f x
     Lam t -> Lam <$> (flip traverse t $ \case
                          Here -> pure Here
@@ -161,6 +161,7 @@ ppOp o = case o of
   Not -> "NOT"
   And -> "/\\"
   Or -> "\\/"
+  Plus -> "+"
   Implies -> "->"
   ImpliesOften -> "~>"
   Custom n -> n
@@ -190,10 +191,10 @@ ppExp n ctx e0 =
                    (Few,Neg) -> "FEWQ"
                    (Most,Neg) -> "MOSTQ"
                    (Several,Pos) -> "SEVERALQ"
-                   (Exact n,Both) -> "EXACT (" ++ show (toInteger n) ++ ")"
-                   (AtLeast 1,Pos) -> "EXISTS"
-                   (AtLeast n,Pos) -> "ATLEAST (" ++ show (toInteger n) ++ ")"
-                   (AtLeast n,Neg) -> "ATMOST (" ++ show (toInteger n) ++ ")"
+                   (Exact n,Both) -> "EXACT (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
+                   (AtLeast (Con "1"),Pos) -> "EXISTS"
+                   (AtLeast n,Pos) -> "ATLEAST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
+                   (AtLeast n,Neg) -> "ATMOST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
                    
                    _ -> show (k,p)
       (Op App [f,arg]) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
@@ -291,7 +292,7 @@ fromHOAS :: Int -> (Int -> v) -> L.Exp -> Exp v
 fromHOAS n f = \case
   L.Op op args -> Op op (map (fromHOAS n f) args)
   L.Con k -> Con k
-  L.Quant a p v d b -> Quant a p v (fromHOAS n f d) (fromHOAS n f b)
+  L.Quant a p v d b -> Quant ((fromHOAS n f . fromNat) <$> a) p v (fromHOAS n f d) (fromHOAS n f b)
   L.Var ('*':k) -> V (f (read k))
   L.Var x -> Var x
   L.Lam t -> Lam (fromHOAS (n+1) (\x -> if x == n then Here else There (f x)) (t (L.Var ('*':show n))))
@@ -300,3 +301,8 @@ fromHOAS n f = \case
 
 instance Show L.Exp where
   show = ppExp 1 Not . fromHOAS'
+
+
+deriving instance Show Nat
+
+

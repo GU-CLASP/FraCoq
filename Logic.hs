@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
@@ -17,12 +19,17 @@ data Exp = Op Op [Exp]
 
 eqExp' :: Exp -> Exp -> Bool
 eqExp' = eqExp 0 []
--- eqExp' _ _ = True
+
+eqNat' :: Nat -> Nat -> Bool
+eqNat' = eqNat 0 []
+
+instance Eq Nat where
+  (==) = eqNat'
 
 eqExp :: Int -> [(Var,Var)] -> Exp -> Exp -> Bool
 eqExp n equs e1 e2 = case (e1,e2) of
   (Op op1 exps1,Op op2 exps2) -> op1 == op2 && length exps1 == length exps2 && and (zipWith (eqExp n equs) (exps1) (exps2))
-  (Quant a1 p1 v1 t1 b1,Quant a2 p2 v2 t2 b2) -> a1 == a2 && p1 == p2 && eqExp n eq' t1 t2 && eqExp n eq' b1 b2
+  (Quant a1 p1 v1 t1 b1,Quant a2 p2 v2 t2 b2) -> eqAmount n equs a1 a2 && p1 == p2 && eqExp n eq' t1 t2 && eqExp n eq' b1 b2
     where eq' = (v1,v2):equs
   (Lam f1,Lam f2) -> eqExp (n+1) equs (f1 x) (f2 x)
      where x = Var $ "_V" ++ show n
@@ -30,12 +37,32 @@ eqExp n equs e1 e2 = case (e1,e2) of
   (Con x,Con x') -> x == x'
   _ -> False
 
+eqAmount :: Int -> [(Var, Var)] -> Amount -> Amount -> Bool
+eqAmount n eqs (Exact x) (Exact x') = eqNat n eqs x x'
+eqAmount n eqs(AtLeast x) (AtLeast x') = eqNat n eqs x x'
+eqAmount _ _ One One = True
+eqAmount _ _ Few Few = True
+eqAmount _ _ Several Several = True
+eqAmount _ _ Many Many = True
+eqAmount _ _ Most Most = True
+eqAmount _ _ Lots Lots = True
+eqAmount _ _ _ _ = False
+
+eqNat :: Int -> [(Var, Var)] -> Nat -> Nat -> Bool
+eqNat n es (Nat x) (Nat x') = eqExp n es x x'
+
 type Type = Exp
 
-newtype Nat = Nat Integer deriving (Show,Eq,Num,Enum,Integral,Ord,Real)
+newtype Nat = Nat {fromNat :: Exp}
 
-data Amount = One | Few | Several | Many | Most | Lots | Exact Nat | AtLeast Nat -- amount for the *positive* polarity
-  deriving (Eq,Show)
+instance Num Nat where
+  fromInteger n = Nat (Con (show n))
+  (Nat x) + (Nat y) = Nat (BinOp Plus x y)
+
+data Amount' n = One | Few | Several | Many | Most | Lots | Exact n | AtLeast n -- amount for the *positive* polarity
+  deriving (Show,Eq,Functor,Foldable,Traversable)
+
+type Amount = Amount' Nat 
 
 data Op = Fld String -- ^ field lookup
         | Custom String
@@ -43,6 +70,7 @@ data Op = Fld String -- ^ field lookup
         | Not
         | And
         | Or
+        | Plus
         | Implies
         | ImpliesOften
         | LAST_OPERATOR
