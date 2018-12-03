@@ -105,6 +105,7 @@ data Env = Env {vpEnv :: VPEnv
                ,objEnv :: ObjEnv
                ,cnEnv :: NounEnv
                ,sEnv :: S
+               ,quantityEnv :: [(Object,CN')]
                ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
                ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
                ,envSloppyFeatures :: Bool
@@ -152,7 +153,6 @@ getNP' q Env{objEnv=os,..} = case filter (q . fst) os of
   [] -> [return $ MkNP [] assumedNum (ObjectQuant (constant "assumedNP")) assumedCN]
   xs -> map snd xs
 
-
 getNP :: ObjQuery -> Dynamic [NP]
 getNP q = gets (getNP' q)
 
@@ -168,9 +168,18 @@ getDefinite (cn',_gender) = do
                                ,envMissing=(pred,y):envMissing,..}
       return (Var y)
 
+getQuantity :: Dynamic (Nat,CN')
+getQuantity = do
+  qs <- gets quantityEnv
+  case qs of
+    ((q,cn'):_) -> return (Nat q,cn')
+
 -------------------------------
 -- Pushes
 
+
+pushQuantity :: Var -> CN' -> Env -> Env
+pushQuantity v cn Env{..} = Env{quantityEnv=(Var v,cn):quantityEnv,..}
 
 pushDefinite :: (Object -> S') -> Var -> Env -> Env
 pushDefinite source target Env{..} =
@@ -283,6 +292,7 @@ assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
                -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
                ,objEnv = []
                ,sEnv = return (\_ -> constant "assumedS")
+               ,quantityEnv = []
                ,cnEnv = []
                ,envDefinites = []
                ,envMissing = []
@@ -444,7 +454,7 @@ implicitRP = ()
 ---------------------
 -- Unimplemented categories
 
-future,pastPerfect,past,present,presentPerfect :: Temp
+conditional,future,pastPerfect,past,present,presentPerfect :: Temp
 past = id
 present = id
 presentPerfect = id
@@ -1301,6 +1311,7 @@ but_PConj :: PConj
 but_PConj = and_Conj
 that_is_PConj :: PConj
 that_is_PConj = and_Conj
+then_PConj :: Conj
 then_PConj = and_Conj
 
 
@@ -1417,11 +1428,28 @@ instance Show (a -> b) where show _ = "<FUNCTION>"
 type Quant' = (Num -> CN' -> Role -> Dynamic NP')
 data Quant = PossQuant Pron | UniversalQuant Pol | IndefQuant | ExistQuant | ETypeQuant ([Char] -> Prop -> Exp -> Exp) | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat
   | ObliviousQuant Quant' -- ^ quantifier that ignores numbers and predeterminers.
-  deriving Show
 
 
 possPron :: Pron -> Quant
 possPron = PossQuant
+
+elliptic_NP_Pl :: NP
+elliptic_NP_Pl = do
+  (amount,cn') <- getQuantity
+  return $ MkNP [ExactlyPredet] (Cardinal amount) IndefQuant cn'
+
+moreThanQuant :: CN -> S -> NP
+moreThanQuant cn s = do
+  (cn',gender) <- cn
+  threshold <- getFresh
+  modify (pushQuantity threshold (cn',gender)) -- priming "ellptic_NP_Pl"
+  modify (pushVP (complSlash elliptic_VPSlash elliptic_NP_Pl)) -- in 's', there may be an elliptic vp, referring to this
+  s' <- s
+  let q :: Quant'
+      q _num _cn _role = do
+        x <- getFresh
+        return (\vp' extraObjs -> noExtraObjs s' ∧ Quant (AtLeast (1 + Nat (Var threshold))) Pos x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
+  return $ MkNP [] Plural (ObliviousQuant q) (cn',gender)
 
 no_Quant :: Quant
 no_Quant = UniversalQuant not'
@@ -1664,7 +1692,7 @@ evalQuant [] (ETypeQuant q) num cn role = eTypeQuant q num cn role
 evalQuant [] DefiniteQuant Plural cn role = universal_Quant' id Plural cn role
 evalQuant [] DefiniteQuant num cn role = defArt' num cn role
 evalQuant [] TheOtherQuant  num cn role = the_other_Q' num cn role
-evalQuant p q  num _cn _role = error $ "evalQuant: unsupported combination:" ++ show (p,q,num)
+evalQuant p q  num _cn _role = error $ "evalQuant: unsupported combination:" ++ show (p,num)
 
 bothQuant :: CN' -> Role -> Dynamic NP'
 bothQuant (cn',gender) role = do -- always Plural
@@ -1766,6 +1794,31 @@ anotherQuant' number (cn',gender) role = do
           dPluralizable <- gets envPluralizingQuantifier
           modify (pushNP (Descriptor dPluralizable gender Plural role) (pureVar x number (cn',gender)))
           return $ \vp extraObjs -> Exists x (noExtraObjs (cn' (Var x)) ∧ not' (Var x === y)) (vp (Var x) extraObjs)
+
+------------------------
+
+
+
+-- np (v2 (moreQuant cn)) `thanSubj` np' didSo
+-- The LHS of thanSubj, we interpret as:
+-- np (v2 (atLeastQuant (threshold+1))), for threshold fresh.
+-- The RHS is interpreted as an elliptic VP:
+-- np (v2 (exactlyQuant threshold))
+
+-- moreQuant :: Quant'
+-- moreQuant number cn role = do
+--   isInRepeat <- gets envSloppyFeatures
+--   if isInRepeat
+--     then do
+--       threshold <- getQuantity
+--       exactlyQuant' threshold cn role
+--     else do
+--       threshold <- getFresh
+--       modify (pushQuantity threshold)
+--       boundQuant' Pos (MoreThan (Cardinal (Nat (Var threshold)))) cn role
+
+
+
 
 ------------------------
 -- Fracas overrides
