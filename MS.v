@@ -1199,7 +1199,8 @@ Definition LOTSQ := fun cn => fun vp => (LOTS_OF <= CARD (fun x => cn x /\ vp x)
 Definition SEVERALQ := fun cn => fun vp => (SEVERAL <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
 Definition ATLEAST:= fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (n <= CARD (fun x => cn x /\ vp x)).
 Definition ATMOST:= fun n : Z => fun cn=> fun vp=> CARD (fun x => cn x /\ vp x) <= n.
-Definition  EXACT:= fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
+Definition EXEXACT := fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ (CARD (fun x => cn x /\ vp x) = n).
+Definition EXACT := fun n : Z => fun cn=> fun vp=>  (CARD (fun x => cn x /\ vp x) = n).
 
 
 Definition  report_Nfromon := fun source location report => report_N report /\
