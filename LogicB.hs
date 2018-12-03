@@ -180,23 +180,24 @@ ppExp n ctx e0 =
       (Lam f) -> parens ("fun " ++ varName n ++ " => " ++ ppExp (n+1) LAST_OPERATOR (f `lapp` (Var (varName n))))
       (Con x) -> x
       (Var x) -> x
-      (Quant k p v dom body) -> parens (o ++ " " ++ ppFun dom ++ " " ++ ppFun body)
-          where ppFun t = parens("fun " ++ v ++ "=>" ++ ppExp n LAST_OPERATOR t)
-                o = case (k,p) of
-                   (One,Neg) -> "FORALL"
-                   (One,Pos) -> "EXISTS"
-                   (Few,Pos) -> "AFEWQ"
-                   (Many,Pos) -> "MANYQ"
-                   (Lots,Pos) -> "LOTSQ"
-                   (Few,Neg) -> "FEWQ"
-                   (Most,Neg) -> "MOSTQ"
-                   (Several,Pos) -> "SEVERALQ"
-                   (Exact n,Both) -> "EXACT (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
-                   (AtLeast (Con "1"),Pos) -> "EXISTS"
-                   (AtLeast n,Pos) -> "ATLEAST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
-                   (AtLeast n,Neg) -> "ATMOST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
-                   
-                   _ -> show (k,p)
+      (Quant k p v dom body) -> case dom of
+         Con "Nat" -> "forall (" ++ v ++ ": Z), " ++ parens (ppExp n LAST_OPERATOR body)
+         _ -> parens (o ++ " " ++ ppFun dom ++ " " ++ ppFun body)
+           where ppFun t = parens("fun " ++ v ++ "=>" ++ ppExp n LAST_OPERATOR t)
+                 o = case (k,p) of
+                    (One,Neg) -> "FORALL"
+                    (One,Pos) -> "EXISTS"
+                    (Few,Pos) -> "AFEWQ"
+                    (Many,Pos) -> "MANYQ"
+                    (Lots,Pos) -> "LOTSQ"
+                    (Few,Neg) -> "FEWQ"
+                    (Most,Neg) -> "MOSTQ"
+                    (Several,Pos) -> "SEVERALQ"
+                    (Exact n,Both) -> "EXACT (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
+                    (AtLeast (Con "1"),Pos) -> "EXISTS"
+                    (AtLeast n,Pos) -> "ATLEAST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
+                    (AtLeast n,Neg) -> "ATMOST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
+                    _ -> show (k,p)
       (Op App [f,arg]) -> prns App $ ppExp n Not f ++ " " ++ ppExp n App arg
       (Op op [x,y]) -> prns op $ ppExp n op x ++ " " ++ ppOp op ++ " " ++ ppExp n op y
       (Op op args) -> ppExp n ctx (Con (show op) `apps` args)

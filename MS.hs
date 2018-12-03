@@ -105,7 +105,7 @@ data Env = Env {vpEnv :: VPEnv
                ,objEnv :: ObjEnv
                ,cnEnv :: NounEnv
                ,sEnv :: S
-               ,quantityEnv :: [(Object,CN')]
+               ,quantityEnv :: [(Var,CN')]
                ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
                ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
                ,envSloppyFeatures :: Bool
@@ -172,14 +172,14 @@ getQuantity :: Dynamic (Nat,CN')
 getQuantity = do
   qs <- gets quantityEnv
   case qs of
-    ((q,cn'):_) -> return (Nat q,cn')
+    ((q,cn'):_) -> return (Nat (Var q),cn')
 
 -------------------------------
 -- Pushes
 
 
 pushQuantity :: Var -> CN' -> Env -> Env
-pushQuantity v cn Env{..} = Env{quantityEnv=(Var v,cn):quantityEnv,..}
+pushQuantity v cn Env{..} = Env{quantityEnv=(v,cn):quantityEnv,..}
 
 pushDefinite :: (Object -> S') -> Var -> Env -> Env
 pushDefinite source target Env{..} =
@@ -219,7 +219,7 @@ quantifyMany ((dom,x):xs) e = Forall x (dom `app` (Var x)) (quantifyMany xs e)
 evalDynamic :: Dynamic Exp -> [Exp]
 evalDynamic (Dynamic x) = do
   (formula,Env {..}) <- observeAll (runStateT x assumed)
-  return (quantifyMany envMissing formula)
+  return (quantifyMany [(Lam (\_ -> Con "Nat"),v) | (v,_cn) <- quantityEnv] (quantifyMany envMissing formula))
 
 newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
 instance Show (Dynamic a) where show _ = "<DYNAMIC>"
