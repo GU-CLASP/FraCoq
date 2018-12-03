@@ -7,7 +7,7 @@ Theorem T198a: Problem198aFalse. cbv. firstorder.
 destruct john_PN as [john person].
 destruct former_A as [former]. firstorder. Qed.
 
-Theorem FraCas199: Problem199aTrue. cbv. destruct successful_A as [successful].  destruct former_A as [former]. firstorder. (** FIXME: This is YES in the suite, but is says "yes for a former university student", which is not what the conclusion actually says. If we were to fix the conclusion then the example becomes trivial."**) Abort All.  (**I suggest we do not bother with this example**)
+Theorem FraCas199: Problem199aTrue. cbv. destruct successful_A as [successful].  destruct former_A as [former]. firstorder. (** FIXME: This is YES in the suite, but is says "yes for a former university student", which is not what the conclusion actually says. If we were to fix the conclusion then the example becomes trivial. **) Abort All.  (**I suggest we do not bother with this example**)
 
 
 Theorem FraCas200: Problem200aTrue. cbv. firstorder.  destruct successful_A as [successful]. destruct former_A as [former]. firstorder. Abort All.  (**UNK**)
