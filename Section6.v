@@ -237,6 +237,17 @@ firstorder.
 lia.
 Qed.
 
+Theorem T242a: Problem242aTrue. cbv.
+assert (H' := fast_and_slow_opposite_K).
+intros pc6083 isCompy itelxz isItel.
+intros [[mips [isMips [P1b P1a]]] [mips' [isMips' [P2b P2a]]]].
+destruct fast_A  as [fastness fastThres].
+destruct slow_A  as [slowness slowThres].
+destruct (H' computer_N pc6083) as [neg disj].
+destruct (H' computer_N itelxz) as [neg' disj'].
+Abort All. (* Error: "MIPS" is interpreted as any CN; this is completely wrong. *)
+
+
 Theorem T243a: Problem243aTrue. cbv.
 intros n [P1a [[order [isOrder [won P1]]] [order' [isOrder' [lost P2]]]]].
 exists order.
