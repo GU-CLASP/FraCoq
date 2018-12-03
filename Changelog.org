@@ -1,10 +1,10 @@
 
 - Two-phase system (Dyn semantics from theorem proving)
-- Anaphora (as in Jolli paper) --- but this is the first time that this is done.
+- Anaphora (as in Jolli paper) --- but this is the first time that this is done for FraCas.
 - Multiple readings
 - Threshold-based interpretation of (some) adjectives + Linear arithmetic proofs
 - New handling of prepositions and adverbs
 - Definites handled by adding an assumption at the top-level. (instead as inline existential) -- Enabled by dyn. semantics
 - Plurals/Quantifiers improved
-
-
+- Genders are properties of nouns
+- Handling of comparatives (with numbers)
