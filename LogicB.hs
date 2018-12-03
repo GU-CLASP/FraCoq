@@ -193,8 +193,9 @@ ppExp n ctx e0 =
                     (Few,Neg) -> "FEWQ"
                     (Most,Neg) -> "MOSTQ"
                     (Several,Pos) -> "SEVERALQ"
-                    (Exact n,Both) -> "EXACT (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
-                    (AtLeast (Con "1"),Pos) -> "EXISTS"
+                    (Exact m@(Var _),Both) -> "EXACT (" ++ ppExp 0 LAST_OPERATOR m ++ ")"  -- if it is a variable, it may not exist. FIXME: evaluate positivity.
+                    (Exact n,Both) -> "EXEXACT (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
+                    (AtLeast (Con "1"),Pos) -> "EXISTS" 
                     (AtLeast n,Pos) -> "ATLEAST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
                     (AtLeast n,Neg) -> "ATMOST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
                     _ -> show (k,p)
