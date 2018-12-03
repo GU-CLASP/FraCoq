@@ -1469,6 +1469,9 @@ moreThanNPQuant cn np = do
   moreThanQuant (pure cn') (predVP (pure np') elliptic_VP) -- as in FraCas 230-235
     <|> return (MkNP [] Plural (ObliviousQuant q)  cn')    -- as in FraCas 236-237
 
+nMoreThanNPQuant :: Nat -> CN -> NP -> NP
+nMoreThanNPQuant n cn np = do
+  relativeAmountQuant Both (\x -> Exact (n + x)) cn (predVP np elliptic_VP)
 
 twiceAsManyAs :: CN -> NP -> NP
 twiceAsManyAs cn np = relativeAmountQuant Both (\x -> Exact (x + x)) cn (predVP np elliptic_VP)

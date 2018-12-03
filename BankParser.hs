@@ -100,6 +100,7 @@ processDef (h,e) = [x ++ " :: Phr"
 processExp :: SExpr -> String
 processExp (MoreThanSNP cn s) = processExp (SExpr [Atom "MoreThanQuant",cn,s])
 processExp (MoreThanNPNP cn np) = processExp (SExpr [Atom "MoreThanNPQuant",cn,np])
+processExp (NMoreThanNPNP n cn np) = processExp (SExpr [Atom "NMoreThanNPQuant",n,cn,np])
 processExp (TwiceAsManyAs cn np) = processExp (SExpr [Atom "TwiceAsManyAs",cn,np])
   -- fix for problem 230 and following
 processExp (SExpr xs) = oParens (intercalate " " (map processExp xs))
@@ -137,6 +138,9 @@ pattern TwiceAsManyAs :: SExpr -> SExpr -> SExpr
 pattern TwiceAsManyAs cn np = SExpr [Atom "DetCN",SExpr [Atom "twice_as_many_Det"],SExpr [Atom "AdvCN",cn,SExpr [Atom "PrepNP",SExpr [Atom "than_Prep"],np]]]
 
 
+pattern NMoreThanNPNP :: SExpr -> SExpr -> SExpr -> SExpr
+pattern NMoreThanNPNP n cn np = SExpr [Atom "DetCN",SExpr [Atom "DetQuant",SExpr [Atom "IndefArt"],SExpr [Atom "NumCard",SExpr [Atom "NumNumeral",n]]],SExpr [Atom "AdvCN",SExpr [Atom "AdjCN",SExpr [Atom "UseComparA_prefix",SExpr [Atom "many_A"]],cn],SExpr [Atom "PrepNP",SExpr [Atom "than_Prep"],np]]]
+
 frst :: (t2, t1, t) -> t2
 frst (x,_,_) = x
 
@@ -146,7 +150,7 @@ main = do
   let debugged = [((pbNumber,hypNumber,hypTyp),e)
                 | (x,e) <- inp,
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
-                  pbNumber == 238,
+                  pbNumber == 243,
                   hypTyp /= "q"]
   -- mapM_ print debugged
   let handled = [((pbNumber,hypNumber,hypTyp),e)
@@ -195,7 +199,7 @@ disabledProblems =
   [137,171,172
   ,216,217 -- syntax wrong: should be (john is (fatter politician than
            -- bill)) not ((john is fatter politician) than bill)
-  ,243,244,245  -- syntax wrong
+  ,244,245  -- syntax wrong
   ,276 -- degenerate problem
   ,285,286 -- incomprehensible syntax
   ,305 -- degenerate problem

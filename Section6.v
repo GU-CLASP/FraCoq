@@ -237,6 +237,16 @@ firstorder.
 lia.
 Qed.
 
+Theorem T243a: Problem243aTrue. cbv.
+intros n [P1a [[order [isOrder [won P1]]] [order' [isOrder' [lost P2]]]]].
+exists order.
+split.
+firstorder.
+split.
+firstorder.
+lia.
+Qed.
+
 Theorem T246a: Problem246aTrue. cbv.
 destruct fast_A as [fast] eqn:fst.
 destruct slow_A as [slow] eqn:slw.
