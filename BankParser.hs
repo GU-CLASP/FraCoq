@@ -98,7 +98,9 @@ processDef (h,e) = [x ++ " :: Phr"
                Nothing -> processExp e
                Just v -> v
 processExp :: SExpr -> String
-processExp (MoreThan cn s) = processExp (SExpr [Atom "MoreThanQuant",cn,s])
+processExp (MoreThanSNP cn s) = processExp (SExpr [Atom "MoreThanQuant",cn,s])
+processExp (MoreThanNPNP cn np) = processExp (SExpr [Atom "MoreThanNPQuant",cn,np])
+processExp (TwiceAsManyAs cn np) = processExp (SExpr [Atom "TwiceAsManyAs",cn,np])
   -- fix for problem 230 and following
 processExp (SExpr xs) = oParens (intercalate " " (map processExp xs))
 processExp (Atom []) = error "empty identifer"
@@ -125,8 +127,15 @@ processExp (Atom s@(x:xs)) = oParens $ case reverse s of
                                _ -> toLower x : xs
 processExp Variants = "variants"
 
-pattern MoreThan :: SExpr -> SExpr -> SExpr
-pattern MoreThan cn s = SExpr [Atom "DetCN",SExpr [Atom "DetQuant",SExpr [Atom "IndefArt"],SExpr [Atom "NumPl"]],SExpr [Atom "AdvCN",SExpr [Atom "AdjCN",SExpr [Atom "UseComparA_prefix",SExpr [Atom "many_A"]],cn],SExpr [Atom "SubjS",SExpr [Atom "than_Subj"],s]]]
+pattern MoreThanSNP :: SExpr -> SExpr -> SExpr
+pattern MoreThanSNP cn s = SExpr [Atom "DetCN",SExpr [Atom "DetQuant",SExpr [Atom "IndefArt"],SExpr [Atom "NumPl"]],SExpr [Atom "AdvCN",SExpr [Atom "AdjCN",SExpr [Atom "UseComparA_prefix",SExpr [Atom "many_A"]],cn],SExpr [Atom "SubjS",SExpr [Atom "than_Subj"],s]]]
+
+pattern MoreThanNPNP :: SExpr -> SExpr -> SExpr
+pattern MoreThanNPNP cn np = SExpr [Atom "DetCN",SExpr [Atom "DetQuant",SExpr [Atom "IndefArt"],SExpr [Atom "NumPl"]],SExpr [Atom "AdvCN",SExpr [Atom "AdjCN",SExpr [Atom "UseComparA_prefix",SExpr [Atom "many_A"]],cn],SExpr [Atom "PrepNP",SExpr [Atom "than_Prep"],np]]]
+
+pattern TwiceAsManyAs :: SExpr -> SExpr -> SExpr
+pattern TwiceAsManyAs cn np = SExpr [Atom "DetCN",SExpr [Atom "twice_as_many_Det"],SExpr [Atom "AdvCN",cn,SExpr [Atom "PrepNP",SExpr [Atom "than_Prep"],np]]]
+
 
 frst :: (t2, t1, t) -> t2
 frst (x,_,_) = x
@@ -137,7 +146,7 @@ main = do
   let debugged = [((pbNumber,hypNumber,hypTyp),e)
                 | (x,e) <- inp,
                   let (pbNumber, hypNumber, hypTyp) = parseHName x,
-                  (pbNumber >= 230) && (pbNumber < 232),
+                  pbNumber == 238,
                   hypTyp /= "q"]
   -- mapM_ print debugged
   let handled = [((pbNumber,hypNumber,hypTyp),e)
@@ -186,7 +195,7 @@ disabledProblems =
   [137,171,172
   ,216,217 -- syntax wrong: should be (john is (fatter politician than
            -- bill)) not ((john is fatter politician) than bill)
-  ,231,232,233,234,235,236,237,238,240,241,243,244,245  -- syntax wrong
+  ,238,243,244,245  -- syntax wrong
   ,276 -- degenerate problem
   ,285,286 -- incomprehensible syntax
   ,305 -- degenerate problem
