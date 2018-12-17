@@ -64,22 +64,22 @@ Definition wkIntersectiveA
 Coercion wkIntersectiveA : IntersectiveA >-> A.
 
 Inductive SubsectiveA : Type :=
-  mkSubsective : forall (measure : (object -> Prop) -> object -> Z) (threshold : Z), SubsectiveA.
+  mkSubsective : forall (measure : object -> Z) (threshold : (object -> Prop) -> Z), SubsectiveA.
 Add Printing Let SubsectiveA.
 
 Definition apSubsectiveA
             : SubsectiveA -> A
             := fun a => let (measure, threshold) := a in
-               fun cn x => threshold <= measure cn x /\ cn x.
+               fun cn x => threshold cn <= measure x /\ cn x.
 Definition getSubsectiveA := apSubsectiveA.
 Coercion apSubsectiveA : SubsectiveA >-> A.
 
 Inductive ExtensionalSubsectiveA : Type :=
   mkExtensionalSubsective :
      forall
-     (measure : (object -> Prop) -> object -> Z)
-     (threshold : Z),
-     (let a := fun cn x => (threshold <= measure cn x)
+     (measure : object -> Z)
+     (threshold : (object -> Prop) -> Z),
+     (let a := fun cn x => (threshold cn <= measure x)
      in (forall (p q:object -> Prop), (forall x, p x -> q x) -> (forall x, q x -> p x) ->  forall x, a p x -> a q x))
      -> ExtensionalSubsectiveA.
 
@@ -238,14 +238,14 @@ Definition AdvAP : AP -> Adv -> AP
 
 Definition ComparA : SubsectiveA -> NP -> AP
  := fun a np cn x => let (measure,_thres) := a in
-    apNP np (fun y => (1 <= measure cn x - measure cn y)).
+    apNP np (fun y => (1 <= measure x - measure y)).
 (* Remark: most of the time, the comparatives are used in a copula, and in that case the category comes from the NP.  *)
  (* x is faster than y  *)
 
 Definition compareGradableMore : SubsectiveA -> (object->Prop) -> object -> object -> Prop :=
-fun a cn x y => let (measure,_) := a in 1 <= measure cn x - measure cn y.
+fun a cn x y => let (measure,_) := a in 1 <= measure x - measure y.
 Definition compareGradableEqual : SubsectiveA -> (object -> Prop) -> object -> object -> Prop :=
-fun a cn x y => let (measure,_) := a in measure cn x = measure cn y.
+fun a cn x y => let (measure,_) := a in measure x = measure y.
 
 Definition ComplA2 : A2 -> NP -> AP := fun a2 np cn x => apNP np (fun y => a2 y cn x).
 Parameter PartVP : VP -> AP .
@@ -1253,7 +1253,7 @@ Definition opposite_adjectives : SubsectiveA -> SubsectiveA -> Prop
   := fun a1 a2 =>
   forall cn o,  let (mSmall,threshSmall) := a1 in
                 let (mLarge,threshLarge) := a2 in
-               (   (mSmall cn o = - mLarge cn o)
-                /\ (1 <= threshLarge + threshSmall)).
+               (   (mSmall o = - mLarge o)
+                /\ (1 <= threshLarge cn + threshSmall cn)).
 Parameter fast_and_slow_opposite_K  : opposite_adjectives slow_A  fast_A.
 Parameter small_and_large_opposite_K : opposite_adjectives small_A large_A.
