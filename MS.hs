@@ -1436,22 +1436,30 @@ data Quant = PossQuant Pron | UniversalQuant Pol | IndefQuant | ExistQuant | ETy
 possPron :: Pron -> Quant
 possPron = PossQuant
 
+-- | given a quantity θ of cn in the env, return, exactly θ cn
+-- (In the example, "exactly θ orders")
 elliptic_NP_Pl :: NP
 elliptic_NP_Pl = do
   (amount,cn') <- getQuantity
   return $ MkNP [ExactlyPredet] (Cardinal amount) IndefQuant cn'
 
+-- Consider the example "ITEL won more orders than APCOM did"
+-- f(x) = AtLeast (x+1)
+-- cn = orders
+-- s = APCOM <elliptic_VP>
 relativeAmountQuant :: Logic.Pol -> (Nat -> Amount) -> CN -> S -> NP
 relativeAmountQuant pol f cn s = do
   (cn',gender) <- cn
-  threshold <- getFresh
-  modify (pushQuantity threshold (cn',gender)) -- priming "ellptic_NP_Pl"
-  modify (pushVP (complSlash elliptic_VPSlash elliptic_NP_Pl)) -- in 's', there may be an elliptic vp, referring to this
-  s' <- s
+  threshold <- getFresh -- invent an abstract quantity.
+  modify (pushQuantity threshold (cn',gender)) -- priming "ellptic_NP_Pl", so that we find the above quantity
+  modify (pushVP (complSlash elliptic_VPSlash elliptic_NP_Pl)) -- in 's', there is an elliptic vp, referring to this
+  s' <- s -- in our example: s evaluates to "APCOM <elliptic_VP>", then "APCOM (<elliptic_VPSlash> <elliptic_NP_Pl>)", then "APCOM won exactly θ orders"
   let q :: Quant'
       q _num _cn _role = do
         x <- getFresh
-        return (\vp' extraObjs -> noExtraObjs s' ∧ Quant (f (Nat (Var threshold))) pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs))
+        return (\vp' extraObjs -> noExtraObjs s' ∧ -- "APCOM won exactly θ orders"
+                                  Quant (f (Nat (Var threshold))) pol x (noExtraObjs (cn' (Var x))) (vp' (Var x) extraObjs)) -- Itel won at least θ+1 orders
+      -- quantifier that implements "there exists (f threshold)"
   return $ MkNP [] Plural (ObliviousQuant q) (cn',gender)
 
 moreThanQuant :: CN -> S -> NP
@@ -1459,15 +1467,18 @@ moreThanQuant = relativeAmountQuant Pos (\x -> AtLeast (1 + x))
 
 moreThanNPQuant :: CN -> NP -> NP
 moreThanNPQuant cn np = do
-  cn' <- cn
-  np' <- np
+  cn' <- cn -- cities
+  np' <- np -- JP or Athens
   let q :: Quant'
       q _num _cn role = do
         np1 <- evalNPData np' role
         np2 <- boundQuant' Pos (MoreThan (Cardinal 2)) cn' role
         return $ \vp' extraObjs -> np1 vp' extraObjs ∧ np2 vp' extraObjs
   moreThanQuant (pure cn') (predVP (pure np') elliptic_VP) -- as in FraCas 230-235
+          -- example for 1st reading:  Stergios visited more cities than JP.
     <|> return (MkNP [] Plural (ObliviousQuant q)  cn')    -- as in FraCas 236-237
+          -- example for second reading: Stergios visited more cities than Athens.
+
 
 nMoreThanNPQuant :: Nat -> CN -> NP -> NP
 nMoreThanNPQuant n cn np = do
