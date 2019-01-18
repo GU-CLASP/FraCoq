@@ -7,6 +7,10 @@
 \addbibresource{PaperTools/bibtex/jp.bib}
 \addbibresource{phorae.bib}
 
+\usepackage{stmaryrd}
+\usepackage{newunicodechar}
+\input{PaperTools/latex/newunicodedefs}
+
 \title{FraCaS: 80 percent complete}
 
 % - Two-phase system (Dyn semantics from theorem proving)
@@ -171,7 +175,7 @@ automatically.
 Another point, of minor theoretical importance but major practical
 one, is our handling of adverbial phrases. We interpret adverbs (and
 in general all adverbial and prepositional phrases) are VP-modifiers:
-$Adv = VP -> VP$, where $VP = object -> Prop$. However, applying
+$Adv = VP → VP$, where $VP = object → Prop$. However, applying
 adverbs to verb-phrases heavily complicates the Coq proofs, because
 such phrases can contain quantifiers. Therefore, we instead move the
 adverbs, so that they apply to (atomic) verbs only, and can simplify
