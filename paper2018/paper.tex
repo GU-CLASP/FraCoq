@@ -194,14 +194,43 @@ include without complementing it with a more thorough suite which
 captures a more complete landscape of the phenomena that section 7
 touches.
 
-We classify as YES if a proof can be constructed from the premises to
-the hypothesis, NO if a proof of the negated hypothesis can be
-constructed and UNK otherwise.\footnote{Because we work with a
-  non-decidable logic, one can not \emph{in general} conclude
-  decisively that no proof exists. Thus, we consider here that no
-  proof exists if it cannot be constructed with reasonable effort. In
-  particular, we test at the minimum that the automatic proof search
-  built in Coq does not succeed before classifying a problem as UNK.}
+FraCaS intends to classify each problem as either entailment (YES),
+entailment of the opposite (NO) or no entailment (UNK).  For this
+work, we have amended FraCaS to address a few problems. First, certain
+test case are not formed correctly. Those were identified by Bill
+MacCartney as ``undef'', and we removed those. Second, a few test
+cases occurs twice in the suite, but with two different answers (one
+YES and one UNK), with the annotation that those correspond to
+different readings. However, elsewhere in the suite, if a problem has
+several readings but only one has entailment, it occurs only once and
+is marked as YES. To make the test suite consistent, if one reading
+yields entailment we have always considered it as YES. Finally, we
+have removed case 199 (which appears to be vacuous), and changed the
+following cases, which appeared to have been misclassified. We note
+that the majority of the mistaken classifications occur in sections 3
+and 4, which have not been previously attempted and thus, we propose,
+have not been properly scrutinized.
+
+\begin{center}
+\begin{tabular}{ccc}
+ test case & new class & comment \\ \hline
+    005 & UNK & missing hypothesis: there are italian tenors \\
+   056 &  Yes & Already identified as such by MacCartney \\
+  069 & Unk & Mary could have used someone else's workstation \\
+  119 & Unk & \textit{ibid.} \\
+  181 & Yes & for the same reason as 180 \\
+  226 & Yes &
+\end{tabular}
+\end{center}
+
+Our system classifies a case as YES if a proof can be constructed from
+the premises to the hypothesis, NO if a proof of the negated
+hypothesis can be constructed and UNK otherwise. Because we work with
+a non-decidable logic, one can not \emph{in general} conclude
+decisively that no proof exists. Thus, we consider here that no proof
+exists if it cannot be constructed with reasonable effort. In
+particular, we test at the minimum that the automatic proof search
+built in Coq does not succeed before classifying a problem as UNK.
 
 
 %  ------ Section 1
@@ -245,7 +274,6 @@ constructed and UNK otherwise.\footnote{Because we work with a
 % correct: 231/251   [13,14,46,84,91,94,95,109,111,124,126,127,170,188,216,242,250,326,333,346]
 % score: 0.8918918918918919
 
-\todo{rejected and changed cases in FraCaS}
 \providecommand\forcecenter{\multicolumn{1}{c}}
 \begin{table}
   \centering
