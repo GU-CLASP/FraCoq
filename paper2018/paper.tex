@@ -310,7 +310,18 @@ in terms of accuracy overall. In particular, section 6 sees a large
 improvement in accuracy, which we attribute to our new analysis of
 comparatives, enabled by our dynamic semantics.
 
-\todo{error analysis}
+\paragraph{error analysis}
+Our system fails to classify correctly 28 problems of of 259 attempts.
+Unfortunately, it isn't easy to concisely characterize the areas where
+it fails.  The biggest source of error can be attributed to its
+incorrect handling of groups
+(013,014,046,084,111,124,126,127,137,171,172,191,193,195,243,250,333,346). These
+are cases where a conjunction of individuals is treated as group, or
+where counting members of a group is necessary.  Other notable
+problematic cases are that definite plural does not have universal
+reading are incorrectly classified (091,094,095). Neither measure
+phrases (242) nor attributive comparatives (244,245) are handled.
+
 
 \section{Future work}
 \section{Conclusion}
