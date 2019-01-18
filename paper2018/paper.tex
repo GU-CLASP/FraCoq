@@ -6,6 +6,7 @@
 \usepackage[backend=bibtex,citestyle=authoryear,style=alphabetic,natbib]{biblatex}
 \addbibresource{PaperTools/bibtex/jp.bib}
 \addbibresource{phorae.bib}
+\addbibresource{IWCSbib.bib}
 
 \usepackage{stmaryrd}
 \usepackage{newunicodechar}
@@ -184,9 +185,98 @@ proofs accordingly. \todo{theoretical justification in the literature}
 
 
 \section{Results and evaluation}
-% - show overall numbers
-% - compare with others
-% - error analysis (classify, show examples)
+
+We evaluated FraCoq against 8 sections of the FraCaS test suite, for a
+total of 259 examples. We excluded only one section, 7. The reason for
+doing so is that, in our view, it contains too many examples which
+require \textit{ad-hoc} treatment, and thus makes little sense to
+include without complementing it with a more thorough suite which
+captures a more complete landscape of the phenomena that section 7
+touches.
+
+We classify as YES if a proof can be constructed from the premises to
+the hypothesis, NO if a proof of the negated hypothesis can be
+constructed and UNK otherwise.\footnote{Because we work with a non-decidable logic, that poses a theoretical question that we address below.}
+
+
+%  ------ Section 1
+% complete: 74/74   []
+% correct: 71/74   [13,14,46]
+% score: 0.9594594594594594
+%  ------ Section 2
+% complete: 33/33   []
+% correct: 27/33   [84,91,94,95,109,111]
+% score: 0.8181818181818182
+%  ------ Section 3
+% complete: 27/28   [137]
+% correct: 24/27   [124,126,127]
+% score: 0.8571428571428571
+%  ------ Section 4
+% complete: 47/52   [171,172,191,193,195]
+% correct: 45/47   [170,188]
+% score: 0.8653846153846154
+%  ------ Section 5
+% complete: 20/20   []
+% correct: 19/20   [216]
+% score: 0.95
+%  ------ Section 6
+% complete: 29/31   [244,245]
+% correct: 27/29   [242,250]
+% score: 0.8709677419354839
+%  ------ Section 7
+% complete: 0/67   [251,252,253,254,255,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,277,278,279,280,281,282,283,284,285,286,287,288,289,290,292,293,294,295,296,297,298,299,300,301,302,303,304,306,307,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325]
+% correct: 0/0   []
+% score: 0.0
+%  ------ Section 8
+% complete: 8/8   []
+% correct: 6/8   [326,333]
+% score: 0.75
+%  ------ Section 9
+% complete: 13/13   []
+% correct: 12/13   [346]
+% score: 0.9230769230769231
+%  ------ Section 0
+% complete: 251/259   [137,171,172,191,193,195,244,245]
+% correct: 231/251   [13,14,46,84,91,94,95,109,111,124,126,127,170,188,216,242,250,326,333,346]
+% score: 0.8918918918918919
+
+\todo{rejected and changed cases in FraCaS}
+\providecommand\forcecenter{\multicolumn{1}{c}}
+\begin{table}
+  \centering
+\begin{tabular}{rlrrrrrr}
+  & Section      & \# examples & Ours      & FraCoq & MINE & Nut  & Langpro  \\ \hline
+1 & Quantifiers  & 75          & .96 (74)  & .96    & .77  & .53  & .93 (44) \\
+2 & Plurals      & 33          & .82       & .76    & .67  & .52  & .73 (24) \\
+3 & Anaphora     & 28          & .86       &   -    & -    & -    &  -       \\
+4 & Ellipsis     & 52          & .87       &   -    & -    & -    &  -       \\
+5 & Adjectives   & 22          & .95 (20)  & .95    & .68  & .32  & .73 (12) \\
+6 & Comparatives & 31          & .87       & .56    & .48  & .45  &  -       \\
+8 & Verbs        & 8           & .75       &   -    & -    & -    &  -       \\
+9 & Attitudes    & 13          & .92       & .85    & .77  & .46  & .92 (9)  \\ \hline
+  & Total        & 262         & .89 (259) & .83    & .69  & .50  & .85 (89)
+  \end{tabular}
+  \caption{Overview of the accuracy of our system compared to others.
+    ``Ours" refers to the approach presented in this paper. When a
+    system does not handle the nominal number of examples shown in the
+    third column, the actual number of examples attempted is shown in
+    parentheses.  ``FraCoq'' refers to the work of
+    \citet{bernardy_type_2017}. ``MINE" refers to the approach of
+    \citet{Mineshima:2015}, ``NUT" to the CCG system that utilizes the
+    first-order automated theorem prover \textit{nutcracker} described
+    by \citet{bos:2008}, and ``Langpro" to the system presented by
+    \citet{Abzianidze:2015}.  }
+\end{table}
+
+
+The above result reveals a considerable improvement over earlier
+approaches in terms of coverage, with three more sections covered over
+previous state of the art. Additionally, our system is generally best
+in terms of accuracy overall. In particular, section 6 sees a large
+improvement in accuracy, which we attribute to our new analysis of
+comparatives, enabled by our dynamic semantics.
+
+\todo{error analysis}
 
 \section{Future work}
 \section{Conclusion}
