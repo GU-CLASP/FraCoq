@@ -196,7 +196,12 @@ touches.
 
 We classify as YES if a proof can be constructed from the premises to
 the hypothesis, NO if a proof of the negated hypothesis can be
-constructed and UNK otherwise.\footnote{Because we work with a non-decidable logic, that poses a theoretical question that we address below.}
+constructed and UNK otherwise.\footnote{Because we work with a
+  non-decidable logic, one can not \emph{in general} conclude
+  decisively that no proof exists. Thus, we consider here that no
+  proof exists if it cannot be constructed with reasonable effort. In
+  particular, we test at the minimum that the automatic proof search
+  built in Coq does not succeed before classifying a problem as UNK.}
 
 
 %  ------ Section 1
