@@ -3,6 +3,10 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata}
 
+\usepackage[backend=bibtex,citestyle=authoryear,style=alphabetic,natbib]{biblatex}
+\addbibresource{PaperTools/bibtex/jp.bib}
+\addbibresource{phorae.bib}
+
 \title{FraCaS: 80 percent complete}
 
 % - Two-phase system (Dyn semantics from theorem proving)
@@ -26,8 +30,19 @@
 \section{Background}
 
 \section{Overview of the system}
-% - Two-phase system (Dyn semantics from theorem proving)
-% - Multiple readings
+
+Our system consists of two main parts.
+\begin{enumerate}
+\item A converter from syntax trees to types. The syntax trees follow
+  the GF formalism, and the types follow the Coq formalism. The
+  converter itself is a Haskell program. It implements a dynamic
+  semantics. It comprises the bigger part of our system.
+\item A number of type-theoretical combinators. These take care of the
+  natural semantics which have no influence on the dynamical
+  aspects. This includes for example the treatment of adjectives
+  (intersective, subsective, etc.) and adverbs (veridical or not).
+\end{enumerate}
+This architecture is represented schematically in Figure \ref{fig:overview}.
 
 \begin{figure}
   \centering
@@ -55,7 +70,7 @@
   (Sem) edge (Hask)
   (Hyper) edge (Coq);
 \end{tikzpicture}
-}  
+}
 \caption{Phases in our system. ($\ast$) At the level of Coq, we handle
   the details of the adverbial (veridicality properties) and
   adjectival semantics (division into subsective, extentional,
@@ -63,13 +78,105 @@
   \label{fig:overview}
 \end{figure}
 
-\subsection{Salient points}
-% - Dynamic Semantics/Anaphora (as in Jolli paper) --- but this is the first time that this is done for FraCas.
+All underlying systems (GF, Haskell, Coq) are based on lambda calculi
+with types. We ensure that each translation preserve typing, locally:
+\begin{enumerate}
+\item Every GF syntactic category $C$ is mapped to a type noted $⟦C⟧$.
+\item GF Functional types are mapped compositionally : $⟦A → B⟧ = ⟦A⟧ → ⟦B⟧$
+\item Every GF syntactic construction function $f : X$ is mapped to a function $⟦f⟧$ such that $⟦f⟧ : ⟦X⟧$.
+\item GF function applications are mapped compositionally: $⟦t(u)⟧ = ⟦t⟧ (⟦u⟧)$.
+\end{enumerate}
+Because all system embed the simply-typed lambda calculus, ensuring
+type-preservation locally means that types are preserved globally.
+Therefor, we are certain that every GF syntax tree can be mapped to
+Haskell, and eventuall Coq, without error.
+
+The dynamic semantics follows a monadic structure, as pioneered by
+\citet{Shan:2002}. There are two kinds of effects carried by the
+monad.  The first one comprises a series of state updates and queries,
+corresponding to all elements that can be referred to by anaphoric
+expressions. These can be usual ones (like NPs), but also less usual
+ones (like 2-place verbs, or a quantity --- which we illustrate
+below). The other kind of effects is \emph{non-determinism}. This
+models the property that linguistic expressions can have several
+interpretations. The monadic structure allows to locally express that
+a given expression has several meaning; the monadic bind ensures that
+all combinations of meanings are considered at the top-level,
+combinatorially. This dynamic semantics allows us to model many
+phenomena in a precise way:
+
+\paragraph{anaphora} We can handle anaphora % wait so see what JoLLi says here
+
+  % - Dynamic Semantics/Anaphora (as in Jolli paper) --- but this is the first time that this is done for FraCas.
 %   -> Gender is a property of nouns
-% - Definites handled by adding an assumption at the top-level. (instead as inline existential) -- Enabled by dyn. semantics
-% - Handling of comparatives (with threshold BUT not those of adjectives), relying largely on the dyn. semantic system
-% - Threshold-based interpretation of (some) adjectives + Linear arithmetic proofs (Automation)
-% - New handling of prepositions and adverbs
+\paragraph{ellipsis} Ellipsis is handled in essentially the same way
+as anaphora. This method is made especially straightforward thanks to
+using GF syntax tree, which requires an explicit argument for each
+predicate. Thus, ellpsis are made explicit by the parsing phase.
+
+\paragraph{definites} A naive way to handle definites is as sigma (or
+exsistential types). \todo{add example} However, if the semantics
+does not feature a dynamic element, then the existential
+quantification is introduced locally. This means that the quantifier
+can be introduced in the wrong context. Consider the phrase
+``everyone pets the dog''. The structure of the interpretation would
+be be $∀x. person(x) → ∃y. dog(y) ∧ pet(x,y)$.
+
+Instead, our take is that definites should be treated as anaphoric
+expressions. If the referent is not found in the discourse, then it
+will be introduced using a sigma type, \emph{at the top-level} of
+the expression. Therefore we record all definites without referent,
+using a monadic effect. When the complete sentence has been
+interpreted, we re-introduced referent using existentials. For the
+above example, we obtain the desired interpretation:
+be be $∃y. dog(y) ∧ ∀x. person(x) → pet(x,y)$.
+
+\paragraph{Phrasal comparatives}
+Previous attempts to tackle section of the FraCaS test suite showed
+that handling comparatives is not easy. Our strategy here is to
+leverage our dynamic semantics, revealing an anaphoric element of
+comparatives. Consider the hypothesis of FraCaS 239: ``ITEL won more
+orders than APCOM lost.''  We postulate that this sentence is
+equivalent to the following two separate parts: ``APCOM lost zero or
+more orders. ITEL won more orders [than some elliptic quantity].''
+The elliptic quantity is introduced every time we talk about some
+quantity (indexed by a CN, in this case ``orders''), and it can be
+referred to by a comparative, later in the discourse. Using this idea,
+we can go one level deeper in the interpretation of our example:
+``APCOM lost θ orders. θ >= 0.  ITEL won at least θ+1 orders.''. We
+see here how the quantities are introduced. They are added to the
+environment so that, they can be referred to as elliptic quantity
+expressions. Finally, ``more'' is intepreted as ``at least <elliptic
+quantity>+1''.
+
+
+\paragraph{Adjectives}
+In our system, we interpret gradable adjectives using a pair of a
+measure $m : objects → Z$ and and a threshold $τ : Z$, where $Z$ is
+treated as an abstract ordered ring by Coq. (This structure has no
+dynamic aspect in our model, and thus is entirely handled within Coq.)
+For subsective adjectives, $τ$ will additionally depend on the class
+of the object in question. This structure has the benefit that
+opposite adjectives can be easily represented (measures are opposites
+$∀x. m_1 x = -m_2 x$ and thresholds do not overlap $τ_1 + τ_2 > 0$).
+\todo{reference to this view in the litterature}.  Additionally,
+adjectival assumptions as given in FraCaS are interpreted as linear
+equations in $Z$. Because solving such equations is decidable, solving
+such problems can be made efficient. Indeed, the tactic that Coq
+offers for this purpose can solve all such problems in FraCaS,
+automatically.
+
+
+\paragraph{Adverbs}
+Another point, of minor theoretical importance but major practical
+one, is our handling of adverbial phrases. We interpret adverbs (and
+in general all adverbial and prepositional phrases) are VP-modifiers:
+$Adv = VP -> VP$, where $VP = object -> Prop$. However, applying
+adverbs to verb-phrases heavily complicates the Coq proofs, because
+such phrases can contain quantifiers. Therefore, we instead move the
+adverbs, so that they apply to (atomic) verbs only, and can simplify
+proofs accordingly. \todo{theoretical justification in the literature}
+
 
 
 \section{Results and evaluation}
@@ -81,6 +188,6 @@
 \section{Conclusion}
 
 
-
+\printbibliography
 
 \end{document}
