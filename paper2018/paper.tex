@@ -9,6 +9,7 @@
 \addbibresource{IWCSbib.bib}
 
 \usepackage{stmaryrd}
+\usepackage{enumitem}
 \usepackage{newunicodechar}
 \input{PaperTools/latex/newunicodedefs}
 
@@ -23,6 +24,11 @@
 % - Plurals/Quantifiers improved
 % - Genders are properties of nouns
 % - Handling of comparatives (with threshold BUT not those of adjectives), relying largely on the dyn. semantic system
+
+\newlist{lingex}{enumerate}{3}
+\setlist[lingex,1]{parsep=0pt,itemsep=1pt,label=(\arabic*),resume=lingexcount}
+\newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
+
 
 \begin{document}
 
@@ -98,61 +104,84 @@ Haskell, and eventuall Coq, without error.
 
 The dynamic semantics follows a monadic structure, as pioneered by
 \citet{Shan:2002}. There are two kinds of effects carried by the
-monad.  The first one comprises a series of state updates and queries,
-corresponding to all elements that can be referred to by anaphoric
-expressions. These can be usual ones (like NPs), but also less usual
-ones (like 2-place verbs, or a quantity --- which we illustrate
-below). The other kind of effects is \emph{non-determinism}. This
-models the property that linguistic expressions can have several
+monad.  The first one comprises a series of updates and queries of
+stateful elements.  There is one piece of updateable state for every
+element which can be referred to by anaphoric expressions. These can
+be the usual ones (like NPs), but also less usual ones (like 2-place
+verbs, or a quantity --- which we illustrate below). The other kind of
+effects is \emph{non-determinism}. We use non-determinism to model the
+property that linguistic expressions can have several
 interpretations. The monadic structure allows to locally express that
-a given expression has several meaning; the monadic bind ensures that
+a given expression has several meanings; the monadic bind ensures that
 all combinations of meanings are considered at the top-level,
 combinatorially. This dynamic semantics allows us to model many
-phenomena in a precise way:
+phenomena in a precise way.
 
-\paragraph{anaphora} We can handle anaphora % wait so see what JoLLi says here
+\paragraph{anaphora} Thanks to the above system, we can handle many
+anaphoric cases, including E-Type and Donkey pronouns. Indeed, even
+objects which have no syntactic representation can be added to the
+environment. We follow here the general pattern outlined by
+\citet{unger:2011}. However, we use a more general scope-extension
+mechanism, which allows us to support examples such as the following:
+\item[FraCaS 122]
+P1	Every committee has a chairman.\\
+P2	He is appointed its members.\\
+H 	Every committee has a chairman appointed by members of the committee. 
+\end{lingex}
+In the above example, the pronoun ``he'' is allowed to refer to the
+object quantified over by ``every'', whose scope is extended
+accordingly.
 
-  % - Dynamic Semantics/Anaphora (as in Jolli paper) --- but this is the first time that this is done for FraCas.
-%   -> Gender is a property of nouns
 \paragraph{ellipsis} Ellipsis is handled in essentially the same way
 as anaphora. This method is made especially straightforward thanks to
 using GF syntax tree, which requires an explicit argument for each
-predicate. Thus, ellpsis are made explicit by the parsing phase.
+predicate. Thus, ellpsis are made explicit by the parsing phase. Such
+ellptic expressions are handled in the same way as anaphora.
+\begin{lingex}
+\item[FraCas 173]
+  P1	Bill spoke to everyone that John did [elliptic V2].\\
+  P2	John spoke to Mary.\\
+  Q 	Did Bill speak to Mary?\\
+  H 	Bill spoke to Mary.
+\end{lingex}
+For example, in (FraCaS 173, P1), the argument of ``did'' is
+explicitly marked as an elliptic V2, which we resolve to ``speak'' in
+that context.
+\paragraph{definites} A naive way to handle definites is an
+existential (or sigma). However, if the semantics does not feature a
+dynamic element, then the existential quantification is introduced
+locally. This means that the quantifier can be introduced in the wrong
+context. Consider the phrase ``everyone pets the dog''. The structure
+of the interpretation would be
+$∀x. person(x) → ∃y. dog(y) ∧ pet(x,y)$.
 
-\paragraph{definites} A naive way to handle definites is as sigma (or
-exsistential types). \todo{add example} However, if the semantics
-does not feature a dynamic element, then the existential
-quantification is introduced locally. This means that the quantifier
-can be introduced in the wrong context. Consider the phrase
-``everyone pets the dog''. The structure of the interpretation would
-be be $∀x. person(x) → ∃y. dog(y) ∧ pet(x,y)$.
-
-Instead, our take is that definites should be treated as anaphoric
-expressions. If the referent is not found in the discourse, then it
-will be introduced using a sigma type, \emph{at the top-level} of
-the expression. Therefore we record all definites without referent,
-using a monadic effect. When the complete sentence has been
-interpreted, we re-introduced referent using existentials. For the
+Instead, our take is that definites should be treated as an anaphoric
+expression with an implicit referrent. That is, if the referent is not
+found in the discourse, then it will be forcibly introduced, using an
+existential type, \emph{at the top-level} of the expression. To be
+able to do this, we record all definites without referent, using
+another portion of the environment (using a monadic effect). For the
 above example, we obtain the desired interpretation:
-be be $∃y. dog(y) ∧ ∀x. person(x) → pet(x,y)$.
+$∃y. dog(y) ∧ (∀x. person(x) → pet(x,y))$.
 
 \paragraph{Phrasal comparatives}
-Previous attempts to tackle section of the FraCaS test suite showed
-that handling comparatives is not easy. Our strategy here is to
-leverage our dynamic semantics, revealing an anaphoric element of
-comparatives. Consider the hypothesis of FraCaS 239: ``ITEL won more
-orders than APCOM lost.''  We postulate that this sentence is
-equivalent to the following two separate parts: ``APCOM lost zero or
-more orders. ITEL won more orders [than some elliptic quantity].''
-The elliptic quantity is introduced every time we talk about some
-quantity (indexed by a CN, in this case ``orders''), and it can be
-referred to by a comparative, later in the discourse. Using this idea,
-we can go one level deeper in the interpretation of our example:
-``APCOM lost θ orders. θ >= 0.  ITEL won at least θ+1 orders.''. We
-see here how the quantities are introduced. They are added to the
-environment so that, they can be referred to as elliptic quantity
-expressions. Finally, ``more'' is intepreted as ``at least <elliptic
-quantity>+1''.
+Previous attempts to tackle the section of the FraCaS test suite
+devoted to comparatives showed that handling them is not easy. Our
+strategy here is to leverage our dynamic semantics, revealing an
+anaphoric element of comparatives. Indeed, Consider the hypothesis of
+(FraCaS 239): ``ITEL won more orders than APCOM lost.''  We postulate
+that this sentence is equivalent to the following two separate parts:
+``APCOM lost zero or more orders. ITEL won more orders [than some
+elliptic quantity].''  A quantity is introduced every time we talk
+about some quantity (indexed by a CN, in this case ``orders''), and it
+can be referred to by a comparative, later in the discourse. Using
+this idea, we can go one level deeper in the interpretation of our
+example: ``APCOM lost θ orders. θ >= 0.  ITEL won at least θ+1
+orders.''. We see here how the quantities are introduced. They are
+added to the environment so that, they can be referred to as elliptic
+quantity expressions. Finally, ``more'' is intepreted as ``at least
+<elliptic quantity>+1''. This treatment, which we illustrated here on
+an example, is systematic in our implementation.
 
 
 \paragraph{Adjectives}
@@ -165,29 +194,29 @@ of the object in question. This structure has the benefit that
 opposite adjectives can be easily represented (measures are opposites
 $∀x. m_1 x = -m_2 x$ and thresholds do not overlap $τ_1 + τ_2 > 0$).
 \todo{reference to this view in the litterature}.  Additionally,
-adjectival assumptions as given in FraCaS are interpreted as linear
-equations in $Z$. Because solving such equations is decidable, solving
-such problems can be made efficient. Indeed, the tactic that Coq
-offers for this purpose can solve all such problems in FraCaS,
-automatically.
+adjectival phrases, as present in the FraCaS suite, are interpreted as
+linear inequations in $Z$. Solving systems of such inequations is
+decidable. Indeed, the tactic that Coq offers for this purpose can
+solve all such problems in the FraCaS suite, automatically.
 
 
 \paragraph{Adverbs}
 Another point, of minor theoretical importance but major practical
 one, is our handling of adverbial phrases. We interpret adverbs (and
-in general all adverbial and prepositional phrases) are VP-modifiers:
-$Adv = VP → VP$, where $VP = object → Prop$. However, applying
-adverbs to verb-phrases heavily complicates the Coq proofs, because
-such phrases can contain quantifiers. Therefore, we instead move the
-adverbs, so that they apply to (atomic) verbs only, and can simplify
-proofs accordingly. \todo{theoretical justification in the literature}
+in general all adverbial and prepositional phrases) as VP-modifiers:
+$Adv = VP → VP$, where $VP = object → Prop$. However, applying adverbs
+to verb-phrases heavily complicates the Coq proofs, because such
+phrases can contain quantifiers. Therefore, we instead move the
+adverbs, so that they apply to (atomic) verbs only. Proofs can then be
+simplify accordingly. \todo{theoretical justification in the
+  literature?}
 
 
 
 \section{Results and evaluation}
 
 We evaluated FraCoq against 8 sections of the FraCaS test suite, for a
-total of 259 examples. We excluded only one section, 7. The reason for
+total of 259 examples. We excluded only section 7, ``temporal reference''. The reason for
 doing so is that, in our view, it contains too many examples which
 require \textit{ad-hoc} treatment, and thus makes little sense to
 include without complementing it with a more thorough suite which
@@ -195,21 +224,23 @@ captures a more complete landscape of the phenomena that section 7
 touches.
 
 FraCaS intends to classify each problem as either entailment (YES),
-entailment of the opposite (NO) or no entailment (UNK).  For this
-work, we have amended FraCaS to address a few problems. First, certain
-test case are not formed correctly. Those were identified by Bill
-MacCartney as ``undef'', and we removed those. Second, a few test
-cases occurs twice in the suite, but with two different answers (one
-YES and one UNK), with the annotation that those correspond to
-different readings. However, elsewhere in the suite, if a problem has
-several readings but only one has entailment, it occurs only once and
-is marked as YES. To make the test suite consistent, if one reading
-yields entailment we have always considered it as YES. Finally, we
-have removed case 199 (which appears to be vacuous), and changed the
-following cases, which appeared to have been misclassified. We note
-that the majority of the mistaken classifications occur in sections 3
-and 4, which have not been previously attempted and thus, we propose,
-have not been properly scrutinized.
+entailment of the opposite (NO) or no entailment (UNK).  In this work,
+we have amended the FraCaS suite to correct a few problems. First,
+certain test case are not formed correctly. Those were already
+identified by Bill MacCartney\todo{cite} as such (using an ``undef''
+labelling), and we removed those. Second, a few test cases occur twice
+in the suite, but with two different labelling (one YES and one UNK),
+with an annotation that those labellings correspond to different
+readings. However, elsewhere in the suite, if a problem has several
+readings but only one has entailment, it occurs only once and is
+marked as YES. To make the test suite consistent, if one reading
+yields entailment we have always considered it as YES. We have also
+removed case 199 (which appears to be vacuous). Finally we changed the
+labelling of the following cases, which appeared to have been
+misclassified. We note that the majority of the mistaken
+classifications occur in sections 3 and 4, which have not been
+previously attempted and thus, we propose, have not been properly
+scrutinized.
 
 \begin{center}
 \begin{tabular}{ccc}
@@ -226,7 +257,7 @@ have not been properly scrutinized.
 Our system classifies a case as YES if a proof can be constructed from
 the premises to the hypothesis, NO if a proof of the negated
 hypothesis can be constructed and UNK otherwise. Because we work with
-a non-decidable logic, one can not \emph{in general} conclude
+a non-decidable logic, one cannot \emph{in general} conclude
 decisively that no proof exists. Thus, we consider here that no proof
 exists if it cannot be constructed with reasonable effort. In
 particular, we test at the minimum that the automatic proof search
@@ -285,9 +316,10 @@ built in Coq does not succeed before classifying a problem as UNK.
 4 & Ellipsis     & 52          & .87      &   -    & -    & -    &  -       \\
 5 & Adjectives   & 22          & .95 (20) & .95    & .68  & .32  & .73 (12) \\
 6 & Comparatives & 31          & .87      & .56    & .48  & .45  &  -       \\
+7 & Temporal     & 75          &  -       &   -    &   -  &  -   &  -       \\
 8 & Verbs        & 8           & .75      &   -    & -    & -    &  -       \\
 9 & Attitudes    & 13          & .92      & .85    & .77  & .46  & .92 (9)  \\ \hline
-  & Total        & 262         & .89      & .83    & .69  & .50  & .85  \\
+  & Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
   &              &             & (259)    & (174)  & (174)& (174)& (89)
   \end{tabular}
   \caption{Overview of the accuracy of our system compared to others.
@@ -299,28 +331,33 @@ built in Coq does not succeed before classifying a problem as UNK.
     \citet{Mineshima:2015}, ``NUT" to the CCG system that utilizes the
     first-order automated theorem prover \textit{nutcracker} described
     by \citet{bos:2008}, and ``Langpro" to the system presented by
-    \citet{Abzianidze:2015}.  }
+    \citet{Abzianidze:2015}. A dash indicates that no attempt was made
+    for a given section. }
+  \label{tbl:results}
 \end{table}
 
-
-The above result reveals a considerable improvement over earlier
+Table \ref{tbl:results} shows a considerable improvement over earlier
 approaches in terms of coverage, with three more sections covered over
-previous state of the art. Additionally, our system is generally best
-in terms of accuracy overall. In particular, section 6 sees a large
-improvement in accuracy, which we attribute to our new analysis of
-comparatives, enabled by our dynamic semantics.
+previous state of the art. We thus cover 259 out of 337 cases (77\%),
+compared to at most 174 cases (52\%) in previous work. Additionally,
+our system performs generally the best in terms of accuracy. In
+particular, section 6 sees a large improvement in accuracy, which we
+attribute to our new analysis of comparatives, enabled by our dynamic
+semantics.
 
 \paragraph{error analysis}
-Our system fails to classify correctly 28 problems of of 259 attempts.
-Unfortunately, it isn't easy to concisely characterize the areas where
-it fails.  The biggest source of error can be attributed to its
-incorrect handling of groups
-(013,014,046,084,111,124,126,127,137,171,172,191,193,195,243,250,333,346). These
-are cases where a conjunction of individuals is treated as group, or
-where counting members of a group is necessary.  Other notable
-problematic cases are that definite plural does not have universal
-reading are incorrectly classified (091,094,095). Neither measure
-phrases (242) nor attributive comparatives (244,245) are handled.
+Our system fails to classify correctly 28 cases out of 259.  We give
+here a summary of the missing features which are responsible for the
+biggest number of failures. The one biggest source of error is an
+incomplete handling of group readings. (FraCaS
+013,014,046,084,111,124,126,127,137,171,172,191,193,195,243,250,333,346). These
+are cases where a syntactic conjunction of individuals is treated as a
+semantic group, or where precise counting of the members of a group is
+necessary.  Other problematic cases are where a definite plural does
+not have a universal reading (091,094,095) --- these require an
+analysis at the pragmatic level, which our system lacks. Additionally,
+neither measure phrases (242) nor attributive comparatives (244,245)
+are handled.
 
 
 \section{Future work}
