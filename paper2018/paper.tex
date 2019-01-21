@@ -217,7 +217,7 @@ simplify accordingly. \todo{theoretical justification in the
 \section{Results and evaluation}
 
 We evaluated FraCoq against 8 sections of the FraCaS test suite, for a
-total of 259 examples. We excluded only section 7, ``temporal reference''. The reason for
+total of 259 cases. We excluded only section 7, ``temporal reference''. The reason for
 doing so is that, in our view, it contains too many examples which
 require \textit{ad-hoc} treatment, and thus makes little sense to
 include without complementing it with a more thorough suite which
@@ -310,7 +310,7 @@ built in Coq does not succeed before classifying a problem as UNK.
 \begin{table}
   \centering
 \begin{tabular}{rlrrrrrr}
-  & Section      & \# examples & Ours     & FraCoq & MINE & Nut  & Langpro  \\ \hline
+  & Section      & {\kern -1em} \# cases & Ours     & FraCoq & MINE & Nut  & Langpro  \\ \hline
 1 & Quantifiers  & 75          & .96 (74) & .96    & .77  & .53  & .93 (44) \\
 2 & Plurals      & 33          & .82      & .76    & .67  & .52  & .73 (24) \\
 3 & Anaphora     & 28          & .86      &   -    & -    & -    &  -       \\
@@ -325,8 +325,8 @@ built in Coq does not succeed before classifying a problem as UNK.
   \end{tabular}
   \caption{Overview of the accuracy of our system compared to others.
     ``Ours" refers to the approach presented in this paper. When a
-    system does not handle the nominal number of examples shown in the
-    third column, the actual number of examples attempted is shown in
+    system does not handle the nominal number of test cases shown in the
+    third column, the actual number of test cases attempted is shown in
     parentheses.  ``FraCoq'' refers to the work of
     \citet{bernardy_type_2017}. ``MINE" refers to the approach of
     \citet{Mineshima:2015}, ``NUT" to the CCG system that utilizes the
