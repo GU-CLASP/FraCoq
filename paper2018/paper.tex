@@ -35,10 +35,69 @@
 
 
 \section{Introduction}
-Natural Language Inference (NLI) is task of determining of whether an NL hypothesis H follows from an NL premise(s) P. NLI has received a lot of attention in the Computational Semantics literature and has been approached using a variety of techniques, ranging from logical approaches  \citet{bos:2008,Mineshima:2015,Abzianidze:2015,bernardy_type_2017} all the way to the recent Deep Learning (DL) models for NLP. 
+Natural Language Inference (NLI) is task of determining of whether an NL hypothesis H follows from an NL premise(s) P. NLI has received a lot of attention in the Computational Semantics literature and has been approached using a variety of techniques, ranging from logical approaches  \citet{bos:2008,Mineshima:2015,Abzianidze:2015,bernardy_type_2017} all the way to the recent Deep Learning (DL) models for NLP. The latter approaches, following the general trend in NLP, have been dominating NLI and indeed a number of impressive results have been produced. State-of-the-art DL systems achieve an accuracy of around 0.9 when tested on suitable datasets. However, the datasets that are used are assuming a definition of inference that can be thought to be looser compared to the definition assumed in platforms that used to test logical approaches. Consider the following two examples, one from the SNLI dataset, predominatly used to test DL approaches, and the FraCaS test suite, the dataset \textit{par excellence} to test logical approaches. 
+
+
+\begin{itemize}
+	\item[] \textbf{Premise:} A man selling donuts to a customer during a world
+exhibition event held in the city of Angeles.
+\item[] \textbf{Hypothesis:} A woman drinks her coffee in a small cafe.
+\item[] \textbf{Label:} Contradiction
+
+\end{itemize}
+
+\begin{itemize}
+
+\item[\textbf{P1}] A Scandinavian won the Nobel Prize.
+		
+	\item[\textbf{P2}]	Every Swede is  Scandinavian.
+		
+	\item[\textbf{H.}] Did a Swede win the Nobel prize? 
+	
+	\item[\textbf{H.}] A Swede won the Nobel prize.
+	
+\item[\textbf{Label}] 	YES [FraCaS 173] 	\end{itemize}
+
+
+
+In the SNLI case, one has to make a number of non-trivial assumptions in order to arrive at a contradiction:  a)  the two situations described have to be taken to refer to  the same situation and, thus, decide  whether one description contradicts the other, b) the indefinite article in the premise has to be identified with the indefinite article in the hypothesis, i.e.  \textit{man} contradicting \textit{woman} (a person cannot be a man and a woman at the same time). This is part of the reasoning humans perform, but it is not the only one. More precise, logical reasoning can be also performed. Such an example is the FraCaS example, as well as very fine-grained cases like the Antecedent Contained Deletion  ellipsis example below:
+
+
+\begin{itemize}
+
+\item[\textbf{P1}]	Bill spoke to everyone that John did.
+		
+	\item[\textbf{P2}]		John spoke to Mary.
+		
+	\item[\textbf{H.}] 	Did Bill speak to Mary?
+	
+	\item[\textbf{H.}] 	Bill spoke to Mary.
+	
+\item[\textbf{Label}] 	UNK [FraCaS 065] 	\end{itemize}
+
+
+
+
+
+
+In this paper, we concentrate on this sort of fine-grained reasoning. In particular, we present the first system that deals with the sections on ellipsis and anaphora in the FraCaS and has both the most coverage, as well as accuracy compared to other logical approaches. More specifically, the contributions of the paper are:
+
 
 \paragraph{Contributions}
-(see list above)
+
+\begin{itemize}
+ \item  A two-phase system (rather than one-phase as in  \citet{bernardy_type_2017}): a) using Haskell as a converter between Grammatical Framework trees and Coq types, b) using various type combinators to reach the desired NL semantics. 
+  \item  The first run of the Anaphora and Ellipsis sections of the FraCaS (based on work by \citet{bernardy_jolli})
+ \item  More coverage than any previous logical approach
+  \item  State-of-the-art results in terms of accuracy compared to all previous approaches, for every section of the FraCaS
+  \item  Handing of multiple readings
+  \item  Threshold-based interpretation of (some) adjectives plus Linear arithmetic proofs
+  \item  New handling of prepositions and adverbs compared to the earlier system in  \citet{bernardy_type_2017}, as well as new handling of definitions, enabled by the dynamic semantics system. 
+  \item  Improvement over the previous tre
+atment of Plurals/Quantifiers
+ \item  Big improvement on the comparatives section  enabled by handling  comparatives using a threshold (BUT one different to the one used for adjectives). Again, the dynamic semantics system is crucial here. 
+
+\end{itemize}
 \section{Background}
 
 \section{Overview of the system}
@@ -47,7 +106,7 @@ Our system consists of two main parts.
 \begin{enumerate}
 \item A converter from syntax trees to types. The syntax trees follow
   the GF formalism, and the types follow the Coq formalism. The
-  converter itself is a Haskell program. It implements a dynamic
+  converter itself is a Haskell Program. It implements a dynamic
   semantics. It comprises the bigger part of our system.
 \item A number of type-theoretical combinators. These take care of the
   natural semantics which have no influence on the dynamical
