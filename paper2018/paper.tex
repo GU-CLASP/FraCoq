@@ -38,52 +38,45 @@
 Natural Language Inference (NLI) is task of determining of whether an NL hypothesis H follows from an NL premise(s) P. NLI has received a lot of attention in the Computational Semantics literature and has been approached using a variety of techniques, ranging from logical approaches  \citet{bos:2008,Mineshima:2015,Abzianidze:2015,bernardy_type_2017} all the way to the recent Deep Learning (DL) models for NLP. The latter approaches, following the general trend in NLP, have been dominating NLI and indeed a number of impressive results have been produced. State-of-the-art DL systems achieve an accuracy of around 0.9 when tested on suitable datasets. However, the datasets that are used are assuming a definition of inference that can be thought to be looser compared to the definition assumed in platforms that used to test logical approaches. Consider the following two examples, one from the SNLI dataset, predominatly used to test DL approaches, and the FraCaS test suite, the dataset \textit{par excellence} to test logical approaches. 
 
 
-\begin{itemize}
-	\item[] \textbf{Premise:} A man selling donuts to a customer during a world
-exhibition event held in the city of Angeles.
-\item[] \textbf{Hypothesis:} A woman drinks her coffee in a small cafe.
-\item[] \textbf{Label:} Contradiction
+\begin{lingex}
+\item An SNLI example \\
+\textbf{P}  A  man selling donuts to a customer during a world
+exhibition event held in the city of Angeles. \\
+ \textbf{H}  A woman drinks her coffee in a small cafe.\\
+\textbf{Label: Contradiction}
+\end{lingex}
 
-\end{itemize}
 
-\begin{itemize}
+\begin{lingex}
+\item An example from FraCaS\\
 
-\item[\textbf{P1}] A Scandinavian won the Nobel Prize.
-		
-	\item[\textbf{P2}]	Every Swede is  Scandinavian.
-		
-	\item[\textbf{H.}] Did a Swede win the Nobel prize? 
-	
-	\item[\textbf{H.}] A Swede won the Nobel prize.
-	
-\item[\textbf{Label}] 	YES [FraCaS 173] 	\end{itemize}
+\textbf{P1}] A Scandinavian won the Nobel Prize.\\
+\textbf{P2}	Every Swede is  Scandinavian.\\
+\textbf{Q}  Did a Swede win the Nobel prize? \\
+\textbf{H} A Swede won the Nobel prize.\\
+\textbf{Label: Yes} [FraCaS 173]
+\end{lingex}
 
 
 
 In the SNLI case, one has to make a number of non-trivial assumptions in order to arrive at a contradiction:  a)  the two situations described have to be taken to refer to  the same situation and, thus, decide  whether one description contradicts the other, b) the indefinite article in the premise has to be identified with the indefinite article in the hypothesis, i.e.  \textit{man} contradicting \textit{woman} (a person cannot be a man and a woman at the same time). This is part of the reasoning humans perform, but it is not the only one. More precise, logical reasoning can be also performed. Such an example is the FraCaS example, as well as very fine-grained cases like the Antecedent Contained Deletion  ellipsis example below:
 
 
-\begin{itemize}
+\begin{lingex}
 
-\item[\textbf{P1}]	Bill spoke to everyone that John did.
-		
-	\item[\textbf{P2}]		John spoke to Mary.
-		
-	\item[\textbf{H.}] 	Did Bill speak to Mary?
-	
-	\item[\textbf{H.}] 	Bill spoke to Mary.
-	
-\item[\textbf{Label}] 	UNK [FraCaS 065] 	\end{itemize}
+\item An example from FraCaS involving fine-grained reasoning\\
+\textbf{P1}	Bill spoke to everyone that John did.	\\	
+\textbf{P2}	John spoke to Mary.	\\
+\textbf{Q} 	Did Bill speak to Mary?\\
+\textbf{H} 	Bill spoke to Mary.\\
+\textbf{Label:	UNK} [FraCaS 065] 	\end{lingex}
 
 
 
 
+For this reason, and despite the dominance of DL approaches in pretty much all NLP tasks, logical approaches have been continuing to be developed and evaluated on datasets like the FraCaS test suite and the SICK dataset \cite{marelli:2014}.  \citet{bernardy:2017}  define  a correspondence between abstract syntax parse trees of the FraCas examples, parsed using the Grammatical Framework (GF, \citet{Ranta:GF}), and modern type-theoretic semantics that are output in the Coq proof assistant (the FraCoq system).  The accuracy is 0.85 for 5 ections of the FraCaS test suite. The \textsc{Langpro} system presented by \citet{abzianidze:2017} is based on a Natural Logic tableau theorem prover. It achieves an accuracy of .82 on the SICK dataset. 
 
-
-In this paper, we concentrate on this sort of fine-grained reasoning. In particular, we present the first system that deals with the sections on ellipsis and anaphora in the FraCaS and has both the most coverage, as well as accuracy compared to other logical approaches. More specifically, the contributions of the paper are:
-
-
-\paragraph{Contributions}
+In this paper, we concentrate on this sort of fine-grained, logical reasoning. In particular, we present the first system that deals with the sections on ellipsis and anaphora in the FraCaS test suite and has both the best coverage, as well as accuracy compared to other logical approaches. More specifically, the contributions of the paper are:
 
 \begin{itemize}
  \item  A two-phase system (rather than one-phase as in  \citet{bernardy_type_2017}): a) using Haskell as a converter between Grammatical Framework trees and Coq types, b) using various type combinators to reach the desired NL semantics. 
@@ -97,8 +90,12 @@ In this paper, we concentrate on this sort of fine-grained reasoning. In particu
 atment of Plurals/Quantifiers
  \item  Big improvement on the comparatives section  enabled by handling  comparatives using a threshold (BUT one different to the one used for adjectives). Again, the dynamic semantics system is crucial here. 
 
+
+
+
 \end{itemize}
 \section{Background}
+
 
 \section{Overview of the system}
 
@@ -253,8 +250,7 @@ dynamic aspect in our model, and thus is entirely handled within Coq.)
 For subsective adjectives, $τ$ will additionally depend on the class
 of the object in question. This structure has the benefit that
 opposite adjectives can be easily represented (measures are opposites
-$∀x. m_1 x = -m_2 x$ and thresholds do not overlap $τ_1 + τ_2 > 0$).
-\todo{reference to this view in the litterature}.  Additionally,
+$∀x. m_1 x = -m_2 x$ and thresholds do not overlap $τ_1 + τ_2 > 0$). Formalization aside, this idea is reminiscent of degree-based approaches to gradable adjectives like \citet{Cresswell:1976,Heim:1985,Kennedy:2007}.   Additionally,
 adjectival phrases, as present in the FraCaS suite, are interpreted as
 linear inequations in $Z$. Solving systems of such inequations is
 decidable. Indeed, the tactic that Coq offers for this purpose can
