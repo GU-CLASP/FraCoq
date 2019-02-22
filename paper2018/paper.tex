@@ -119,6 +119,7 @@ famously been instrumental in formalising a proof of the four-color
 theorem \citep{Gonthier:2008}, a proof of the odd order theorem \citep{Gonthier:2013}, as well as developing CompCert, a formally verified compiler for C \citep{Leroy}. Coq is a very powerful reasoning engine that makes it fit for the task of NLI, when the latter is formalized as theorem proving task. Its underlying higher order logic is furthermore very expressive to express fine-grained logical semantics. Furthermore, Coq supports a number of constructions that we will be using notably dependent typing and subtyping. These features are used in order to take care of specific NL phenomena (e.g. subtyping is used in defining different adjectival inference classes).
 
 \subsection{Dynamic Monadic Semantics}
+Dynamic Monadic Semantics have been proven to be an effective way of dealing with anaphora and ellipsis. There are a number of  approaches using monads or other similar ideas (e.g. continuations as in \cite{de2006}) for anaphora and ellipsis  \citet{Shan:2002,unger:2011,Barker:04,de2016,charlow:2017}. In this paper, we follow the approach  as described in \citet{bernardy_jolli}. More details on this will be given in the next section, where the actual system is presented. 
 
 
 
