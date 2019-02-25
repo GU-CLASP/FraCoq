@@ -1,12 +1,8 @@
-\documentclass{article}
+\documentclass[11pt]{article}
+\usepackage{acl2019}
 \usepackage{todonotes}
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata}
-
-\usepackage[backend=bibtex,citestyle=authoryear,style=alphabetic,natbib]{biblatex}
-\addbibresource{PaperTools/bibtex/jp.bib}
-\addbibresource{phorae.bib}
-\addbibresource{IWCSbib.bib}
 
 \usepackage{stmaryrd}
 \usepackage{enumitem}
@@ -32,8 +28,11 @@
 
 \begin{document}
 
+\maketitle{}
 
-
+\begin{abstract}
+  TODO
+\end{abstract}
 \section{Introduction}
 Natural Language Inference (NLI) is the task of determining of whether an NL hypothesis H follows from an NL premise(s) P. NLI has received a lot of attention in the Computational Semantics literature and has been approached using a variety of techniques, ranging from logical approaches  \citet{bos:2008,Mineshima:2015,Abzianidze:2015,bernardy_type_2017} all the way to the recent Deep Learning (DL) models for NLI. The latter approaches, following the general trend in NLP, have been dominating NLI and indeed a number of impressive results have been produced \citet{kim:2018,radford:2018,liu:2019}.\footnote{These are the three systems with the best results on SNLI in increasing order.} State-of-the-art DL systems achieve an accuracy of around 0.9 when tested on suitable datasets. However, the datasets that are used are assuming a definition of inference that can be thought to be `looser' or less precise compared to the definition assumed in platforms that used to test logical approaches. Consider the following two examples, one from the SNLI dataset, predominatly used to test DL approaches and which has a state-of-the-art performace of 0.911 \citet{lui:2019'}, and the FraCaS test suite, the dataset \textit{par excellence} to test logical approaches. 
 
@@ -138,7 +137,7 @@ Our system consists of two main parts.
 \end{enumerate}
 This architecture is represented schematically in Figure \ref{fig:overview}.
 
-\begin{figure}
+\begin{figure*}
   \centering
 {
   \tiny
@@ -170,7 +169,7 @@ This architecture is represented schematically in Figure \ref{fig:overview}.
   adjectival semantics (division into subsective, extentional,
   non-committal, etc. categories.) }
   \label{fig:overview}
-\end{figure}
+\end{figure*}
 
 All underlying systems (GF, Haskell, Coq) are based on lambda calculi
 with types. We ensure that each translation preserve typing, locally:
@@ -319,13 +318,13 @@ readings but only one has entailment, it occurs only once and is
 marked as YES. To make the test suite consistent, if one reading
 yields entailment we have always considered it as YES. We have also
 removed case 199 (which appears to be vacuous). Finally we changed the
-labelling of the following cases, which appeared to have been
+labelling of the cases listed in Table \ref{tab:overrulings}, which appeared to have been
 misclassified. We note that the majority of the mistaken
 classifications occur in sections 3 and 4, which have not been
 previously attempted and thus, we propose, have not been properly
 scrutinized.
-
-\begin{center}
+\begin{table*}
+  \centering
 \begin{tabular}{ccc}
  test case & new class & comment \\ \hline
     005 & UNK & missing hypothesis: there are italian tenors \\
@@ -335,7 +334,9 @@ scrutinized.
   181 & Yes & for the same reason as 180 \\
   226 & Yes &
 \end{tabular}
-\end{center}
+  \caption{Overruled FraCaS cases}
+  \label{tab:overrulings}
+\end{table*}
 
 Our system classifies a case as YES if a proof can be constructed from
 the premises to the hypothesis, NO if a proof of the negated
@@ -389,7 +390,7 @@ built in Coq does not succeed before classifying a problem as UNK.
 % score: 0.8918918918918919
 
 \providecommand\forcecenter{\multicolumn{1}{c}}
-\begin{table}
+\begin{table*}
   \centering
 \begin{tabular}{rlrrrrrr}
   & Section      & {\kern -1em} \# cases & Ours     & FraCoq & MINE & Nut  & Langpro  \\ \hline
@@ -416,10 +417,10 @@ built in Coq does not succeed before classifying a problem as UNK.
     by \citet{bos:2008}, and ``Langpro" to the system presented by
     \citet{Abzianidze:2015}. A dash indicates that no attempt was made
     for a given section. }
-  \label{tbl:results}
-\end{table}
+  \label{tab:results}
+\end{table*}
 
-Table \ref{tbl:results} shows a considerable improvement over earlier
+Table \ref{tab:results} shows a considerable improvement over earlier
 approaches in terms of coverage, with three more sections covered over
 previous state of the art. We thus cover 259 out of 337 cases (77\%),
 compared to at most 174 cases (52\%) in previous work. Additionally,
@@ -446,7 +447,8 @@ are handled.
 \section{Future work}
 \section{Conclusion}
 
+\bibliography{PaperTools/bibtex/jp.bib,phorae.bib,IWCSbib.bib}
 
-\printbibliography
+\bibliographystyle{acl_natbib}
 
 \end{document}
