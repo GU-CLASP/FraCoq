@@ -344,17 +344,16 @@ decidable. Indeed, the tactic that Coq offers for this purpose can
 solve all such problems in the FraCaS suite, automatically.
 
 
-\paragraph{Adverbs}
-Another point, of minor theoretical importance but major practical
-one, is our handling of adverbial phrases. We interpret adverbs (and
-in general all adverbial and prepositional phrases) as VP-modifiers:
-$Adv = VP → VP$, where $VP = object → Prop$. However, applying adverbs
-to verb-phrases heavily complicates the Coq proofs, because such
-phrases can contain quantifiers. Therefore, we instead move the
-adverbs, so that they apply to (atomic) verbs only. Proofs can then be
-simplify accordingly. \todo{theoretical justification in the
-  literature?}
-
+% \paragraph{Adverbs}
+% Another point, of minor theoretical importance but major practical
+% one, is our handling of adverbial phrases. We interpret adverbs (and
+% in general all adverbial and prepositional phrases) as VP-modifiers:
+% $Adv = VP → VP$, where $VP = object → Prop$. However, applying adverbs
+% to verb-phrases heavily complicates the Coq proofs, because such
+% phrases can contain quantifiers. Therefore, we instead move the
+% adverbs, so that they apply to (atomic) verbs only. Proofs can then be
+% simplify accordingly. \todo{theoretical justification in the
+%   literature?}
 
 
 \section{Results and evaluation}
@@ -380,26 +379,28 @@ readings but only one has entailment, it occurs only once and is
 marked as YES. To make the test suite consistent, if one reading
 yields entailment we have always considered it as YES. We have also
 removed case 199 (which appears to be vacuous). Finally we changed the
-labelling of the cases listed in Table \ref{tab:overrulings}, which appeared to have been
-misclassified. We note that the majority of the mistaken
+labelling of 6 cases 
+% the cases listed in Table \ref{tab:overrulings},
+which appeared to have been
+misclassified (as justified in supplementary material). We note that the majority of the mistaken
 classifications occur in sections 3 and 4, which have not been
 previously attempted and thus, we propose, have not been properly
 scrutinized.
-\begin{table}
-  \centering
-  \small
-\begin{tabularx}{\columnwidth}{ccp{3.8cm}}
- test case & new class & comment \\ \hline
-    005 & UNK & missing hypothesis: there are italian tenors \\
-   056 &  Yes & Already identified as such by MacCartney \\
-  069 & Unk & Mary could have used someone else's workstation \\
-  119 & Unk & \textit{ibid.} \\
-  181 & Yes & for the same reason as 180 \\
-  226 & Yes &
-\end{tabularx}
-  \caption{Overruled FraCaS cases}
-  \label{tab:overrulings}
-\end{table}
+% \begin{table}
+%   \centering
+%   \small
+% \begin{tabularx}{\columnwidth}{ccp{3.8cm}}
+%  test case & new class & comment \\ \hline
+%     005 & UNK & missing hypothesis: there are italian tenors \\
+%    056 &  Yes & Already identified as such by MacCartney \\
+%   069 & Unk & Mary could have used someone else's workstation \\
+%   119 & Unk & \textit{ibid.} \\
+%   181 & Yes & for the same reason as 180 \\
+%   226 & Yes &
+% \end{tabularx}
+%   \caption{Overruled FraCaS cases}
+%   \label{tab:overrulings}
+% \end{table}
 
 Our system classifies a case as YES if a proof can be constructed from
 the premises to the hypothesis, NO if a proof of the negated
@@ -498,19 +499,19 @@ particular, section 6 sees a large improvement in accuracy, which we
 attribute to our new analysis of comparatives, enabled by our dynamic
 semantics.
 
-\paragraph{error analysis}
-Our system fails to classify correctly 28 cases out of 259.  We give
-here a summary of the missing features which are responsible for the
-biggest number of failures. The one biggest source of error is an
-incomplete handling of group readings. (FraCaS
-013, 014, 046, 084, 111, 124, 126, 127, 137, 171, 172, 191, 193, 195, 243, 250, 333, 346). These
-are cases where a syntactic conjunction of individuals is treated as a
-semantic group, or where precise counting of the members of a group is
-necessary.  Other problematic cases are where a definite plural does
-not have a universal reading (091, 094, 095) --- these require an
-analysis at the pragmatic level, which our system lacks. Additionally,
-neither measure phrases (242) nor attributive comparatives (244, 245)
-are handled.
+% \paragraph{error analysis}
+% Our system fails to classify correctly 28 cases out of 259.  We give
+% here a summary of the missing features which are responsible for the
+% biggest number of failures. The one biggest source of error is an
+% incomplete handling of group readings. (FraCaS
+% 013, 014, 046, 084, 111, 124, 126, 127, 137, 171, 172, 191, 193, 195, 243, 250, 333, 346). These
+% are cases where a syntactic conjunction of individuals is treated as a
+% semantic group, or where precise counting of the members of a group is
+% necessary.  Other problematic cases are where a definite plural does
+% not have a universal reading (091, 094, 095) --- these require an
+% analysis at the pragmatic level, which our system lacks. Additionally,
+% neither measure phrases (242) nor attributive comparatives (244, 245)
+% are handled.
 
 
 \section{Future work}
