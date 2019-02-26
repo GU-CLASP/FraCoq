@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 \usepackage{acl2019}
 \usepackage{todonotes}
+\usepackage{tabularx}
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata}
 
@@ -457,35 +458,41 @@ built in Coq does not succeed before classifying a problem as UNK.
 % score: 0.8918918918918919
 
 \providecommand\forcecenter{\multicolumn{1}{c}}
-\begin{table*}
+\providecommand\ncases[1]{{\ensuremath{^{#1}}}}
+\begin{table}
   \centering
-\begin{tabular}{rlrrrrrr}
-  & Section      & {\kern -1em} \# cases & Ours     & FraCoq & MINE & Nut  & Langpro  \\ \hline
-1 & Quantifiers  & 75          & .96 (74) & .96    & .77  & .53  & .93 (44) \\
-2 & Plurals      & 33          & .82      & .76    & .67  & .52  & .73 (24) \\
-3 & Anaphora     & 28          & .86      &   -    & -    & -    &  -       \\
-4 & Ellipsis     & 52          & .87      &   -    & -    & -    &  -       \\
-5 & Adjectives   & 22          & .95 (20) & .95    & .68  & .32  & .73 (12) \\
-6 & Comparatives & 31          & .87      & .56    & .48  & .45  &  -       \\
-7 & Temporal     & 75          &  -       &   -    &   -  &  -   &  -       \\
-8 & Verbs        & 8           & .75      &   -    & -    & -    &  -       \\
-9 & Attitudes    & 13          & .92      & .85    & .77  & .46  & .92 (9)  \\ \hline
-  & Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
-  &              &             & (259)    & (174)  & (174)& (174)& (89)
-  \end{tabular}
+  \small
+\begin{tabularx}{\columnwidth}{Xr@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r}
+Section      & {\kern -2em} \#cases & Ours     & FC & MINE & Nut  & Langpro  \\ \hline
+Quantifiers  & 75          & .96  & .96    & .77  & .53  & .93  \\
+             &             & \ncases{74}     &        &      &      &     \ncases{44} \\
+Plurals      & 33          & .82      & .76    & .67  & .52  & .73 \\
+      &          &       &     &   &   & \ncases{24} \\
+Anaphora     & 28          & .86      &   -    & -    & -    &  -       \\
+Ellipsis     & 52          & .87      &   -    & -    & -    &  -       \\
+Adjectives   & 22          & .95 & .95    & .68  & .32  & .73 \\
+             &          &  \ncases{20} &     &   &   &  \ncases{12} \\
+Comparatives {\kern -1em}& 31          & .87      & .56    & .48  & .45  &  -       \\
+Temporal     & 75          &  -       &   -    &   -  &  -   &  -       \\
+Verbs        & 8           & .75      &   -    & -    & -    &  -       \\
+Attitudes    & 13          & .92      & .85    & .77  & .46  & .92  \\ 
+    &          &       &     &   &   & \ncases {9}  \\ \hline
+Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
+             &             & \ncases{259}    & \ncases{174}  & \ncases{174}& \ncases{174}& \ncases{89}
+  \end{tabularx}
   \caption{Overview of the accuracy of our system compared to others.
     ``Ours" refers to the approach presented in this paper. When a
-    system does not handle the nominal number of test cases shown in the
-    third column, the actual number of test cases attempted is shown in
-    parentheses.  ``FraCoq'' refers to the work of
-    \citet{bernardy_type_2017}. ``MINE" refers to the approach of
-    \citet{Mineshima:2015}, ``NUT" to the CCG system that utilizes the
-    first-order automated theorem prover \textit{nutcracker} described
-    by \citet{bos:2008}, and ``Langpro" to the system presented by
-    \citet{abzianidze:2015}. A dash indicates that no attempt was made
-    for a given section. }
+    system does not handle the nominal number of test cases (shown in
+    the third column), the actual number of test cases attempted is
+    shown below the accuracy figure, in smaller font.  ``FraCoq''
+    refers to the work of \citet{bernardy_type_2017}. ``MINE" refers
+    to the approach of \citet{Mineshima:2015}, ``NUT" to the CCG
+    system that utilizes the first-order automated theorem prover
+    \textit{nutcracker} described by \citet{bos:2008}, and ``Langpro"
+    to the system presented by \citet{abzianidze:2015}. A dash
+    indicates that no attempt was made for a given section. }
   \label{tab:results}
-\end{table*}
+\end{table}
 
 Table \ref{tab:results} shows a considerable improvement over earlier
 approaches in terms of coverage, with three more sections covered over
