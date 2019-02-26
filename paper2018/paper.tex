@@ -34,32 +34,54 @@
   TODO
 \end{abstract}
 \section{Introduction}
-Natural Language Inference (NLI) is the task of determining of whether an NL hypothesis H follows from an NL premise(s) P. NLI has received a lot of attention in the Computational Semantics literature and has been approached using a variety of techniques, ranging from logical approaches  \citet{bos:2008,Mineshima:2015,Abzianidze:2015,bernardy_type_2017} all the way to the recent Deep Learning (DL) models for NLI. The latter approaches, following the general trend in NLP, have been dominating NLI and indeed a number of impressive results have been produced \citet{kim:2018,radford:2018,liu:2019}.\footnote{These are the three systems with the best results on SNLI in increasing order.} State-of-the-art DL systems achieve an accuracy of around 0.9 when tested on suitable datasets. However, the datasets that are used are assuming a definition of inference that can be thought to be `looser' or less precise compared to the definition assumed in platforms that used to test logical approaches. Consider the following two examples, one from the SNLI dataset, predominatly used to test DL approaches and which has a state-of-the-art performace of 0.911 \citet{lui:2019'}, and the FraCaS test suite, the dataset \textit{par excellence} to test logical approaches. 
-
-
+Natural Language Inference (NLI) is the task of determining of whether
+an NL hypothesis H follows from an NL premise(s) P. NLI has received a
+lot of attention in the Computational Semantics literature and has
+been approached using a variety of techniques, ranging from logical
+approaches
+\citep{bos:2008,Mineshima:2015,Abzianidze:2015,bernardy_type_2017},
+all the way to the recent Deep Learning (DL) models for NLI. The
+latter approaches, following a general trend in NLP, have been
+dominating NLI and a number of impressive results have been
+produced \citep{kim:2018,radford:2018,liu:2019}.\footnote{These are
+  the three systems with the best results on SNLI in increasing
+  order at the time of writing.}  State-of-the-art DL systems achieve an accuracy of around
+0.9 when tested on suitable datasets. However, the datasets that are
+used are assuming a definition of inference that can be thought to be
+`looser' or less precise compared to the definition assumed in
+platforms based in logical approaches. Consider the following
+two examples, one from the SNLI dataset, predominatly used to test DL
+approaches and which has a state-of-the-art performace of 0.911
+\citet{lui:2019'}, and the FraCaS test suite, the dataset \textit{par
+  excellence} to test logical approaches.
+%
+The following two examples illustrate the issue.
 \begin{lingex}
-\item An SNLI example \\
+\item % An SNLI example \\
 \textbf{P}  A  man selling donuts to a customer during a world
 exhibition event held in the city of Angeles. \\
  \textbf{H}  A woman drinks her coffee in a small cafe.\\
-\textbf{Label: Contradiction}
-\end{lingex}
-
-
-\begin{lingex}
-\item An example from FraCaS\\
-
+\textbf{Label: Contradiction} [SNLI]
+\item % An example from FraCaS\\
 \textbf{P1}] A Scandinavian won the Nobel Prize.\\
 \textbf{P2}	Every Swede is  Scandinavian.\\
 \textbf{Q}  Did a Swede win the Nobel prize? \\
 \textbf{H} A Swede won the Nobel prize.\\
 \textbf{Label: Yes} [FraCaS 173]
 \end{lingex}
-
-
-
-In the SNLI example, one has to make a number of non-trivial assumptions in order to arrive at a contradiction:  a)  the two situations described have to be taken to refer to  the same situation and, thus, decide  whether one description contradicts the other, b) the indefinite article in the premise has to be identified with the indefinite article in the hypothesis, i.e.  \textit{man} contradicting \textit{woman} (a person cannot be a man and a woman at the same time). This is part of the reasoning humans perform, but it is not the only one. More precise, logical reasoning can be also performed. Such an example is the FraCaS example, as well as very fine-grained cases like the Antecedent Contained Deletion  ellipsis example below:
-
+%
+In the SNLI example, one has to make a number of non-trivial
+assumptions in order to arrive at a contradiction: a) the two
+situations described have to be taken to refer to the same situation
+and, thus, decide whether one description contradicts the other, b)
+the indefinite article in the premise has to be identified with the
+indefinite article in the hypothesis. (Additionally considering that a
+person cannot be a man selling donuts and a woman drinking coffee at
+the same time.) While this can be part of the reasoning humans
+perform, it is not the only possibility. More precise, logical
+reasoning can be also performed. Such an example is the FraCaS
+example, as well as very fine-grained cases like the Antecedent
+Contained Deletion ellipsis example below:
 
 \begin{lingex}
 
@@ -73,21 +95,45 @@ In the SNLI example, one has to make a number of non-trivial assumptions in orde
 
 
 
-For this reason, and despite the dominance of DL approaches in pretty much all NLP tasks, logical approaches have been continuing to be developed and evaluated on datasets like the FraCaS test suite and the SICK dataset \cite{marelli:2014}.  \citet{bernardy:2017}  define  a correspondence between abstract syntax parse trees of the FraCas examples, parsed using the Grammatical Framework (GF, \citet{Ranta:GF}), and modern type-theoretic semantics that are output in the Coq proof assistant (the FraCoq system).  The accuracy is 0.85 for 5 sections of the FraCaS test suite. The \textsc{Langpro} system presented by \citet{abzianidze:2017} is based on a Natural Logic tableau theorem prover. It achieves an accuracy of .82 on the SICK dataset. 
+For this reason, and despite the dominance of DL approaches in pretty
+much all NLP tasks, logical approaches continue to be
+developed and evaluated on datasets like the FraCaS test suite and the
+SICK dataset \cite{marelli:2014}.  \citet{bernardy:2017} define a
+correspondence between abstract syntax parse trees of the FraCas
+examples, parsed using the Grammatical Framework (GF,
+\citet{Ranta:GF}), and modern type-theoretic semantics that are output
+in the Coq proof assistant (the FraCoq system).  The accuracy is 0.85
+for 5 sections of the FraCaS test suite. The \textsc{Langpro} system
+presented by \citet{abzianidze:2017} is based on a Natural Logic
+tableau theorem prover. It achieves an accuracy of .82 on the SICK
+dataset.
 
-In this paper, we concentrate on this sort of fine-grained, logical reasoning. In particular, we present the first system that deals with the sections on ellipsis and anaphora in the FraCaS test suite and has both the best coverage, as well as accuracy compared to other logical approaches. More specifically, the contributions of the paper are:
+In this paper, we concentrate on this sort of fine-grained, logical
+reasoning. In particular, we present the first system that deals with
+the sections on ellipsis and anaphora in the FraCaS test suite and has
+both the best coverage, as well as accuracy compared to other logical
+approaches. More specifically, the contributions of the paper are:
 
 \begin{itemize}
- \item  A two-phase system (rather than one-phase as in  \citet{bernardy_type_2017}): a) using Haskell as a converter between Grammatical Framework trees and Coq types, b) using various type combinators to reach the desired NL semantics. 
-  \item  The first run of the Anaphora and Ellipsis sections of the FraCaS (based on work by \citet{bernardy_jolli})
+\item A two-phase system (rather than a one-phase as described by
+  \citet{bernardy_type_2017}): a) using Haskell as a converter between
+  Grammatical Framework trees and Coq types, b) using various type
+  combinators to reach the desired NL semantics.
+\item The first run of the Anaphora and Ellipsis sections of the
+  FraCaS (based on work by \citet{bernardy_jolli})
  \item  More coverage than any previous logical approach
-  \item  State-of-the-art results in terms of accuracy compared to all previous approaches, for every section of the FraCaS
-  \item  Handing of multiple readings
+ \item State-of-the-art results in terms of accuracy compared to all
+   previous approaches, for every section of the FraCaS
+  \item Handing of multiple readings
   \item  Threshold-based interpretation of (some) adjectives plus Linear arithmetic proofs
-  \item  New handling of prepositions and adverbs compared to the earlier system in  \citet{bernardy_type_2017}, as well as new handling of definitions, enabled by the dynamic semantics system. 
-  \item  Improvement over the previous tre
-atment of Plurals/Quantifiers
- \item  Big improvement on the comparatives section  enabled by handling  comparatives using a threshold (BUT one different to the one used for adjectives). Again, the dynamic semantics system is crucial here. 
+  \item New handling of prepositions and adverbs compared to the
+    earlier system in \citet{bernardy_type_2017}, as well as new
+    handling of definitions, enabled by the dynamic semantics system.
+  \item Improvement over the previous treatment of Plurals/Quantifiers
+  \item Big improvement on the comparatives section enabled by
+    handling comparatives using a threshold (BUT one different to the
+    one used for adjectives). Again, the dynamic semantics system is
+    crucial here.
 
 
 
@@ -108,17 +154,34 @@ a new common noun. Furthermore,  GF is equipped  with a library of mappings from
 syntax to the concrete s usyntax of varionatural languages. These mappings can be inverted by GF, thus offering
 parsing from natural text into abstract syntax. However, in this project we skip the
 parsing phase and use the parse trees constructed by \citet{Ljunglof:2012},
-thereby avoiding any syntactic ambiguity. \textbf{Do you want to further comment here?}
+thereby avoiding any syntactic ambiguity. \todo{Do you want to further comment here?}
 
 \subsection{Coq}
-Coq is an  interactive theorem prover (proof assistant)  based on the calculus of inductive
-constructions (CiC), i.e.  a lambda calculus with dependent
-types. Coq is arguably one of the leading proof assistants. It has
-famously been instrumental in formalising a proof of the four-color
-theorem \citep{Gonthier:2008}, a proof of the odd order theorem \citep{Gonthier:2013}, as well as developing CompCert, a formally verified compiler for C \citep{Leroy}. Coq is a very powerful reasoning engine that makes it fit for the task of NLI, when the latter is formalized as theorem proving task. Its underlying higher order logic is furthermore very expressive to express fine-grained logical semantics. Furthermore, Coq supports a number of constructions that we will be using notably dependent typing and subtyping. These features are used in order to take care of specific NL phenomena (e.g. subtyping is used in defining different adjectival inference classes).
+Coq is an interactive theorem prover (proof assistant) based on the
+calculus of inductive constructions (CiC), i.e.  a lambda calculus
+with dependent types. Coq is arguably one of the leading proof
+assistants. It has famously been instrumental in formalising a proof
+of the four-color theorem \citep{Gonthier:2008}, a proof of the odd
+order theorem \citep{Gonthier:2013}, as well as developing CompCert, a
+formally verified compiler for C \citep{Leroy}. Coq is a very powerful
+reasoning engine that makes it fit for the task of NLI, when the
+latter is formalized as theorem proving task. Its underlying higher
+order logic is furthermore powerful enough to express fine-grained
+logical semantics. Furthermore, Coq supports a number of constructions
+that we will be using notably dependent typing and subtyping. These
+features allow us to take care of specific NL phenomena
+(e.g. subtyping is used in defining different adjectival inference
+classes).
 
 \subsection{Dynamic Monadic Semantics}
-Dynamic Monadic Semantics have been proven to be an effective way of dealing with anaphora and ellipsis. There are a number of  approaches using monads or other similar ideas (e.g. continuations as in \cite{de2006}) for anaphora and ellipsis  \citet{Shan:2002,unger:2011,Barker:04,de2016,charlow:2017}. In this paper, we follow the approach  as described in \citet{bernardy_jolli}. More details on this will be given in the next section, where the actual system is presented. 
+Dynamic Monadic Semantics have been proven to be an effective way of
+dealing with anaphora and ellipsis. There are a number of approaches
+using monads or other equivalent constructions (e.g. continuations as in the work of
+\citet{de2006}) for anaphora and ellipsis
+\citet{Shan:2002,unger:2011,Barker:04,de2016,charlow:2017}. In this
+paper, we follow the approach described by
+\citet{bernardy_jolli}. More details on this will be given in the next
+section, where the actual system is presented.
 
 
 
@@ -128,14 +191,14 @@ Our system consists of two main parts.
 \begin{enumerate}
 \item A converter from syntax trees to types. The syntax trees follow
   the GF formalism, and the types follow the Coq formalism. The
-  converter itself is a Haskell Program. It implements a dynamic
-  semantics. It comprises the bigger part of our system.
+  converter itself is a Haskell Program, which implements a dynamic
+  semantics and comprises the bulk of our system.
 \item A number of type-theoretical combinators. These take care of the
   natural semantics which have no influence on the dynamical
-  aspects. This includes for example the treatment of adjectives
+  aspects. Such aspects include for example the treatment of adjectives
   (intersective, subsective, etc.) and adverbs (veridical or not).
 \end{enumerate}
-This architecture is represented schematically in Figure \ref{fig:overview}.
+The architecture is represented schematically in Figure \ref{fig:overview}.
 
 \begin{figure*}
   \centering
@@ -171,17 +234,18 @@ This architecture is represented schematically in Figure \ref{fig:overview}.
   \label{fig:overview}
 \end{figure*}
 
-All underlying systems (GF, Haskell, Coq) are based on lambda calculi
-with types. We ensure that each translation preserve typing, locally:
+All the underlying systems (GF, Haskell, Coq) are based on lambda
+calculi with types. We take advantage of typing, ensuring that each
+translation preserve typing, locally:
 \begin{enumerate}
 \item Every GF syntactic category $C$ is mapped to a type noted $⟦C⟧$.
 \item GF Functional types are mapped compositionally : $⟦A → B⟧ = ⟦A⟧ → ⟦B⟧$
-\item Every GF syntactic construction function $f : X$ is mapped to a function $⟦f⟧$ such that $⟦f⟧ : ⟦X⟧$.
+\item Every GF syntactic construction function ($f : X$) is mapped to a function $⟦f⟧$ such that $⟦f⟧ : ⟦X⟧$.
 \item GF function applications are mapped compositionally: $⟦t(u)⟧ = ⟦t⟧ (⟦u⟧)$.
 \end{enumerate}
-Because all system embed the simply-typed lambda calculus, ensuring
+Because all systems embed the simply-typed lambda calculus, ensuring
 type-preservation locally means that types are preserved globally.
-Therefor, we are certain that every GF syntax tree can be mapped to
+Therefore, we are certain that every GF syntax tree can be mapped to
 Haskell, and eventuall Coq, without error.
 
 The dynamic semantics follows a monadic structure, as pioneered by
@@ -275,7 +339,10 @@ dynamic aspect in our model, and thus is entirely handled within Coq.)
 For subsective adjectives, $τ$ will additionally depend on the class
 of the object in question. This structure has the benefit that
 opposite adjectives can be easily represented (measures are opposites
-$∀x. m_1 x = -m_2 x$ and thresholds do not overlap $τ_1 + τ_2 > 0$). Formalization aside, this idea is reminiscent of degree-based approaches to gradable adjectives like \citet{Cresswell:1976,Heim:1985,Kennedy:2007}.   Additionally,
+$∀x. m_1 x = -m_2 x$ and thresholds do not overlap $τ_1 + τ_2 >
+0$). Formalization aside, this idea is reminiscent of degree-based
+approaches to gradable adjectives of
+\citet{Cresswell:1976,Heim:1985,Kennedy:2007}.  Additionally,
 adjectival phrases, as present in the FraCaS suite, are interpreted as
 linear inequations in $Z$. Solving systems of such inequations is
 decidable. Indeed, the tactic that Coq offers for this purpose can
@@ -438,16 +505,16 @@ incomplete handling of group readings. (FraCaS
 are cases where a syntactic conjunction of individuals is treated as a
 semantic group, or where precise counting of the members of a group is
 necessary.  Other problematic cases are where a definite plural does
-not have a universal reading (091,094,095) --- these require an
+not have a universal reading (091, 094, 095) --- these require an
 analysis at the pragmatic level, which our system lacks. Additionally,
-neither measure phrases (242) nor attributive comparatives (244,245)
+neither measure phrases (242) nor attributive comparatives (244, 245)
 are handled.
 
 
 \section{Future work}
 \section{Conclusion}
 
-\bibliography{PaperTools/bibtex/jp.bib,phorae.bib,IWCSbib.bib}
+\bibliography{PaperTools/bibtex/jp.bib,phorae.bib,IWCSbib.bib,NLI.bib}
 
 \bibliographystyle{acl_natbib}
 
