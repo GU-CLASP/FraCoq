@@ -56,22 +56,22 @@ approaches and which has a state-of-the-art performace of 0.911
 \citet{liu:2019}, and the FraCaS test suite, the dataset \textit{par
   excellence} to test logical approaches.
 %
-The following two examples illustrate the issue.
 \begin{lingex}
 \item % An SNLI example \\
+  \label{ex:snli}
 \textbf{P}  A  man selling donuts to a customer during a world
 exhibition event held in the city of Angeles. \\
  \textbf{H}  A woman drinks her coffee in a small cafe.\\
 \textbf{Label: Contradiction} [SNLI]
-\item % An example from FraCaS\\
-\textbf{P1}] A Scandinavian won the Nobel Prize.\\
-\textbf{P2}	Every Swede is  Scandinavian.\\
-\textbf{Q}  Did a Swede win the Nobel prize? \\
-\textbf{H} A Swede won the Nobel prize.\\
-\textbf{Label: Yes} [FraCaS 173]
+% \item % An example from FraCaS\\
+% \textbf{P1} A Scandinavian won the Nobel Prize.\\
+% \textbf{P2}	Every Swede is  Scandinavian.\\
+% \textbf{Q}  Did a Swede win the Nobel prize? \\
+% \textbf{H} A Swede won the Nobel prize.\\
+% \textbf{Label: Yes} [FraCaS 173]
 \end{lingex}
 %
-In the SNLI example, one has to make a number of non-trivial
+In \ref{ex:snli}, one has to make a number of non-trivial
 assumptions in order to arrive at a contradiction: a) the two
 situations described have to be taken to refer to the same situation
 and, thus, decide whether one description contradicts the other, b)
@@ -82,18 +82,15 @@ the same time.) While this can be part of the reasoning humans
 perform, it is not the only possibility. More precise, logical
 reasoning can be also performed. Such an example is the FraCaS
 example, as well as very fine-grained cases like the Antecedent
-Contained Deletion ellipsis example below:
+Contained Deletion ellipsis example \ref{ex:acd} below.\todo{It'd be nice to have a more clear parallel with indefinite articles as well; but I could not find this in fracas.}
 
-\begin{lingex}
-
-\item An example from FraCaS involving fine-grained reasoning\\
-\textbf{P1}	Bill spoke to everyone that John did.	\\	
-\textbf{P2}	John spoke to Mary.	\\
-\textbf{Q} 	Did Bill speak to Mary?\\
-\textbf{H} 	Bill spoke to Mary.\\
-\textbf{Label:	UNK} [FraCaS 065] 	\end{lingex}
-
-
+% \begin{lingex}
+% \item % An example from FraCaS involving fine-grained reasoning\\
+% \textbf{P1}	Bill spoke to everyone that John did.	\\	
+% \textbf{P2}	John spoke to Mary.	\\
+% % \textbf{Q} 	Did Bill speak to Mary?\\
+% \textbf{H} 	Bill spoke to Mary.\\
+% \textbf{Label:	UNK} [FraCaS 065] 	\end{lingex}
 
 
 For this reason, and despite the dominance of DL approaches in pretty
@@ -110,40 +107,35 @@ tableau theorem prover. It achieves an accuracy of .82 on the SICK
 dataset.
 
 In this paper, we concentrate on this sort of fine-grained, logical
-reasoning. In particular, we present the first system that deals with
-the sections on ellipsis and anaphora in the FraCaS test suite and has
-both the best coverage, as well as accuracy compared to other logical
-approaches. More specifically, the contributions of the paper are:
+reasoning. In particular, we present a logic-based system that deals
+with many linguistic phenomena \emph{at the same time}. It is the
+first systems covering the sections on ellipsis and anaphora in the
+FraCaS test suite and has the best coverage and accuracy on the
+overall test suite.
+% This is listed below; we can let the reader figure it out.
+% \begin{itemize}
+% \item A two-phase system (rather than a one-phase as described by
+%   \citet{bernardy_type_2017}): a) using Haskell as a converter between
+%   Grammatical Framework trees and Coq types, b) using various type
+%   combinators to reach the desired NL semantics.
+% \item The first run of the Anaphora and Ellipsis sections of the
+%   FraCaS (based on work by \citet{bernardy_jolli})
+%  \item  More coverage than any previous logical approach
+%  \item State-of-the-art results in terms of accuracy compared to all
+%    previous approaches, for every section of the FraCaS
+%   \item Handing of multiple readings
+%   \item  Threshold-based interpretation of (some) adjectives plus Linear arithmetic proofs
+%   \item New handling of prepositions and adverbs compared to the
+%     earlier system in \citet{bernardy_type_2017}, as well as new
+%     handling of definitions, enabled by the dynamic semantics system.
+%   \item Improvement over the previous treatment of Plurals/Quantifiers
+%   \item Big improvement on the comparatives section enabled by
+%     handling comparatives using a threshold (BUT one different to the
+%     one used for adjectives). Again, the dynamic semantics system is
+%     crucial here.
+% \end{itemize}
 
-\begin{itemize}
-\item A two-phase system (rather than a one-phase as described by
-  \citet{bernardy_type_2017}): a) using Haskell as a converter between
-  Grammatical Framework trees and Coq types, b) using various type
-  combinators to reach the desired NL semantics.
-\item The first run of the Anaphora and Ellipsis sections of the
-  FraCaS (based on work by \citet{bernardy_jolli})
- \item  More coverage than any previous logical approach
- \item State-of-the-art results in terms of accuracy compared to all
-   previous approaches, for every section of the FraCaS
-  \item Handing of multiple readings
-  \item  Threshold-based interpretation of (some) adjectives plus Linear arithmetic proofs
-  \item New handling of prepositions and adverbs compared to the
-    earlier system in \citet{bernardy_type_2017}, as well as new
-    handling of definitions, enabled by the dynamic semantics system.
-  \item Improvement over the previous treatment of Plurals/Quantifiers
-  \item Big improvement on the comparatives section enabled by
-    handling comparatives using a threshold (BUT one different to the
-    one used for adjectives). Again, the dynamic semantics system is
-    crucial here.
-
-
-
-
-\end{itemize}
 \section{Background: GF, Monadic Dynamic Semantics, Coq}
-
-
-\section{GF}
 
 \subsection{GF}
 In GF, abstract syntax is comprised of: a) a number of syntactic
@@ -199,41 +191,41 @@ Our system consists of two main parts.
   aspects. Such aspects include for example the treatment of adjectives
   (intersective, subsective, etc.) and adverbs (veridical or not).
 \end{enumerate}
-The architecture is represented schematically in Figure \ref{fig:overview}.
 
-\begin{figure*}
-  \centering
-{
-  \tiny
-\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.7cm,
-                    semithick]
-  \tikzstyle{every state}=[draw=black,text=black,shape=rectangle,text width=2cm]
+% The architecture is represented schematically in Figure \ref{fig:overview}.
+% \begin{figure*}
+%   \centering
+% {
+%   \tiny
+% \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.7cm,
+%                     semithick]
+%   \tikzstyle{every state}=[draw=black,text=black,shape=rectangle,text width=2cm]
 
-  \node[state]         (txt)                {text};
-  \node[state]         (ast) [right of=txt] {AST};
-  \node[state]         (pp)  [right of=ast] {Probabilistic program};
-  \node[state]         (res) [right of=pp] {result in $(0,1)$};
+%   \node[state]         (txt)                {text};
+%   \node[state]         (ast) [right of=txt] {AST};
+%   \node[state]         (pp)  [right of=ast] {Probabilistic program};
+%   \node[state]         (res) [right of=pp] {result in $(0,1)$};
 
-  \path (txt) edge              node (GF)  {GF}                  (ast)
-        (ast) edge              node (Hask) [text width=1.5cm]{Haskell interpreter} (pp)
-        (pp) edge               node (Coq) {Coq} (res);
+%   \path (txt) edge              node (GF)  {GF}                  (ast)
+%         (ast) edge              node (Hask) [text width=1.5cm]{Haskell interpreter} (pp)
+%         (pp) edge               node (Coq) {Coq} (res);
 
-  \node (Syntax) [above of=GF,node distance=1cm] {Syntax};
-  \node (Sem) [above of=Hask,node distance=1cm] {Dynamic Semantics};
-  \node (Hyper) [above of=Coq,node distance=1cm] {Additional Semantics$^\ast$};
+%   \node (Syntax) [above of=GF,node distance=1cm] {Syntax};
+%   \node (Sem) [above of=Hask,node distance=1cm] {Dynamic Semantics};
+%   \node (Hyper) [above of=Coq,node distance=1cm] {Additional Semantics$^\ast$};
 
-  \path
-  (Syntax) edge (GF)
-  (Sem) edge (Hask)
-  (Hyper) edge (Coq);
-\end{tikzpicture}
-}
-\caption{Phases in our system. ($\ast$) At the level of Coq, we handle
-  the details of the adverbial (veridicality properties) and
-  adjectival semantics (division into subsective, extentional,
-  non-committal, etc. categories.) }
-  \label{fig:overview}
-\end{figure*}
+%   \path
+%   (Syntax) edge (GF)
+%   (Sem) edge (Hask)
+%   (Hyper) edge (Coq);
+% \end{tikzpicture}
+% }
+% \caption{Phases in our system. ($\ast$) At the level of Coq, we handle
+%   the details of the adverbial (veridicality properties) and
+%   adjectival semantics (division into subsective, extentional,
+%   non-committal, etc. categories.) }
+%   \label{fig:overview}
+% \end{figure*}
 
 All the underlying systems (GF, Haskell, Coq) are based on lambda
 calculi with types. We take advantage of typing, ensuring that each
@@ -271,10 +263,11 @@ environment. We follow here the general pattern outlined by
 \citet{unger:2011}. However, we use a more general scope-extension
 mechanism, which allows us to support examples such as the following:
 \begin{lingex}
-\item[FraCaS 122]
-P1	Every committee has a chairman.\\
-P2	He is appointed its members.\\
-H 	Every committee has a chairman appointed by members of the committee. 
+\item
+    \label{ex:anaphora-scope}
+\textbf{P1}	Every committee has a chairman.\\
+\textbf{P2}	He is appointed its members.\\
+\textbf{H} 	Every committee has a chairman appointed by members of the committee. \\ \textbf{Label:	YES} [FraCaS 122]
 \end{lingex}
 In the above example, the pronoun ``he'' is allowed to refer to the
 object quantified over by ``every'', whose scope is extended
@@ -286,11 +279,12 @@ using GF syntax tree, which requires an explicit argument for each
 predicate. Thus, ellpsis are made explicit by the parsing phase. Such
 ellptic expressions are handled in the same way as anaphora.
 \begin{lingex}
-\item[FraCas 173]
-  P1	Bill spoke to everyone that John did [elliptic V2].\\
-  P2	John spoke to Mary.\\
-  Q 	Did Bill speak to Mary?\\
-  H 	Bill spoke to Mary.
+\item
+    \label{ex:acd}
+\textbf{P1}	Bill spoke to everyone that John did [elliptic V2].\\
+\textbf{P2}	John spoke to Mary.\\
+\textbf{Q} 	Did Bill speak to Mary?\\
+\textbf{H} 	Bill spoke to Mary. \\ \textbf{Label:	Yes} [FraCas 173]
 \end{lingex}
 For example, in (FraCaS 173, P1), the argument of ``did'' is
 explicitly marked as an elliptic V2, which we resolve to ``speak'' in
@@ -324,7 +318,7 @@ elliptic quantity].''  A quantity is introduced every time we talk
 about some quantity (indexed by a CN, in this case ``orders''), and it
 can be referred to by a comparative, later in the discourse. Using
 this idea, we can go one level deeper in the interpretation of our
-example: ``APCOM lost θ orders. θ >= 0.  ITEL won at least θ+1
+example: ``APCOM lost θ orders. θ $\ge$ 0.  ITEL won at least θ+1
 orders.''. We see here how the quantities are introduced. They are
 added to the environment so that, they can be referred to as elliptic
 quantity expressions. Finally, ``more'' is intepreted as ``at least
@@ -391,9 +385,10 @@ misclassified. We note that the majority of the mistaken
 classifications occur in sections 3 and 4, which have not been
 previously attempted and thus, we propose, have not been properly
 scrutinized.
-\begin{table*}
+\begin{table}
   \centering
-\begin{tabular}{ccc}
+  \small
+\begin{tabularx}{\columnwidth}{ccp{3.8cm}}
  test case & new class & comment \\ \hline
     005 & UNK & missing hypothesis: there are italian tenors \\
    056 &  Yes & Already identified as such by MacCartney \\
@@ -401,10 +396,10 @@ scrutinized.
   119 & Unk & \textit{ibid.} \\
   181 & Yes & for the same reason as 180 \\
   226 & Yes &
-\end{tabular}
+\end{tabularx}
   \caption{Overruled FraCaS cases}
   \label{tab:overrulings}
-\end{table*}
+\end{table}
 
 Our system classifies a case as YES if a proof can be constructed from
 the premises to the hypothesis, NO if a proof of the negated
