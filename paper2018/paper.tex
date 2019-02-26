@@ -135,9 +135,9 @@ overall test suite.
 %     crucial here.
 % \end{itemize}
 
-\section{Background: GF, Monadic Dynamic Semantics, Coq}
+\section{Background: GF, Coq, Monadic Dynamic Semantics}
 
-\subsection{GF}
+\paragraph{GF}
 In GF, abstract syntax is comprised of: a) a number of syntactic
 categories, and b) a number of syntactic construction functions. The latter
 provide the means to compose basic syntactic categories into more complex
@@ -149,14 +149,13 @@ parsing from natural text into abstract syntax. However, in this project we skip
 parsing phase and use the parse trees constructed by \citet{Ljunglof:2012},
 thereby avoiding any syntactic ambiguity. \todo{Do you want to further comment here?}
 
-\subsection{Coq}
+\paragraph{Coq}
 Coq is an interactive theorem prover (proof assistant) based on the
 calculus of inductive constructions (CiC), i.e.  a lambda calculus
 with dependent types. Coq is arguably one of the leading proof
 assistants. It has famously been instrumental in formalising a proof
 of the four-color theorem \citep{Gonthier:2008}, a proof of the odd
-order theorem \citep{Gonthier:2013}, as well as developing CompCert, a
-formally verified compiler for C \citep{Leroy}. Coq is a very powerful
+order theorem \citep{Gonthier:2013}. Coq is a very powerful
 reasoning engine that makes it fit for the task of NLI, when the
 latter is formalized as theorem proving task. Its underlying higher
 order logic is furthermore powerful enough to express fine-grained
@@ -166,7 +165,7 @@ features allow us to take care of specific NL phenomena
 (e.g. subtyping is used in defining different adjectival inference
 classes).
 
-\subsection{Dynamic Monadic Semantics}
+\paragraph{Dynamic Monadic Semantics}
 Dynamic Monadic Semantics have been proven to be an effective way of
 dealing with anaphora and ellipsis. There are a number of approaches
 using monads or other equivalent constructions (e.g. continuations as in the work of
