@@ -32,7 +32,7 @@
 \maketitle{}
 
 \begin{abstract}
-  TODO
+ In this paper, we present a system for Natural Language Inference which uses a Haskell dynamic semantics  converter from abstract syntax trees to Coq types. The system makes use of the fine-grainedness of a dynamic semantics system with the powerfulness of a state-of-the-art proof assistant, like Coq. We evaluate the system on all sections of the FraCaS test suite, excluding section 6. This is the first system that does a complete run on the anaphora and ellipsis sections of the FraCaS and has the best accuracy overall when compared with previous systems. 
 \end{abstract}
 \section{Introduction}
 Natural Language Inference (NLI) is the task of determining of whether
@@ -50,11 +50,9 @@ produced \citep{kim:2018,radford:2018,liu:2019}.\footnote{These are
 0.9 when tested on suitable datasets. However, the datasets that are
 used are assuming a definition of inference that can be thought to be
 `looser' or less precise compared to the definition assumed in
-platforms based in logical approaches. Consider the following
-two examples, one from the SNLI dataset, predominatly used to test DL
-approaches and which has a state-of-the-art performace of 0.911
-\citet{liu:2019}, and the FraCaS test suite, the dataset \textit{par
-  excellence} to test logical approaches.
+platforms based in logical approaches. For example, consider the following
+ example  from the SNLI dataset, predominatly used to test DL
+approaches:
 %
 \begin{lingex}
 \item % An SNLI example \\
@@ -71,18 +69,26 @@ exhibition event held in the city of Angeles. \\
 % \textbf{Label: Yes} [FraCaS 173]
 \end{lingex}
 %
-In \ref{ex:snli}, one has to make a number of non-trivial
-assumptions in order to arrive at a contradiction: a) the two
+In \ref{ex:snli}, a number of non-trivial
+assumptions have to be made in order to arrive at a contradiction: a) the two
 situations described have to be taken to refer to the same situation
-and, thus, decide whether one description contradicts the other, b)
+in order to judge that the latter  contradicts the former, b)
 the indefinite article in the premise has to be identified with the
 indefinite article in the hypothesis. (Additionally considering that a
 person cannot be a man selling donuts and a woman drinking coffee at
 the same time.) While this can be part of the reasoning humans
 perform, it is not the only possibility. More precise, logical
-reasoning can be also performed. Such an example is the FraCaS
-example, as well as very fine-grained cases like the Antecedent
-Contained Deletion ellipsis example \ref{ex:acd} below.\todo{It'd be nice to have a more clear parallel with indefinite articles as well; but I could not find this in fracas.}
+reasoning is also a possibility, and will render the above label as unknown. Furthermore, reasoning can get very fine-grained 
+as the Contained Deletion ellipsis example \ref{ex:acd} below shows:
+
+\begin{lingex}
+\item
+    \label{ex:acd}
+\textbf{P1}	Bill spoke to everyone that John did [elliptic V2].\\
+\textbf{P2}	John spoke to Mary.\\
+\textbf{Q} 	Did Bill speak to Mary?\\
+\textbf{H} 	Bill spoke to Mary. \\ \textbf{Label:	Yes} [FraCas 173]
+\end{lingex}
 
 % \begin{lingex}
 % \item % An example from FraCaS involving fine-grained reasoning\\
@@ -144,26 +150,21 @@ provide the means to compose basic syntactic categories into more complex
 ones.  For example, consider the constructor: $AdjCN : AP → CN → CN$. This  expresses
 that one can append an adjectival phrase to a common noun and obtain
 a new common noun. Furthermore,  GF is equipped  with a library of mappings from abstract
-syntax to the concrete s usyntax of varionatural languages. These mappings can be inverted by GF, thus offering
-parsing from natural text into abstract syntax. However, in this project we skip the
+syntax to the concrete syntax of various natural languages.
+% These mappings can be inverted by GF, thus offering parsing from natural text into abstract syntax.
+However, in this project we skip the
 parsing phase and use the parse trees constructed by \citet{Ljunglof:2012},
-thereby avoiding any syntactic ambiguity. \todo{Do you want to further comment here?}
+thereby avoiding any syntactic ambiguity. 
 
 \paragraph{Coq}
 Coq is an interactive theorem prover (proof assistant) based on the
 calculus of inductive constructions (CiC), i.e.  a lambda calculus
-with dependent types. Coq is arguably one of the leading proof
+with dependent types. Coq is  one of the leading proof
 assistants. It has famously been instrumental in formalising a proof
 of the four-color theorem \citep{Gonthier:2008}, a proof of the odd
 order theorem \citep{Gonthier:2013}. Coq is a very powerful
 reasoning engine that makes it fit for the task of NLI, when the
-latter is formalized as theorem proving task. Its underlying higher
-order logic is furthermore powerful enough to express fine-grained
-logical semantics. Furthermore, Coq supports a number of constructions
-that we will be using notably dependent typing and subtyping. These
-features allow us to take care of specific NL phenomena
-(e.g. subtyping is used in defining different adjectival inference
-classes).
+latter is formalized as theorem proving task. It involves a very higher order logic  and supports a number of constructions, notably dependent typing and subtyping, that are instrumental in expressing NL semantics.  
 
 \paragraph{Dynamic Monadic Semantics}
 Dynamic Monadic Semantics have been proven to be an effective way of
@@ -171,9 +172,9 @@ dealing with anaphora and ellipsis. There are a number of approaches
 using monads or other equivalent constructions (e.g. continuations as in the work of
 \citet{de2006}) for anaphora and ellipsis
 \citet{Shan:2002,unger:2011,Barker:04,de2016,charlow:2017}. In this
-paper, we follow the approach described by
+paper, we follow the approach described in
 \citet{bernardy_jolli}. More details on this will be given in the next
-section, where the actual system is presented.
+section.
 
 
 
@@ -185,9 +186,8 @@ Our system consists of two main parts.
   the GF formalism, and the types follow the Coq formalism. The
   converter itself is a Haskell Program, which implements a dynamic
   semantics and comprises the bulk of our system.
-\item A number of type-theoretical combinators. These take care of the
-  natural semantics which have no influence on the dynamical
-  aspects. Such aspects include for example the treatment of adjectives
+\item A number of type-theoretical combinators, that encode aspects of NL semantics which have no influence on the dynamic
+  part. Such aspects include, e.g.,  the treatment of adjectives
   (intersective, subsective, etc.) and adverbs (veridical or not).
 \end{enumerate}
 
@@ -260,7 +260,7 @@ anaphoric cases, including E-Type and Donkey pronouns. Indeed, even
 objects which have no syntactic representation can be added to the
 environment. We follow here the general pattern outlined by
 \citet{unger:2011}. However, we use a more general scope-extension
-mechanism, which allows us to support examples such as the following:
+mechanism, which allows us to support examples like  the following:
 \begin{lingex}
 \item
     \label{ex:anaphora-scope}
@@ -274,18 +274,11 @@ accordingly.
 
 \paragraph{ellipsis} Ellipsis is handled in essentially the same way
 as anaphora. This method is made especially straightforward thanks to
-using GF syntax tree, which requires an explicit argument for each
-predicate. Thus, ellpsis are made explicit by the parsing phase. Such
+using GF syntax trees, which require an explicit argument for each
+predicate. Thus, ellipsis are made explicit by the parsing phase. Such
 ellptic expressions are handled in the same way as anaphora.
-\begin{lingex}
-\item
-    \label{ex:acd}
-\textbf{P1}	Bill spoke to everyone that John did [elliptic V2].\\
-\textbf{P2}	John spoke to Mary.\\
-\textbf{Q} 	Did Bill speak to Mary?\\
-\textbf{H} 	Bill spoke to Mary. \\ \textbf{Label:	Yes} [FraCas 173]
-\end{lingex}
-For example, in (FraCaS 173, P1), the argument of ``did'' is
+
+For example, in \ref{ex:acd}, the argument of ``did'' is
 explicitly marked as an elliptic V2, which we resolve to ``speak'' in
 that context.
 \paragraph{definites} A naive way to handle definites is an
@@ -301,9 +294,11 @@ expression with an implicit referrent. That is, if the referent is not
 found in the discourse, then it will be forcibly introduced, using an
 existential type, \emph{at the top-level} of the expression. To be
 able to do this, we record all definites without referent, using
-another portion of the environment (using a monadic effect). For the
-above example, we obtain the desired interpretation:
-$∃y. dog(y) ∧ (∀x. person(x) → pet(x,y))$.
+another portion of the environment (using a monadic effect).
+%SC
+%For the
+%above example, we obtain the desired interpretation:
+%$∃y. dog(y) ∧ (∀x. person(x) → pet(x,y))$.
 
 \paragraph{Phrasal comparatives}
 Previous attempts to tackle the section of the FraCaS test suite
@@ -320,9 +315,11 @@ this idea, we can go one level deeper in the interpretation of our
 example: ``APCOM lost θ orders. θ $\ge$ 0.  ITEL won at least θ+1
 orders.''. We see here how the quantities are introduced. They are
 added to the environment so that, they can be referred to as elliptic
-quantity expressions. Finally, ``more'' is intepreted as ``at least
-<elliptic quantity>+1''. This treatment, which we illustrated here on
-an example, is systematic in our implementation.
+quantity expressions.
+%SC
+%Finally, ``more'' is intepreted as ``at least
+%<elliptic quantity>+1''. This treatment, which we illustrated here on
+%an example, is systematic in our implementation.
 
 
 \paragraph{Adjectives}
@@ -339,8 +336,10 @@ approaches to gradable adjectives of
 \citet{Cresswell:1976,Kennedy:2007}.  Additionally,
 adjectival phrases, as present in the FraCaS suite, are interpreted as
 linear inequations in $Z$. Solving systems of such inequations is
-decidable. Indeed, the tactic that Coq offers for this purpose can
-solve all such problems in the FraCaS suite, automatically.
+decidable.
+% SC
+%Indeed, the tactic that Coq offers for this purpose can
+%solve all such problems in the FraCaS suite, automatically.
 
 
 % \paragraph{Adverbs}
@@ -369,7 +368,7 @@ FraCaS intends to classify each problem as either entailment (YES),
 entailment of the opposite (NO) or no entailment (UNK).  In this work,
 we have amended the FraCaS suite to correct a few problems. First,
 certain test case are not formed correctly. Those were already
-identified by Bill MacCartney\todo{cite} as such (using an ``undef''
+identified by Bill MacCartney \citet{maccartney:2007} as such (using an ``undef''
 labelling), and we removed those. Second, a few test cases occur twice
 in the suite, but with two different labelling (one YES and one UNK),
 with an annotation that those labellings correspond to different
@@ -378,7 +377,8 @@ readings but only one has entailment, it occurs only once and is
 marked as YES. To make the test suite consistent, if one reading
 yields entailment we have always considered it as YES. We have also
 removed case 199 (which appears to be vacuous). Finally we changed the
-labelling of 6 cases 
+labelling of 6 cases
+%(SC: Shall we remove this to the supplementary material and just say to have a look at how we amended the suite?)
 % the cases listed in Table \ref{tab:overrulings},
 which appeared to have been
 misclassified (as justified in supplementary material). We note that the majority of the mistaken
@@ -513,8 +513,7 @@ semantics.
 % are handled.
 
 
-\section{Future work}
-\section{Conclusion}
+\section{Conclusions and Future Work}
 
 \bibliography{PaperTools/bibtex/jp.bib,phorae.bib,IWCSbib.bib,NLI.bib}
 
