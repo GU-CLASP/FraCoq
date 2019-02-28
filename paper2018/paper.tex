@@ -32,7 +32,14 @@
 \maketitle{}
 
 \begin{abstract}
- In this paper, we present a system for Natural Language Inference which uses a Haskell dynamic semantics  converter from abstract syntax trees to Coq types. The system makes use of the fine-grainedness of a dynamic semantics system with the powerfulness of a state-of-the-art proof assistant, like Coq. We evaluate the system on all sections of the FraCaS test suite, excluding section 6. This is the first system that does a complete run on the anaphora and ellipsis sections of the FraCaS and has the best accuracy overall when compared with previous systems. 
+  We present a system for Natural Language Inference which uses a
+  dynamic semantics converter from abstract syntax trees to Coq
+  types. It combines the fine-grainedness of a dynamic semantics
+  system with the powerfulness of a state-of-the-art proof assistant,
+  like Coq. We evaluate the system on all sections of the FraCaS test
+  suite, excluding section 6. This is the first system that does a
+  complete run on the anaphora and ellipsis sections of the FraCaS. It
+  has a better overall accuracy than any previous system.
 \end{abstract}
 \section{Introduction}
 Natural Language Inference (NLI) is the task of determining of whether
@@ -141,7 +148,7 @@ overall test suite.
 %     crucial here.
 % \end{itemize}
 
-\section{Background: GF, Coq, Monadic Dynamic Semantics}
+\section{Background}
 
 \paragraph{GF}
 In GF, abstract syntax is comprised of: a) a number of syntactic
@@ -229,7 +236,7 @@ Our system consists of two main parts.
 All the underlying systems (GF, Haskell, Coq) are based on lambda
 calculi with types. We take advantage of typing, ensuring that each
 translation preserve typing, locally:
-\begin{enumerate}
+\begin{enumerate}[noitemsep]
 \item Every GF syntactic category $C$ is mapped to a type noted $⟦C⟧$.
 \item GF Functional types are mapped compositionally : $⟦A → B⟧ = ⟦A⟧ → ⟦B⟧$
 \item Every GF syntactic construction function ($f : X$) is mapped to a function $⟦f⟧$ such that $⟦f⟧ : ⟦X⟧$.
@@ -238,7 +245,7 @@ translation preserve typing, locally:
 Because all systems embed the simply-typed lambda calculus, ensuring
 type-preservation locally means that types are preserved globally.
 Therefore, we are certain that every GF syntax tree can be mapped to
-Haskell, and eventuall Coq, without error.
+Haskell, and eventually Coq, without error.
 
 The dynamic semantics follows a monadic structure, as pioneered by
 \citet{Shan:2002}. There are two kinds of effects carried by the
