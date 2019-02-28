@@ -331,7 +331,7 @@ quantity expressions.
 
 \paragraph{Adjectives}
 In our system, we interpret gradable adjectives using a pair of a
-measure $m : objects → Z$ and and a threshold $τ : Z$, where $Z$ is
+measure $m : objects → Z$ and a threshold $τ : Z$, where $Z$ is
 treated as an abstract ordered ring by Coq. (This structure has no
 dynamic aspect in our model, and thus is entirely handled within Coq.)
 For subsective adjectives, $τ$ will additionally depend on the class
@@ -340,8 +340,8 @@ opposite adjectives can be easily represented (measures are opposites
 $∀x. m_1 x = -m_2 x$ and thresholds do not overlap $τ_1 + τ_2 >
 0$). Formalization aside, this idea is reminiscent of degree-based
 approaches to gradable adjectives of
-\citet{Cresswell:1976,Kennedy:2007}.  Additionally,
-adjectival phrases, as present in the FraCaS suite, are interpreted as
+\citet{Cresswell:1976,Kennedy:2007}.  Additionally
+adjectival predicates, as present in the FraCaS suite, are interpreted as
 linear inequations in $Z$. Solving systems of such inequations is
 decidable.
 % SC
@@ -364,20 +364,21 @@ decidable.
 \section{Results and evaluation}
 
 We evaluated FraCoq against 8 sections of the FraCaS test suite, for a
-total of 259 cases. We excluded only section 7, ``temporal reference''. The reason for
-doing so is that, in our view, it contains too many examples which
-require \textit{ad-hoc} treatment, and thus makes little sense to
-include without complementing it with a more thorough suite which
-captures a more complete landscape of the phenomena that section 7
-touches.
+total of 259 cases. We excluded only section 7, ``temporal reference''.
+% The reason for
+% doing so is that, in our view, it contains too many examples which
+% require \textit{ad-hoc} treatment, and thus makes little sense to
+% include without complementing it with a more thorough suite which
+% captures a more complete landscape of the phenomena that section 7
+% touches.
 
-FraCaS intends to classify each problem as either entailment (YES),
+FraCaS classifies each problem as either entailment (YES),
 entailment of the opposite (NO) or no entailment (UNK).  In this work,
 we have amended the FraCaS suite to correct a few problems. First,
 certain test case are not formed correctly. Those were already
-identified by Bill MacCartney \citet{maccartney:2007} as such (using an ``undef''
+identified by \citet{maccartney:2007} as such (using an ``undef''
 labelling), and we removed those. Second, a few test cases occur twice
-in the suite, but with two different labelling (one YES and one UNK),
+in the suite, but with two different labellings (one YES and one UNK),
 with an annotation that those labellings correspond to different
 readings. However, elsewhere in the suite, if a problem has several
 readings but only one has entailment, it occurs only once and is
