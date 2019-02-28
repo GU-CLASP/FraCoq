@@ -292,14 +292,14 @@ For example, in \ref{ex:acd}, the argument of ``did'' is
 explicitly marked as an elliptic V2, which we resolve to ``speak'' in
 that context.
 
-\paragraph{definites} A naive way to handle definites is an
-existential (or sigma). However, if the semantics does not feature a
+\paragraph{definites} A naive way to handle definites is using an
+existential type. However, if the semantics does not feature a
 dynamic element, then the existential quantification is introduced
 locally. This means that the quantifier can be introduced in the wrong
 context. Consider the phrase ``everyone pets the dog''. The structure
 of the interpretation would be
 $∀x. person(x) → ∃y. dog(y) ∧ pet(x,y)$.
-
+%
 Instead, our take is that definites should be treated as an anaphoric
 expression with an implicit referrent. That is, if the referent is not
 found in the discourse, then it will be forcibly introduced, using an
