@@ -266,7 +266,7 @@ all combinations of meanings are considered at the top-level,
 combinatorially. This dynamic semantics allows us to model many
 phenomena in a precise way.
 
-\paragraph{anaphora} Thanks to the above system, we can handle many
+\paragraph{Anaphora} Thanks to the above system, we can handle many
 anaphoric cases, including E-Type and Donkey pronouns. Indeed, even
 objects which have no syntactic representation can be added to the
 environment. We follow here the general pattern outlined by
@@ -283,7 +283,7 @@ In the above example, the pronoun ``he'' is allowed to refer to the
 object quantified over by ``every'', whose scope is extended
 accordingly.
 
-\paragraph{ellipsis} Ellipsis is handled in essentially the same way
+\paragraph{Ellipsis} Ellipsis is handled in essentially the same way
 as anaphora. This method is made especially straightforward thanks to
 using GF syntax trees, which require an explicit argument for each
 predicate. Thus, ellipsis are made explicit by the parsing phase. Such
@@ -293,11 +293,11 @@ For example, in \ref{ex:acd}, the argument of ``did'' is
 explicitly marked as an elliptic V2, which we resolve to ``speak'' in
 that context.
 
-\paragraph{definites} A naive way to handle definites is using an
+\paragraph{Definites} A naive way to handle definites is using an
 existential type. However, if the semantics does not feature a
 dynamic element, then the existential quantification is introduced
 locally. This means that the quantifier can be introduced in the wrong
-context. Consider the phrase ``everyone pets the dog''. The structure
+Context. Consider the phrase ``everyone pets the dog''. The structure
 of the interpretation would be
 $\forall{} x. person(x) \to \exists{}y. dog(y) \wedge pet(x,y)$.
 %
