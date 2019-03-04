@@ -30,6 +30,7 @@ in stdenv.mkDerivation {
                        kastrup
                        latexmk
                        libertine
+                       times
                        listings
                        lm
                        logreq

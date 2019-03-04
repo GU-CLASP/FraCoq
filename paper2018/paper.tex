@@ -1,5 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage{acl2019}
+\usepackage{times}
 \usepackage{todonotes}
 \usepackage{tabularx}
 \usepackage{tikz}
@@ -154,7 +155,7 @@ overall test suite.
 In GF, abstract syntax is comprised of: a) a number of syntactic
 categories, and b) a number of syntactic construction functions. The latter
 provide the means to compose basic syntactic categories into more complex
-ones.  For example, consider the constructor: $AdjCN : AP → CN → CN$. This  expresses
+ones.  For example, consider the constructor: $AdjCN : AP \to CN \to CN$. This  expresses
 that one can append an adjectival phrase to a common noun and obtain
 a new common noun. Furthermore,  GF is equipped  with a library of mappings from abstract
 syntax to the concrete syntax of various natural languages.
@@ -240,10 +241,10 @@ All the underlying systems (GF, Haskell, Coq) are based on lambda
 calculi with types. We take advantage of typing, ensuring that each
 translation preserve typing, locally:
 \begin{enumerate}[noitemsep]
-\item Every GF syntactic category $C$ is mapped to a type noted $⟦C⟧$.
-\item GF Functional types are mapped compositionally : $⟦A → B⟧ = ⟦A⟧ → ⟦B⟧$
-\item Every GF syntactic construction function ($f : X$) is mapped to a function $⟦f⟧$ such that $⟦f⟧ : ⟦X⟧$.
-\item GF function applications are mapped compositionally: $⟦t(u)⟧ = ⟦t⟧ (⟦u⟧)$.
+\item Every GF syntactic category $C$ is mapped to a type noted $\llbracket{}C\rrbracket{}$.
+\item GF Functional types are mapped compositionally : $\llbracket{}A \to B\rrbracket{} = \llbracket{}A\rrbracket{} \to \llbracket{}B\rrbracket{}$
+\item Every GF syntactic construction function ($f : X$) is mapped to a function $\llbracket{}f\rrbracket{}$ such that $\llbracket{}f\rrbracket{} : \llbracket{}X\rrbracket{}$.
+\item GF function applications are mapped compositionally: $\llbracket{}t(u)\rrbracket{} = \llbracket{}t\rrbracket{} (\llbracket{}u\rrbracket{})$.
 \end{enumerate}
 Because all systems embed the simply-typed lambda calculus, ensuring
 type-preservation locally means that types are preserved globally.
@@ -298,7 +299,7 @@ dynamic element, then the existential quantification is introduced
 locally. This means that the quantifier can be introduced in the wrong
 context. Consider the phrase ``everyone pets the dog''. The structure
 of the interpretation would be
-$∀x. person(x) → ∃y. dog(y) ∧ pet(x,y)$.
+$\forall{} x. person(x) \to \exists{}y. dog(y) \wedge pet(x,y)$.
 %
 Instead, our take is that definites should be treated as an anaphoric
 expression with an implicit referrent. That is, if the referent is not
@@ -306,10 +307,9 @@ found in the discourse, then it will be forcibly introduced, using an
 existential type, \emph{at the top-level} of the expression. To be
 able to do this, we record all definites without referent, using
 another portion of the environment (using a monadic effect).
-%SC
-%For the
-%above example, we obtain the desired interpretation:
-%$∃y. dog(y) ∧ (∀x. person(x) → pet(x,y))$.
+For the
+above example, we obtain the desired interpretation:
+$\exists{}y. dog(y) \wedge (\forall{}x. person(x) \to pet(x,y))$.
 
 \paragraph{Phrasal comparatives}
 Previous attempts to tackle the section of the FraCaS test suite
@@ -323,41 +323,40 @@ elliptic quantity].''  A quantity is introduced every time we talk
 about some quantity (indexed by a CN, in this case ``orders''), and it
 can be referred to by a comparative, later in the discourse. Using
 this idea, we can go one level deeper in the interpretation of our
-example: ``APCOM lost θ orders. θ $\ge$ 0.  ITEL won at least θ+1
+example: ``APCOM lost $\theta$ orders. $\theta$ $\ge$ 0.  ITEL won at least $\theta$+1
 orders.''. We see here how the quantities are introduced. They are
 added to the environment so that, they can be referred to as elliptic
 quantity expressions.
-%SC
-%Finally, ``more'' is intepreted as ``at least
+% SC
+%Finally, ``more'' is systematically intepreted as ``at least
 %<elliptic quantity>+1''. This treatment, which we illustrated here on
 %an example, is systematic in our implementation.
 
 
 \paragraph{Adjectives}
 We interpret gradable adjectives using a pair of a
-measure $m : objects → Z$ and a threshold $τ : Z$, where $Z$ is
+measure $m : objects \to Z$ and a threshold $\tau : Z$, where $Z$ is
 treated as an abstract ordered ring by Coq. (This structure has no
 dynamic aspect in our model, and thus is entirely handled within Coq.)
-For subsective adjectives, $τ$ will additionally depend on the class
+For subsective adjectives, $\tau$ will additionally depend on the class
 of the object in question. This structure has the benefit that
 opposite adjectives can be easily represented (measures are opposites
-$∀x. m_1 x = -m_2 x$ and thresholds do not overlap $τ_1 + τ_2 >
+$\forall{}x. m_1 x = -m_2 x$ and thresholds do not overlap $\tau_1 + \tau_2 >
 0$). Formalization aside, this idea is reminiscent of degree-based
 approaches to gradable adjectives of
 \citet{Cresswell:1976,Kennedy:2007}.  Additionally
 adjectival predicates, as present in the FraCaS suite, are interpreted as
 linear inequations in $Z$. Solving systems of such inequations is
 decidable.
-% SC
-%Indeed, the tactic that Coq offers for this purpose can
-%solve all such problems in the FraCaS suite, automatically.
+Indeed, the tactic that Coq offers for this purpose can
+solve all such problems in the FraCaS suite, automatically.
 
 
 % \paragraph{Adverbs}
 % Another point, of minor theoretical importance but major practical
 % one, is our handling of adverbial phrases. We interpret adverbs (and
 % in general all adverbial and prepositional phrases) as VP-modifiers:
-% $Adv = VP → VP$, where $VP = object → Prop$. However, applying adverbs
+% $Adv = VP \to VP$, where $VP = object \to Prop$. However, applying adverbs
 % to verb-phrases heavily complicates the Coq proofs, because such
 % phrases can contain quantifiers. Therefore, we instead move the
 % adverbs, so that they apply to (atomic) verbs only. Proofs can then be
@@ -510,23 +509,31 @@ particular, section 6 sees a large improvement in accuracy, which we
 attribute to our new analysis of comparatives, enabled by our dynamic
 semantics.
 
-% \paragraph{error analysis}
-% Our system fails to classify correctly 28 cases out of 259.  We give
-% here a summary of the missing features which are responsible for the
-% biggest number of failures. The one biggest source of error is an
-% incomplete handling of group readings. (FraCaS
-% 013, 014, 046, 084, 111, 124, 126, 127, 137, 171, 172, 191, 193, 195, 243, 250, 333, 346). These
-% are cases where a syntactic conjunction of individuals is treated as a
-% semantic group, or where precise counting of the members of a group is
-% necessary.  Other problematic cases are where a definite plural does
-% not have a universal reading (091, 094, 095) --- these require an
-% analysis at the pragmatic level, which our system lacks. Additionally,
-% neither measure phrases (242) nor attributive comparatives (244, 245)
-% are handled.
+\paragraph{error analysis}
+Our system fails to classify correctly 28 cases out of 259.  We give
+here a summary of the missing features which are responsible for the
+biggest number of failures. The one biggest source of error is an
+incomplete handling of group readings. (FraCaS
+013, 014, 046, 084, 111, 124, 126, 127, 137, 171, 172, 191, 193, 195, 243, 250, 333, 346). These
+are cases where a syntactic conjunction of individuals is treated as a
+semantic group, or where precise counting of the members of a group is
+necessary.  Other problematic cases are where a definite plural does
+not have a universal reading (091, 094, 095) --- these require an
+analysis at the pragmatic level, which our system lacks. Additionally,
+neither measure phrases (242) nor attributive comparatives (244, 245)
+are handled.
 
 
 \section{Conclusions and Future Work}
-We presented a system  converting GF trees to Coq types using dynamic semantics. The system outperforms the state of the art in logical approaches when tested on the FraCaS test suite and is the only system to date that has performed a run on the ellipsis/anaphora section of the FraCaS. The system is precise enough  to form the start of a very precise NL reasoner for controlled domains. For the future, we plan to  extend the system to cover the remaining section of the FraCaS (tense/aspect), and also develop a more applied version to perform reasoning on controlled NL domains. 
+We presented a system converting GF trees to Coq types using dynamic
+semantics. The system outperforms the state of the art in logical
+approaches when tested on the FraCaS test suite and is the only system
+to date that has performed a run on the ellipsis/anaphora section of
+the FraCaS. The system is precise enough to form the start of a very
+precise NL reasoner for controlled domains. For the future, we plan to
+extend the system to cover the remaining section of the FraCaS
+(tense/aspect), and also develop a more applied version to perform
+reasoning on controlled NL domains.
 
 \bibliography{PaperTools/bibtex/jp.bib,phorae.bib,IWCSbib.bib,NLI.bib}
 

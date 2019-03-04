@@ -9,7 +9,7 @@ endif
 
 paper.pdf: paper.tex *.bib PaperTools/bibtex/jp.bib
 	(cd PaperTools;git pull origin master)
-	nix-shell --pure --run "latexmk -f -xelatex paper"
+	nix-shell --pure --run "latexmk paper -pdf"
 
 # %.tex: %.lhs  Suite.tex
 # 	nix-shell --pure --run "lhs2TeX -o $@ $<"
