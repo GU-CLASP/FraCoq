@@ -1,4 +1,4 @@
-Load FraCoq2.
+Load Formulas.
 
 Theorem FraCaS326: Problem326aTrue. cbv.
 destruct itel_PN.

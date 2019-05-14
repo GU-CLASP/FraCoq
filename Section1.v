@@ -1,4 +1,4 @@
-Load FraCoq2.
+Load Formulas.
 
 Theorem T001a: Problem001aTrue. cbv. firstorder. Qed.
 
@@ -537,7 +537,7 @@ Theorem T070a: Problem070aFalse. cbv.
 destruct on_time_Adv as [onTime].
 destruct scandinavian_A as [scandinavian].
 firstorder.
-Qed. (* Note: I don't understand how this could be proven in FraCoq 1 without scandinavian_A subsective *)
+Qed. (* Note: I don't understand how this could be proven in FraCoq without scandinavian_A subsective *)
 
 Theorem T071a: Problem071aTrue. cbv.
 destruct on_time_Adv as [onTime].

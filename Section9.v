@@ -1,4 +1,4 @@
-Load FraCoq2.
+Load Formulas.
 
 Parameter know_veridical_K : forall (x:object) (p:S), know_VS p x -> p.
 

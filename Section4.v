@@ -1,4 +1,4 @@
-Load FraCoq2.
+Load Formulas.
 Require Import Omega.
 
 

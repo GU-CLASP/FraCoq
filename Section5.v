@@ -1,5 +1,5 @@
 
-Load FraCoq2.
+Load Formulas.
 
 Theorem T197a: Problem197aTrue. cbv. firstorder. Qed.
 

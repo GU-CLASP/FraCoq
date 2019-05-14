@@ -9,6 +9,7 @@
 *_flymake.hs
 /Bank.hs
 /FraCoq2.v
+/Formulas.v
 /FraToCoq
 /Tests
 /verify.txt

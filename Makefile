@@ -9,7 +9,7 @@ FraCaSBank.v: Gf2Coq.awk FraCaS-treebank/src/FraCaSBankI.gf
 results:: verify1.txt verify2.txt verify3.txt verify4.txt verify5.txt verify6.txt verify8.txt verify9.txt  ResultParser.hs
 	nix-shell --run "runhaskell ResultParser.hs Section?.v"
 
-verify%.txt: Section%.v MS.v FraCoq2.v
+verify%.txt: Section%.v MS.v Formulas.v
 	coqc Section$*.v > $@
 
 test:: Tests
@@ -24,5 +24,5 @@ clean:
 FraToCoq: Bank.hs FraToCoq.hs MS.hs Logic.hs LogicB.hs
 	nix-shell --run "ghc --make FraToCoq"
 
-FraCoq2.v: FraToCoq
+Formulas.v: FraToCoq
 	./FraToCoq  >$@
