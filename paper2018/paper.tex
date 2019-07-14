@@ -37,8 +37,7 @@
   We present a system for Natural Language Inference which uses a
   dynamic semantics converter from abstract syntax trees to Coq
   types. It combines the fine-grainedness of a dynamic semantics
-  system with the powerfulness of a state-of-the-art proof assistant,
-  like Coq. We evaluate the system on all sections of the FraCaS test
+  system with the powerfulness of a state-of-the-art proof assistant. We evaluate the system on all sections of the FraCaS test
   suite, excluding section 6. This is the first system that does a
   complete run on the anaphora and ellipsis sections of the FraCaS. It
   has a better overall accuracy than any previous system.
@@ -168,10 +167,7 @@ thereby avoiding any syntactic ambiguity.
 \paragraph{Coq}
 Coq is an interactive theorem prover (proof assistant) based on the
 calculus of inductive constructions (CiC), i.e.  a lambda calculus
-with dependent types. Coq is one of the leading proof assistants. It
-has famously been instrumental in formalising a proof of the
-four-color theorem \citep{Gonthier:2008}, a proof of the odd order
-theorem \citep{Gonthier:2013}. Coq is a very powerful reasoning engine
+with dependent types.  Coq is a very powerful reasoning engine
 that makes it fit for the task of NLI, when the latter is formalized
 as theorem proving task. It supports
 notably dependent typing and subtyping, which are instrumental in
@@ -268,9 +264,9 @@ combinatorially. This dynamic semantics allows us to model many
 phenomena in a precise way.
 
 \paragraph{Anaphora} Thanks to the above system, we can handle many
-anaphoric cases, including E-Type and Donkey pronouns. Indeed, even
+anaphoric cases, including E-Type and Donkey anaphora. Indeed, even
 objects which have no syntactic representation can be added to the
-environment. We follow here the general pattern outlined by
+environment. We follow here the general monadic semantics approach as outlined by
 \citet{unger:2011}. However, we use a more general scope-extension
 mechanism, which allows us to support examples like  the following:
 \begin{lingex}
@@ -316,7 +312,7 @@ $\exists{}y. dog(y) \wedge (\forall{}x. person(x) \to pet(x,y))$.
 Previous attempts to tackle the section of the FraCaS test suite
 devoted to comparatives showed that handling them is not easy. Our
 strategy here is to leverage our dynamic semantics, revealing an
-anaphoric element of comparatives. Indeed, Consider the hypothesis of
+anaphoric element of comparatives. Indeed, consider the hypothesis of
 (FraCaS 239): ``ITEL won more orders than APCOM lost.''  We postulate
 that this sentence is equivalent to the following two separate parts:
 ``APCOM lost zero or more orders. ITEL won more orders [than some
@@ -327,7 +323,7 @@ this idea, we can go one level deeper in the interpretation of our
 example: ``APCOM lost $\theta$ orders. $\theta$ $\ge$ 0.  ITEL won at least $\theta$+1
 orders.''. We see here how the quantities are introduced. They are
 added to the environment so that, they can be referred to as elliptic
-quantity expressions.
+quantity expressions.\footnote{The degree parameter assumption is not new in the formal semantics literature \cite{Cresswell:1976,Heim:2001,Kennedy:2007,chatzikyriakidis:2017} among many others. The specific details and computational implementation, however, are.}
 % SC
 %Finally, ``more'' is systematically intepreted as ``at least
 %<elliptic quantity>+1''. This treatment, which we illustrated here on
@@ -342,7 +338,7 @@ dynamic aspect in our model, and thus is entirely handled within Coq.)
 For subsective adjectives, $\tau$ will additionally depend on the class
 of the object in question. This structure has the benefit that
 opposite adjectives can be easily represented (measures are opposites
-$\forall{}x. m_1 x = -m_2 x$ and thresholds do not overlap $\tau_1 + \tau_2 >
+$\forall{}x. m_1 x = \lnot m_2 x$ and thresholds do not overlap $\tau_1 + \tau_2 >
 0$). Formalization aside, this idea is reminiscent of degree-based
 approaches to gradable adjectives of
 \citet{Cresswell:1976,Kennedy:2007}.  Additionally
@@ -393,10 +389,10 @@ labelling of 6 cases
 %(SC: Shall we remove this to the supplementary material and just say to have a look at how we amended the suite?)
 % the cases listed in Table \ref{tab:overrulings},
 which appeared to have been
-misclassified (as justified in supplementary material). We note that the majority of the mistaken
+misclassified. We note that the majority of the mistaken
 classifications occur in sections 3 and 4, which have not been
 previously attempted and thus, we propose, have not been properly
-scrutinized.
+scrutinized. In terms of comparison, this only has a minor effect, since our system is the first system to run sections 3 and 4. 
 % \begin{table}
 %   \centering
 %   \small
@@ -420,7 +416,7 @@ a non-decidable logic, one cannot \emph{in general} conclude
 decisively that no proof exists. Thus, we consider here that no proof
 exists if it cannot be constructed with reasonable effort. In
 particular, we test at the minimum that the automatic proof search
-built in Coq does not succeed before classifying a problem as UNK.
+built in Coq does not succeed before classifying a problem as UNK.\footnote{The other way this can be done is by introducing a timeout as \citet{Mineshima:2015} have done.}
 
 
 %  ------ Section 1
@@ -487,7 +483,7 @@ Attitudes    & 13          & .92      & .85    & .77  & .46  & .92  \\
 Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
              &             & \ncases{259}    & \ncases{174}  & \ncases{174}& \ncases{174}& \ncases{89}
   \end{tabularx}
-  \caption{Overview of the accuracy of our system compared to others.
+  \caption{Accuracy of our system compared to others.
     ``Ours" refers to the approach presented in this paper. When a
     system does not handle the nominal number of test cases (shown in
     the second column), the actual number of test cases attempted is
@@ -495,32 +491,29 @@ Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
     refers to the work of \citet{bernardy_type_2017}. ``MINE" refers
     to the approach of \citet{Mineshima:2015}, ``NUT" to the CCG
     system that utilizes the first-order automated theorem prover
-    \textit{nutcracker} described by \citet{bos:2008}, and ``Langpro"
+    \textit{nutcracker} \cite{bos:2008}, and ``Langpro"
     to the system presented by \citet{Abzianidze:2015}. A dash
-    indicates that no attempt was made for a given section. }
+    indicates that no attempt was made for the section. }
   \label{tab:results}
 \end{table}
 
 Table \ref{tab:results} shows a considerable improvement over earlier
 approaches in terms of coverage, with three more sections covered over
-previous state of the art. We thus cover 259 out of 337 cases (77\%),
+previous approaches. We thus cover 259 out of 337 cases (77\%),
 compared to at most 174 cases (52\%) in previous work. Additionally,
 our system performs generally the best in terms of accuracy. In
-particular, section 6 sees a large improvement in accuracy, which we
-attribute to our new analysis of comparatives, enabled by our dynamic
-semantics.
+particular, section 6 largely improves in accuracy, which we
+attribute to our dynamic semantics analysis of comparatives.
 
 \paragraph{error analysis}
-Our system fails to classify correctly 28 cases out of 259.  We give
-here a summary of the missing features which are responsible for the
-biggest number of failures. The one biggest source of error is an
+Our system fails to correctly classify  28 cases out of 259.  We give
+here a summary of the missing features which are responsible for the failures. The  biggest source of error is 
 incomplete handling of group readings. (FraCaS
 013, 014, 046, 084, 111, 124, 126, 127, 137, 171, 172, 191, 193, 195, 243, 250, 333, 346). These
-are cases where a syntactic conjunction of individuals is treated as a
+are cases where  a syntactic conjunction of individuals is treated as a
 semantic group, or where precise counting of the members of a group is
-necessary.  Other problematic cases are where a definite plural does
-not have a universal reading (091, 094, 095) --- these require an
-analysis at the pragmatic level, which our system lacks. Additionally,
+necessary.  Other problematic cases include definite plurals with
+no  universal readings (091, 094, 095). Additionally,
 neither measure phrases (242) nor attributive comparatives (244, 245)
 are handled.
 
@@ -528,10 +521,9 @@ are handled.
 \section{Conclusions and Future Work}
 We presented a system converting GF trees to Coq types using dynamic
 semantics. The system outperforms the state of the art in logical
-approaches when tested on the FraCaS test suite and is the only system
-to date that has performed a run on the ellipsis/anaphora section of
-the FraCaS. The system is precise enough to form the start of a very
-precise NL reasoner for controlled domains. For the future, we plan to
+approaches when tested on the FraCaS  and is the only system
+to date to perform a run on the FraCaS ellipsis/anaphora section. The system is precise enough to form the start of a 
+precise NL reasoner for controlled domains. In the future, we plan to
 extend the system to cover the remaining section of the FraCaS
 (tense/aspect), and also develop a more applied version to perform
 reasoning on controlled NL domains.
