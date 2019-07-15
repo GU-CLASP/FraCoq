@@ -17,3 +17,15 @@
 # coq compiler?
 verify*.txt
 /.lia.cache
+*.dvi
+*.out
+*.pdf
+*.xdv
+*.aux
+*-blx.bib
+*.fdb_latexmk
+*.bbl
+*.blg
+*.log
+*.fls
+*.run.xml
