@@ -1,3 +1,5 @@
+all: paper.pdf paper-long.pdf
+
 UNAME_S := $(shell uname -s)
 
 default: paper.pdf
@@ -6,6 +8,10 @@ ifeq ($(UNAME_S),Linux)
 else
 	open $<
 endif
+
+paper-long.pdf: paper-long.tex *.bib PaperTools/bibtex/jp.bib
+	(cd PaperTools;git pull origin master)
+	nix-shell --pure --run "latexmk paper-long -pdf"
 
 paper.pdf: paper.tex *.bib PaperTools/bibtex/jp.bib
 	(cd PaperTools;git pull origin master)
