@@ -169,7 +169,7 @@ Coq is an interactive theorem prover (proof assistant) based on the
 calculus of inductive constructions (CiC), i.e.  a lambda calculus
 with dependent types.  Coq is a very powerful reasoning engine
 that makes it fit for the task of NLI, when the latter is formalized
-as theorem proving task. It supports
+as a theorem proving task. It supports
 notably dependent typing and subtyping, which are instrumental in
 expressing NL semantics.
 
@@ -286,9 +286,20 @@ using GF syntax trees, which require an explicit argument for each
 predicate. Thus, ellipsis are made explicit by the parsing phase. Such
 ellptic expressions are handled in the same way as anaphora.
 %
-For example, in \ref{ex:acd}, the argument of ``did'' is
+For example, in \ref{ex:acd} repeated below as \ref{ex:acda},  the argument of ``did'' is
 explicitly marked as an elliptic V2, which we resolve to ``speak'' in
-that context.
+that context:
+
+\begin{lingex}
+	\item
+	\label{ex:acda}
+	\textbf{P1}	Bill spoke to everyone that John did [elliptic V2].\\
+	\textbf{P2}	John spoke to Mary.\\
+	\textbf{Q} 	Did Bill speak to Mary?\\
+	\textbf{H} 	Bill spoke to Mary. \\ \textbf{Label:	Yes} [FraCas 173]
+\end{lingex}
+
+
 
 \paragraph{Definites} A naive way to handle definites is using an
 existential type. However, if the semantics does not feature a
