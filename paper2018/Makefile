@@ -1,4 +1,4 @@
-all: paper.pdf paper-long.pdf
+all: paper.pdf
 
 UNAME_S := $(shell uname -s)
 

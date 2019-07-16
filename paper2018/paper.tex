@@ -159,7 +159,7 @@ ones.  For example, consider the constructor: $AdjCN : AP \to CN \to CN$. This  
 that one can append an adjectival phrase to a common noun and obtain
 a new common noun. Furthermore,  GF is equipped  with a library of mappings from abstract
 syntax to the concrete syntax of various natural languages.
-% These mappings can be inverted by GF, thus offering parsing from natural text into abstract syntax.
+These mappings can be inverted by GF, thus offering parsing from natural text into abstract syntax.
 However, in this project we skip the
 parsing phase and use the parse trees constructed by \citet{Ljunglof:2012},
 thereby avoiding any syntactic ambiguity. 
@@ -199,40 +199,40 @@ Our system consists of two main parts.
   and adverbs (veridical or not).
 \end{enumerate}
 
-% The architecture is represented schematically in Figure \ref{fig:overview}.
-% \begin{figure*}
-%   \centering
-% {
-%   \tiny
-% \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.7cm,
-%                     semithick]
-%   \tikzstyle{every state}=[draw=black,text=black,shape=rectangle,text width=2cm]
+The architecture is represented schematically in Figure \ref{fig:overview}.
+\begin{figure*}
+  \centering
+{
+  \tiny
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.7cm,
+                    semithick]
+  \tikzstyle{every state}=[draw=black,text=black,shape=rectangle,text width=2cm]
 
-%   \node[state]         (txt)                {text};
-%   \node[state]         (ast) [right of=txt] {AST};
-%   \node[state]         (pp)  [right of=ast] {Probabilistic program};
-%   \node[state]         (res) [right of=pp] {result in $(0,1)$};
+  \node[state]         (txt)                {text};
+  \node[state]         (ast) [right of=txt] {AST};
+  \node[state]         (pp)  [right of=ast] {Probabilistic program};
+  \node[state]         (res) [right of=pp] {result in $(0,1)$};
 
-%   \path (txt) edge              node (GF)  {GF}                  (ast)
-%         (ast) edge              node (Hask) [text width=1.5cm]{Haskell interpreter} (pp)
-%         (pp) edge               node (Coq) {Coq} (res);
+  \path (txt) edge              node (GF)  {GF}                  (ast)
+        (ast) edge              node (Hask) [text width=1.5cm]{Haskell interpreter} (pp)
+        (pp) edge               node (Coq) {Coq} (res);
 
-%   \node (Syntax) [above of=GF,node distance=1cm] {Syntax};
-%   \node (Sem) [above of=Hask,node distance=1cm] {Dynamic Semantics};
-%   \node (Hyper) [above of=Coq,node distance=1cm] {Additional Semantics$^\ast$};
+  \node (Syntax) [above of=GF,node distance=1cm] {Syntax};
+  \node (Sem) [above of=Hask,node distance=1cm] {Dynamic Semantics};
+  \node (Hyper) [above of=Coq,node distance=1cm] {Additional Semantics$^\ast$};
 
-%   \path
-%   (Syntax) edge (GF)
-%   (Sem) edge (Hask)
-%   (Hyper) edge (Coq);
-% \end{tikzpicture}
-% }
-% \caption{Phases in our system. ($\ast$) At the level of Coq, we handle
-%   the details of the adverbial (veridicality properties) and
-%   adjectival semantics (division into subsective, extentional,
-%   non-committal, etc. categories.) }
-%   \label{fig:overview}
-% \end{figure*}
+  \path
+  (Syntax) edge (GF)
+  (Sem) edge (Hask)
+  (Hyper) edge (Coq);
+\end{tikzpicture}
+}
+\caption{Phases in our system. ($\ast$) At the level of Coq, we handle
+  the details of the adverbial (veridicality properties) and
+  adjectival semantics (division into subsective, extentional,
+  non-committal, etc. categories.) }
+  \label{fig:overview}
+\end{figure*}
 
 All the underlying systems (GF, Haskell, Coq) are based on lambda
 calculi with types. We take advantage of typing, ensuring that each
@@ -278,7 +278,8 @@ mechanism, which allows us to support examples like  the following:
 \end{lingex}
 In the above example, the pronoun ``he'' is allowed to refer to the
 object quantified over by ``every'', whose scope is extended
-accordingly.
+accordingly.  We describe the anaphora resolution system in every
+detail in a manuscript \citep{anaphora}.
 
 \paragraph{Ellipsis} Ellipsis is handled in essentially the same way
 as anaphora. This method is made especially straightforward thanks to
@@ -335,10 +336,10 @@ example: ``APCOM lost $\theta$ orders. $\theta$ $\ge$ 0.  ITEL won at least $\th
 orders.''. We see here how the quantities are introduced. They are
 added to the environment so that, they can be referred to as elliptic
 quantity expressions.\footnote{The degree parameter assumption is not new in the formal semantics literature \cite{Cresswell:1976,Heim:2001,Kennedy:2007,chatzikyriakidis:2017} among many others. The specific details and computational implementation, however, are.}
-% SC
-%Finally, ``more'' is systematically intepreted as ``at least
-%<elliptic quantity>+1''. This treatment, which we illustrated here on
-%an example, is systematic in our implementation.
+%
+Finally, ``more'' is systematically intepreted as ``at least
+<elliptic quantity>+1''. This treatment, which we illustrated here on
+an example, is systematic in our implementation.
 
 
 \paragraph{Adjectives}
@@ -360,28 +361,27 @@ Indeed, the tactic that Coq offers for this purpose can
 solve all such problems in the FraCaS suite, automatically.
 
 
-% \paragraph{Adverbs}
-% Another point, of minor theoretical importance but major practical
-% one, is our handling of adverbial phrases. We interpret adverbs (and
-% in general all adverbial and prepositional phrases) as VP-modifiers:
-% $Adv = VP \to VP$, where $VP = object \to Prop$. However, applying adverbs
-% to verb-phrases heavily complicates the Coq proofs, because such
-% phrases can contain quantifiers. Therefore, we instead move the
-% adverbs, so that they apply to (atomic) verbs only. Proofs can then be
-% simplify accordingly. \todo{theoretical justification in the
-%   literature?}
+\paragraph{Adverbs}
+Another point, of minor theoretical importance but major practical
+one, is our handling of adverbial phrases. We interpret adverbs (and
+in general all adverbial and prepositional phrases) as VP-modifiers:
+$Adv = VP \to VP$, where $VP = object \to Prop$. However, applying adverbs
+to verb-phrases heavily complicates the Coq proofs, because such
+phrases can contain quantifiers. Therefore, we instead move the
+adverbs, so that they apply to (atomic) verbs only. Proofs can then be
+simplify accordingly.
 
 
 \section{Results and evaluation}
 
 We evaluated FraCoq against 8 sections of the FraCaS test suite, for a
 total of 259 cases. We excluded only section 7, ``temporal reference''.
-% The reason for
-% doing so is that, in our view, it contains too many examples which
-% require \textit{ad-hoc} treatment, and thus makes little sense to
-% include without complementing it with a more thorough suite which
-% captures a more complete landscape of the phenomena that section 7
-% touches.
+The reason for
+doing so is that, in our view, it contains too many examples which
+require \textit{ad-hoc} treatment, and thus makes little sense to
+include without complementing it with a more thorough suite which
+captures a more complete landscape of the phenomena that section 7
+touches.
 
 FraCaS classifies each problem as either entailment (YES),
 entailment of the opposite (NO) or no entailment (UNK).  In this work,
@@ -404,21 +404,21 @@ misclassified. We note that the majority of the mistaken
 classifications occur in sections 3 and 4, which have not been
 previously attempted and thus, we propose, have not been properly
 scrutinized. In terms of comparison, this only has a minor effect, since our system is the first system to run sections 3 and 4. 
-% \begin{table}
-%   \centering
-%   \small
-% \begin{tabularx}{\columnwidth}{ccp{3.8cm}}
-%  test case & new class & comment \\ \hline
-%     005 & UNK & missing hypothesis: there are italian tenors \\
-%    056 &  Yes & Already identified as such by MacCartney \\
-%   069 & Unk & Mary could have used someone else's workstation \\
-%   119 & Unk & \textit{ibid.} \\
-%   181 & Yes & for the same reason as 180 \\
-%   226 & Yes &
-% \end{tabularx}
-%   \caption{Overruled FraCaS cases}
-%   \label{tab:overrulings}
-% \end{table}
+\begin{table}
+  \centering
+  \small
+\begin{tabularx}{\columnwidth}{ccp{3.8cm}}
+ test case & new class & comment \\ \hline
+    005 & UNK & missing hypothesis: there are italian tenors \\
+   056 &  Yes & Already identified as such by MacCartney \\
+  069 & Unk & Mary could have used someone else's workstation \\
+  119 & Unk & \textit{ibid.} \\
+  181 & Yes & for the same reason as 180 \\
+  226 & Yes &
+\end{tabularx}
+  \caption{Overruled FraCaS cases}
+  \label{tab:overrulings}
+\end{table}
 
 Our system classifies a case as YES if a proof can be constructed from
 the premises to the hypothesis, NO if a proof of the negated
