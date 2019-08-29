@@ -29,3 +29,6 @@ verify*.txt
 *.log
 *.fls
 *.run.xml
+*.toc
+*.nav
+*.snm

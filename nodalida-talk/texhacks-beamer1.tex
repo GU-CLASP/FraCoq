@@ -1,0 +1,362 @@
+% 12/1/94, modified from book-hacks file
+
+%**********************************
+% self-comments and self-footnotes
+% OFF ( 0 ) --- for ON ( 1 )
+%**********************************
+\newcommand{\selfcomment}[1]{\ifodd 0 {\sf #1 }\fi}
+\newcommand{\selfcc}[1]{\ifodd 1 {\sf #1 }\fi}
+\newcommand{\selfc}{\selfcomment}
+\newcommand{\selffootnote}[1]{\ifodd 0 \footnote{{\sf #1}} \fi}
+\newcommand{\selff}{\selffootnote}
+
+%***************************************
+% environments (sections, theorems, ...)
+%***************************************
+% sections etc.
+%**************
+\newcommand{\sect}{\section}
+\newcommand{\subsect}{\subsection}
+\newcommand{\ssubsect}{\subsubsection}
+\newcommand{\para}{\paragraph}
+\newcommand{\subpara}{\subparagraph}
+%**************************
+% theorems, definitions ...
+%**************************
+    
+%**********************************************
+% proof, convention, remark, notation, exercise
+%**********************************************
+%\newcommand{\proof}{{\bf Proof}\ }
+\newcommand{\proofsketch}{{\bf Proof\ sketch}\ }
+\newcommand{\convention}{\ \\{\bf Convention}\ }
+\newcommand{\conventions}{\ \\{\bf Conventions}\ }
+\newcommand{\notation}{\ \\{\bf Notation}\ }
+\newcommand{\notations}{\ \\{\bf Notations}\ }
+%\newcommand{\remark}{\ \\{\bf Remark}\ }
+\newcommand{\remarks}{\ \\{\bf Remarks}\ }
+%\newcommand{\exercise}{\ \\{\bf Exercise}\ }
+%***************
+% \qed and \blob
+%***************
+\newcommand{\blob}{\mbox{\rule[-1.5pt]{5pt}{10.5pt}}}
+%\newcommand{\qed}{\quad\hfill\mbox{$\Box$}}
+
+%****************************************************************
+% Roman in Theorem env (\mbox{\em ...}) (for boldface words etc.)
+%****************************************************************
+\newcommand{\them}[1]{{\mbox{\em #1}}}
+
+%***************
+% cases in line
+%***************
+\newcommand{\casestwo}[2]{\cases {#1 \cr #2}}
+
+%*******************************
+% sets, sequences, and ECC-pairs
+%*******************************
+\newcommand{\set}[2]{\{\,#1\,\mid\,#2\,\}}      % set of #1 such that #2
+\newcommand{\emptyseq}{\langle\rangle}          %<>  in math mode
+% sequence of #1's, numbered up to #2  (e.g., seq{x}{n} for x1 ... xn   )
+\newcommand{\seq}[2]{#1_{1} \ldots #1_{#2}}
+% comma--separated sequence
+\newcommand{\cseq}[2]{#1_{1},\ldots,#1_{#2}}
+% ECC-pairs
+\newcommand{\pair}[3]{\langle#1,#2\rangle_{#3}} % pairs in ECC
+
+%**************************
+% fix up colon conventions
+%**************************
+\mathcode`:="003A               % ordinary colon (tight spacing)
+\mathchardef\colon="303A        % relation colon, rule colon
+% \mathchardef\punctcolon="603A % colon as a punctuation mark
+
+%***************
+% abbreviations
+%***************
+%**************************
+% math symbol abbreviations
+%**************************
+\newcommand{\cross}{\times}                     % cross
+\newcommand{\del}{\delta}
+\newcommand{\e}{\epsilon}
+\newcommand{\g}{\gamma}
+\newcommand{\G}{\Gamma}
+\newcommand{\defd}{\mathord{\downarrow}}        % ``is defined'' symbol
+\newcommand{\undefd}{\mathord{\uparrow}}        % ``is undefined'' symbol
+\newcommand{\ts}{\vdash}        % turnstile
+\newcommand{\tseq}{\vdash^=}    % turnstile^=
+\newcommand{\dts}{\models}      % double turnstyle for model sat. etc.
+\newcommand{\rts}{{\ \|\!\!-}}  % vertical-double turnstyle for realizability
+\newcommand{\bottom}{\perp}     % bottom or undefined symbol
+\newcommand{\lam}{\lambda}
+\newcommand{\fa}{\forall}                       % for all
+\newcommand{\te}{\exists}                       % there exists
+\newcommand{\To}{\Rightarrow}                   % imply -- double right arrow
+\newcommand{\fppto}{\to_{FPP}}                  % arrow_FPP
+\newcommand{\isoto}{\buildrel \cong \over \to}  % iso over arrow
+\newcommand{\Iff}{\mathrel{\Leftrightarrow}}    % double arrow both directions
+\renewcommand{\iff}{\Iff}                       % ibid.
+\newcommand{\infinity}{\infty}          % infinity
+\newcommand{\intersect}{\cap}           % intersection
+\newcommand{\nt}{\buildrel . \over \to} % natural transformation
+\newcommand{\pto}{\rightharpoonup}      % partial function space
+\newcommand{\sig}{\sigma}
+\newcommand{\union}{\cup}               % union
+\newcommand{\w}{\omega}
+\newcommand{\iso}{\cong}          % isomorphism
+\newcommand{\conv}{\simeq}        % conversion
+\newcommand{\red}{\rhd}           % reduction
+\newcommand{\bconv}{\conv_\beta}  % beta-convertible
+\newcommand{\bred}{\rhd_\beta}    % beta-reducible
+\newcommand{\contract}{\leadsto}  % contraction schemes, contract to
+\newcommand{\subs}{\subseteq}
+\newcommand{\lekind}{\preceq}
+\newcommand{\lesskind}{\prec}
+\newcommand{\gekind}{\succeq}
+\newcommand{\grkind}{\succ}
+\newcommand{\eqkind}{\approx}
+%**************
+% semantics of
+%**************
+\newcommand{\dlb}{\lbrack\!\lbrack}
+\newcommand{\ldb}{\dlb}
+\newcommand{\drb}{\rbrack\!\rbrack}
+\newcommand{\rdb}{\drb}
+\newcommand{\sem}[1]{\mathop{\ldb #1\rdb}\nolimits}     % semantics of ...
+%*************************************************************
+% \them should be used for the following in theorems !!!!
+%*************************************************************
+\newcommand{\df}{{\ =_{\mbox{\scriptsize df }}}}                 % =df
+\newcommand{\iffdf}{{\ \iff_{\mbox{\scriptsize df }}}}           % \iff_df
+\newcommand{\redk}{{\mbox{\rm red$_{\mbox{\scriptsize\bf k}}$}}} % key reduct
+\newcommand{\rednf}{{ \mbox{$\red_{\mbox{\scriptsize nf}}$ }}}   % red to nf
+%*******************
+% text abbreviations
+%*******************
+\newcommand{\CR}{Church-Rosser theorem} % Church-Rosser theorem
+\newcommand{\IH}{induction hypothesis}  % IH for induction hypothesis
+\newcommand{\ML}{Martin-L\"{o}f}        % Martin-Lof
+\newcommand{\qn}{quasi-normal}          % qn for quasi-normal
+\newcommand{\SN}{strongly normalisable} % SN abbr. strongly normalizable
+%**********************************************************
+% system names in Text, \them should be used in theorems !!!
+%**********************************************************
+\newcommand{\ECC}{\mbox{{\rm ECC}}}                     % ECC \bf-->\rm
+\newcommand{\ECCn}{{\ECC$^n$}}                          % ECC^n
+\newcommand{\ECCbn}{{\ECC$^{\mbox{\scriptsize\bf n}}$}} % ECC^\n
+\newcommand{\SCC}{{$\Sigma${\mbox{CC}}$_\subset\ $}}    % SigCC_INC
+\newcommand{\SCCinf}{{$\Sigma${\mbox{CC}}$_\subset^\infty\ $}}  % SigCC_INC^inf
+\newcommand{\CCinf}{{{\mbox{CC}}$^\infty_\subset$}\ }           % CC_INC^inf
+% \newcommand{\CCn}{{{\mbox{CC}}$^\n_\subset$}\ }               % CC^\n
+\newcommand{\CCinfcoq}{{{\mbox{CC}}$^\infty$}}                  % CC^inf
+\newcommand{\SCCn}{{$\Sigma${\mbox{CC}}$^n_\subset$}\ }         % SigCC_INC^n
+%*************
+% roman (\rm)
+%*************
+\newcommand{\Obj}{{\mbox{\rm Obj}}}             % objects of a cat
+
+
+%*************************************************************
+% italic (\it) (some changed to roman suggested by the editor)
+%*************************************************************
+\newcommand{\cf}{{cf.}}
+\newcommand{\eg}{{e.g.}}
+\newcommand{\etal}{{\it et~al.}}
+\newcommand{\etc}{{etc.}}
+\newcommand{\ie}{{i.e.}}
+\newcommand{\vs}{{\it vs.}}
+\newcommand{\wrt}{{w.r.t.}}
+\newcommand{\ala}{\`{a} la}
+%****************************************
+% capital calligraphic in mathmode (\cal)
+%****************************************
+\newcommand{\D}{{\cal D}}               % cal D, degree of E-terms
+\newcommand{\E}{{\cal E}}               % cal E, env
+% \newcommand{\K}{{\cal K}}             % cal K, the set of kinds
+\newcommand{\U}{{\cal U}}               % cal U, the set of kinds
+\newcommand{\level}{{\cal L}}           % cal L --- levels of types
+\newcommand{\lev}{\level}               % cal L --- levels of types
+% \newcommand{\T}{{\cal T_\E}}          % cal T_E
+% \newcommand{\Check}[2]{{\cal C}(#1;\ #2)}       % type-checking algorithm
+\newcommand{\Terms}{{\cal T}}           % the set of (untyped) terms
+%*************************************************************************
+% boldface (\bf) --- in Text or Mathmode, \them should be used in theorems.
+%*************************************************************************
+\newcommand{\1}{{\mbox{\bf 1}}}         % terminal object, unit type
+\newcommand{\back}{{\mbox{\bf back}}}   % back:M->PROP
+\newcommand{\false}{{\mbox{\bf false}}} % false, logical
+\newcommand{\inc}{{\mbox{\bf inc}}}     % inclusion
+\newcommand{\jbf}{{\mbox{\bf j}}}       % bf j
+\newcommand{\key}{{\mbox{\bf key}}}     % key term of a term
+\newcommand{\M}{{\mbox{\bf M}}}         % cat of modest sets
+\newcommand{\n}{{\mbox{\bf n}}}         % bf n
+\newcommand{\pairbf}{{\mbox{\bf pair}}} % pairs in UTT
+\newcommand{\PER}{{\mbox{\bf PER}}}     % cat of pers
+\newcommand{\PROP}{{\mbox{\bf PROP}}}   % cat of `propositions'
+\newcommand{\Set}{{\mbox{\bf Set}}}     % cat of sets
+\newcommand{\true}{{\mbox{\bf true}}}   % true, logical
+\newcommand{\valid}{{\mbox{\bf valid}}} % context validity
+\newcommand{\wS}{{\mbox{$\w${-}{\bf Set}}}}     % omega-Set -- cat of w-sets
+\newcommand{\Prf}{{\mbox{\bf Prf}}}     % Prf(P) --- proof types
+
+%****************
+% inference rules
+%****************
+% \Frule{upper}{down}{side-condition}{rule-name}
+\newcommand{\Frule}[4]
+{\[ \hbox to \columnwidth
+    { \rlap{$#4$} \hfil $
+      {{\displaystyle\strut #1}\over{\displaystyle\strut #2}}
+      \quad\makebox[0pt][l]{\it #3} $
+      \hfil }
+\]}
+% 2 rules in the same line
+\newcommand{\Tworules}[6]
+{\[ #3 \ \ \
+    {{#1}\over{#2}}
+    \ \ \ \ \ \ \ \ \ \
+    #6 \ \ \
+    {{#4}\over{#5}}
+\]}
+\newcommand{\tworule}[4]                % special for LF-rules picture
+{\[ {{#1}\over{#2}}
+    \ \
+    {{#3}\over{#4}}
+\]}
+% 3 rules in the same line
+\newcommand{\Threerules}[9]
+{\[ #3 \
+    {{#1}\over{#2}}
+    \ \ \ \ \
+    #6 \
+    {{#4}\over{#5}}
+    \ \ \ \ \
+    #9 \
+    {{#7}\over{#8}}
+\]}
+\newcommand{\threerule}[6]              % special for LF-rules picture
+{\[ {{#1}\over{#2}}
+    \ \ \
+    {{#3}\over{#4}}
+    \ \ \
+    {{#5}\over{#6}}
+\]}
+% 4 rules in the same line
+\newcommand{\Fourrules}[8]
+{\[ \ \ \
+    {{#1}\over{#2}}
+    \ \ \ \ \
+    \ \ \
+    {{#3}\over{#4}}
+    \ \ \ \ \
+    \ \ \
+    {{#5}\over{#6}}
+    \ \ \ \ \
+    \ \ \
+    {{#7}\over{#8}}
+\]}
+% 1 rule `in the same line'
+\newcommand{\onerule}[2]
+{\[ {{#1}\over{#2}} \]}
+\newcommand{\Onerule}[3]
+{\[ #3 \ \ \
+    {{#1}\over{#2}}
+\]}
+% rule in table
+\newcommand{\tablerule}[2]
+{\begin{tabular}{c}\vspace{.05in}
+ ${\displaystyle\strut #1}\over{\displaystyle\strut #2}$ % \vspace{.05in}\\
+ \end{tabular}
+}
+
+%********************************************
+% special commands for spec and theory papers
+%********************************************
+%**********************
+% specification chapter
+%**********************
+\newcommand{\tuple}[1]{\langle #1 \rangle}              % new, 7/5/93
+\newcommand{\CirSigmaText}{\sum\!\!\!\!\!\!\circ\ }
+\newcommand{\CirSigmaMath}{\sum\!\!\!\!\!\!\!\circ\ }
+% \newcommand{\Dot}{\bullet}
+
+\newcommand{\List}{List}
+\newcommand{\nil}{nil}
+\newcommand{\cons}{cons}
+\newcommand{\N}{N}
+\newcommand{\suc}{succ}                         % added 31/12/92
+\newcommand{\rec}{Rec}
+%\renewcommand{\tt}{\mbox{tt}}                  % \tt is used for \verb etc.
+\newcommand{\ff}{\mbox{ff}}
+\newcommand{\ifN}{\mbox{if}_N}
+
+\newcommand{\refn}{\rho}
+\newcommand{\refnto}{\Longrightarrow}
+\newcommand{\refncon}[1]{\buildrel c\over\Longrightarrow_{#1}}
+\newcommand{\refnc}{\refncon}
+\newcommand{\refnsel}[1]{\buildrel s\over\Longrightarrow_{#1}}
+\newcommand{\refnabs}[2]{\buildrel a\over\Longrightarrow^{#1}_{#2}}
+
+\newcommand{\SPEC}{{\mbox{\bf SPEC}}}
+\newcommand{\Spec}{{\mbox{\bf Spec}}}
+\newcommand{\Str}{{\mbox{\bf Str}}}
+\newcommand{\Ax}{{\mbox{\bf Ax}}}
+\newcommand{\Mod}{{\mbox{\bf Mod}}}
+\newcommand{\Sat}{{\mbox{\bf Sat}}}
+\newcommand{\Setoid}{{\mbox{\bf Setoid}}}
+\newcommand{\Stack}{{\mbox{\bf Stack}}}
+\newcommand{\STACK}{{\mbox{\bf STACK}}}
+\newcommand{\Array}{{\mbox{\bf Array}}}
+\newcommand{\ARRAY}{{\mbox{\bf ARRAY}}}
+\newcommand{\Elem}{{\mbox{\bf Elem}}}
+\newcommand{\Cong}{{\mbox{\bf Cong}}}
+\renewcommand{\Join}{{\mbox{\bf Join}}}
+\newcommand{\Meet}{{\mbox{\bf Meet}}}
+\newcommand{\Extend}{{\mbox{\bf Extend}}}
+\newcommand{\Con}{{\mbox{\bf Con}}}
+\newcommand{\Sel}{{\mbox{\bf Sel}}}
+\newcommand{\Abs}{{\mbox{\bf Abs}}}
+\newcommand{\derive}{{\mbox{\bf derive}}}
+%***************
+% theory chapter
+%***************
+\newcommand{\Thm}{{\mbox{\bf Thm}}}     % !!!
+\newcommand{\Prfs}{{\mbox{\bf Prfs}}}   % !!!
+\newcommand{\THEORY}{{\mbox{\bf THEORY}}}
+
+%******************
+% logical framework
+%******************
+\newcommand{\LF}{{\sc LF}}
+% \newcommand{\R}{{\sc R}}
+\newcommand{\kind}{{\mbox{\bf kind}}}
+\newcommand{\Type}{{\mbox{\bf Type}}}
+\newcommand{\Ebf}{{\mbox{\bf E}}}
+\newcommand{\emptytype}{\emptyset}
+\newcommand{\App}{{\mbox{\bf App}}}
+\newcommand{\app}{{\mbox{\bf app}}}
+\newcommand{\T}{{\mbox{\bf T}}}
+\renewcommand{\t}{{\mbox{\bf t}}}
+
+\newcommand{\SOL}{{SOL}}
+\newcommand{\plt}{plt}
+\newcommand{\lts}{\models}
+\newcommand{\TSCH}{{\sc Tsch}}
+\newcommand{\pltRule}[1]{(\them{{\sc #1}})}
+
+\newcommand{\Types}{{\sc Types}}
+\newcommand{\Sch}{{\sc Isch}}
+\newcommand{\Pos}{{\sc Pos}}
+\newcommand{\Ari}{{\sc Ari}}
+
+\newcommand{\Mu}{{\cal M}}
+\newcommand{\leschema}{<}
+
+
+
+%***********************
+% other special commands
+%***********************
+\newcommand{\p}{\ \ \ }         % spaces used for index files for thesis
+\newcommand{\mathover}[2]{\buildrel \rm #1 \over #2}    % #1 over #2

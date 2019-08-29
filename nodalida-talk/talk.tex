@@ -1,0 +1,460 @@
+\documentclass[11pt]{beamer}
+\usepackage{beamerthemesplit}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{gb4e}
+\usepackage{tikz}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usetikzlibrary{arrows,automata}
+\usetheme{Boadilla}
+% \usetheme{Warsaw}
+\newcommand{\Sem}[1]{\sem{#1}}
+\logo{\includegraphics{CLASP_logo.jpeg}} 
+% \renewcommand{\theenumi}{\alph{enumi}}
+\setitemize{label=\usebeamerfont*{itemize item}%
+  \usebeamercolor[fg]{itemize item}
+  \usebeamertemplate{itemize item}}
+\newlist{lingex}{enumerate}{3}
+\setlist[lingex,1]{parsep=0pt,itemsep=1pt,label=(\arabic*),resume=lingexcount}
+\newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
+\providecommand\ncases[1]{{\ensuremath{^{#1}}}}
+
+% \newcommand{\ex}{}
+% \newenvironment{exe}{}{}
+
+\input{texhacks-beamer1}
+\usefoottemplate{%
+  \vbox{%
+    \tinycolouredline{structure!75}%
+    {\textbf{Bernardy and Chatzikyriakidis\hfill \textsc{IWCS2017, Montpellier} \hfill \insertframenumber/\inserttotalframenumber}}%
+  }}\title{FraCoq 2.0: A Wide-Coverage Symbolic Natural Language Inference System}
+\author{Jean-Philippe Bernardy and Stergios Chatzikyriakidis}
+\begin{document}
+\date{October 2019}
+\frame{\titlepage}
+
+
+\begin{frame}
+  \frametitle{Structure the talk}
+  \begin{itemize}
+  \item Brief intro to the systems used, GF and Coq
+  \item Presenting the FraCoq (2.0!) system
+    \begin{itemize}
+    \item We concentrate on the novel features of the system (Dynamic Semantics, Anaphora
+      and Ellipsis mostly)
+    \end{itemize}
+  \item Evaluation against the FraCaS test suite
+  \item Conclusions and Future work
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame} \frametitle{Background: Grammatical Framework (GF)}
+  \begin{itemize}
+  \item Functional programming language for writing multi-lingual
+grammars
+  \item Involves an abstract syntax, comprised of:
+    \begin{itemize}
+    \item A number of syntactic categories
+    \item A number of syntactic construction functions, which provide
+the means to compose basic syntactic categories into more complex ones
+      \begin{itemize}
+      \item $AdjCN : AP \to CN \to CN$ (appending an adjectival phrase to
+a common noun and obtaining a new common noun)
+      \end{itemize}\end{itemize}
+  \item GF comes with a library of mappings from abstract syntax to
+concrete
+    \begin{itemize}
+    \item These mappings can be inverted by GF, thus offering parsers
+from natural text into abstract syntax
+
+    \item We use the parse trees constructed by Ljungl\"of (2012)
+thereby avoiding any syntactic ambiguity (GF FraCaS
+treebank).\end{itemize}\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Background: Type-Theoretical Semantics}
+  
+  \begin{itemize}
+  \item We use the type of logics that have been traditionally dubbed as constructive
+    \begin{itemize}
+    \item Initiated by the work of Martin-L\"of (1971, 1984)
+    \item In linguistics this types of logics go back to Ranta's seminal work (Ranta 1994) or even earlier to Sundholm (1988)
+      \begin{itemize}
+      \item More recent approaches can be found as well. Please see
+        Chatzikyriakidis and Luo (2017) for a collection of papers on
+        constructive type theories for NL semantics
+      \end{itemize}\end{itemize}\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Background: Type Theoretical Semantics}
+  \begin{itemize}
+  \item Main features of MTTs
+    \begin{itemize}
+    \item  Type many-sortedness.
+    \item Dependent sum and product types
+      \begin{itemize}
+      \item $\Sigma$-types, often written $\sum_{x:A}B[x]$ and which
+        have product types $A\times B$ as a special case when $B$ does
+        not depend on $x$.
+      \item Dependent product, $\Pi$-types, often written
+        ($\prod_{x:A}B[x]$), and which have arrow-types $A\to B$ as a
+        special case
+      \item They generalize universal quantification and function
+        types and they offer type polymorphism
+      \end{itemize}
+    \item Proof-theoretical specification and support for effective
+      reasoning.
+      \begin{itemize}
+      \item Most powerful proof assistants implement MTTs (e.g. Coq, Agda)
+      \end{itemize}\end{itemize}\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Background: Coq}
+  \begin{itemize}
+  \item	Proof assistant based on the calculus of inductive
+    constructions (CiC, Coquand and Paulin-Mohring 1988)
+    \begin{itemize}
+    \item Arguably one of the leading proof assistants
+      \begin{itemize}
+      \item  a proof of the four-color
+        theorem (Gonthier 2008)
+      \item  a proof of the odd order theorem (Gonthier et al. 2013)
+      \item  developing CompCert, a formally verified compiler for C (Leroy 2013)
+      \item One of the assistants used in the Univalent Foundations project (Homotopy Type Theory, The Univalent Foundations Program 2013)
+      \end{itemize}\end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Background: Coq}
+  \begin{itemize}
+  \item Important features used
+    \begin{itemize}
+    \item $\Pi$ types 
+      \begin{itemize}
+      \item	in Coq: $\prod_{x:A}B[x]$ is written \texttt{forall (x:A), B} or (simply
+        \texttt{A $\to$ B} when \texttt{B} does not depend on \texttt{x}) \end{itemize}
+    \item 	Record types
+      \begin{itemize}
+      \item  Generalization of $\Sigma$-types and are encoded as (trivial) inductive types with a single
+        constructor.
+      \item	$\Sigma x:A. B(x)$ can be expressed as a dependent record type in Coq:
+        \texttt{Record AB:Type:=mkAB\{x:> A;P:B x\}}
+      \end{itemize}\end{itemize}\end{itemize}
+\end{frame}
+
+\begin{frame}{Overview of the system}
+{
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.8cm, semithick,scale=0.4, every node/.style={scale=0.8}]
+  \tikzstyle{every state}=[draw=black,text=black,shape=rectangle,text width=2cm]
+
+  \node[state]         (txt)                {text};
+  \node[state]         (ast) [right of=txt] {AST};
+  \node[state]         (pp)  [right of=ast] {Program};
+  \node[state]         (res) [right of=pp] {result in $(0,1)$};
+
+  \path (txt) edge              node (GF)  {GF}                  (ast)
+        (ast) edge              node (Hask) [text width=1.5cm]{Haskell} (pp)
+        (pp) edge               node (Coq) {Coq} (res);
+
+  \node (Syntax) [above of=GF,node distance=1cm] {Syntax};
+  \node (Sem) [above of=Hask,node distance=1cm] {Dynamic Semantics};
+  \node (Hyper) [above of=Coq,node distance=1cm] {Additional Semantics$^\ast$};
+
+  \path
+  (Syntax) edge (GF)
+  (Sem) edge (Hask)
+  (Hyper) edge (Coq);
+\end{tikzpicture}
+}
+  \begin{itemize}
+  \item We use Lj\"unglof's FraCaS treebank and take these trees to
+    their semantic counterparts
+  \item GF constructions are translated to Haskell programs (types are
+    respected). Dynamic semantics are handled at this level.
+  \item The programs output Coq propositions and types. At the level
+    of Coq, we add several kinds of linguistically relevant
+    information (veridicality properties; adjectival semantics such as
+    division into subsective, extentional, non-committal, etc.)
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{FraCoq: Dynamic Semantics}
+  \begin{itemize}
+  \item Monadic structure \cite{Shan:2002}
+  \item Two kind of effects
+    \begin{itemize}
+    \item Manage a state of referents for anaphoric expressions (NPs,
+      but also other linguistic categories)
+    \item Non-determinism. (Linguistic expressions can have several
+      interpretations.)
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The FraCoq system: basic idea}
+  \begin{itemize}
+  \item Sentences are interpreted as propositions (with effect). 
+  \item VP and CN are interpreted as predicates (also with effect).
+  \item Adjectives: Functions from CN to CN (again: effect!)
+    \begin{itemize}
+    \item Different classes of adjectives are captured using coercions (subtyping). All special classes of adjectives are subtypes of A.
+    \item Provision is made for intersective, subsective, privative and non-committal adjectives
+    \end{itemize}
+  \item (Generalized) Quantifiers. Similar to Montague semantics, but
+    we also take into account quantities using an abstract function
+    which can count the cardinalities of sets. (plus: effects, see below.)
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Anaphora}
+  \begin{itemize}
+  \item Wide-coverage: E-Type pronouns and Donkey anaphora, etc.
+  \item New scope-extension mechanism
+    \begin{lingex}
+    \item
+      \label{ex:anaphora-scope}
+      \textbf{P1}	Every committee has a chairman.\\
+      \textbf{P2}	He is appointed its members.\\
+      \textbf{H} 	Every committee has a chairman appointed by members of the committee. \\ \textbf{Label:	YES} [FraCaS 122]
+    \end{lingex}
+    \begin{itemize}
+    \item ``Every'' introduces a referent in the context.
+    \item ``He'' find this referent.
+    \item Normally, the referent would be out of scope, but we
+      liberally extend scopes until we obtain a valid logical formula.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Ellipsis}
+  \begin{itemize}
+  \item Similar to anaphora
+  \item
+    \begin{lingex}
+    \item
+      \label{ex:acda}
+      \textbf{P1}	Bill spoke to everyone that John did [elliptic V2].\\
+      \textbf{P2}	John spoke to Mary.\\
+      \textbf{Q} 	Did Bill speak to Mary?\\
+      \textbf{H} 	Bill spoke to Mary. \\ \textbf{Label:	Yes} [FraCas 173]
+    \end{lingex}
+  \item the verb ``spoke'' is introduced as a referent in the context when its encountered
+  \item the argument of ``did'' is explicitly marked as an elliptic V2 by GF.
+  \item we resolve it to ``speak'' by loading it from the environment.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Phrasal comparatives}
+  \begin{itemize}
+  \item Handled using the dynamic semantics
+  \item Example:
+    \begin{itemize}
+    \item ``ITEL won more orders than APCOM lost.''
+    \item becomes: ``APCOM lost some orders. ITEL won more
+      orders [than some elliptic quantity].''
+    \item Where is the elliptic quantity introduced?
+    \item ``APCOM lost $\theta$ orders.  ITEL won at least $\theta$+1 orders.''
+    \end{itemize}
+  \end{itemize}
+  (Simplified, see the paper for details.)
+\end{frame}
+
+\begin{frame}{Gradable adjectives}
+  Example: tall.
+  \begin{itemize}
+  \item Interpreted as a pair of a measure $tallness : objects \to Z$, and a threshold $minTall : Z$.
+    \item An individual $x$ is considered $tall$ iff $tallness\, x > minTall$.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Evaluation: The FraCaS test suite}
+  \begin{itemize}
+  \item A test suite for NLI
+    \begin{itemize}
+    \item 346 NLI examples in the form of one or more premises
+      followed by a question along with an answer to that question
+    \item Three potential answers
+      \begin{itemize}
+      \item YES: The declarative sentence formed out of the question follows from the premises
+      \item NO: The declarative sentence does not follow from the premises
+      \item UNK: The declarative sentence neither follows nor does not follow fro the premises
+      \end{itemize}\end{itemize}\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Evaluation: The FraCaS test suite}
+  
+  \begin{exe}
+    \ex
+    A Swede won the Nobel Prize.
+    
+    Every Swede is  Scandinavian.
+    
+    Did a Scandinavian win the Nobel prize? [Yes, FraCas 049]
+  \end{exe}
+  
+  
+  
+  \begin{exe}
+    \ex
+    No delegate finished the report on time..
+    
+    Did any Scandinavian delegate finish the report on time? [No, FraCaS 070]
+  \end{exe}
+  
+  
+  \begin{exe}
+    \ex
+    A Scandinavian won the Nobel Prize.
+    
+    Every Swede is  Scandinavian.
+    
+    Did a Swede win the Nobel prize? [UNK, FraCaS 065]\end{exe}
+
+
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Evaluation}
+  \begin{itemize}
+  \item Evaluation against 8 sections of the FraCaS
+    \begin{itemize}
+    \item Total of 259 examples
+    \item Only exclude the ``temporal-reference'' section.
+    \end{itemize}
+  \item YES: a proof can be constructed from the premises to the hypothesis
+  \item NO: a proof of the negated hypothesis can be constructed
+  \item UNK: otherwise
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Evaluation}
+  \small
+  \begin{tabularx}{9cm}{Xr@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r}
+Section      & {\kern -2em} \#cases & FC2     & FC1 & MINE & Nut  & Langpro  \\ \hline
+Quantifiers  & 75          & .96  & .96    & .77  & .53  & .93  \\
+             &             & \ncases{74}     &        &      &      &     \ncases{44} \\
+Plurals      & 33          & .82      & .76    & .67  & .52  & .73 \\
+      &          &       &     &   &   & \ncases{24} \\
+Anaphora     & 28          & .86      &   -    & -    & -    &  -       \\
+Ellipsis     & 52          & .87      &   -    & -    & -    &  -       \\
+Adjectives   & 22          & .95 & .95    & .68  & .32  & .73 \\
+             &          &  \ncases{20} &     &   &   &  \ncases{12} \\
+Comparatives {\kern -1em}& 31          & .87      & .56    & .48  & .45  &  -       \\
+Temporal     & 75          &  -       &   -    &   -  &  -   &  -       \\
+Verbs        & 8           & .75      &   -    & -    & -    &  -       \\
+Attitudes    & 13          & .92      & .85    & .77  & .46  & .92  \\ 
+    &          &       &     &   &   & \ncases {9}  \\ \hline
+Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
+             &             & \ncases{259}    & \ncases{174}  & \ncases{174}& \ncases{174}& \ncases{89}
+  \end{tabularx}
+
+  \begin{itemize}
+  \item ``FC2" refers to the approach presented in this paper.
+  % \item When a system does not handle the nominal number of test cases (shown in the second column), the actual number of test cases attempted is shown below the accuracy figure, in smaller font.
+  % \item
+    ``FC1'' refers to \cite{bernardy:2017}.
+  % \item
+    ``MINE" refers to \cite{Mineshima:2015},
+  % \item
+    ``NUT" to the CCG+\textit{nutcracker} \cite{bos:2008},
+  % \item
+    ``Langpro" to \cite{Abzianidze:2015}.
+  % \item A dash indicates that no attempt was made for the section.
+  \end{itemize}
+
+
+
+
+
+
+\end{frame}		
+
+
+\begin{frame}
+  \frametitle{Error Analysis}
+  
+  \begin{itemize}
+  \item	Improvement over earlier approaches. Still, there were a couple of difficulties, notably:
+    \begin{itemize}
+    \item Definite Plurals: Universal reading was captured. Cases of existential readings were not
+      \begin{exe}
+	\ex	
+        \hskip 0.05in The inhabitants of Cambridge voted for a Labour MP.
+        \hskip 0.05in very inhabitant of Cambridge voted for a Labour MP.
+        \hskip 0.05in  	Did every inhabitant of Cambridge vote for a Labour MP? [UNK, FraCaS 094]			
+      \end{exe}
+    \item A syntactic conjunction of individuals is treated as a
+      semantic group, or where precise counting of the members of a
+      group is necessary.
+    \end{itemize}\end{itemize}
+
+\end{frame}	
+
+
+
+
+
+
+
+\begin{frame}
+  \frametitle{Future Work}
+  \begin{itemize}
+    \item Improve support for group readings.
+    % \item Improvement at the GF level: make the abstract syntax more compatible with compositional semantics
+    \item Address the last section of FraCaS test suite (it contains
+      many \textit{adhoc} cases, and much preliminary work to do to
+      define general approach.)
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Conclusions}
+  \begin{itemize}
+  \item We have connected two well-defined systems based on
+    type-theory
+    \begin{itemize}
+    \item Combines the strengths of 3 systems: GF (Parsing), Haskell
+      (dynamic semantics), and Coq (powerful reasoning mechanisms).
+    \item Providing resource semantics for GF
+    \end{itemize}
+
+  \item Useful in performing inference tasks on controlled natural
+    language domains
+
+  \item Hybrid NLI systems
+  \item The system can be found here:  \href{https://github.com/GU-CLASP/FraCoq}{https://github.com/GU-CLASP/FraCoq}
+  \end{itemize}
+\end{frame}
+
+\bibliography{jp,phorae,IWCSbib,NLI}
+
+\bibliographystyle{plain}
+
+\end{document}
