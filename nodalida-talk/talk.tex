@@ -1,9 +1,9 @@
 \documentclass[11pt]{beamer}
 \usepackage{beamerthemesplit}
+\usepackage{graphicx}
 \usepackage{latexsym}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{gb4e}
 \usepackage{tikz}
 \usepackage{enumitem}
 \usepackage{tabularx}
@@ -11,8 +11,8 @@
 \usetheme{Boadilla}
 % \usetheme{Warsaw}
 \newcommand{\Sem}[1]{\sem{#1}}
-\logo{\includegraphics{CLASP_logo.jpeg}} 
-% \renewcommand{\theenumi}{\alph{enumi}}
+\logo{\includegraphics[height=0.7cm]{CLASP_logo.jpeg}} 
+% \logo{\includegraphics{clasp.ps}} 
 \setitemize{label=\usebeamerfont*{itemize item}%
   \usebeamercolor[fg]{itemize item}
   \usebeamertemplate{itemize item}}
@@ -21,8 +21,8 @@
 \newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
 \providecommand\ncases[1]{{\ensuremath{^{#1}}}}
 
-% \newcommand{\ex}{}
-% \newenvironment{exe}{}{}
+\newcommand{\ex}{\item}
+\newenvironment{exe}{\begin{lingex}}{\end{lingex}}
 
 \input{texhacks-beamer1}
 \usefoottemplate{%
