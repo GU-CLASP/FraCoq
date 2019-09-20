@@ -162,7 +162,7 @@ treebank).\end{itemize}\end{itemize}
   \node[state]         (txt)                {text};
   \node[state]         (ast) [right of=txt] {AST};
   \node[state]         (pp)  [right of=ast] {Program};
-  \node[state]         (res) [right of=pp] {result in $(0,1)$};
+  \node[state]         (res) [right of=pp] {Result};
 
   \path (txt) edge              node (GF)  {GF}                  (ast)
         (ast) edge              node (Hask) [text width=1.5cm]{Haskell} (pp)
