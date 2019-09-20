@@ -11,14 +11,15 @@
 \usetheme{Boadilla}
 % \usetheme{Warsaw}
 \newcommand{\Sem}[1]{\sem{#1}}
-\logo{\includegraphics[height=0.7cm]{CLASP_logo.jpeg}} 
-% \logo{\includegraphics{clasp.ps}} 
+%\logo{\includegraphics[height=0.7cm]{CLASP_logo.jpeg}} 
+\logo{\includegraphics{clasp.ps}} 
 \setitemize{label=\usebeamerfont*{itemize item}%
   \usebeamercolor[fg]{itemize item}
   \usebeamertemplate{itemize item}}
 \newlist{lingex}{enumerate}{3}
 \setlist[lingex,1]{parsep=0pt,itemsep=1pt,label=(\arabic*),resume=lingexcount}
 \newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
+\newcommand{\nologo}{\setbeamertemplate{logo}{}} % command to set the logo to nothing
 \providecommand\ncases[1]{{\ensuremath{^{#1}}}}
 
 \newcommand{\ex}{\item}
@@ -352,6 +353,7 @@ treebank).\end{itemize}\end{itemize}
   \end{itemize}
 \end{frame}
 
+{\nologo
 \begin{frame}
   \frametitle{Evaluation}
   \small
@@ -393,7 +395,7 @@ Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
 
 
 
-\end{frame}		
+\end{frame}		}
 
 
 \begin{frame}
