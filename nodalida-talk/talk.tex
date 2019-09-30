@@ -186,13 +186,13 @@ treebank).\end{itemize}\end{itemize}
   \item The programs output Coq propositions and types. At the level
     of Coq, we add several kinds of linguistically relevant
     information (veridicality properties; adjectival semantics such as
-    division into subsective, extentional, non-committal, etc.)
+    division into subsective, extensional, non-committal, etc.)
   \end{itemize}
 \end{frame}
 
 
 \begin{frame}
-  \frametitle{FraCoq: Dynamic Semantics}
+  \frametitle{FraCoq 2.0: Dynamic Semantics}
   \begin{itemize}
   \item Monadic structure \cite{Shan:2002}
   \item Two kind of effects
@@ -206,7 +206,7 @@ treebank).\end{itemize}\end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{The FraCoq system: basic idea}
+  \frametitle{The FraCoq 2.0 system: basic idea}
   \begin{itemize}
   \item Sentences are interpreted as propositions (with effect). 
   \item VP and CN are interpreted as predicates (also with effect).
@@ -231,12 +231,12 @@ treebank).\end{itemize}\end{itemize}
     \item
       \label{ex:anaphora-scope}
       \textbf{P1}	Every committee has a chairman.\\
-      \textbf{P2}	He is appointed its members.\\
+      \textbf{P2}	He is appointed by its members.\\
       \textbf{H} 	Every committee has a chairman appointed by members of the committee. \\ \textbf{Label:	YES} [FraCaS 122]
     \end{lingex}
     \begin{itemize}
     \item ``Every'' introduces a referent in the context.
-    \item ``He'' find this referent.
+    \item ``He'' finds this referent.
     \item Normally, the referent would be out of scope, but we
       liberally extend scopes until we obtain a valid logical formula.
     \end{itemize}
@@ -254,12 +254,11 @@ treebank).\end{itemize}\end{itemize}
       \label{ex:acda}
       \textbf{P1}	Bill spoke to everyone that John did [elliptic V2].\\
       \textbf{P2}	John spoke to Mary.\\
-      \textbf{Q} 	Did Bill speak to Mary?\\
       \textbf{H} 	Bill spoke to Mary. \\ \textbf{Label:	Yes} [FraCas 173]
     \end{lingex}
-  \item the verb ``spoke'' is introduced as a referent in the context when its encountered
-  \item the argument of ``did'' is explicitly marked as an elliptic V2 by GF.
-  \item we resolve it to ``speak'' by loading it from the environment.
+  \item The verb ``spoke'' is introduced as a referent in the context when its encountered
+  \item The argument of ``did'' is explicitly marked as an elliptic V2 by GF.
+  \item We resolve it to ``speak'' by loading it from the environment.
   \end{itemize}
 \end{frame}
 
@@ -276,7 +275,7 @@ treebank).\end{itemize}\end{itemize}
     \item ``APCOM lost $\theta$ orders.  ITEL won at least $\theta$+1 orders.''
     \end{itemize}
   \end{itemize}
-  (Simplified, see the paper for details.)
+  (Simplified, see the paper for details)
 \end{frame}
 
 \begin{frame}{Gradable adjectives}
@@ -405,12 +404,14 @@ Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
   \item	Improvement over earlier approaches. Still, there were a couple of difficulties, notably:
     \begin{itemize}
     \item Definite Plurals: Universal reading was captured. Cases of existential readings were not
-      \begin{exe}
-	\ex	
-        \hskip 0.05in The inhabitants of Cambridge voted for a Labour MP.
-        \hskip 0.05in very inhabitant of Cambridge voted for a Labour MP.
-        \hskip 0.05in  	Did every inhabitant of Cambridge vote for a Labour MP? [UNK, FraCaS 094]			
-      \end{exe}
+
+   \begin{lingex}
+  	\item
+  	\label{ex:acda}
+  	\textbf{P1}	The inhabitants of Cambridge voted for a Labour MP.\\
+  	\textbf{P2}	Every inhabitant of Cambridge voted for a Labour MP.\\
+  	\textbf{H} Every inhabitant of Cambridge voted for a Labour MP.	\\ \textbf{Label:	UNK} [FraCas 094]
+  \end{lingex}
     \item A syntactic conjunction of individuals is treated as a
       semantic group, or where precise counting of the members of a
       group is necessary.
