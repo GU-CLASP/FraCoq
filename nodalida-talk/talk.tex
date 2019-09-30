@@ -409,16 +409,40 @@ Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
   	\item
   	\label{ex:acda}
   	\textbf{P1}	The inhabitants of Cambridge voted for a Labour MP.\\
-  	\textbf{P2}	Every inhabitant of Cambridge voted for a Labour MP.\\
   	\textbf{H} Every inhabitant of Cambridge voted for a Labour MP.	\\ \textbf{Label:	UNK} [FraCas 094]
   \end{lingex}
-    \item A syntactic conjunction of individuals is treated as a
-      semantic group, or where precise counting of the members of a
-      group is necessary.
+  
     \end{itemize}\end{itemize}
 
 \end{frame}	
 
+
+
+\begin{frame}
+\frametitle{Error Analysis}
+
+\begin{itemize}
+	\item Group readings
+	
+	\begin{itemize}
+		 
+		\item A syntactic conjunction of individuals is treated as a
+	semantic group, or where precise counting of the members of a
+	group is necessary.
+	
+	\end{itemize}
+
+		\begin{lingex}
+			\item
+			\label{ex:acda}
+			\textbf{P1}		Smith signed one contract.\\
+						\textbf{P2}		Jones signed another contract.\
+			\textbf{H} Smith and Jones signed two contracts.\\ \textbf{Label:	YES, on a collective reading of the sentence} [FraCas 111]
+		\end{lingex}
+	
+\end{itemize}
+
+\end{frame}	
 
 
 
@@ -428,19 +452,22 @@ Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
 \begin{frame}
   \frametitle{Future Work}
   \begin{itemize}
-    \item Improve support for group readings.
+    \item Improve support for group readings
     % \item Improvement at the GF level: make the abstract syntax more compatible with compositional semantics
-    \item Address the last section of FraCaS test suite (it contains
-      many \textit{adhoc} cases, and much preliminary work to do to
-      define general approach.)
-  \end{itemize}
+    \item Address the  section of  the FraCaS test suite  left, i.e. section 7: Temporal reference (tense and aspect)
+    
+     \begin{itemize}
+    	\item  Contains
+      many \textit{adhoc} cases, and much preliminary work is needed in order to
+      define general approach
+  \end{itemize}  \end{itemize}
 \end{frame}
 
 
 \begin{frame}
   \frametitle{Conclusions}
   \begin{itemize}
-  \item We have connected two well-defined systems based on
+  \item We have connected three well-defined systems based on
     type-theory
     \begin{itemize}
     \item Combines the strengths of 3 systems: GF (Parsing), Haskell
@@ -451,7 +478,7 @@ Total        & 337         & .89      & .83    & .69  & .50  & .85  \\
   \item Useful in performing inference tasks on controlled natural
     language domains
 
-  \item Hybrid NLI systems
+  \item Hybrid NLI systems?
   \item The system can be found here:  \href{https://github.com/GU-CLASP/FraCoq}{https://github.com/GU-CLASP/FraCoq}
   \end{itemize}
 \end{frame}
