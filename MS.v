@@ -42,7 +42,7 @@ Definition QCl := Prop.
 Definition QS := Prop.
 Definition Subj := Prop -> Prop -> Prop.
 Definition CN:= object->Prop.
-Parameter Time : Set.
+Definition Time := Z.
 Definition TProp := Time -> Prop.
 Definition VP := object -> TProp. (* subject *)
 Definition SC := VP.
