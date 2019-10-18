@@ -666,6 +666,7 @@ useComparA_prefix a = do
 type Subj = Dynamic (S' -> S' -> S')
 
 lexemeSubj :: String -> Subj
+lexemeSubj "before_Subj" = return $ \s1 s2 -> modifyingPrep withTime (Con "BeforeTimeOf" `app` (Lam $ \time -> s1 ([(withTime,Con "RefTime" `app` time)],id))) s2 
 lexemeSubj s = return $ \s1 s2 extraObjs -> Con s `apps` [s1 extraObjs, s2 extraObjs]
 
 --------------------

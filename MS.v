@@ -380,8 +380,6 @@ Definition ReflVP : VPSlash -> VP
 (* Parameter SelfAdVVP : VP -> VP . *)
 (* Parameter SelfAdvVP : VP -> VP . *)
 (* Parameter UseCopula : VP . *)
-Definition UseV : V -> VP
-                := fun v x => v x.
 Parameter elliptic_VP : VP .
 
 (* Comp -- complement of copula*)
@@ -1093,7 +1091,7 @@ Parameter claimCovariant_K : forall p q:S, forall s, (p -> q) -> claim_VS p s ->
 Parameter  person_K: forall x:object, chairman_N(x)-> person_N(x). 
 Parameter  committee_member_person_K : forall x, committee_member_N x -> person_N x.
 
-Parameter Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False.
+(* Parameter Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False. *)
 
 Parameter small_and_large_disjoint_K : forall cn o, getSubsectiveA small_A cn o /\ getSubsectiveA large_A cn o -> False.
 
