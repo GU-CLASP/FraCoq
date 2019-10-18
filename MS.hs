@@ -680,19 +680,7 @@ type AdV = ADV
 lexemeAdv :: String -> Adv
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
-lexemeAdv "year_1996_Adv" = return $ modifyingPrep "withTime" (Con "(ATTIME Year_1996)")
-lexemeAdv "since_1992_Adv" = return $ modifyingPrep "withTime" (Con "(SINCE Year_1992)")
-lexemeAdv "in_1993_Adv" = return $ modifyingPrep "withTime" (Con "(ATTIME Year_1993)")
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
-
-debugPreps :: ADV' -> Exp
-debugPreps f = f (\(preps,advs) -> Con (show preps)) ([],id)
-
--- test :: Dynamic Exp
--- test = debugPreps  <$> (lexemeAdv "since_1992_Adv")
-
--- >>> evalDynamic test
--- [[("atTime",SINCE1992)]]
 
 sentenceApplyAdv :: ((Object -> Prop) -> Object -> Prop) -> S' -> S'
 sentenceApplyAdv adv = \s' (preps,adv') -> s' (preps,adv . adv')
@@ -1017,32 +1005,32 @@ anySg_Det = each_Det
 ----------------------------
 -- Comp
 
-type Comp' = (Object -> Prop) -> Object -> S'
+type Comp' = (Object -> Prop) -> Object -> Prop
 type Comp = Dynamic Comp'
 
 useComp :: Comp -> VP
 useComp c = do
   c' <- c
-  return $ \x (extraObjs,adv) ->
+  return $ \x (extraObjs,_adv) ->
     case lookup "compClass" extraObjs of
-      Nothing -> c' (const TRUE) x (extraObjs,adv)
-      Just xClass -> c' (app xClass) x (extraObjs,adv)
+      Nothing -> c' (const TRUE) x
+      Just xClass -> c' (app xClass) x
 
 -- | be a thing given by the CN
 compCN :: CN -> Comp
 compCN cn = do
   (cn',_gender) <- cn
-  return (\_xClass x extraObjs ->  cn' x extraObjs)
+  return (\_xClass x -> noExtraObjs (cn' x))
 
 compAP :: AP -> Comp
 compAP ap = do
   a' <- ap
-  return $ \xClass x extraObjs -> (a' xClass x) extraObjs
+  return $ \xClass x -> noExtraObjs (a' xClass x) 
 
 compNP :: NP -> Comp
 compNP np = do
   np' <- interpNP np Other
-  return $ \_xClass x extraObjs -> (np' (\y -> (mkRel2 "EQUAL" x y))) extraObjs
+  return $ \_xClass x -> noExtraObjs (np' (\y -> (mkRel2 "EQUAL" x y)))
 
 (===) :: Exp -> Exp -> Exp
 x === y = Con "EQUAL" `apps` [x,y]
@@ -1051,7 +1039,7 @@ x === y = Con "EQUAL" `apps` [x,y]
 compAdv :: Adv -> Comp
 compAdv adv = do
   adv' <- adv
-  return $ \_xClass x extraObjs -> (adv' (beVerb x)) extraObjs
+  return $ \_xClass x -> noExtraObjs (adv' (beVerb x))
 
 beVerb :: VP'
 beVerb y = appArgs "_BE_" [y]
