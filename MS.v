@@ -10,8 +10,12 @@ Opaque Z.sub.
 Opaque Z.ge.
 Opaque Z.le.
 
+
 (** Basic concepts **)
 Parameter object : Type.
+Definition Time := Z.
+Definition TProp := Time -> Prop.
+Parameter NOW : Time.
 (** Categories **)
 Definition S:= Prop.
 
@@ -44,8 +48,9 @@ Definition QS := Prop.
 Definition Subj := Prop -> Prop -> Prop.
 Definition CN:= object->Prop.
 Definition VP := object -> Prop. (* subject *)
+Definition TVP := object -> TProp. (* subject *)
 Definition SC := VP.
-Definition V := object -> Prop.
+Definition V := object -> TProp.
 Definition V2S := object -> S -> object -> Prop.
 Definition V2V := object -> VP -> object -> Prop.
 Definition V3 := object -> object -> object -> Prop. (* indirect object, direct object, subject *)
@@ -1138,10 +1143,6 @@ Definition appAdv : Adv -> (object -> Prop) -> (object -> Prop)
 Definition appoint_V2by : V3
   := fun x y _ => appoint_V2 x y.
 
-Definition Time := Z.
-Definition TProp := Time -> Prop.
-Definition TVP := object -> TProp. (* subject *)
-Parameter NOW : Time.
 Definition _BE_ : TVP := fun x time => time = NOW.
 Parameter _BE_on : object -> TVP.
 Parameter _BE_in  : object -> TVP.
