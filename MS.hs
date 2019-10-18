@@ -231,14 +231,22 @@ type Effect = Dynamic Prop
 filterKey :: Eq a => a -> [(a, b)] -> [(a, b)]
 filterKey k = filter ((/= k) . fst)
 
+compClass = "compClass"
+withTime = "withTime"
+
 appArgs :: String -> [Object] -> ExtraArgs -> Prop
-appArgs nm objs@(_:_) (filterKey "compClass" -> prepositions0,adverbs) = adverbs (app (pAdverbs prep'd)) directObject
+appArgs nm objs@(_:_) (filterKey compClass  -> prepositions00,adverbs) = adverbs (app (pAdverbs time'd)) directObject
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
+        time'd = Con "appTime" `apps` [timeSpec,prep'd]
         indirectObjects = init objs
         directObject = last objs
         cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) prepositions0
         (adverbialPrepositions,prepositions) = partition ((== "before") . fst) cleanedPrepositions
         pAdverbs x = foldr app x [Con (p ++ "_PREP") `app` arg | (p,arg) <- adverbialPrepositions]
+        (timePrepositions,prepositions0) = partition ((== withTime) . fst) prepositions00
+        timeSpec = case map snd timePrepositions of
+          [] -> Con "UnspecifiedTime"
+          (time:_) -> time
 
 appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
 appAdjArgs nm [cn,obj] (prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj
@@ -680,6 +688,9 @@ type AdV = ADV
 lexemeAdv :: String -> Adv
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
+lexemeAdv "year_1996_Adv" = return $ modifyingPrep "withTime" (Con "(ATTIME Year_1996)")
+lexemeAdv "since_1992_Adv" = return $ modifyingPrep "withTime" (Con "(SINCE Year_1992)")
+lexemeAdv "in_1993_Adv" = return $ modifyingPrep "withTime" (Con "(ATTIME Year_1993)")
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
 sentenceApplyAdv :: ((Object -> Prop) -> Object -> Prop) -> S' -> S'
@@ -1005,32 +1016,32 @@ anySg_Det = each_Det
 ----------------------------
 -- Comp
 
-type Comp' = (Object -> Prop) -> Object -> Prop
+type Comp' = (Object -> Prop) -> Object -> S'
 type Comp = Dynamic Comp'
 
 useComp :: Comp -> VP
 useComp c = do
   c' <- c
-  return $ \x (extraObjs,_adv) ->
+  return $ \x (extraObjs,adv) ->
     case lookup "compClass" extraObjs of
-      Nothing -> c' (const TRUE) x
-      Just xClass -> c' (app xClass) x
+      Nothing -> c' (const TRUE) x (extraObjs,adv)
+      Just xClass -> c' (app xClass) x (extraObjs,adv)
 
 -- | be a thing given by the CN
 compCN :: CN -> Comp
 compCN cn = do
   (cn',_gender) <- cn
-  return (\_xClass x -> noExtraObjs (cn' x))
+  return (\_xClass x extraObjs ->  cn' x extraObjs)
 
 compAP :: AP -> Comp
 compAP ap = do
   a' <- ap
-  return $ \xClass x -> noExtraObjs (a' xClass x) 
+  return $ \xClass x extraObjs -> (a' xClass x) extraObjs
 
 compNP :: NP -> Comp
 compNP np = do
   np' <- interpNP np Other
-  return $ \_xClass x -> noExtraObjs (np' (\y -> (mkRel2 "EQUAL" x y)))
+  return $ \_xClass x extraObjs -> (np' (\y -> (mkRel2 "EQUAL" x y))) extraObjs
 
 (===) :: Exp -> Exp -> Exp
 x === y = Con "EQUAL" `apps` [x,y]
@@ -1039,7 +1050,7 @@ x === y = Con "EQUAL" `apps` [x,y]
 compAdv :: Adv -> Comp
 compAdv adv = do
   adv' <- adv
-  return $ \_xClass x -> noExtraObjs (adv' (beVerb x))
+  return $ \_xClass x extraObjs -> adv' (beVerb x) extraObjs
 
 beVerb :: VP'
 beVerb y = appArgs "_BE_" [y]
