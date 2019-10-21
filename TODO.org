@@ -1,0 +1,7 @@
+* Temporal references
+
+- Temporal references seem to require dynamic semantics 
+  "smith left after jones left, and brown left after smith left" 
+- We need to be able to lookup in the environment the times at which any given thing happen
+  ("smith left" refers to a single time)
+- 

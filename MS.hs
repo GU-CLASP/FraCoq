@@ -16,354 +16,11 @@ import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
 import LogicB ()
 import qualified Logic
-import Data.List (intersect,nub,partition,nubBy,sortBy,find)
-import Control.Monad.Logic hiding (ap)
+import Data.List (intersect,nub)
+-- import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
-import Data.Function (on)
-import Control.Arrow (first)
-
-type Object = Exp
-type Prop = Exp
-
-
---------------------------------
--- Operators
-
-protected :: Dynamic a -> Dynamic a
-protected a = do
-  s <- get
-  x <- a
-  put s
-  return x
-
-
-imply :: Monad m => (t1 -> t -> b) -> m t1 -> m t -> m b
-imply implication a b = do
-  a' <- a
-  b' <- b
-  return (implication a' b')
-
-(==>) :: Effect -> Effect -> Effect
-(==>) = imply (-->)
-
-data Gender where
-   Male :: Gender
-   Female :: Gender
-   Neutral :: Gender
-  deriving (Eq,Show)
-
-data Role where
-  Subject :: Role
-  Other :: Role
-  deriving (Eq,Show)
-
--- first :: (t2 -> t1) -> (t2, t) -> (t1, t)
--- first f (x,y) = (f x,y)
-second :: forall t t1 t2. (t2 -> t1) -> (t, t2) -> (t, t1)
-second f (x,y) = (x,f y)
-
-data Descriptor = Descriptor {dPluralizable :: Bool
-                             ,dGender :: [Gender]
-                             ,dNum :: Num
-                             ,dRole :: Role} deriving Show
-
-type ObjQuery = Descriptor -> Bool
-type ObjEnv = [(Descriptor,NP)]
-type NounEnv = [CN]
-
-
-clearRole :: Env -> Env
-clearRole Env{..} = Env{objEnv = map cr objEnv,..}
-  where cr (d,np) = (d {dRole = Other},np)
-
-
--- | After a sentence is closed, we may need to allow to refer certain objects by a plural.
--- See fracas 131.
-pluralize :: Env -> Env
-pluralize Env{..} = Env{objEnv = map (first pl) objEnv,..}
-  where pl Descriptor{..} = Descriptor{dNum = if dPluralizable then Unspecified else dNum,..}
-  -- FIXME this should be done only on things that are introduced inside the sentence!
-
-withClause :: MonadState Env m => m b -> m b
-withClause e = do
-  pl <- gets envPluralizingQuantifier
-  x <- e
-  modify clearRole -- Once the sentence is complete, accusative pronouns can refer to the direct arguments.
-  modify pluralize
-  modify $ \Env{..} -> Env{envPluralizingQuantifier = pl,..}
-  return x
-
-
-
-type VPEnv = [VP]
-
-data Env = Env {vpEnv :: VPEnv
-               ,vp2Env :: V2
-               ,apEnv :: AP
-               ,cn2Env :: CN2
-               ,objEnv :: ObjEnv
-               ,cnEnv :: NounEnv
-               ,sEnv :: S
-               ,quantityEnv :: [(Var,CN')] -- map from CN' to "default" quantity.
-               ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
-               ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
-               ,envSloppyFeatures :: Bool
-               ,envPluralizingQuantifier :: Bool
-               ,freshVars :: [String]}
-         -- deriving Show
-
-------------------------------
--- Gets
-
-overlaps :: Eq a => [a] -> [a] -> Bool
-overlaps a b = case intersect a b of
-  [] -> False
-  _ -> True
-
-isNeutral, isMale, isFemale :: Descriptor -> Bool
-isMale Descriptor{..} = dGender `overlaps` [Male]
-isFemale Descriptor{..} = dGender `overlaps` [Female]
-isNeutral Descriptor{..} = dGender `overlaps` [Neutral]
-
-isPerson :: Descriptor -> Bool
-isPerson = const True -- FIXME
-
-isSingular :: Descriptor -> Bool
-isSingular Descriptor {..} = dNum `elem` [Singular, Cardinal 1, Unspecified]
-
-isPlural :: Descriptor -> Bool
-isPlural Descriptor {..} = dNum `elem` [Plural, Unspecified] -- FIXME: many more cases
-
-isNotSubject :: Descriptor -> Bool
-isNotSubject = (/= Subject) . dRole
-
-isCoArgument :: Descriptor -> Bool
-isCoArgument = (== Subject) . dRole
-
-getCN :: Env -> [CN]
-getCN Env{cnEnv=cn:cns} = cn:cns
-getCN _ = [return assumedCN]
-
-getCN2 :: Env -> CN2
-getCN2 Env{cn2Env=cn} = cn
-
-getNP' :: ObjQuery -> Env -> [NP]
-getNP' q Env{objEnv=os,..} = case filter (q . fst) os of
-  [] -> [return $ MkNP [] assumedNum (ObjectQuant (constant "assumedNP")) assumedCN]
-  xs -> map snd xs
-
-getNP :: ObjQuery -> Dynamic [NP]
-getNP q = gets (getNP' q)
-
-getDefinite :: CN' -> Dynamic Object
-getDefinite (cn',_gender) = do
-  things <- gets envDefinites
-  let pred = lam (\x -> (noExtraObjs (cn' x)))
-  case find (eqExp' pred . fst) things of
-    Just (_,y) -> return y
-    Nothing -> do
-      y <- getFresh
-      modify $ \Env {..} -> Env{envDefinites=(pred,Var y):envDefinites
-                               ,envMissing=(pred,y):envMissing,..}
-      return (Var y)
-
-getQuantity :: Dynamic (Nat,CN')
-getQuantity = do
-  qs <- gets quantityEnv
-  case qs of
-    ((q,cn'):_) -> return (Nat (Var q),cn')
-
--------------------------------
--- Pushes
-
-
-pushQuantity :: Var -> CN' -> Env -> Env
-pushQuantity v cn Env{..} = Env{quantityEnv=(v,cn):quantityEnv,..}
-
-pushDefinite :: (Object -> S') -> Var -> Env -> Env
-pushDefinite source target Env{..} =
-  Env{envDefinites = (lam (\x' -> noExtraObjs (source x')),Var target):envDefinites,..}
-
-pushNP :: Descriptor -> NP -> Env -> Env
-pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
-
-pushCN :: CN -> Env -> Env
-pushCN cn Env{..} = Env{cnEnv=cn:cnEnv,..}
-
-pushVP :: VP -> Env -> Env
-pushVP vp Env{..} = Env{vpEnv=vp:vpEnv,..}
-
-pushV2 :: V2 -> Env -> Env
-pushV2 vp2 Env{..} = Env{vp2Env=vp2,..}
-
-pushAP :: AP -> Env -> Env
-pushAP a Env{..} = Env{apEnv=a,..}
-
-pushCN2 :: CN2 -> Env -> Env
-pushCN2 cn2 Env{..} = Env{cn2Env=cn2,..}
-
-pushS :: S -> Env -> Env
-pushS s Env{..} = Env{sEnv=s,..}
-
-----------------------------------
--- Effects/Dynamic
-
-allVars :: [String]
-allVars = map (:[]) ['a'..'z'] ++ cycle (map (:[]) ['α'..'ω'])
-
-quantifyMany :: [(Exp,Var)] -> Exp -> Exp
-quantifyMany [] e = e
-quantifyMany ((dom,x):xs) e = Forall x (dom `app` (Var x)) (quantifyMany xs e)
-
-evalDynamic :: Dynamic Exp -> [Exp]
-evalDynamic (Dynamic x) = do
-  (formula,Env {..}) <- observeAll (runStateT x assumed)
-  return (quantifyMany [(Lam (\_ -> Con "Nat"),v) | (v,_cn) <- quantityEnv] (quantifyMany envMissing formula))
-
-newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
-instance Show (Dynamic a) where show _ = "<DYNAMIC>"
-
--- newtype Dynamic a = Dynamic {fromDynamic :: LogicT (State Env) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
-
-type Effect = Dynamic Prop
-
-filterKey :: Eq a => a -> [(a, b)] -> [(a, b)]
-filterKey k = filter ((/= k) . fst)
-
-compClass = "compClass"
-withTime = "withTime"
-
-appArgs :: String -> [Object] -> ExtraArgs -> Prop
-appArgs nm objs@(_:_) (filterKey compClass  -> prepositions00,adverbs) = adverbs (app (pAdverbs time'd)) directObject
-  where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
-        time'd = Con "appTime" `apps` [timeSpec,prep'd]
-        indirectObjects = init objs
-        directObject = last objs
-        cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) prepositions0
-        (adverbialPrepositions,prepositions) = partition ((== "before") . fst) cleanedPrepositions
-        pAdverbs x = foldr app x [Con (p ++ "_PREP") `app` arg | (p,arg) <- adverbialPrepositions]
-        (timePrepositions,prepositions0) = partition ((== withTime) . fst) prepositions00
-        timeSpec = case map snd timePrepositions of
-          [] -> Con "UnspecifiedTime"
-          (time:_) -> time
-
-appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
-appAdjArgs nm [cn,obj] (filterKey compClass -> prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj
-  where prep'd = Con "appA" `app` (Con (nm ++ concatMap fst prepositions) `apps` ((map snd prepositions)))
-        prepositions = nubBy ((==) `on` fst) prepositions0
-
-mkPred :: String -> Object -> S'
-mkPred p x extraObjs = appArgs p [x] extraObjs
-
-
-mkRel2 :: String -> Object -> Object -> S'
-mkRel2 p x y extraObjs = appArgs p [x,y] extraObjs
-
-
-mkRel3 :: String -> Object -> Object -> Object -> S'
-mkRel3 p x y z extraObjs = appArgs p [x,y,z] extraObjs
-
-constant :: String -> Exp
-constant x = Con x
-
-pureObj :: Exp -> Num -> CN' -> NP
-pureObj x number cn = return $ MkNP [] number (ObjectQuant x) cn
-
-pureVar :: Var -> Num -> CN' -> NP
-pureVar x = pureObj (Var x)
-
-getFresh :: Dynamic String
-getFresh = do
-  (x:_) <- gets freshVars
-  modify (\Env{freshVars=_:freshVars,..} -> Env{..})
-  return x
-
-
-----------------------------------
--- Assumed
-
-assumedPred :: String -> Dynamic (Object -> S')
-assumedPred predName = do
-  return $ \x -> (mkPred predName x)
-
-assumedCN :: CN'
-assumedCN = (mkPred "assumedCN", [Male,Female,Neutral])
-
-assumedNum :: Num
-assumedNum = Singular
-
-assumed :: Env
-assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
-               , vpEnv = []
-               -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
-               -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
-               ,objEnv = []
-               ,sEnv = return (\_ -> constant "assumedS")
-               ,quantityEnv = []
-               ,cnEnv = []
-               ,envDefinites = []
-               ,envMissing = []
-               ,envSloppyFeatures = False
-               ,envPluralizingQuantifier = False
-               ,freshVars = allVars}
-
-
-onS' :: (Prop -> Prop) -> S' -> S'
-onS' f p eos = f (p eos)
-
-type ExtraArgs = ([(Var,Object)] -- prepositions
-                 ,(Object -> Prop) -> Object -> Prop) -- adverbs
-
-type S' = ExtraArgs -> Prop
-type S = Dynamic S'
-type V2 = Dynamic (Object -> Object -> S') --  Object first, subject second.
-type V3 = Dynamic (Object -> Object -> Object -> S')
-type CN' = (Object -> S',[Gender])
-type CN = Dynamic CN'
-type CN2 = Dynamic CN2'
-type CN2' = (Object -> Object -> S',[Gender])
-type NP' = (Object -> S') -> S'
-type NP = Dynamic NPData
-
-type V = Dynamic (Object -> S')
-type V2S = Dynamic (Object -> S' -> Object -> S')
-type V2V = Dynamic (Object -> VP' -> Object -> S')
-type VV = Dynamic (VP' -> Object -> S')
-type SC = Dynamic VP'
-type VS = Dynamic (S' -> VP')
-
-type Cl =  Dynamic S'
-type Temp = Prop -> Prop
-type ClSlash  = Dynamic VP'
-type RCl  = Dynamic RCl'
-type RCl' = Object -> Prop
-type RS  = Dynamic RCl'
-
-data Num where
-  Unspecified :: Num
-  Singular :: Num
-  Plural   :: Num
-  AFew :: Num
-  MoreThan :: Num -> Num
-  Cardinal :: Nat -> Num
-  deriving (Show,Eq)
-
-numSg,numPl :: Num
-numSg = Singular
-numPl = Plural
-
-data NPData where
-  MkNP :: [Predet] -> Num -> Quant -> CN' -> NPData
-
-type N = CN
-type PN = (String,[Gender],Num)
-
-all' :: [a -> Bool] -> a -> Bool
-all' fs x = all ($ x) fs
-
-any' :: [a -> Bool] -> a -> Bool
-any' fs x = any ($ x) fs
+import Dynamic
 
 -------------------
 -- "PureX"
@@ -445,10 +102,6 @@ lexemePrep :: String -> Prep
 lexemePrep "by8agent_Prep" = return (modifyingPrep "by")
 lexemePrep prep  = return (modifyingPrep (takeWhile (/= '_') prep))
 
-
-modifyingPrep :: String -> Object -> S' -> S'
-modifyingPrep aname x s (preps,adv) = s (preps++[(aname,x)],adv)
-
 type RP = ()
 lexemeRP :: String -> RP
 lexemeRP _ = ()
@@ -463,16 +116,15 @@ implicitRP = ()
 -- Unimplemented categories
 
 conditional,future,pastPerfect,past,present,presentPerfect :: Temp
-past = id
-present = id
-presentPerfect = id
-pastPerfect = id
-future = id
-conditional = id
+past = Past
+present = Present
+presentPerfect = PresentPerfect
+pastPerfect = PastPerfect
+future = Future
+conditional = Conditional
 
 ------------------
 -- Pol
-type Pol = Prop -> Prop
 
 pPos :: Pol
 pPos = id
@@ -598,8 +250,6 @@ one_N = elliptic_CN
 --------------------
 -- A
 
-type A = Dynamic A'
-type A' = (Object -> Prop) -> Object -> S'
 
 positA :: A -> A
 positA = id
@@ -616,7 +266,6 @@ lexemeA2 a = return $ \x cn y -> Con a `apps` [x,lam cn,y]
 --------------------
 -- AP
 
-type AP = Dynamic A'
 
 advAP :: AP -> Adv -> AP -- basically wrong syntax in the input. (Instead of AP we should have CN)
 advAP ap adv = do
@@ -663,11 +312,21 @@ useComparA_prefix a = do
 
 --------------------
 -- Subjs
-type Subj = Dynamic (S' -> S' -> S')
+type Subj = S -> Adv
+
 
 lexemeSubj :: String -> Subj
-lexemeSubj "before_Subj" = return $ \s1 s2 -> modifyingPrep withTime (Con "BeforeTimeOf" `app` (Lam $ \time -> s1 ([(withTime,Con "RefTime" `app` time)],id))) s2 
-lexemeSubj s = return $ \s1 s2 extraObjs -> Con s `apps` [s1 extraObjs, s2 extraObjs]
+lexemeSubj "before_Subj" s1 = do
+  t1 <- referenceTimeFor s1
+  t2 <- freshTime (\x -> Con "Before" `apps` [t1,x])
+  return $ usingTime t2
+lexemeSubj "after_Subj" s1 = do
+  t1 <- referenceTimeFor s1
+  t2 <- freshTime (\x -> Con "After" `apps` [t1,x])
+  return $ usingTime t2
+lexemeSubj s s1 = do
+  s1' <- s1
+  return $ \s2' extraObjs -> Con s `apps` [s1' extraObjs, s2' extraObjs]
 
 --------------------
 -- AdA
@@ -719,10 +378,7 @@ prepNP prep np = do
   return (\s' -> np' $ \x -> prep' x s')
 
 subjS :: Subj -> S -> Adv
-subjS subj s = do
-  subj' <- subj
-  s' <- s
-  return $ subj' s'
+subjS subj s = subj s
 
 
 --------------------
@@ -902,7 +558,6 @@ conjNP3 c np1 np2 np3 = do
 ----------------------
 -- Pron
 
-type Pron = NP
 
 qPron :: ObjQuery -> Pron
 qPron q = do
@@ -975,7 +630,7 @@ detQuant :: Quant -> Num -> Det
 detQuant q n = (n,q)
 
 detQuantOrd :: Quant->Num->Ord->Det
-detQuantOrd q n o = (n,q) -- FIXME: do not ignore the ord
+detQuantOrd q n _o = (n,q) -- FIXME: do not ignore the ord
 
 
 every_Det :: Det
@@ -1084,9 +739,6 @@ lexemeVV vv = return $ \vp x -> appArgs vv [lam (\subj -> noExtraObjs (vp subj) 
 
 ---------------------------
 -- VP
-type VP' = (Object -> S')
--- type VP' = (({-subjectClass-} Object -> Prop) -> Object -> Prop) -- in Coq
-type VP = Dynamic VP'
 
 complVQ :: VQ -> QS -> VP
 complVQ = id
@@ -1334,9 +986,11 @@ then_PConj = and_Conj
 -- RS
 
 useRCl :: Temp->Pol->RCl->RS
-useRCl temp pol r = do
+useRCl _temp pol r = do
   r' <- r
-  return $ \x -> temp (pol (r' x))
+  -- t <- interpTense temp -- FIXME: take tense into account
+  -- FIXME: the polarity should apply to the vp depending on the wide/narrow character of the quantifier
+  return $ \x ->  (pol (r' x))
 
 --------------------
 -- S
@@ -1352,7 +1006,13 @@ extAdvS adv s = do
 
 
 useCl :: Temp -> Pol -> Cl -> S
-useCl = \temp pol cl -> onS' temp <$> (onS' pol <$> cl) -- FIXME: the polarity should apply to the vp.
+useCl temp pol cl = do
+  -- FIXME: the polarity should apply to the vp depending on the wide/narrow character of the quantifier
+  prop <- onS' pol <$> cl
+  t <- interpTense temp
+  let s' = usingTime t prop
+  modify (pushFact $ noExtraObjs s')
+  return s'
 
 useQCl :: Temp -> Pol -> QCl -> QS
 useQCl = useCl
@@ -1439,10 +1099,6 @@ x ### (PNounPhrase conj np) = Sentence $ do
 -------------------------
 -- Quant
 
-instance Show (a -> b) where show _ = "<FUNCTION>"
-type Quant' = (Num -> CN' -> Role -> Dynamic NP')
-data Quant = PossQuant Pron | UniversalQuant Pol | IndefQuant | ExistQuant | ETypeQuant ([Char] -> Prop -> Exp -> Exp) | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat
-  | ObliviousQuant Quant' -- ^ quantifier that ignores numbers and predeterminers.
 
 
 possPron :: Pron -> Quant
@@ -1534,7 +1190,6 @@ the_other_Q = TheOtherQuant
 -------------------------
 -- Predet
 
-data Predet = JustPredet | MostPredet | AtLeastPredet | AtMostPredet | AllPredet | ExactlyPredet deriving Show
 
 just_Predet :: Predet
 just_Predet = ExactlyPredet
@@ -1584,8 +1239,6 @@ know_VQ qs = do
   qs' <- qs
   return $ mkRel2 "knowVQ" (noExtraObjs qs') -- stop prepositions from propagating: TODO: other VVs  (say, etc.)
 
-noExtraObjs :: S' -> Prop
-noExtraObjs f = f ([],id)
 ------------------
 -- Additional combinators
 
@@ -1740,7 +1393,7 @@ evalQuant [] (ETypeQuant q) num cn role = eTypeQuant q num cn role
 evalQuant [] DefiniteQuant Plural cn role = universal_Quant' id Plural cn role
 evalQuant [] DefiniteQuant num cn role = defArt' num cn role
 evalQuant [] TheOtherQuant  num cn role = the_other_Q' num cn role
-evalQuant p q  num _cn _role = error $ "evalQuant: unsupported combination:" ++ show (p,num)
+evalQuant p _q  num _cn _role = error $ "evalQuant: unsupported combination:" ++ show (p,num)
 
 bothQuant :: CN' -> Role -> Dynamic NP'
 bothQuant (cn',gender) role = do -- always Plural
@@ -1893,3 +1546,4 @@ s_086_2_h_ALT = (sentence (useCl (past) (pPos) (predVP (detCN (detQuant (indefAr
 
 -- s_101_1_p_fixed :: Phr
 -- s_101_1_p_fixed = sentence (useCl (present) (pPos) (predVP (detCN (detQuant (indefArt) (numPl)) (useN (lexemeN "university_graduate_N"))) (complSlash (slashV2a (lexemeV2 "make8become_V2")) (detCN (detQuant (indefArt) (numPl)) (adjCN (positA (lexemeA "poor8bad_A")) (useN (lexemeN "stockmarket_trader_N")))))))
+

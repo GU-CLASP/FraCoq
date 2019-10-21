@@ -21,7 +21,7 @@ Tests: Bank.hs Tests.hs MS.hs Logic.hs LogicB.hs
 clean:
 	rm -f *.hi *.o Bank.hs
 
-FraToCoq: Bank.hs FraToCoq.hs MS.hs Logic.hs LogicB.hs
+FraToCoq: Bank.hs FraToCoq.hs MS.hs Logic.hs LogicB.hs Dynamic.hs
 	nix-shell --run "ghc --make FraToCoq"
 
 Formulas.v: FraToCoq

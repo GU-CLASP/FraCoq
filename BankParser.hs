@@ -166,6 +166,7 @@ main = do
   putStrLn $ unlines $
     ("module Bank where" :
      "import MS" :
+     "import Dynamic" :
      concatMap processProblem problems ++
      processSuite problems)
 
