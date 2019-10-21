@@ -31,7 +31,7 @@ main = do
   putStrLn "Load MS."
   forM_ pnTable $ \(x,(gs,_number)) -> do
     forM_ gs $ \g -> do
-    putStrLn ("Parameter " ++ x ++ "_" ++ show g ++ ": " ++ map toLower (show g) ++ "_A (PN2object "++ x ++ ").")
+    putStrLn ("Parameter " ++ x ++ "_" ++ show g ++ ": (" ++ map toLower (show g) ++ "_A (PN2object "++ x ++ ")).")
     putStrLn $ ""
 
   suite handleProblem

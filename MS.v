@@ -1,4 +1,3 @@
-
 Close Scope nat_scope.
 Require Import ZArith.
 Open Scope Z_scope.
@@ -51,14 +50,14 @@ Definition VP := object -> Prop. (* subject *)
 Definition TVP := object -> TProp. (* subject *)
 Definition SC := VP.
 Definition V := object -> TProp.
-Definition V2S := object -> S -> object -> Prop.
-Definition V2V := object -> VP -> object -> Prop.
-Definition V3 := object -> object -> object -> Prop. (* indirect object, direct object, subject *)
-Definition V2 := object->object->Prop. (* Object first, subject second. *)
-Definition VV := VP -> object -> Prop.
+Definition V2S := object -> S -> object -> TProp.
+Definition V2V := object -> VP -> object -> TProp.
+Definition V3 := object -> object -> object -> TProp. (* indirect object, direct object, subject *)
+Definition V2 := object->object->TProp. (* Object first, subject second. *)
+Definition VV := VP -> object -> TProp.
 Definition VPS := VP.
 Parameter VQ : Set.
-Definition VS := S -> VP.
+Definition VS := S -> V.
 Parameter RP : Set.
 
 Definition A := (object -> Prop) -> (object -> Prop).
@@ -108,8 +107,8 @@ Definition NonCommitalA := A.
 
 
 Definition AP:= A.
-Definition N:= object->Prop.
-Definition N2 := object -> object -> Prop.
+Definition N:= object-> TProp.
+Definition N2 := object -> object -> TProp.
 Inductive Num : Type :=
   singular : Num |
   plural   : Num |
@@ -147,7 +146,8 @@ Definition apNP : NP -> NP0.
 cbv. intro np. destruct np as [num quant cn]. apply quant. exact num. exact cn. Defined.
 Definition VPSlash:=object -> VP.
 Definition Pron := NP.
-Inductive PN : Type := mkPN : forall (x:object) (cn : CN), cn x -> PN.
+Definition ALWAYS := fun (p:TProp) => forall t, p t.
+Inductive PN : Type := mkPN : forall (x:object) (cn : N), ALWAYS (cn x) -> PN.
 Definition Cl:=Prop.
 Definition Pol:= Prop->Prop. (* Polarity *)
 Definition Temp:= Prop -> Prop. (* temporal information *)
@@ -192,11 +192,8 @@ Definition NumPl:= plural.
 Definition NumCard : Card -> Num := fun x => x.
 
 (* CN *)
-Definition UseN: N->CN := fun n:N=>n.
-Definition AdjCN: AP->CN->CN:= fun a o x => a o x.
-Definition RelCN: CN->RS->CN:= fun cn rs x => cn x /\ rs x. (* GF FIXME: Relative clauses should apply to NPs. See 013, 027, 044.  *)
+(* Definition UseN: N->CN := fun (n:N) => n. *)
 
-Definition AdvCN : CN -> Adv -> CN := fun cn adv => adv cn.
 
 
 (* Parameter PartNP : CN -> NP -> CN . *)
@@ -216,19 +213,8 @@ Definition EmbedVP : VP -> SC := fun vp => vp.
 (* NP *)
 Definition DetCN: Det->CN->NP:= fun det cn=> mkNP (fst det) (snd det) cn.
 
-Definition   AdvNP : NP -> Adv -> NP
- := fun np adv => let (num,q,cn) := np in mkNP num (fun cn' k => q cn' (adv k)) cn. (* CHECK *)
-(* Parameter ConjNP : Conj -> ListNP -> NP . *)
 
-
-
-Definition PPartNP : NP -> V2 -> NP  (* Word of warning: in FraCas partitives always behave like intersection, which is probably not true in general *)
-          := fun np v2 => let (num,q,cn) := np in
-                          mkNP num q (fun x => cn x /\ exists subject, v2 x subject).
 (* Parameter RelNP : NP -> RS -> NP . *)
-Definition RelNPa : NP -> RS -> NP
-                 := fun np rs => let (num,q,cn) := np
-                                 in mkNP num q (fun x => cn x /\ rs x).
 (* Parameter SelfNP : NP -> NP . *)
 Definition UsePron : Pron -> NP := fun pron => pron.
 (* AP *)
@@ -238,25 +224,14 @@ Definition PositA: A -> A := fun x:A=>x.
 Definition AdAP:AdA->AP->AP:= fun ad a => ad a.
 
 Parameter AdvAP0 : AP -> Adv -> object -> Prop . (* We want to ignore the class here *)
-Definition AdvAP : AP -> Adv -> AP
-  := fun adj adv cn x => AdvAP0 adj adv x.
 
-
-Definition ComparA : SubsectiveA -> NP -> AP
- := fun a np cn x => let (measure,_thres) := a in
-    apNP np (fun y => (1 <= measure x - measure y)).
-(* Remark: most of the time, the comparatives are used in a copula, and in that case the category comes from the NP.  *)
- (* x is faster than y  *)
 
 Definition compareGradableMore : SubsectiveA -> (object->Prop) -> object -> object -> Prop :=
 fun a cn x y => let (measure,_) := a in 1 <= measure x - measure y.
 Definition compareGradableEqual : SubsectiveA -> (object -> Prop) -> object -> object -> Prop :=
 fun a cn x y => let (measure,_) := a in measure x = measure y.
 
-Definition ComplA2 : A2 -> NP -> AP := fun a2 np cn x => apNP np (fun y => a2 y cn x).
 Parameter PartVP : VP -> AP .
-Definition SentAP : AP -> SC -> AP
-  := fun ap clause cn x => ap (fun y => clause y /\ cn y) x.
 Parameter UseComparA : A -> AP.
 Definition UseComparA_prefix : A -> AP := fun adj cn x => adj cn x.
 (* Parameter UseA2 : A2 -> AP . *)
@@ -287,7 +262,6 @@ Qed.
   (* JP: "exists!" fails to identify that we refer to a thing outside the current NP ??? *)
 
 Parameter PossPron : Pron -> Quant .
-Definition  no_Quant : Quant:= fun num P Q=> forall x, not (P x -> Q x) .
 (* Parameter that_Quant : Quant . *)
 Parameter the_other_Q : Quant .
 Parameter this_Quant : Quant .
@@ -298,7 +272,6 @@ Definition DetQuantOrd: Quant->Num->Ord->Det:= fun q n o =>(n,q). (* Ignoring th
 (* Parameter ConjDet : Conj -> ListDet -> Det . *)
 
 (* VPSlash *)
-Definition SlashV2a: V2->VPSlash:= fun v dobj  s => v dobj s.
 
 (* Parameter AdVVPSlash : AdV -> VPSlash -> VPSlash . *)
 (* Parameter AdvVPSlash : VPSlash -> Adv -> VPSlash . *)
@@ -306,7 +279,7 @@ Definition SlashV2a: V2->VPSlash:= fun v dobj  s => v dobj s.
 (* Parameter SlashV2Q : V2Q -> QS -> VPSlash . *)
 (* Parameter SlashV2VNP : V2V -> NP -> VPSlash -> VPSlash . *)
 (* Parameter VPSlashPrep : VP -> Prep -> VPSlash . *)
-Definition Slash2V3 : V3 -> NP -> VPSlash
+(*Definition Slash2V3 : V3 -> NP -> VPSlash
                     := fun v np indirectObject subject => apNP np (fun  directObject => v indirectObject directObject subject).
 Definition Slash3V3 : V3 -> NP -> VPSlash
                     := fun v np directObject subject => apNP np (fun indirectObject => v indirectObject directObject subject).
@@ -316,7 +289,7 @@ Definition SlashV2V : V2V -> VP -> VPSlash
                     := fun v2v vp directObject subject => v2v directObject vp subject.
 Definition SlashVV : VV -> VPSlash -> VPSlash
                    := fun vv v2 directObject subject => vv (fun x => v2 directObject x) subject.
-
+*)
 (* AdV *)
 
 
@@ -351,24 +324,15 @@ Parameter IdetCN : IDet -> CN -> IP .
 (* Parameter PrepIP : Prep -> IP -> IAdv . *)
 
 (* VP *)
-Definition ComplSlash: VPSlash->NP->VP:=fun v2 dobject  subject=> apNP dobject(fun  o => v2 o subject).
 Definition UseComp: Comp -> VP (* be ... *)
                   := fun p => p.
-Definition ComplVV: VV -> VP -> VP
+(*Definition ComplVV: VV -> VP -> VP
                   := fun vv vp x => vv vp x.
-
-Definition AdVVP : AdV -> VP -> VP
-                 := fun adV vp x => adV (fun y => vp y) x.
-                 (* can inherit the class of x, because the new VP applies to x anyway *)
+*)
 
 
-
-Definition  AdvVP : VP -> Adv -> VP:= fun vp adV x => adV (fun y => vp y) x.
 (* Parameter ComplBareVS : VS -> S -> VP . *)
 Parameter ComplVQ : VQ -> QS -> VP .
-Definition ComplVS : VS -> S -> VP
-                   := fun vs s => vs s.
-Definition ComplVSa : VS -> S -> VP := ComplVS. (* FIXME: what is the difference from ComplVS? *)
 (* Parameter ExtAdvVP : VP -> Adv -> VP . *)
 Parameter PassV2 : V2 -> VP .
 Parameter PassV2s : V2 -> VP .
@@ -383,16 +347,10 @@ Definition ReflVP : VPSlash -> VP
 Parameter elliptic_VP : VP .
 
 (* Comp -- complement of copula*)
-Definition CompCN: CN -> Comp (* be a thing given by the CN *)
-                 := fun cn x => cn x.
-Definition CompNP: NP -> Comp (* be the thing given by the NP *)
-                 := fun np o => apNP np (fun  o' => o = o').
 
 (* Definition CompAP: AP -> Comp (* have property given by the AP *) *)
 (*                  := fun ap x => ap xClass x. *)
 
-Definition CompAdv : Adv -> Comp := fun adv x => adv (fun _ => True) x.
-(* In the above we ignore the class, because test cases 027 and 044 seem to suggest that adverbs do not depend on the class of the object that they are applied to. This makes intuitive sense as adverbs to not expect a noun class, but rather a VP. (Actually, we could propagate the class and make use of it if it were not for relative clauses being applied to common nouns instead of NPs. See RelCN above.) *)
 
 
 (* Temp *)
@@ -409,9 +367,7 @@ Definition PresentPerfect : Temp := fun p => p.
 
 (* Cl *)
 Definition PredVP: NP->VP->Cl:= fun np vp=> apNP np vp.
-Definition ExistNP: NP->Cl:= fun n=>apNP n (fun x => True).
 Parameter IMPERSONAL : object.
-Definition ImpersCl : VP -> Cl := fun vp => vp IMPERSONAL.
 Parameter SoDoI : NP -> Cl .
 Parameter elliptic_Cl : Cl .
 (* Parameter CleftAdv : Adv -> S -> Cl . *)
@@ -425,8 +381,6 @@ Parameter elliptic_Cl : Cl .
 (* Parameter AdvSlash : ClSlash -> Adv -> ClSlash . *)
 (* Parameter SlashPrep : Cl -> Prep -> ClSlash . *)
 (* Parameter SlashVS : NP -> VS -> SSlash -> ClSlash . *)
-Definition SlashVP : NP -> VPSlash -> ClSlash
-                   := fun np vp dobject => apNP np (fun subject => vp dobject subject).
 
 (* RCl *)
 Definition RelVP: RP->VP->RCl:= fun relativePronounIgnored => fun p => p.
@@ -437,7 +391,6 @@ Definition RelSlash : RP -> ClSlash -> RCl := fun rpIgnored cl => cl. (* TODO: C
 Definition StrandRelSlash : RP -> ClSlash -> RCl := fun rp cl => cl.
 
 (* RS *)
-Definition UseRCl: Temp->Pol->RCl->RS:=fun t p r x => p (r x).
 
 (* RP *)
 (* Parameter FunRP : Prep -> NP -> RP -> RP . *)
@@ -505,7 +458,7 @@ Parameter why_IAdv : IAdv .
 
 (* VQ *)
 Parameter know_VQ : VQ .
-Parameter come_cheap_VP : VP .
+Parameter come_cheap_VP : TVP .
 
 Parameter and_PConj : PConj .
 Parameter but_PConj : PConj .
@@ -624,7 +577,7 @@ Parameter try_VV : VV .
 Parameter use_VV : VV .
 Parameter want_VV : VV .
 Parameter chairman_N2 : N2.
-Definition chairman_N : N :=  fun o => exists institution, chairman_N2 institution o.
+Definition chairman_N : N :=  fun o t => exists institution, chairman_N2 institution o t.
 Parameter group_N2 : N2 .
 Parameter inhabitant_N2 : N2 .
 Parameter nobel_prize_N2 : N2 .
@@ -781,7 +734,8 @@ Parameter john_PN : PN .
 Parameter katmandu_PN : PN .
 Parameter luxembourg_PN : PN .
 Parameter MARY : object.
-Parameter MARY_PERSON : person_N MARY.
+
+Parameter MARY_PERSON : ALWAYS (person_N MARY).
 Definition mary_PN : PN := mkPN MARY person_N MARY_PERSON  .
 Parameter mfi_PN : PN .
 Parameter mtalk_PN : PN .
@@ -944,7 +898,7 @@ Parameter moment_N : N .
 Parameter mortgage_interest_N : N .
 Parameter mouse_N : N .
 Parameter newspaper_N : N .
-Definition nobel_prize_N : N := fun o => exists x, nobel_prize_N2 o x.
+Definition nobel_prize_N : N := fun o t => exists x, nobel_prize_N2 o x t.
 Parameter note_N : N .
 Parameter novel_N : N .
 Parameter office_building_N : N .
@@ -999,26 +953,26 @@ Parameter world_N : N .
 Parameter year_N : N .
 
 Parameter MICKEY : object.
-Parameter MICKEY_ANIM : animal_N MICKEY.
-Definition mickey_PN := mkPN MICKEY animal_N MICKEY_ANIM  .
+Parameter MICKEY_ANIM : ALWAYS (animal_N MICKEY).
+Definition mickey_PN := mkPN MICKEY (animal_N) MICKEY_ANIM  .
 Parameter DUMBO : object.
-Parameter DUMBO_ANIM : animal_N DUMBO.
-Definition dumbo_PN := mkPN DUMBO animal_N DUMBO_ANIM .
+Parameter DUMBO_ANIM : ALWAYS (animal_N DUMBO).
+Definition dumbo_PN := mkPN DUMBO (animal_N) DUMBO_ANIM .
 Parameter jones : object.
-Parameter jones_PERSON : person_N jones.
-Definition jones_PN := mkPN jones person_N jones_PERSON.
+Parameter jones_PERSON : ALWAYS (person_N jones).
+Definition jones_PN := mkPN jones (person_N) jones_PERSON.
 
 Parameter SMITH : object.
-Parameter SMITH_PERSON : person_N SMITH.
-Definition smith_PN := mkPN SMITH person_N SMITH_PERSON.
+Parameter SMITH_PERSON : ALWAYS (person_N SMITH).
+Definition smith_PN := mkPN SMITH (person_N) SMITH_PERSON.
 
 Parameter KIM : object.
-Parameter KIM_PERSON : person_N KIM.
-Definition kim_PN := mkPN KIM person_N KIM_PERSON.
+Parameter KIM_PERSON : ALWAYS (person_N KIM).
+Definition kim_PN := mkPN KIM (person_N) KIM_PERSON.
 
 Parameter ANDERSON : object.
-Parameter anderson_PERSON : person_N ANDERSON.
-Definition anderson_PN := mkPN ANDERSON person_N anderson_PERSON.
+Parameter anderson_PERSON : ALWAYS (person_N ANDERSON).
+Definition anderson_PN := mkPN ANDERSON (person_N) anderson_PERSON.
 
 
 Parameter accept_V2 : V2 .
@@ -1083,13 +1037,14 @@ Parameter write_V2 : V2 .
 Parameter write_to_V2 : V2 .
 
 (** Knowledge **)
-Parameter wantCovariant_K : forall p q:VP, forall s, (q s -> p s) -> want_VV q s -> want_VV p s.
-Parameter sayCovariant_K : forall p q:S, forall s, (p -> q) -> say_VS p s -> say_VS q s.
-Parameter claimCovariant_K : forall p q:S, forall s, (p -> q) -> claim_VS p s -> claim_VS q s.
+(*
+Parameter wantCovariant_K : forall p q:VP, forall (t:Time), forall s, (q s t -> p s t) -> want_VV q s t -> want_VV p s t.
+Parameter sayCovariant_K : forall p q:S, forall s t, (p -> q) -> say_VS p s t -> say_VS q s t.
+Parameter claimCovariant_K : forall p q:S, forall s t, (p -> q) -> claim_VS p s t -> claim_VS q s t.
+*)
 
-
-Parameter  person_K: forall x:object, chairman_N(x)-> person_N(x). 
-Parameter  committee_member_person_K : forall x, committee_member_N x -> person_N x.
+Parameter  person_K: forall (x:object) t, chairman_N x t -> person_N x t. 
+Parameter  committee_member_person_K : forall x t, committee_member_N x t -> person_N x t. 
 
 (* Parameter Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False. *)
 
@@ -1125,7 +1080,7 @@ Definition PN2Class : PN -> (object -> Prop).
 cbv.
 intro x.
 destruct x.
-exact cn.
+exact (fun object => ALWAYS (cn object)).
 Defined.
 Opaque PN2Class.
 
@@ -1147,22 +1102,21 @@ Parameter _BE_in  : object -> TVP.
 Parameter _BE_from : object -> TVP.
 Parameter _BE_at : object -> TVP.
 
-Parameter go8walk_Vto: object -> object -> Prop.
-Parameter several: (object -> Prop) -> (object -> Prop) -> Prop.
-Parameter have_V2for : object -> object -> object ->  Prop.
-Parameter take_V2to : object -> object -> object  -> Prop.
-Parameter take_V2at : object -> object -> object  -> Prop. 
+Parameter go8walk_Vto: object -> object -> TProp.
+Parameter have_V2for : object -> object -> object ->  TProp.
+Parameter take_V2to : object -> object -> object  -> TProp.
+Parameter take_V2at : object -> object -> object  -> TProp. 
 Definition cover_page_Npossess
-  := fun x: object => fun y : object => cover_page_N y /\ have_V2 y x.
+  := fun x: object => fun y : object => fun t => cover_page_N y t /\ have_V2 y x t.
 Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
-Parameter go8travel_Vby8means : object -> object -> Prop. 
-Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> Prop.
-Parameter go8travel_Vby8meansto :  object ->  object -> object -> Prop.
-Parameter go8travel_Vto :  object -> object -> Prop.
+Parameter go8travel_Vby8means : object -> object -> TProp. 
+Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> TProp.
+Parameter go8travel_Vby8meansto :  object ->  object -> object -> TProp.
+Parameter go8travel_Vto :  object -> object -> TProp.
 Parameter knowVQ : VS.
 Parameter WHY: Prop -> Prop.
-Definition speak_to_V2to : object -> object -> object -> Prop
-  := fun to _ subj => speak_to_V2 to subj.
+Definition speak_to_V2to : object -> object -> object -> TProp
+  := fun to _ subj t => speak_to_V2 to subj t.
 
 Parameter work_Vadv : Adv -> object -> Prop.
 Parameter find_V2before : object -> object -> object -> Prop.
@@ -1172,14 +1126,14 @@ Parameter have_V2in : object -> V2.
 Parameter travel_Vwithin : object -> V.
 Parameter get_V2in : object -> V2.
 
-Definition committee_member_Nfrom origin x :=
-   _BE_from origin x NOW /\ committee_member_N x.
+Definition committee_member_Nfrom origin x t :=
+   _BE_from origin x t /\ committee_member_N x t.
 
 
 Parameter live_Vin : object -> V.
 Parameter RESIDENT_IN : object -> object -> Prop.
 Definition resident_Ain : object -> A :=
-  fun location pred x => RESIDENT_IN location x /\ pred x.
+  fun location pred x => RESIDENT_IN location x  /\ pred x.
 Parameter resident_Aoutside : object -> A.
 
 Parameter spend_V2part : object -> V2.
@@ -1200,7 +1154,7 @@ Definition QQ := CN -> VP -> Prop.
 Definition FEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) <= A_FEW).
 Definition AFEWQ  := fun cn => fun vp => A_FEW <= (CARD (fun x => cn x /\ vp x) ) /\ exists x, cn x /\ vp x.
 
-Definition EQUAL : object -> object -> Prop := fun x y => x = y.
+Definition EQUAL : object -> object -> TProp := fun x y t => x = y.
 Definition MOSTQ := fun cn => fun vp => CARD_MOST cn <= CARD (fun x => cn x /\ vp x)  /\ exists x, cn x /\ vp x.
 Definition MANYQ := fun cn => fun vp => (MANY <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
 Definition LOTSQ := fun cn => fun vp => (LOTS_OF <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
@@ -1211,12 +1165,11 @@ Definition EXEXACT := fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ 
 Definition EXACT := fun n : Z => fun cn=> fun vp=>  (CARD (fun x => cn x /\ vp x) = n).
 
 
-Definition  report_Nfromon := fun source location report => report_N report /\
-send_V2 report source /\ _BE_on location report NOW.
+Definition  report_Nfromon := fun source location report time => report_N report time /\ send_V2 report source time /\ _BE_on location report time.
 Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
 
-Definition going_to_VV : VV := fun v => v. (* FIXME: Ignoring tense *)
-Definition do_VV : VV := fun v => v.
+Definition going_to_VV : VV := fun v object _time => v object. (* FIXME: Not setting tense; this is very wrong *)
+Definition do_VV : VV := fun v x _time => v x.
 Definition NOT:= not.
 
 Lemma le_mono : forall n, forall (p q : CN), (forall x, p x -> q x) -> n <= CARD p -> n <= CARD q.
@@ -1240,23 +1193,22 @@ Parameter CARD_exists : forall P:(object -> Prop), 1 <= CARD P -> exists x, P x.
 Definition before_PREP
   : object -> VP -> object -> Prop
   := fun arg vp subj => before_Subj (vp arg) (vp subj).
-
 Definition le_mono_right := le_mono.
 Definition le_mono_left := le_mono'.
 
-Parameter usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x , use_VV p x -> use_VV q x.
-
-Parameter getInK : forall newsPaper result x, get_V2in newsPaper result x -> get_V2 result x.
+(*Parameter usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x , use_VV p x -> use_VV q x.
+*)
+Parameter getInK : forall newsPaper result x t, get_V2in newsPaper result x t -> get_V2 result x t.
 (* Analysis: In "get published", published should not be intersectional. *)
 
-Parameter client_people_K : forall x, client_N x -> person_N x.
+Parameter client_people_K : forall x t, client_N x t -> person_N x t.
 
 Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
 
-Definition person_Nat : object -> CN :=
-  fun location person => person_N person /\ _BE_at location person NOW.
+Definition person_Nat : object -> N :=
+  fun location person t => person_N person t /\ _BE_at location person t.
 
-Parameter slow_and_fast_disjoint_K : forall cn o, getSubsectiveA slow_A cn o /\ getSubsectiveA fast_A cn o -> False.
+(* Parameter slow_and_fast_disjoint_K : forall cn o, getSubsectiveA slow_A cn o /\ getSubsectiveA fast_A cn o -> False. *)
 Definition opposite_adjectives : SubsectiveA -> SubsectiveA -> Prop
   := fun a1 a2 =>
   forall cn o,  let (mSmall,threshSmall) := a1 in
@@ -1265,3 +1217,30 @@ Definition opposite_adjectives : SubsectiveA -> SubsectiveA -> Prop
                 /\ (1 <= threshLarge cn + threshSmall cn)).
 Parameter fast_and_slow_opposite_K  : opposite_adjectives slow_A  fast_A.
 Parameter small_and_large_opposite_K : opposite_adjectives small_A large_A.
+
+
+Definition now_AdV : AdV
+ := fun vp subject => vp subject. (* We simply ignore "now", because currently "now" is the default *)
+
+Inductive Temporal : Type :=
+  BeforeTimeOf : TProp -> Temporal |
+  UnspecifiedTime : Temporal |
+  ATTIME : Time -> Temporal |
+  SINCE : Time -> Temporal.
+
+Definition RefTime := ATTIME.
+
+Definition appTime : Temporal -> (object -> TProp) -> object -> Prop :=
+  fun time vp x => match time with
+  | UnspecifiedTime => vp x NOW
+  | BeforeTimeOf tp => exists (t1 : Time) (t2 : Time), tp t1 /\ vp x t2
+  | ATTIME t => vp x t
+  | SINCE t => forall (t' : Time), (t < t') -> (t' < NOW) -> vp x t' (* apparently fracas wants the NOW constraint? (p252) *)
+  end.
+
+
+
+Parameter Year_1996 : Time.
+Parameter Year_1993 : Time.
+Parameter Year_1992 : Time.
+Parameter present8attending_AwithTime : Temporal -> CN -> object -> Prop.

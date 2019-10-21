@@ -249,7 +249,7 @@ appArgs nm objs@(_:_) (filterKey compClass  -> prepositions00,adverbs) = adverbs
           (time:_) -> time
 
 appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
-appAdjArgs nm [cn,obj] (prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj
+appAdjArgs nm [cn,obj] (filterKey compClass -> prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj
   where prep'd = Con "appA" `app` (Con (nm ++ concatMap fst prepositions) `apps` ((map snd prepositions)))
         prepositions = nubBy ((==) `on` fst) prepositions0
 
@@ -1024,7 +1024,7 @@ useComp :: Comp -> VP
 useComp c = do
   c' <- c
   return $ \x (extraObjs,adv) ->
-    case lookup "compClass" extraObjs of
+    case lookup compClass extraObjs of
       Nothing -> c' (const TRUE) x (extraObjs,adv)
       Just xClass -> c' (app xClass) x (extraObjs,adv)
 
@@ -1045,7 +1045,7 @@ compNP np = do
   return $ \_xClass x extraObjs -> (np' (\y -> (mkRel2 "EQUAL" x y))) extraObjs
 
 (===) :: Exp -> Exp -> Exp
-x === y = Con "EQUAL" `apps` [x,y]
+x === y = noExtraObjs (mkRel2 "EQUAL" x y)
 
 
 compAdv :: Adv -> Comp
@@ -1218,7 +1218,7 @@ predVP np vp = withClause $ do
   np' <- evalQuant pre q n (cn,gender) Subject
   vp' <- vp
   modify (pushS (predVP np vp))
-  return $ modifyingPrep "compClass" (lam $ \x -> noExtraObjs (cn x)) (np' vp')
+  return $ modifyingPrep compClass (lam $ \x -> noExtraObjs (cn x)) (np' vp')
 
 questCl :: Cl -> Cl
 questCl = id
@@ -1582,7 +1582,7 @@ type VQ = QS -> VP
 know_VQ :: VQ
 know_VQ qs = do
   qs' <- qs
-  return $ \x _extraObjs -> Con "knowVQ" `apps` [noExtraObjs qs',x]
+  return $ mkRel2 "knowVQ" (noExtraObjs qs') -- stop prepositions from propagating: TODO: other VVs  (say, etc.)
 
 noExtraObjs :: S' -> Prop
 noExtraObjs f = f ([],id)
