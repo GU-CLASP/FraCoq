@@ -105,7 +105,7 @@ data Env = Env {vpEnv :: VPEnv
                ,objEnv :: ObjEnv
                ,cnEnv :: NounEnv
                ,sEnv :: S
-               ,quantityEnv :: [(Var,CN')]
+               ,quantityEnv :: [(Var,CN')] -- map from CN' to "default" quantity.
                ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
                ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
                ,envSloppyFeatures :: Bool

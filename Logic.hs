@@ -17,6 +17,32 @@ data Exp = Op Op [Exp]
          | Lam (Exp -> Exp)
          | Quant Amount Pol Var Exp Exp
 
+
+check :: Bool -> Maybe ()
+check c = if c then Just () else Nothing
+
+-- | solveThe metaVariable t1 t2. metaVariable occurs t1; not in t2.
+-- Attempt to unify t1 and t2; return the necessary assignments of metaVariable if it exists.
+
+-- ATTN: currently unused. But this could be a more principled
+-- solution to solving for definites (or times). Rather than having a
+-- special environment, solve for a variable that makes the thing that you lookup true.
+solveThe :: Int -> Var -> [(Exp,Exp)] -> Maybe [Exp]
+solveThe _ _ [] = Just []
+solveThe n meta ((Op op1 e1,Op op2 e2):cs)
+  = check (op1 == op2 && length e1 == length e2) >> solveThe n meta (zip e1 e2 ++ cs)
+solveThe n meta ((Var x,t):cs) | x == meta = (t:) <$> solveThe n meta cs
+solveThe n meta ((Var x,Var y):cs) | x == y = solveThe n meta cs
+solveThe n meta ((Lam f,Lam g):cs) = solveThe (n+1) meta ((f v, g v):cs)
+  where v = Var $ "_V_" ++ show n
+solveThe n meta ((Quant a1 p1 v1 d1 b1,Quant a2 p2 v2 d2 b2):cs) =
+  check (a1 == a2 && p1 == p2 && v1 == v2) >>
+  solveThe n meta ((d1,d2):(b1,b2):cs)
+solveThe _ _ _ = Nothing
+
+
+
+
 eqExp' :: Exp -> Exp -> Bool
 eqExp' = eqExp 0 []
 
