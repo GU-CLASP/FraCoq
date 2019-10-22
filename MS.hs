@@ -319,11 +319,11 @@ lexemeSubj :: String -> Subj
 lexemeSubj "before_Subj" s1 = do
   t1 <- referenceTimeFor s1
   t2 <- freshTime (\x -> Con "Before" `apps` [t1,x])
-  return $ usingTime t2
+  return $ usingTime (ExactTime t2)
 lexemeSubj "after_Subj" s1 = do
   t1 <- referenceTimeFor s1
   t2 <- freshTime (\x -> Con "After" `apps` [t1,x])
-  return $ usingTime t2
+  return $ usingTime (ExactTime t2)
 lexemeSubj s s1 = do
   s1' <- s1
   return $ \s2' extraObjs -> Con s `apps` [s1' extraObjs, s2' extraObjs]
@@ -348,13 +348,10 @@ type AdV = ADV
 lexemeAdv :: String -> Adv
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
-lexemeAdv "year_1996_Adv" = return $ modifyingPrep "withTime" (Con "(ATTIME Year_1996)")
-lexemeAdv "since_1992_Adv" = return $ modifyingPrep "withTime" (Con "(SINCE Year_1992)")
-lexemeAdv "in_1993_Adv" = return $ modifyingPrep "withTime" (Con "(ATTIME Year_1993)")
+lexemeAdv "year_1996_Adv" = return $ usingTime (IntervalTime "(ATTIME Year_1996)")
+lexemeAdv "since_1992_Adv" = return $ usingTime (IntervalTime "(SINCE Year_1992)")
+lexemeAdv "in_1993_Adv" = return $ usingTime (IntervalTime "(ATTIME Year_1993)")
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
-
-sentenceApplyAdv :: ((Object -> Prop) -> Object -> Prop) -> S' -> S'
-sentenceApplyAdv adv = \s' (preps,adv') -> s' (preps,adv . adv')
 
 appAdverb :: String -> (Object -> Prop) -> (Object -> Prop)
 appAdverb adv vp obj = apps (Con "appAdv") [Con adv,lam vp, obj]
@@ -678,10 +675,10 @@ type Comp = Dynamic Comp'
 useComp :: Comp -> VP
 useComp c = do
   c' <- c
-  return $ \x (extraObjs,adv) ->
-    case lookup compClass extraObjs of
-      Nothing -> c' (const TRUE) x (extraObjs,adv)
-      Just xClass -> c' (app xClass) x (extraObjs,adv)
+  return $ \x extraObjs@ExtraArgs{..} ->
+    case extraCompClass of
+      Default -> c' (const TRUE) x extraObjs
+      Explicit xClass -> c' (\y -> xClass y extraObjs) x extraObjs
 
 -- | be a thing given by the CN
 compCN :: CN -> Comp
@@ -870,7 +867,7 @@ predVP np vp = withClause $ do
   np' <- evalQuant pre q n (cn,gender) Subject
   vp' <- vp
   modify (pushS (predVP np vp))
-  return $ modifyingPrep compClass (lam $ \x -> noExtraObjs (cn x)) (np' vp')
+  return $ usingCompClass cn (np' vp')
 
 questCl :: Cl -> Cl
 questCl = id
@@ -1009,8 +1006,7 @@ useCl :: Temp -> Pol -> Cl -> S
 useCl temp pol cl = do
   -- FIXME: the polarity should apply to the vp depending on the wide/narrow character of the quantifier
   prop <- onS' pol <$> cl
-  t <- interpTense temp
-  let s' = usingTime t prop
+  let s' = usingTime (interpTense temp) prop
   modify (pushFact $ noExtraObjs s')
   return s'
 

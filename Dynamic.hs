@@ -22,11 +22,17 @@ import Control.Applicative
 import Data.Function (on)
 import Control.Arrow (first)
 import Data.Maybe (catMaybes)
-
+import Data.Monoid
 
 type Object = Exp
 type Prop = Exp
 
+data Optional a = Default | Explicit a
+instance Monoid (Optional a) where
+  mempty = Default
+  Default `mappend` x = x
+  x `mappend` Default = x
+  x `mappend` _ = x -- FIXME: issue some warning
 
 --------------------------------
 -- Operators
@@ -77,8 +83,21 @@ data Num where
 onS' :: (Prop -> Prop) -> S' -> S'
 onS' f p eos = f (p eos)
 
-type ExtraArgs = ([(Var,Object)] -- prepositions
-                 ,(Object -> Prop) -> Object -> Prop) -- adverbs
+data Temporal = ExactTime Exp | IntervalTime String | UnspecifiedTime | TenseTime Temporal deriving Show
+
+instance Monoid Temporal where
+  mempty = UnspecifiedTime
+  UnspecifiedTime `mappend` x = x
+  x `mappend` UnspecifiedTime = x
+  TenseTime _ `mappend` x = x -- time specification given by tense, this is overridden by specific times.
+  x `mappend` TenseTime _ = x
+  x `mappend` y = error ("`mappend Temporal:" ++ show x ++ " <> " ++ show y)
+
+data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
+                           , extraAdvs :: (Object -> Prop) -> Object -> Prop -- adverbs
+                           , extraCompClass :: Optional (Object -> S')
+                           , extraTime :: Temporal
+                           }
 
 type S' = ExtraArgs -> Prop
 type S = Dynamic S'
@@ -166,6 +185,7 @@ data Env = Env {vpEnv :: VPEnv
                ,envFacts :: [Prop]
                ,freshVars :: [String]}
          -- deriving Show
+
 
 ------------------------------
 -- Gets
@@ -381,37 +401,34 @@ type Pron = NP
 -- Extra objects and S'
 
 noExtraObjs :: S' -> Prop
-noExtraObjs f = f ([],id)
-
-
-compClass :: [Char]
-compClass = "compClass"
-
-withTime :: [Char]
-withTime = "withTime"
+noExtraObjs f = f (ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = mempty, extraCompClass = mempty})
 
 appArgs :: String -> [Object] -> ExtraArgs -> Prop
-appArgs nm objs@(_:_) (filterKey compClass  -> prepositions00,adverbs) = adverbs (app (pAdverbs time'd)) subject
+appArgs nm objs@(_:_) (ExtraArgs {..}) = extraAdvs (app (pAdverbs time'd)) subject
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
-        time'd = Con "appTime" `apps` [timeSpec,prep'd]
+        time'd = Con "appTime" `apps` [temporalToLogic extraTime,prep'd]
         indirectObjects = init objs
         subject = last objs
-        cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) prepositions0
+        cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) extraPreps
         (adverbialPrepositions,prepositions) = partition ((== "before") . fst) cleanedPrepositions
         pAdverbs x = foldr app x [Con (p ++ "_PREP") `app` arg | (p,arg) <- adverbialPrepositions]
-        (timePrepositions,prepositions0) = partition ((== withTime) . fst) prepositions00
-        timeSpec = case map snd timePrepositions of
-          [] -> Con "UnspecifiedTime"
-          (time:_) -> time
+
+
 
 appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
-appAdjArgs nm [cn,obj] (filterKey compClass -> prepositions0,adverbs) = adverbs  (\x -> apps prep'd [cn,x]) obj
+appAdjArgs nm [cn,obj] (ExtraArgs{..}) = extraAdvs  (\x -> apps prep'd [cn,x]) obj
   where prep'd = Con "appA" `app` (Con (nm ++ concatMap fst prepositions) `apps` ((map snd prepositions)))
-        prepositions = nubBy ((==) `on` fst) prepositions0
+        prepositions = nubBy ((==) `on` fst) extraPreps
 
 modifyingPrep :: String -> Object -> S' -> S'
-modifyingPrep aname x s (preps,adv) = s (preps++[(aname,x)],adv)
+modifyingPrep aname x s (ExtraArgs{..}) = s (ExtraArgs {extraPreps = extraPreps++[(aname,x)],..})
 
+usingCompClass :: (Object -> S') -> S' -> S'
+usingCompClass cn s ExtraArgs {..} = s ExtraArgs {extraCompClass = Explicit cn,..}
+
+
+sentenceApplyAdv :: ((Object -> Prop) -> Object -> Prop) -> S' -> S'
+sentenceApplyAdv adv s' ExtraArgs{..} = s' ExtraArgs {extraAdvs = adv . extraAdvs,..}
 --------------------------
 -- Time
 
@@ -419,7 +436,7 @@ referenceTimeFor :: S -> Dynamic Exp
 referenceTimeFor s = do
   tMeta <- getFresh
   s' <- s
-  getTimeInEnv tMeta (noExtraObjs (usingTime (Var tMeta) s'))
+  getTimeInEnv tMeta (noExtraObjs (usingTime (ExactTime (Var tMeta)) s'))
 
 -- | Find the time t when Prop(t) happened, looking up true facts in environment.
 getTimeInEnv :: Var -> (Prop) -> Dynamic Exp
@@ -441,13 +458,22 @@ freshTime constraint = do
 pushTimeConstraint :: Var -> Exp -> Env -> Env
 pushTimeConstraint t c Env{..} = Env{envTimeVars = (c,t):envTimeVars,..}
 
-usingTime :: Exp -> S' -> S'
-usingTime t = modifyingPrep withTime t
+usingTime :: Temporal -> S' -> S'
+usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = extraTime <> e, ..} 
 
-interpTense :: Tense -> Dynamic Object
-interpTense temp = case temp of
-    Past -> freshTime (\x -> Con "Before" `apps` [Con "NOW",x])
-    _ -> return $ Con "DefaultTime"
+-- freshTime (\x -> Con "Before" `apps` [Con "NOW",x])
+
+temporalToLogic :: Temporal -> Exp
+temporalToLogic t = case t  of
+  ExactTime e -> e
+  TenseTime t' -> temporalToLogic t'
+  UnspecifiedTime -> Con "UnspecifiedTime"
+  IntervalTime s -> Con ("interval" ++ s)
+
+interpTense :: Tense -> Temporal
+interpTense temp = TenseTime $ case temp of
+    Past -> IntervalTime "Past"
+    _ -> UnspecifiedTime
 
 pushFact :: Prop -> Env -> Env
 pushFact p Env{..} = Env{envFacts=p:envFacts,..}
