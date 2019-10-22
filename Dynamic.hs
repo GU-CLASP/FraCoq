@@ -37,6 +37,7 @@ instance Monoid (Optional a) where
 --------------------------------
 -- Operators
 
+-- | Run the argument, but restore the environment if it gets changed.
 protected :: Dynamic a -> Dynamic a
 protected a = do
   s <- get
@@ -432,10 +433,9 @@ sentenceApplyAdv adv s' ExtraArgs{..} = s' ExtraArgs {extraAdvs = adv . extraAdv
 --------------------------
 -- Time
 
-referenceTimeFor :: S -> Dynamic Exp
-referenceTimeFor s = do
+referenceTimeFor :: S' -> Dynamic (Exp)
+referenceTimeFor s' = do
   tMeta <- getFresh
-  s' <- s
   getTimeInEnv tMeta (noExtraObjs (usingTime (ExactTime (Var tMeta)) s'))
 
 -- | Find the time t when Prop(t) happened, looking up true facts in environment.

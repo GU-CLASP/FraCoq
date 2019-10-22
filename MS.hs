@@ -312,20 +312,18 @@ useComparA_prefix a = do
 
 --------------------
 -- Subjs
-type Subj = S -> Adv
-
+type Subj = S' -> Adv
 
 lexemeSubj :: String -> Subj
-lexemeSubj "before_Subj" s1 = do
-  t1 <- referenceTimeFor s1
+lexemeSubj "before_Subj" s1' = do
+  t1 <- referenceTimeFor s1'
   t2 <- freshTime (\x -> Con "Before" `apps` [t1,x])
-  return $ usingTime (ExactTime t2)
-lexemeSubj "after_Subj" s1 = do
-  t1 <- referenceTimeFor s1
+  return $ \s2' extraObjs -> s1' extraObjs ∧ usingTime (ExactTime t2) s2' extraObjs
+lexemeSubj "after_Subj" s1' = do
+  t1 <- referenceTimeFor s1'
   t2 <- freshTime (\x -> Con "After" `apps` [t1,x])
-  return $ usingTime (ExactTime t2)
-lexemeSubj s s1 = do
-  s1' <- s1
+  return $ \s2' extraObjs -> s1' extraObjs ∧ usingTime (ExactTime t2) s2' extraObjs
+lexemeSubj s s1' = do
   return $ \s2' extraObjs -> Con s `apps` [s1' extraObjs, s2' extraObjs]
 
 --------------------
@@ -375,7 +373,9 @@ prepNP prep np = do
   return (\s' -> np' $ \x -> prep' x s')
 
 subjS :: Subj -> S -> Adv
-subjS subj s = subj s
+subjS subj s = do
+  s' <- s
+  subj s'
 
 
 --------------------
@@ -782,11 +782,16 @@ adVVP adv vp = do
   return (\x -> adv' (vp' x))
 
 advVP :: VP -> Adv -> VP
-advVP vp adv = do
+advVP = advVPPush False
+
+advVPPush :: Bool -> VP -> Adv -> VP
+advVPPush doPush vp adv = do
   vp' <- vp
   adv' <- adv
-  modify (pushVP (advVP vp adv))
+  when doPush (modify (pushVP (advVPPush False vp adv)))
   return (adv' . vp')
+
+
 
 useV :: V -> VP
 useV v = do

@@ -21,11 +21,6 @@ handleProblem n (premise,h,rs) = do
               False -> phrToEff premise ==> (pNeg <$> phrToEff h)
     let ps = nub $ map fromHOAS' $ evalDynamic e :: [Exp Zero]
         qs = nub $ map prepare ps
-    -- forM_ (zip ['a'..'z'] qs) $ \(v,p) -> do
-    --   case p of
-    --     Right q -> putStrLn ("(* before scope ext" ++ printf "%03d" n ++ [v] ++ show r ++ ":= " ++ show p ++ " *)")
-    --     Left err -> putStrLn err
-    --   putStrLn $ ""
     forM_ (zip ['a'..'z'] qs) $ \(v,p) -> do
       putStrLn $ "(* Reading  "++ show v ++" *)"
       case p of

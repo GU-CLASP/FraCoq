@@ -15,7 +15,7 @@ verify%.txt: Section%.v MS.v Formulas.v
 test:: Tests
 	./Tests
 
-Tests: Bank.hs Tests.hs MS.hs Logic.hs LogicB.hs
+Tests: Bank.hs Tests.hs MS.hs Logic.hs LogicB.hs Dynamic.hs
 	nix-shell --run "ghc --make Tests"
 
 clean:

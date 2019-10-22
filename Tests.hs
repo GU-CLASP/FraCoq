@@ -1,3 +1,4 @@
+import Dynamic
 import MS
 import Bank
 import LogicB
@@ -13,7 +14,7 @@ handleProblem n p = do
 probToEff :: (Phr, Phr, t) -> Effect
 probToEff (premise,h,_) = phrToEff premise ==> phrToEff h
 
-debug :: Effect -> IO ()
+-- debug :: Dynamic Logic.Exp -> IO ()
 debug e = do
   let ps = evalDynamic e
   forM_ ps $ \p0 -> do
@@ -35,8 +36,8 @@ tt = extendAllScopes (testIt :: Exp Zero)
 main :: IO ()
 main = do
   -- suite handleProblem >> putStrLn "----------"
-  debug (phrToEff s_135_4_h)
-  -- debug (probToEff p_134)
+  -- debug (phrToEff s_267_3_p)
+  debug (probToEff p_267)
   -- handleProblem p
 
 -- >>> main
