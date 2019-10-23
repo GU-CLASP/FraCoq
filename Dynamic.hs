@@ -16,7 +16,7 @@ import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
 import LogicB ()
 import qualified Logic
-import Data.List (intersect,partition,nubBy,sortBy,find)
+import Data.List (intersect,partition,nubBy,sortBy,find,nub)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Data.Function (on)
@@ -84,10 +84,12 @@ data Num where
 onS' :: (Prop -> Prop) -> S' -> S'
 onS' f p eos = f (p eos)
 
-data Temporal = ExactTime Exp | IntervalTime String | UnspecifiedTime | TenseTime Temporal deriving Show
+data Temporal = ForceTime Exp | ExactTime Exp | IntervalTime String | UnspecifiedTime | TenseTime Temporal deriving Show
 
 instance Monoid Temporal where
   mempty = UnspecifiedTime
+  ForceTime t `mappend` _ = ForceTime t
+  _ `mappend` ForceTime t = ForceTime t
   UnspecifiedTime `mappend` x = x
   x `mappend` UnspecifiedTime = x
   TenseTime _ `mappend` x = x -- time specification given by tense, this is overridden by specific times.
@@ -433,22 +435,30 @@ sentenceApplyAdv adv s' ExtraArgs{..} = s' ExtraArgs {extraAdvs = adv . extraAdv
 --------------------------
 -- Time
 
-referenceTimeFor :: S' -> Dynamic (Exp)
-referenceTimeFor s' = do
+forceTime :: Var -> S' -> Prop
+forceTime tMeta s = noExtraObjs (usingTime (ForceTime (Var tMeta)) s)
+-- HACK: setting the time is at the "UseCl" level, which has to set a
+-- time. But we need to override it from the level above (S), so we
+-- use the "ForceTime" hack.
+
+-- | Look in envFacts for the time at which s' happened.
+-- That is: Find the times t when Prop(t) happened, looking up true facts in environment.
+referenceTimesFor :: S' -> Dynamic [Exp]
+referenceTimesFor s' = do
   tMeta <- getFresh
-  getTimeInEnv tMeta (noExtraObjs (usingTime (ExactTime (Var tMeta)) s'))
-
--- | Find the time t when Prop(t) happened, looking up true facts in environment.
-getTimeInEnv :: Var -> (Prop) -> Dynamic Exp
-getTimeInEnv meta prop = do
   facts <- gets envFacts
-  let possibleTimes = catMaybes $ map (solveThe meta prop) facts
-  case possibleTimes of
-    [] -> freshTime (\_ -> Con "True") -- get a new time reference.
-    [t] -> return t
-    _ -> error "getTimeInEnv: multiple references not supported"
+  return $ catMaybes $ map (solveThe tMeta (forceTime tMeta s')) facts
 
--- |
+referenceTimeFor :: S' -> Dynamic Exp
+referenceTimeFor s = do
+  ts <- referenceTimesFor s
+  case ts of
+    [] -> do
+      facts <- gets envFacts
+      error ("referenceTimesFor: no time for " ++ show (forceTime "τ" s) ++ "\n facts:" ++ show facts)
+    (t:_) -> return t
+
+-- | Allocate a fresh time constant with a certain value.
 freshTime :: (Exp -> Exp) -> Dynamic Exp
 freshTime constraint = do
   t <- getFresh
@@ -458,22 +468,24 @@ freshTime constraint = do
 pushTimeConstraint :: Var -> Exp -> Env -> Env
 pushTimeConstraint t c Env{..} = Env{envTimeVars = (c,t):envTimeVars,..}
 
+-- | S' shall use the given time constraint
 usingTime :: Temporal -> S' -> S'
 usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = extraTime <> e, ..} 
 
--- freshTime (\x -> Con "Before" `apps` [Con "NOW",x])
+constrainTime :: (Exp -> Exp) -> S'
+constrainTime k ExtraArgs{..} = case extraTime of
+  ExactTime t -> k t
+  ForceTime t -> k t
+  _ -> error ("constrainTime: " ++ show extraTime)
 
 temporalToLogic :: Temporal -> Exp
 temporalToLogic t = case t  of
   ExactTime e -> e
+  ForceTime e -> e
   TenseTime t' -> temporalToLogic t'
   UnspecifiedTime -> Con "UnspecifiedTime"
   IntervalTime s -> Con ("interval" ++ s)
 
-interpTense :: Tense -> Temporal
-interpTense temp = TenseTime $ case temp of
-    Past -> IntervalTime "Past"
-    _ -> UnspecifiedTime
-
 pushFact :: Prop -> Env -> Env
 pushFact p Env{..} = Env{envFacts=p:envFacts,..}
+

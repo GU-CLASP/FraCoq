@@ -317,12 +317,10 @@ type Subj = S' -> Adv
 lexemeSubj :: String -> Subj
 lexemeSubj "before_Subj" s1' = do
   t1 <- referenceTimeFor s1'
-  t2 <- freshTime (\x -> Con "Before" `apps` [t1,x])
-  return $ \s2' extraObjs -> s1' extraObjs ∧ usingTime (ExactTime t2) s2' extraObjs
+  return $ \s2' extraObjs -> s1' extraObjs ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [x,t1] ) extraObjs
 lexemeSubj "after_Subj" s1' = do
   t1 <- referenceTimeFor s1'
-  t2 <- freshTime (\x -> Con "After" `apps` [t1,x])
-  return $ \s2' extraObjs -> s1' extraObjs ∧ usingTime (ExactTime t2) s2' extraObjs
+  return $ \s2' extraObjs -> s1' extraObjs ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [x,t1] ) extraObjs
 lexemeSubj s s1' = do
   return $ \s2' extraObjs -> Con s `apps` [s1' extraObjs, s2' extraObjs]
 
@@ -1011,9 +1009,17 @@ useCl :: Temp -> Pol -> Cl -> S
 useCl temp pol cl = do
   -- FIXME: the polarity should apply to the vp depending on the wide/narrow character of the quantifier
   prop <- onS' pol <$> cl
-  let s' = usingTime (interpTense temp) prop
-  modify (pushFact $ noExtraObjs s')
-  return s'
+  case temp of
+    Past -> do
+      ts <- referenceTimesFor prop
+      t <- case ts of
+        [] -> freshTime (Con "Past" `app`)
+        (t:_) -> return t
+      let s' = usingTime (ForceTime t) prop
+      modify (pushFact $ noExtraObjs s')
+      return s'
+    _ -> return (usingTime (ExactTime (Con "NOW")) prop) -- FIXME: other tenses
+
 
 useQCl :: Temp -> Pol -> QCl -> QS
 useQCl = useCl
