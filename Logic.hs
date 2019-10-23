@@ -31,6 +31,7 @@ check c = if c then Just () else Nothing
 -- TODO: hande conjuction and disjunction cleverly.
 solveThe' :: Int -> Var -> [(Exp,Exp)] -> Maybe [Exp]
 solveThe' _ _ [] = Just []
+solveThe' n meta ((Con x,Con y):cs) = check (x == y) >> solveThe' n meta cs
 solveThe' n meta ((Op op1 e1,Op op2 e2):cs)
   = check (op1 == op2 && length e1 == length e2) >> solveThe' n meta (zip e1 e2 ++ cs)
 solveThe' n meta ((Var x,t):cs) | x == meta = (t:) <$> solveThe' n meta cs
@@ -40,14 +41,17 @@ solveThe' n meta ((Lam f,Lam g):cs) = solveThe' (n+1) meta ((f v, g v):cs)
 solveThe' n meta ((Quant a1 p1 v1 d1 b1,Quant a2 p2 v2 d2 b2):cs) =
   check (a1 == a2 && p1 == p2 && v1 == v2) >>
   solveThe' n meta ((d1,d2):(b1,b2):cs)
-solveThe' _ _ _ = Nothing
+solveThe' _ _ (_:_) = Nothing
 
+showExp1 (Var x) = x
+showExp1 _ = "<EXP>"
 
 solveThe :: Var -> Exp -> Exp -> Maybe Exp
-solveThe meta what inWhere = case solveThe' 0 meta [(what,inWhere)] of
-  Just [x] -> error "solveThe: foundit" -- Just x
-  Just _ -> error "solveThe: improve!"
-  _ -> Nothing
+solveThe meta what inWhere = case nub <$> solveThe' 0 meta [(what,inWhere)] of
+  Just [] -> Nothing
+  Just [x] -> Just x
+  Just xs -> error ("solveThe: improve: [" ++ concat (intersperse ", " (map showExp1 xs)) ++ "]")
+  Nothing -> Nothing
 
 eqExp' :: Exp -> Exp -> Bool
 eqExp' = eqExp 0 []
@@ -57,6 +61,9 @@ eqNat' = eqNat 0 []
 
 instance Eq Nat where
   (==) = eqNat'
+
+instance Eq Exp where
+  (==) = eqExp 0 []
 
 eqExp :: Int -> [(Var,Var)] -> Exp -> Exp -> Bool
 eqExp n equs e1 e2 = case (e1,e2) of

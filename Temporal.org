@@ -1,0 +1,42 @@
+* Transitivity of "before"
+
+Consider Fracas 261:
+
+P1	Smith left before Jones left.
+P2	Jones left before Anderson left.
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+H  	Smith left before Anderson left. 
+
+
+First idea:
+
+P1   ∃t1, t2. s(t1) ∧ j(t2) ∧ t1 < t2
+P2   ∃t3, t4. j(t3) ∧ a(t4) ∧ t3 < t4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+H    ∃t5, t6. s(t3) ∧ a(t4) ∧ t5 < t6
+
+Not possible, because we cannot identify t2 and t3. Informally, "jones
+left" may refer to two different events (times).
+
+
+We can try to use some dynamic semantics to do the identification. We could have:
+
+
+     ∃t1, t2, t3.
+P1   s(t1) ∧ j(t2) ∧ t1 < t2
+P2   j(t2) ∧ a(t3) ∧ t2 < t3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+H    s(t1) ∧ a(t3) ∧ t1 < t3
+
+
+Whenever a (past) clause is evaluated.
+  - allocate a fresh time t, evaluate.
+  - P(t) be the result.
+  - check if P(t) anti-unifies with any clause Q in "true facts", such that P(τ) ⊆ Q for some τ.
+  - no:
+    - push it in "true facts"
+    - return P(t)
+  - yes:
+    - push it in "true facts" -- it may be a slightly different version!
+    - return P(τ)
+
