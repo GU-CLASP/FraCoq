@@ -16,7 +16,7 @@ import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
 import LogicB ()
 import qualified Logic
-import Data.List (intersect,partition,nubBy,sortBy,find,nub)
+import Data.List (intersect,partition,nubBy,sortBy,find,nub,intersperse,intercalate)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Data.Function (on)
@@ -102,8 +102,13 @@ data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
                            , extraTime :: Temporal
                            }
 
+toSentential (Sentential s) = s
+toSentential (Clausal (t,p)) = p t
+
+data Sent' = Clausal Cl'  | Sentential S'
+type Cl' = (Temporal,Temporal -> S')
 type S' = ExtraArgs -> Prop
-type S = Dynamic S'
+type S = Dynamic Sent'
 type V2 = Dynamic (Object -> Object -> S') --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> S')
 type CN' = (Object -> S',[Gender])
@@ -178,7 +183,7 @@ data Env = Env {vpEnv :: VPEnv
                ,cn2Env :: CN2
                ,objEnv :: ObjEnv
                ,cnEnv :: NounEnv
-               ,sEnv :: S
+               ,sEnv :: Dynamic S'
                ,quantityEnv :: [(Var,CN')] -- map from CN' to "default" quantity.
                ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
                ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
@@ -280,7 +285,7 @@ pushAP a Env{..} = Env{apEnv=a,..}
 pushCN2 :: CN2 -> Env -> Env
 pushCN2 cn2 Env{..} = Env{cn2Env=cn2,..}
 
-pushS :: S -> Env -> Env
+pushS :: Dynamic S' -> Env -> Env
 pushS s Env{..} = Env{sEnv=s,..}
 
 ----------------------------------
@@ -357,7 +362,7 @@ assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
                -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
                -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
                ,objEnv = []
-               ,sEnv = return (\_ -> constant "assumedS")
+               ,sEnv = return (\_ -> constant "assumedCl")
                ,quantityEnv = []
                ,cnEnv = []
                ,envDefinites = []
@@ -435,27 +440,31 @@ sentenceApplyAdv adv s' ExtraArgs{..} = s' ExtraArgs {extraAdvs = adv . extraAdv
 --------------------------
 -- Time
 
-forceTime :: Var -> S' -> Prop
-forceTime tMeta s = noExtraObjs (usingTime (ForceTime (Var tMeta)) s)
+forceTime :: Exp -> Cl' -> Prop
+forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
 -- HACK: setting the time is at the "UseCl" level, which has to set a
 -- time. But we need to override it from the level above (S), so we
 -- use the "ForceTime" hack.
 
+useTime :: Exp -> Cl' -> S'
+useTime t (_,s) = s (ForceTime t)
+
+
 -- | Look in envFacts for the time at which s' happened.
 -- That is: Find the times t when Prop(t) happened, looking up true facts in environment.
-referenceTimesFor :: S' -> Dynamic [Exp]
+referenceTimesFor :: Cl' -> Dynamic [Exp]
 referenceTimesFor s' = do
   tMeta <- getFresh
   facts <- gets envFacts
-  return $ catMaybes $ map (solveThe tMeta (forceTime tMeta s')) facts
+  return $ catMaybes $ map (solveThe tMeta (forceTime (Var tMeta) s')) facts
 
-referenceTimeFor :: S' -> Dynamic Exp
+referenceTimeFor :: Cl' -> Dynamic Exp
 referenceTimeFor s = do
   ts <- referenceTimesFor s
   case ts of
     [] -> do
       facts <- gets envFacts
-      error ("referenceTimesFor: no time for " ++ show (forceTime "τ" s) ++ "\n facts:" ++ show facts)
+      error ("referenceTimesFor: no time for " ++ show (forceTime (Var "τ") s) ++ "\n facts:\n" ++ intercalate "\n" (map show facts))
     (t:_) -> return t
 
 -- | Allocate a fresh time constant with a certain value.
@@ -471,6 +480,11 @@ pushTimeConstraint t c Env{..} = Env{envTimeVars = (c,t):envTimeVars,..}
 -- | S' shall use the given time constraint
 usingTime :: Temporal -> S' -> S'
 usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = extraTime <> e, ..} 
+
+-- | S' shall use the given time constraint
+usingTime' :: Temporal -> S' -> S'
+usingTime' e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..} 
+
 
 constrainTime :: (Exp -> Exp) -> S'
 constrainTime k ExtraArgs{..} = case extraTime of

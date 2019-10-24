@@ -312,17 +312,17 @@ useComparA_prefix a = do
 
 --------------------
 -- Subjs
-type Subj = S' -> Adv
+type Subj = Cl' -> Adv
 
 lexemeSubj :: String -> Subj
 lexemeSubj "before_Subj" s1' = do
   t1 <- referenceTimeFor s1'
-  return $ \s2' extraObjs -> s1' extraObjs ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [x,t1] ) extraObjs
+  return $ \s2' extraObjs -> useTime t1 s1' extraObjs  ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [x,t1]) extraObjs
 lexemeSubj "after_Subj" s1' = do
   t1 <- referenceTimeFor s1'
-  return $ \s2' extraObjs -> s1' extraObjs ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [x,t1] ) extraObjs
-lexemeSubj s s1' = do
-  return $ \s2' extraObjs -> Con s `apps` [s1' extraObjs, s2' extraObjs]
+  return $ \s2' extraObjs -> useTime t1 s1' extraObjs ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [t1,x]) extraObjs
+lexemeSubj s (t,s1') = do
+  return $ \s2' extraObjs -> Con s `apps` [s1' t extraObjs, s2' extraObjs]
 
 --------------------
 -- AdA
@@ -373,7 +373,9 @@ prepNP prep np = do
 subjS :: Subj -> S -> Adv
 subjS subj s = do
   s' <- s
-  subj s'
+  case s' of
+    Clausal cl -> subj cl
+    _ -> error "Subjuctive clauses must be in clausal form"
 
 
 --------------------
@@ -447,7 +449,7 @@ embedPresPart = id
 embedS :: S -> SC
 embedS s = do
   s' <- s
-  return $ \_x -> s' -- this is only used with an impersonal subject. so we can ignore it safely.
+  return $ \_x -> toSentential s' -- this is only used with an impersonal subject. so we can ignore it safely.
 
 ------------------------
 -- NP
@@ -780,13 +782,13 @@ adVVP adv vp = do
   return (\x -> adv' (vp' x))
 
 advVP :: VP -> Adv -> VP
-advVP = advVPPush False
+advVP = advVPPush False -- FIXME! (Should be True but gives infinitely many interpretations for Fracas 267)
 
 advVPPush :: Bool -> VP -> Adv -> VP
 advVPPush doPush vp adv = do
   vp' <- vp
   adv' <- adv
-  when doPush (modify (pushVP (advVPPush False vp adv)))
+  when doPush (modify (pushVP (advVPPush False vp adv))) -- attempt to avoid infinitely many interpretations
   return (adv' . vp')
 
 
@@ -801,7 +803,7 @@ complVS vs s = do
   vs' <- vs
   s' <- s
   modify (pushVP (complVS vs s))
-  return (vs' s')
+  return (vs' (toSentential s'))
 
 complVSa :: VS -> S -> VP
 complVSa = complVS -- FIXME: what is the difference from ComplVS? 
@@ -832,7 +834,7 @@ slashV2S :: V2S -> S -> VPSlash
 slashV2S v2s s = do
   v2s' <- v2s
   s' <- s
-  return $ \directObject subject -> v2s' directObject s' subject
+  return $ \directObject subject -> v2s' directObject (toSentential s') subject
 
 slashV2V :: V2V -> VP -> VPSlash
 slashV2V v2v vp = do
@@ -1002,36 +1004,41 @@ extAdvS :: Adv -> S -> S
 extAdvS adv s = do
   adv' <- adv
   s' <- s
-  return $ adv' s'
+  return $ Sentential (adv' (toSentential s'))
 
 
 useCl :: Temp -> Pol -> Cl -> S
 useCl temp pol cl = do
   -- FIXME: the polarity should apply to the vp depending on the wide/narrow character of the quantifier
   prop <- onS' pol <$> cl
+  let cl' = \t -> (usingTime' t prop)
   case temp of
     Past -> do
-      ts <- referenceTimesFor prop
+      ts <- referenceTimesFor (error "NOPE!",cl')
       t <- case ts of
-        [] -> freshTime (Con "Past" `app`)
-        (t:_) -> return t
-      let s' = usingTime (ForceTime t) prop
-      modify (pushFact $ noExtraObjs s')
-      return s'
-    _ -> return (usingTime (ExactTime (Con "NOW")) prop) -- FIXME: other tenses
+        [] -> ExactTime <$> freshTime (Con "Past" `app`)
+        -- not a reference to a previous event. Allocate own
+        -- time. This time MUST be overridable, otherwise we'll never
+        -- be able to override it, when we're going to use this
+        -- interpretation in a subjunctive clause and look for occurences of the event.
+        (t:_) -> return (ExactTime t)
+      modify (pushFact $ noExtraObjs (cl' t))
+      return (Clausal (t,cl'))
+    _ -> return (Clausal (ExactTime (Con "NOW"), cl'))
+    -- FIXME: other tenses
 
 
 useQCl :: Temp -> Pol -> QCl -> QS
 useQCl = useCl
 
 conjS2 :: Conj -> S -> S -> S
-conjS2 c s1 s2 = apConj2 c <$> s1 <*> s2
+conjS2 c s1 s2 = (Sentential .) . apConj2 c <$> (toSentential <$> s1) <*> (toSentential <$> s2)
 
 predVPS :: NP -> VPS -> S
 predVPS np vp = withClause $ do
   np' <- interpNP np Subject
   vp' <- vp
-  return (np' vp')
+  return (Sentential $ np' vp')
 
 --------------------
 -- QS
@@ -1049,10 +1056,10 @@ questVP = predVP
 
 --------------------
 -- Phr
-data Phr = Sentence S | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
+data Phr = Sentence (Dynamic S') | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
 
 sentence :: S -> Phr
-sentence = Sentence
+sentence x = Sentence (toSentential <$> x)
 
 question :: S -> Phr
 question s = Sentence $ do
@@ -1060,7 +1067,7 @@ question s = Sentence $ do
   (return $ \_ -> TRUE) -- not sure about "TRUE" (but we keep the effects! so we know what we're talking about)
 
 pSentence :: PConj -> S -> Phr
-pSentence _ x = Sentence x
+pSentence _ x = sentence x
 
 adverbial :: Adv -> Phr
 adverbial = Adverbial
@@ -1071,10 +1078,10 @@ pAdverbial = PAdverbial
 pNounphrase :: Conj -> NP -> Phr
 pNounphrase = PNounPhrase
 
-phrToS :: Phr -> S
+phrToS :: Phr -> Dynamic S'
 phrToS p = case p of
   Sentence s -> s
-  _ -> return $ \_ -> TRUE
+  _ -> return $  \_ -> TRUE
 
 phrToEff :: Phr -> Effect
 phrToEff p = noExtraObjs <$> phrToS p
@@ -1122,7 +1129,7 @@ elliptic_NP_Pl = do
 -- f(x) = AtLeast (x+1)
 -- cn = orders
 -- s = APCOM <elliptic_VP>
-relativeAmountQuant :: Logic.Pol -> (Nat -> Amount) -> CN -> S -> NP
+relativeAmountQuant :: Logic.Pol -> (Nat -> Amount) -> CN -> Dynamic S' -> NP
 relativeAmountQuant pol f cn s = do
   (cn',gender) <- cn
   threshold <- getFresh -- invent an abstract quantity.
@@ -1137,7 +1144,7 @@ relativeAmountQuant pol f cn s = do
       -- quantifier that implements "there exists (f threshold)"
   return $ MkNP [] Plural (ObliviousQuant q) (cn',gender)
 
-moreThanQuant :: CN -> S -> NP
+moreThanQuant :: CN -> Dynamic S' -> NP
 moreThanQuant = relativeAmountQuant Pos (\x -> AtLeast (1 + x))
 
 moreThanNPQuant :: CN -> NP -> NP
@@ -1244,7 +1251,7 @@ type VQ = QS -> VP
 know_VQ :: VQ
 know_VQ qs = do
   qs' <- qs
-  return $ mkRel2 "knowVQ" (noExtraObjs qs') -- stop prepositions from propagating: TODO: other VVs  (say, etc.)
+  return $ mkRel2 "knowVQ" (noExtraObjs $ toSentential qs') -- stop prepositions from propagating: TODO: other VVs  (say, etc.)
 
 ------------------
 -- Additional combinators

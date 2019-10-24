@@ -37,7 +37,7 @@ main :: IO ()
 main = do
   -- suite handleProblem >> putStrLn "----------"
   -- debug (phrToEff s_267_3_p)
-  debug (probToEff p_267)
+  debug (probToEff p_261)
   -- handleProblem p
 
 -- >>> main
