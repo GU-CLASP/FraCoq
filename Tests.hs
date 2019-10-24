@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 import Dynamic
 import MS
 import Bank
@@ -16,9 +17,12 @@ probToEff (premise,h,_) = phrToEff premise ==> phrToEff h
 
 -- debug :: Dynamic Logic.Exp -> IO ()
 debug e = do
-  let ps = evalDynamic e
-  forM_ ps $ \p0 -> do
+  let pes = runDynamic e
+  forM_ pes $ \(p0,Env{..}) -> do
     putStrLn "-----------------"
+    putStrLn "Env at end..."
+    putStrLn "Facts:"
+    forM_ envFacts print
     let p = (fromHOAS' p0) :: Exp Zero
     forM_ (extendAllScopesTrace p) $ \(fvs,q) -> do
       putStrLn ("extendAllScopes Step. Freevars = " ++ show fvs)

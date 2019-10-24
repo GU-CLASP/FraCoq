@@ -102,6 +102,7 @@ data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
                            , extraTime :: Temporal
                            }
 
+toSentential :: Sent' -> S'
 toSentential (Sentential s) = s
 toSentential (Clausal (t,p)) = p t
 
@@ -298,13 +299,16 @@ quantifyMany :: [(Exp,Var)] -> Exp -> Exp
 quantifyMany [] e = e
 quantifyMany ((dom,x):xs) e = Forall x (dom `app` (Var x)) (quantifyMany xs e)
 
+runDynamic :: Dynamic Exp -> [(Exp,Env)]
+runDynamic (Dynamic x)= do
+  (formula,env@Env {..}) <- observeAll (runStateT x assumed)
+  let e = quantifyMany [(Lam (\_ -> (Con "Time") :∧ constraint),t) | (constraint,t) <- envTimeVars] $
+          quantifyMany [(Lam (\_ -> Con "Nat"),v) | (v,_cn) <- quantityEnv] $
+          quantifyMany envMissing formula
+  return (e,env)
+
 evalDynamic :: Dynamic Exp -> [Exp]
-evalDynamic (Dynamic x) = do
-  (formula,Env {..}) <- observeAll (runStateT x assumed)
-  return $
-    quantifyMany [(Lam (\_ -> (Con "Time") :∧ constraint),t) | (constraint,t) <- envTimeVars] $
-    quantifyMany [(Lam (\_ -> Con "Nat"),v) | (v,_cn) <- quantityEnv] $
-    quantifyMany envMissing formula
+evalDynamic d = fst <$> (runDynamic d)
 
 newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
 instance Show (Dynamic a) where show _ = "<DYNAMIC>"
@@ -477,14 +481,13 @@ freshTime constraint = do
 pushTimeConstraint :: Var -> Exp -> Env -> Env
 pushTimeConstraint t c Env{..} = Env{envTimeVars = (c,t):envTimeVars,..}
 
+-- -- | S' shall use the given time constraint
+-- usingTime :: Temporal -> S' -> S'
+-- usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = extraTime <> e, ..} 
+
 -- | S' shall use the given time constraint
 usingTime :: Temporal -> S' -> S'
-usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = extraTime <> e, ..} 
-
--- | S' shall use the given time constraint
-usingTime' :: Temporal -> S' -> S'
-usingTime' e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..} 
-
+usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..} 
 
 constrainTime :: (Exp -> Exp) -> S'
 constrainTime k ExtraArgs{..} = case extraTime of
@@ -501,5 +504,6 @@ temporalToLogic t = case t  of
   IntervalTime s -> Con ("interval" ++ s)
 
 pushFact :: Prop -> Env -> Env
-pushFact p Env{..} = Env{envFacts=p:envFacts,..}
+-- pushFact (p :∧ q)  = pushFact p . pushFact q
+pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
 

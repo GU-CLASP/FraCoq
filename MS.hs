@@ -315,12 +315,10 @@ useComparA_prefix a = do
 type Subj = Cl' -> Adv
 
 lexemeSubj :: String -> Subj
-lexemeSubj "before_Subj" s1' = do
-  t1 <- referenceTimeFor s1'
-  return $ \s2' extraObjs -> useTime t1 s1' extraObjs  ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [x,t1]) extraObjs
-lexemeSubj "after_Subj" s1' = do
-  t1 <- referenceTimeFor s1'
-  return $ \s2' extraObjs -> useTime t1 s1' extraObjs ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [t1,x]) extraObjs
+lexemeSubj "before_Subj" (t,s1') = do
+  return $ \s2' extraObjs -> s1' t extraObjs  ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [x,temporalToLogic t]) extraObjs
+lexemeSubj "after_Subj" (t,s1') = do
+  return $ \s2' extraObjs -> s1' t extraObjs ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [temporalToLogic t,x]) extraObjs
 lexemeSubj s (t,s1') = do
   return $ \s2' extraObjs -> Con s `apps` [s1' t extraObjs, s2' extraObjs]
 
@@ -375,7 +373,7 @@ subjS subj s = do
   s' <- s
   case s' of
     Clausal cl -> subj cl
-    _ -> error "Subjuctive clauses must be in clausal form"
+    _ -> error "Subjunctive clauses must be in clausal form"
 
 
 --------------------
@@ -1007,14 +1005,15 @@ extAdvS adv s = do
   return $ Sentential (adv' (toSentential s'))
 
 
+-- PROBLEM: this happens at the wrong level.
 useCl :: Temp -> Pol -> Cl -> S
 useCl temp pol cl = do
   -- FIXME: the polarity should apply to the vp depending on the wide/narrow character of the quantifier
   prop <- onS' pol <$> cl
-  let cl' = \t -> (usingTime' t prop)
+  let cl' = \t -> (usingTime t prop)
   case temp of
     Past -> do
-      ts <- referenceTimesFor (error "NOPE!",cl')
+      ts <- referenceTimesFor (error "into referenceTimesFor: do not use this",cl')
       t <- case ts of
         [] -> ExactTime <$> freshTime (Con "Past" `app`)
         -- not a reference to a previous event. Allocate own
