@@ -1144,8 +1144,12 @@ relativeAmountQuant pol f cn s = do
       -- quantifier that implements "there exists (f threshold)"
   return $ MkNP [] Plural (ObliviousQuant q) (cn',gender)
 
-moreThanQuant :: CN -> Dynamic S' -> NP
-moreThanQuant = relativeAmountQuant Pos (\x -> AtLeast (1 + x))
+moreThanQuant' :: CN -> Dynamic S' -> NP
+moreThanQuant' = relativeAmountQuant Pos (\x -> AtLeast (1 + x))
+
+moreThanQuant :: CN -> S -> NP
+moreThanQuant cn s = moreThanQuant' cn (toSentential <$> s)
+
 
 moreThanNPQuant :: CN -> NP -> NP
 moreThanNPQuant cn np = do
@@ -1156,7 +1160,7 @@ moreThanNPQuant cn np = do
         np1 <- evalNPData np' role
         np2 <- boundQuant' Pos (MoreThan (Cardinal 2)) cn' role
         return $ \vp' extraObjs -> np1 vp' extraObjs ∧ np2 vp' extraObjs
-  moreThanQuant (pure cn') (predVP (pure np') elliptic_VP) -- as in FraCas 230-235
+  moreThanQuant' (pure cn') (predVP (pure np') elliptic_VP) -- as in FraCas 230-235
           -- example for 1st reading:  Stergios visited more cities than JP.
     <|> return (MkNP [] Plural (ObliviousQuant q)  cn')    -- as in FraCas 236-237
           -- example for second reading: Stergios visited more cities than Athens.
