@@ -13,6 +13,7 @@ module Dynamic where
 
 import Prelude hiding (pred,Ord,Num)
 import Control.Monad.State hiding (ap)
+import Control.Monad.Reader hiding (ap)
 import Logic hiding (Pol)
 import LogicB ()
 import qualified Logic
@@ -20,7 +21,6 @@ import Data.List (intersect,partition,nubBy,sortBy,find,nub,intersperse,intercal
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Data.Function (on)
-import Control.Arrow (first)
 import Data.Maybe (catMaybes)
 import Data.Monoid
 
@@ -45,6 +45,9 @@ protected a = do
   put s
   return x
 
+sloppily :: Dynamic a -> Dynamic a
+sloppily = local (\ReadEnv{..} -> ReadEnv{envSloppyFeatures = True,..})
+-- sloppily = id
 
 imply :: Monad m => (t1 -> t -> b) -> m t1 -> m t -> m b
 imply implication a b = do
@@ -66,8 +69,8 @@ data Role where
   Other :: Role
   deriving (Eq,Show)
 
--- first :: (t2 -> t1) -> (t2, t) -> (t1, t)
--- first f (x,y) = (f x,y)
+first :: (t2 -> t1) -> (t2, t) -> (t1, t)
+first f (x,y) = (f x,y)
 second :: forall t t1 t2. (t2 -> t1) -> (t, t2) -> (t, t1)
 second f (x,y) = (x,f y)
 
@@ -82,9 +85,13 @@ data Num where
   deriving (Show,Eq)
 
 onS' :: (Prop -> Prop) -> S' -> S'
-onS' f p eos = f (p eos)
+onS' f s extra = first f (s extra)
+  -- f (p eos)
 
 data Temporal = ForceTime Exp | ExactTime Exp | IntervalTime String | UnspecifiedTime | TenseTime Temporal deriving Show
+
+now :: Temporal
+now = ExactTime (Con "NOW")
 
 instance Monoid Temporal where
   mempty = UnspecifiedTime
@@ -102,14 +109,10 @@ data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
                            , extraTime :: Temporal
                            }
 
-toSentential :: Sent' -> S'
-toSentential (Sentential s) = s
-toSentential (Clausal (t,p)) = p t
 
-data Sent' = Clausal Cl'  | Sentential S'
-type Cl' = (Temporal,Temporal -> S')
-type S' = ExtraArgs -> Prop
-type S = Dynamic Sent'
+type Cl' = S'
+type S' = ExtraArgs -> (Prop,Temporal)
+type S = Dynamic S'
 type V2 = Dynamic (Object -> Object -> S') --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> S')
 type CN' = (Object -> S',[Gender])
@@ -129,7 +132,7 @@ type VP' = (Object -> S')
 -- type VP' = (({-subjectClass-} Object -> Prop) -> Object -> Prop) -- in Coq
 type VP = Dynamic VP'
 
-type Cl =  Dynamic S'
+type Cl =  Dynamic Cl'
 type Temp = Tense
 
 data Tense = Conditional | Future | PastPerfect | Past | Present | PresentPerfect
@@ -188,13 +191,16 @@ data Env = Env {vpEnv :: VPEnv
                ,quantityEnv :: [(Var,CN')] -- map from CN' to "default" quantity.
                ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
                ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
-               ,envSloppyFeatures :: Bool
                ,envPluralizingQuantifier :: Bool
                ,envTimeVars :: [(Exp,Var)]
                ,envFacts :: [Prop]
-               ,freshVars :: [String]}
+               ,freshVars :: [String]
+               }
          -- deriving Show
 
+data ReadEnv = ReadEnv {envTense :: Tense -- tense of the enclosing clause
+                       ,envSloppyFeatures :: Bool
+                       }
 
 ------------------------------
 -- Gets
@@ -301,7 +307,7 @@ quantifyMany ((dom,x):xs) e = Forall x (dom `app` (Var x)) (quantifyMany xs e)
 
 runDynamic :: Dynamic Exp -> [(Exp,Env)]
 runDynamic (Dynamic x)= do
-  (formula,env@Env {..}) <- observeAll (runStateT x assumed)
+  (formula,env@Env {..}) <- observeAll (runStateT (runReaderT x assumedReadEnv) assumed)
   let e = quantifyMany [(Lam (\_ -> (Con "Time") :∧ constraint),t) | (constraint,t) <- envTimeVars] $
           quantifyMany [(Lam (\_ -> Con "Nat"),v) | (v,_cn) <- quantityEnv] $
           quantifyMany envMissing formula
@@ -310,7 +316,7 @@ runDynamic (Dynamic x)= do
 evalDynamic :: Dynamic Exp -> [Exp]
 evalDynamic d = fst <$> (runDynamic d)
 
-newtype Dynamic a = Dynamic {fromDynamic :: StateT Env Logic a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
+newtype Dynamic a = Dynamic {fromDynamic :: ReaderT ReadEnv (StateT  Env Logic) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic,MonadReader ReadEnv)
 instance Show (Dynamic a) where show _ = "<DYNAMIC>"
 
 -- newtype Dynamic a = Dynamic {fromDynamic :: LogicT (State Env) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
@@ -366,18 +372,20 @@ assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
                -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
                -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
                ,objEnv = []
-               ,sEnv = return (\_ -> constant "assumedCl")
+               ,sEnv = return (\_ -> (constant "assumedCl",now))
                ,quantityEnv = []
                ,cnEnv = []
                ,envDefinites = []
                ,envMissing = []
-               ,envSloppyFeatures = False
                ,envPluralizingQuantifier = False
                ,envTimeVars = []
                ,envFacts = []
                ,freshVars = allVars}
 
-
+assumedReadEnv :: ReadEnv
+assumedReadEnv = ReadEnv {envTense = Present
+                         ,envSloppyFeatures = False
+                         }
 
 
 numSg,numPl :: Num
@@ -413,10 +421,10 @@ type Pron = NP
 -- Extra objects and S'
 
 noExtraObjs :: S' -> Prop
-noExtraObjs f = f (ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = mempty, extraCompClass = mempty})
+noExtraObjs f = fst $ f (ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = mempty, extraCompClass = mempty})
 
-appArgs :: String -> [Object] -> ExtraArgs -> Prop
-appArgs nm objs@(_:_) (ExtraArgs {..}) = extraAdvs (app (pAdverbs time'd)) subject
+appArgs :: String -> [Object] -> S'
+appArgs nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime)
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
         time'd = Con "appTime" `apps` [temporalToLogic extraTime,prep'd]
         indirectObjects = init objs
@@ -427,8 +435,8 @@ appArgs nm objs@(_:_) (ExtraArgs {..}) = extraAdvs (app (pAdverbs time'd)) subje
 
 
 
-appAdjArgs :: String -> [Object] -> ExtraArgs -> Prop
-appAdjArgs nm [cn,obj] (ExtraArgs{..}) = extraAdvs  (\x -> apps prep'd [cn,x]) obj
+appAdjArgs :: String -> [Object] -> S'
+appAdjArgs nm [cn,obj] (ExtraArgs{..}) = (extraAdvs  (\x -> apps prep'd [cn,x]) obj,extraTime)
   where prep'd = Con "appA" `app` (Con (nm ++ concatMap fst prepositions) `apps` ((map snd prepositions)))
         prepositions = nubBy ((==) `on` fst) extraPreps
 
@@ -451,7 +459,7 @@ forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
 -- use the "ForceTime" hack.
 
 useTime :: Exp -> Cl' -> S'
-useTime t (_,s) = s (ForceTime t)
+useTime t s ExtraArgs{..} = s ExtraArgs{extraTime = ForceTime t,..}
 
 
 -- | Look in envFacts for the time at which s' happened.
@@ -489,11 +497,11 @@ pushTimeConstraint t c Env{..} = Env{envTimeVars = (c,t):envTimeVars,..}
 usingTime :: Temporal -> S' -> S'
 usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..} 
 
-constrainTime :: (Exp -> Exp) -> S'
-constrainTime k ExtraArgs{..} = case extraTime of
-  ExactTime t -> k t
-  ForceTime t -> k t
-  _ -> error ("constrainTime: " ++ show extraTime)
+-- constrainTime :: (Exp -> Exp) -> S'
+-- constrainTime k ExtraArgs{..} = case extraTime of
+--   ExactTime t -> k t
+--   ForceTime t -> k t
+--   _ -> error ("constrainTime: " ++ show extraTime)
 
 temporalToLogic :: Temporal -> Exp
 temporalToLogic t = case t  of
@@ -507,3 +515,5 @@ pushFact :: Prop -> Env -> Env
 -- pushFact (p :∧ q)  = pushFact p . pushFact q
 pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
 
+withTense :: Tense -> Dynamic a -> Dynamic a
+withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}

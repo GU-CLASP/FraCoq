@@ -21,7 +21,7 @@ import Data.List (intersect,nub)
 import Control.Applicative
 import Control.Applicative.Alternative
 import Dynamic
-
+import Control.Monad.Reader (asks)
 -------------------
 -- "PureX"
 genderedN :: String -> [Gender] -> CN
@@ -257,11 +257,11 @@ positA = id
 --------------
 -- A2
 
-type A2' = Object -> (Object -> Prop) -> Object -> Prop
+type A2' = Object -> (Object -> Prop) -> Object -> S'
 type A2 = Dynamic A2'
 
 lexemeA2 :: String -> A2
-lexemeA2 a = return $ \x cn y -> Con a `apps` [x,lam cn,y]
+lexemeA2 a = return $ \x cn y ExtraArgs{..} -> (Con a `apps` [x,lam cn,y],extraTime)
 
 --------------------
 -- AP
@@ -283,7 +283,7 @@ complA2 :: A2 -> NP -> AP
 complA2 a2 np = do
   a2' <- a2
   np' <- interpNP np Other
-  return $ \cn x -> (np' (\y _extraObjs  -> a2' x cn y))
+  return $ \cn x -> (np' (\y -> a2' x cn y))
 
 adAP :: AdA -> AP -> AP
 adAP ada a = do
@@ -295,13 +295,14 @@ comparA :: Dynamic GradableA -> NP -> AP
 comparA a np = do
   GradableA a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> np' (\ y _extraObjs -> Con "compareGradableMore" `apps` [Con a',lam cn',x,y])
+  return $ \cn' x -> np'
+          (\ y ExtraArgs{..} -> (Con "compareGradableMore" `apps` [Con a',lam cn',x,y],extraTime))
 
 comparAsAs :: Dynamic GradableA -> NP -> AP
 comparAsAs a np = do
   GradableA a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> np' (\ y _extraObjs -> Con "compareGradableEqual" `apps` [Con a',lam cn',x,y])
+  return $ \cn' x -> np' (\ y ExtraArgs{..} -> (Con "compareGradableEqual" `apps` [Con a',lam cn',x,y],extraTime))
 
 -- FIXME: very questionable that this should even be in the syntax.
 useComparA_prefix :: A -> AP
@@ -315,12 +316,16 @@ useComparA_prefix a = do
 type Subj = Cl' -> Adv
 
 lexemeSubj :: String -> Subj
-lexemeSubj "before_Subj" (t,s1') = do
-  return $ \s2' extraObjs -> s1' t extraObjs  ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [x,temporalToLogic t]) extraObjs
-lexemeSubj "after_Subj" (t,s1') = do
-  return $ \s2' extraObjs -> s1' t extraObjs ∧ s2' extraObjs ∧ constrainTime (\x -> Con "LessThanTime" `apps` [temporalToLogic t,x]) extraObjs
-lexemeSubj s (t,s1') = do
-  return $ \s2' extraObjs -> Con s `apps` [s1' t extraObjs, s2' extraObjs]
+lexemeSubj "before_Subj" s1 = do
+  return $ \s2 extraObjs ->
+      let (s1',t1) = s1 extraObjs
+          (s2',t2) = s2 extraObjs
+      in (s1' ∧ s2' ∧ (Con "LessThanTime" `apps` [temporalToLogic t1,temporalToLogic t2]), t2)
+lexemeSubj s s1 = do
+  return $ \s2 extraObjs -> 
+    let (s1',_) = s1 extraObjs
+        (s2',t2) = s2 extraObjs
+    in (Con s `apps` [s1',s2'], t2)
 
 --------------------
 -- AdA
@@ -328,7 +333,8 @@ lexemeSubj s (t,s1') = do
 type AdA  = Dynamic (A' -> A')
  
 lexemeAdA :: String -> AdA
-lexemeAdA ada = return $ \a cn x extraObjs -> Con ada `apps` [lam $ \cn2 -> lam $ \x2 -> a (app cn2) x2 extraObjs,lam cn,x]
+lexemeAdA ada = return $ \a cn x extraObjs ->
+  (Con ada `apps` [lam $ \cn2 -> lam $ \x2 -> snd (a (app cn2) x2 extraObjs),lam cn,x],now)
 
 --------------------
 -- Adv
@@ -371,9 +377,7 @@ prepNP prep np = do
 subjS :: Subj -> S -> Adv
 subjS subj s = do
   s' <- s
-  case s' of
-    Clausal cl -> subj cl
-    _ -> error "Subjunctive clauses must be in clausal form"
+  subj s'
 
 
 --------------------
@@ -447,7 +451,7 @@ embedPresPart = id
 embedS :: S -> SC
 embedS s = do
   s' <- s
-  return $ \_x -> toSentential s' -- this is only used with an impersonal subject. so we can ignore it safely.
+  return $ \_x -> s' -- this is only used with an impersonal subject. so we can ignore it safely.
 
 ------------------------
 -- NP
@@ -760,7 +764,8 @@ elliptic_VP = doesTooVP
 passV2s :: V2 -> VP
 passV2s v2 = do
   v2' <- v2
-  x <- getFresh; return $ \object eos -> Exists x true (v2' object (Var x) eos) -- alternative with quantifier
+  x <- getFresh
+  return $ \object eos -> Exists x true (v2' object (Var x) eos) -- alternative with quantifier
   -- return $ \object -> (v2' meta object)
 
 passVPSlash :: VPSlash -> VP
@@ -801,7 +806,7 @@ complVS vs s = do
   vs' <- vs
   s' <- s
   modify (pushVP (complVS vs s))
-  return (vs' (toSentential s'))
+  return (vs' s')
 
 complVSa :: VS -> S -> VP
 complVSa = complVS -- FIXME: what is the difference from ComplVS? 
@@ -832,7 +837,7 @@ slashV2S :: V2S -> S -> VPSlash
 slashV2S v2s s = do
   v2s' <- v2s
   s' <- s
-  return $ \directObject subject -> v2s' directObject (toSentential s') subject
+  return $ \directObject subject -> v2s' directObject s' subject
 
 slashV2V :: V2V -> VP -> VPSlash
 slashV2V v2v vp = do
@@ -869,15 +874,31 @@ predVP np vp = withClause $ do
   MkNP pre n q (cn,gender) <- np
   np' <- evalQuant pre q n (cn,gender) Subject
   vp' <- vp
+  let p' = np' vp'
+  tense <- asks envTense
+  t <- case tense of
+    Past -> do
+      ts <- referenceTimesFor p' -- (1)
+      -- fixme: this should happen at a lower level (lexical
+      -- item). But we do not have dynamic access to arguments at that
+      -- level at the moment so this will do temporarily.
+      -- Why? Because events could refer to occurences inside a quantifier:
+      -- Example "every boy climbed and fell after they climbed."
+      case ts of
+        [] -> ExactTime <$> freshTime (Con "Past" `app`)
+        -- not a reference to a previous event. Allocate own
+        -- time. This time MUST be overridable, otherwise we'll never
+        -- be able to override it, to search for it when we reach
+        -- point (1) at a later occurence of the same event.
+        (t:_) -> return (ExactTime t)
+    _ -> return now -- FIXME: other tenses
+  modify (pushFact $ noExtraObjs (usingTime t p'))
   modify (pushS (predVP np vp))
   return $ usingCompClass cn (np' vp')
 
 questCl :: Cl -> Cl
 questCl = id
 
-sloppily :: Dynamic a -> Dynamic a
-sloppily (Dynamic x) = Dynamic (withStateT (\Env{..} -> Env{envSloppyFeatures = True,..}) x)
--- sloppily = id
 
 soDoI :: NP -> Cl
 soDoI np = predVP np doesTooVP
@@ -1002,42 +1023,27 @@ extAdvS :: Adv -> S -> S
 extAdvS adv s = do
   adv' <- adv
   s' <- s
-  return $ Sentential (adv' (toSentential s'))
+  return $ (adv' s')
 
 
 -- PROBLEM: this happens at the wrong level.
 useCl :: Temp -> Pol -> Cl -> S
 useCl temp pol cl = do
   -- FIXME: the polarity should apply to the vp depending on the wide/narrow character of the quantifier
-  prop <- onS' pol <$> cl
-  let cl' = \t -> (usingTime t prop)
-  case temp of
-    Past -> do
-      ts <- referenceTimesFor (error "into referenceTimesFor: do not use this",cl')
-      t <- case ts of
-        [] -> ExactTime <$> freshTime (Con "Past" `app`)
-        -- not a reference to a previous event. Allocate own
-        -- time. This time MUST be overridable, otherwise we'll never
-        -- be able to override it, when we're going to use this
-        -- interpretation in a subjunctive clause and look for occurences of the event.
-        (t:_) -> return (ExactTime t)
-      modify (pushFact $ noExtraObjs (cl' t))
-      return (Clausal (t,cl'))
-    _ -> return (Clausal (ExactTime (Con "NOW"), cl'))
-    -- FIXME: other tenses
+  onS' pol <$>  withTense temp cl
 
 
 useQCl :: Temp -> Pol -> QCl -> QS
 useQCl = useCl
 
 conjS2 :: Conj -> S -> S -> S
-conjS2 c s1 s2 = (Sentential .) . apConj2 c <$> (toSentential <$> s1) <*> (toSentential <$> s2)
+conjS2 c s1 s2 = apConj2 c <$> (s1) <*> (s2)
 
 predVPS :: NP -> VPS -> S
 predVPS np vp = withClause $ do
   np' <- interpNP np Subject
   vp' <- vp
-  return (Sentential $ np' vp')
+  return (np' vp')
 
 --------------------
 -- QS
@@ -1058,7 +1064,7 @@ questVP = predVP
 data Phr = Sentence (Dynamic S') | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
 
 sentence :: S -> Phr
-sentence x = Sentence (toSentential <$> x)
+sentence x = Sentence (x)
 
 question :: S -> Phr
 question s = Sentence $ do
@@ -1147,7 +1153,7 @@ moreThanQuant' :: CN -> Dynamic S' -> NP
 moreThanQuant' = relativeAmountQuant Pos (\x -> AtLeast (1 + x))
 
 moreThanQuant :: CN -> S -> NP
-moreThanQuant cn s = moreThanQuant' cn (toSentential <$> s)
+moreThanQuant = moreThanQuant'
 
 
 moreThanNPQuant :: CN -> NP -> NP
