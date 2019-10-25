@@ -105,17 +105,18 @@ instance Monoid Temporal where
 
 data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
                            , extraAdvs :: (Object -> Prop) -> Object -> Prop -- adverbs
-                           , extraCompClass :: Optional (Object -> S')
+                           , extraCompClass :: Optional CN''
                            , extraTime :: Temporal
                            }
 
-
+type S'' = ExtraArgs -> Prop
 type Cl' = S'
 type S' = ExtraArgs -> (Prop,Temporal)
 type S = Dynamic S'
 type V2 = Dynamic (Object -> Object -> S') --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> S')
-type CN' = (Object -> S',[Gender])
+type CN' = (CN'',[Gender])
+type CN'' = Object -> S''
 type CN = Dynamic CN'
 type CN2 = Dynamic CN2'
 type CN2' = (Object -> Object -> S',[Gender])
@@ -239,16 +240,16 @@ getCN2 Env{cn2Env=cn} = cn
 
 getNP' :: ObjQuery -> Env -> [NP]
 getNP' q Env{objEnv=os,..} = case filter (q . fst) os of
-  [] -> [return $ MkNP [] assumedNum (ObjectQuant (constant "assumedNP")) assumedCN]
+  [] -> [return $ MkNP [] assumedNum (ObjectQuant (constant "assumedNP")) (fst assumedCN) (snd assumedCN)]
   xs -> map snd xs
 
 getNP :: ObjQuery -> Dynamic [NP]
 getNP q = gets (getNP' q)
 
 getDefinite :: CN' -> Dynamic Object
-getDefinite (cn',_gender) = do
+getDefinite cn' = do
   things <- gets envDefinites
-  let pred = lam (\x -> (noExtraObjs (cn' x)))
+  let pred = lam (noExtraObjsCN' cn')
   case find (eqExp' pred . fst) things of
     Just (_,y) -> return y
     Nothing -> do
@@ -270,9 +271,9 @@ getQuantity = do
 pushQuantity :: Var -> CN' -> Env -> Env
 pushQuantity v cn Env{..} = Env{quantityEnv=(v,cn):quantityEnv,..}
 
-pushDefinite :: (Object -> S') -> Var -> Env -> Env
+pushDefinite :: CN'' -> Var -> Env -> Env
 pushDefinite source target Env{..} =
-  Env{envDefinites = (lam (\x' -> noExtraObjs (source x')),Var target):envDefinites,..}
+  Env{envDefinites = (lam (\x' -> source x' emptyObjs),Var target):envDefinites,..}
 
 pushNP :: Descriptor -> NP -> Env -> Env
 pushNP d o1 Env{..} = Env{objEnv = (d,o1):objEnv,..}
@@ -329,6 +330,11 @@ filterKey k = filter ((/= k) . fst)
 mkPred :: String -> Object -> S'
 mkPred p x extraObjs = appArgs p [x] extraObjs
 
+mkPred' :: String -> Object -> ExtraArgs -> Prop
+mkPred' p x extraObjs = fst (mkPred p x extraObjs)
+
+mkCN :: String -> [Gender] -> CN'
+mkCN p  = (mkPred' p,)
 
 mkRel2 :: String -> Object -> Object -> S'
 mkRel2 p x y extraObjs = appArgs p [x,y] extraObjs
@@ -341,7 +347,7 @@ constant :: String -> Exp
 constant x = Con x
 
 pureObj :: Exp -> Num -> CN' -> NP
-pureObj x number cn = return $ MkNP [] number (ObjectQuant x) cn
+pureObj x number (cn,gender) = return $ MkNP [] number (ObjectQuant x) cn gender
 
 pureVar :: Var -> Num -> CN' -> NP
 pureVar x = pureObj (Var x)
@@ -361,7 +367,7 @@ assumedPred predName = do
   return $ \x -> (mkPred predName x)
 
 assumedCN :: CN'
-assumedCN = (mkPred "assumedCN", [Male,Female,Neutral])
+assumedCN = mkCN "assumedCN" [Male,Female,Neutral]
 
 assumedNum :: Num
 assumedNum = Singular
@@ -395,7 +401,7 @@ numPl = Plural
 data Predet = JustPredet | MostPredet | AtLeastPredet | AtMostPredet | AllPredet | ExactlyPredet deriving Show
 
 data NPData where
-  MkNP :: [Predet] -> Num -> Quant -> CN' -> NPData
+  MkNP :: [Predet] -> Num -> Quant -> (Object -> ExtraArgs -> Prop) -> [Gender] -> NPData
 
 type N = CN
 type PN = (String,[Gender],Num)
@@ -406,9 +412,10 @@ all' fs x = all ($ x) fs
 any' :: [a -> Bool] -> a -> Bool
 any' fs x = any ($ x) fs
 
+type LogicQuant = [Char] -> Prop -> Exp -> Exp
 instance Show (a -> b) where show _ = "<FUNCTION>"
-type Quant' = (Num -> CN' -> Role -> Dynamic NP')
-data Quant = PossQuant Pron | UniversalQuant Pol | IndefQuant | ExistQuant | ETypeQuant ([Char] -> Prop -> Exp -> Exp) | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat
+type Quant' = Num -> CN' -> Role -> Dynamic NP'
+data Quant = PossQuant Pron | UniversalQuant Pol | IndefQuant | ExistQuant | ETypeQuant LogicQuant | DefiniteQuant | TheOtherQuant | ObjectQuant Object | BoundQuant Logic.Pol Nat
   | ObliviousQuant Quant' -- ^ quantifier that ignores numbers and predeterminers.
 
 
@@ -420,8 +427,18 @@ type Pron = NP
 --------------------------
 -- Extra objects and S'
 
+emptyObjs :: ExtraArgs
+emptyObjs = ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = mempty, extraCompClass = mempty}
+
 noExtraObjs :: S' -> Prop
-noExtraObjs f = fst $ f (ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = mempty, extraCompClass = mempty})
+noExtraObjs f = fst $ f emptyObjs
+
+noExtraObjsCN'' :: CN'' -> (Object -> Prop)
+noExtraObjsCN'' f x = f x emptyObjs
+
+noExtraObjsCN' :: CN' -> (Object -> Prop)
+noExtraObjsCN' (f,_gender) = noExtraObjsCN'' f
+
 
 appArgs :: String -> [Object] -> S'
 appArgs nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime)
@@ -443,7 +460,7 @@ appAdjArgs nm [cn,obj] (ExtraArgs{..}) = (extraAdvs  (\x -> apps prep'd [cn,x]) 
 modifyingPrep :: String -> Object -> S' -> S'
 modifyingPrep aname x s (ExtraArgs{..}) = s (ExtraArgs {extraPreps = extraPreps++[(aname,x)],..})
 
-usingCompClass :: (Object -> S') -> S' -> S'
+usingCompClass :: CN'' -> S' -> S'
 usingCompClass cn s ExtraArgs {..} = s ExtraArgs {extraCompClass = Explicit cn,..}
 
 
