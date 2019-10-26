@@ -32,7 +32,7 @@ genderedN s gender =
 genderedN2 :: String -> [Gender] -> CN2
 genderedN2 s gender =
   do modify (pushCN2 (genderedN2 s gender))
-     return (mkRel2 s,gender)
+     return (mkRel2' s,gender)
 
 pureV2 :: (Object -> Object -> S') -> V2
 pureV2 v2 = do
@@ -60,7 +60,7 @@ class IsAdj a where
   fromAdj :: String -> a
 
 instance IsAdj A' where
-  fromAdj a = (\cn obj -> appAdjArgs a [lam cn,obj])
+  fromAdj a = \cn obj extraObjs -> appAdjArgs a [lam cn,obj] extraObjs
 
 newtype GradableA = GradableA String
 instance IsAdj GradableA where
@@ -271,7 +271,7 @@ advAP :: AP -> Adv -> AP -- basically wrong syntax in the input. (Instead of AP 
 advAP ap adv = do
   adv' <- adv
   ap' <- ap
-  return (\cn x -> adv' (ap' cn x))
+  return (\cn x -> fst . adv' ((,now) . ap' cn x))
 
 sentAP :: AP -> SC -> AP
 sentAP ap cl = do
@@ -283,7 +283,7 @@ complA2 :: A2 -> NP -> AP
 complA2 a2 np = do
   a2' <- a2
   np' <- interpNP np Other
-  return $ \cn x -> (np' (\y -> a2' x cn y))
+  return $ \cn x -> fst . (np' (\y -> a2' x cn y))
 
 adAP :: AdA -> AP -> AP
 adAP ada a = do
@@ -295,14 +295,14 @@ comparA :: Dynamic GradableA -> NP -> AP
 comparA a np = do
   GradableA a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> np'
+  return $ \cn' x -> fst . np'
           (\ y ExtraArgs{..} -> (Con "compareGradableMore" `apps` [Con a',lam cn',x,y],extraTime))
 
 comparAsAs :: Dynamic GradableA -> NP -> AP
 comparAsAs a np = do
   GradableA a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> np' (\ y ExtraArgs{..} -> (Con "compareGradableEqual" `apps` [Con a',lam cn',x,y],extraTime))
+  return $ \cn' x -> fst . np' (\ y ExtraArgs{..} -> (Con "compareGradableEqual" `apps` [Con a',lam cn',x,y],extraTime))
 
 -- FIXME: very questionable that this should even be in the syntax.
 useComparA_prefix :: A -> AP
@@ -333,8 +333,7 @@ lexemeSubj s s1 = do
 type AdA  = Dynamic (A' -> A')
  
 lexemeAdA :: String -> AdA
-lexemeAdA ada = return $ \a cn x extraObjs ->
-  (Con ada `apps` [lam $ \cn2 -> lam $ \x2 -> snd (a (app cn2) x2 extraObjs),lam cn,x])
+lexemeAdA ada = return $ \a cn x extraObjs -> (Con ada `apps` [lam $ \cn2 -> lam $ \x2 -> (a (app cn2) x2 extraObjs),lam cn,x])
 
 --------------------
 -- Adv
@@ -359,7 +358,7 @@ appAdverb adv vp obj = apps (Con "appAdv") [Con adv,lam vp, obj]
 positAdvAdj :: A -> Adv
 positAdvAdj a = do
   a' <- a
-  return $ sentenceApplyAdv (\p x -> noExtraObjs (a' p x) )
+  return $ sentenceApplyAdv (\p x  -> a' p x emptyObjs)
 
 uninformativeAdv :: Adv
 uninformativeAdv = return $ \vp x -> vp x -- ALT: Coq/HOL
@@ -397,7 +396,7 @@ conjCN2 _c cn1 cn2 = do
   (c2,g2) <- cn2
   -- NOTE: the only meaningful conjuctions to use between CNs are 'and' or 'or'.
   -- However, both of them the same thing. ("Or"). See FraCas 87 -- 89.
-  return (\x -> apConj2 or_Conj (c1 x) (c2 x),combineGenders g1 g2)
+  return (\x -> apConj2S'' or_Conj (c1 x) (c2 x),combineGenders g1 g2)
 
 relCN :: CN->RS->CN
 relCN cn rs = do
@@ -410,7 +409,7 @@ advCN :: CN -> Adv -> CN
 advCN cn adv = do
   (cn',gender) <- cn
   adv' <- adv
-  return (\x eos -> adv' (cn' x) eos ,gender) -- FIXME: lift cn
+  return (\x eos -> fst $ adv' ((,extraTime eos) . cn' x) eos ,gender) -- FIXME: lift cn
 
 
 adjCN :: A -> CN -> CN
@@ -418,7 +417,7 @@ adjCN a cn = do
   a' <- a
   (cn',gendr) <- cn
   modify (pushCN (adjCN a cn))
-  return $ (\x eos -> (noExtraObjs (a' (flip cn' eos) x)),gendr)
+  return $ (\x eos -> (noExtraObjsCN'' (a' (flip cn' eos)) x),gendr)
 
 elliptic_CN :: CN
 elliptic_CN = do
@@ -431,13 +430,15 @@ complN2 :: N2 -> NP -> CN
 complN2 n2 np = do
   (n2',gender) <- n2
   np' <- interpNP np Other
-  return (\y -> np' $ \x -> n2' y x, gender)
+  return (\y -> fst . (np' $ \x eos -> (n2' y x eos,now)), gender)
 
 sentCN :: CN -> SC -> CN
 sentCN cn sc = do
   (cn',gender) <- cn
   sc' <- sc
-  return $ (\x extraObjs -> (apps (Con "SentCN") [lam (fst . flip cn' extraObjs),lam (nos sc'),x],snd (cn' x extraObjs)),gender)
+  return $ (\x extraObjs -> (apps (Con "SentCN") [lam (flip cn' extraObjs),lam (nos sc'),x]),gender)
+nos :: (t -> S') -> t -> Prop
+nos f a = noExtraObjs (f a)
 
 --------------------
 -- SC
@@ -499,9 +500,9 @@ advNP np adv = do
   adv' <- adv
   return $ MkNP pre num1
            (ObliviousQuant $ \num' (cn',gender) role -> do
-               p1 <- evalQuant pre q1 num' (adv' . cn',gender) role
+               p1 <- evalQuant pre q1 num' (\x eos -> fst (adv' (\eos' -> (cn' x eos',now)) eos),gender) role -- Yargh; use relaxAdv
                return $ \vp -> p1 vp) 
-           (cn1,gender1)
+           cn1 gender1
 
 predetNP :: Predet -> NP -> NP
 predetNP f np = do
@@ -537,7 +538,7 @@ conjNP2 c np1 np2 = do
                 (ObliviousQuant $ \_num _cn role -> do
                     p1 <- evalQuant pre1 q1 num1 (cn1,gender1) role
                     p2 <- evalQuant pre2 q2 num2 (cn2,gender2) role
-                    return $ \vp -> apConj2 c (p1 vp) (p2 vp))
+                    return $ \vp -> apConj2S' c (p1 vp) (p2 vp))
                 (\x eos -> cn1 x eos ∨ cn2 x eos)  -- FIXME: problem 128, etc.
                 gender1
 
@@ -551,8 +552,9 @@ conjNP3 c np1 np2 np3 = do
                     p1 <- evalQuant pre1 q1 num1 (cn1,gender1) role
                     p2 <- evalQuant pre2 q2 num2 (cn2,gender2) role
                     p3 <- evalQuant pre3 q3 num3 (cn3,gender3) role
-                    return $ \vp -> apConj3 c (p1 vp) (p2 vp) (p3 vp))
-                (\x eos -> cn1 x eos ∨ cn2 x eos ∨ cn3 x eos, gender1)
+                    return $ \vp -> apConj3S' c (p1 vp) (p2 vp) (p3 vp))
+                (\x eos -> cn1 x eos ∨ cn2 x eos ∨ cn3 x eos)
+                gender1 -- FIXME
 
 
 ----------------------
@@ -687,12 +689,12 @@ useComp c = do
 compCN :: CN -> Comp
 compCN cn = do
   (cn',_gender) <- cn
-  return (\_xClass x extraObjs ->  (cn' x extraObjs,now))
+  return (\_xClass x extraObjs ->  (cn' x extraObjs,extraTime extraObjs))
 
 compAP :: AP -> Comp
 compAP ap = do
   a' <- ap
-  return $ \xClass x extraObjs -> (a' xClass x) extraObjs
+  return $ \xClass x extraObjs -> ((a' xClass x) extraObjs,extraTime extraObjs)
 
 compNP :: NP -> Comp
 compNP np = do
@@ -728,7 +730,7 @@ conjVPS2 :: Conj -> Temp -> Pol -> VP -> Temp -> Pol -> VP -> VPS
 conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
   vp1' <- vp1
   vp2' <- vp2
-  return $ \x  -> (apConj2 conj (onS' pol1 (vp1' x)) (onS' pol2 (vp2' x)))
+  return $ \x  -> (apConj2S' conj (onS' pol1 (vp1' x)) (onS' pol2 (vp2' x)))
 
 ---------------------------
 -- VV
@@ -978,16 +980,36 @@ comma_and_Conj = RightAssoc (∧)
 if_comma_then_Conj :: Conj
 if_comma_then_Conj = RightAssoc (-->)
 
-apConj2 :: Conj -> S'' -> S'' -> S''
-apConj2 conj p q extras = case conj of
-  RightAssoc c -> c (p extras) (q extras)
-  EitherOr -> (p extras ∧ not' (q extras)) ∨ (not' (p extras) ∧ (q extras))
+apConj2S' :: Conj -> S' -> S' -> S'
+apConj2S' conj p q extras =
+  let (p',t1) = p extras
+      (q',t2) = q extras
+  in (apConj2 conj p' q', joinTime t1 t2)
 
-apConj3 :: Conj -> S'' -> S''-> S''-> S''
-apConj3 conj p q r e = case conj of
+apConj2 :: Conj -> Prop -> Prop -> Prop
+apConj2 conj p q = case conj of
+  RightAssoc c -> c p q
+  EitherOr -> (p ∧ not' (q)) ∨ (not' (p) ∧ (q))
+
+apConj2S'' :: Conj -> S'' -> S'' -> S''
+apConj2S'' conj p q extras = apConj2 conj (p extras) (q extras)
+
+apConj3 :: Conj -> Prop -> Prop -> Prop -> Prop
+apConj3 conj p q r = case conj of
+  RightAssoc c -> (p `c` q) `c` r
+  EitherOr -> (p ∧ not' (q) ∧ not' (r)) ∨ (not' (p) ∧ (q) ∧ not' (r)) ∨ (not' (p) ∧ not' (q) ∧ (r))
+
+apConj3S'' :: Conj -> S'' -> S''-> S''-> S''
+apConj3S'' conj p q r e = case conj of
   RightAssoc c -> (p e `c` q e) `c` r e
   EitherOr -> (p e ∧ not' (q e) ∧ not' (r e)) ∨ (not' (p e) ∧ (q e) ∧ not' (r e)) ∨ (not' (p e) ∧ not' (q e) ∧ (r e))
 
+apConj3S' :: Conj -> S' -> S' -> S' -> S'
+apConj3S' conj p q r extras =
+  let (p',t1) = p extras
+      (q',t2) = q extras
+      (r',t3) = r extras
+  in (apConj3 conj p' q' r', joinTime t1 (joinTime t2 t3))
 
 ----------------------------------
 -- PConj
@@ -1041,7 +1063,7 @@ conjS2 :: Conj -> S -> S -> S
 conjS2 c s1 s2 = do
   s1' <- s1
   s2' <- s2
-  return $ \extraObjs -> (apConj2 c (fst . s1') (fst . s2') extraObjs, _) -- FIXME: join of times
+  return $ apConj2S' c (s1') (s2')
   -- apConj2 c <$> s1 <*> s2
 
 predVPS :: NP -> VPS -> S
@@ -1066,10 +1088,10 @@ questVP = predVP
 
 --------------------
 -- Phr
-data Phr = Sentence (Dynamic S') | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
+data Phr = Sentence (Dynamic S'') | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
 
 sentence :: S -> Phr
-sentence x = Sentence (x)
+sentence x = Sentence (relaxTime <$> x)
 
 question :: S -> Phr
 question s = Sentence $ do
@@ -1088,37 +1110,40 @@ pAdverbial = PAdverbial
 pNounphrase :: Conj -> NP -> Phr
 pNounphrase = PNounPhrase
 
-phrToS :: Phr -> Dynamic S'
+phrToS :: Phr -> Dynamic S''
 phrToS p = case p of
   Sentence s -> s
   _ -> return $  \_ -> TRUE
 
 phrToEff :: Phr -> Effect
-phrToEff p = noExtraObjs <$> phrToS p
+phrToEff p = ($ emptyObjs) <$> phrToS p
+
+relaxAdv :: ((a1 -> (t, Temporal)) -> a -> (c, b)) -> (a1 -> t) -> a -> c
+relaxAdv adv x = fst . (adv ((,now) . x))
 
 infixl ###
 (###) :: Phr -> Phr -> Phr
 x ### Sentence s = Sentence $ do
   x' <- phrToS x
   s' <- s
-  return (\extraObjs -> noExtraObjs x' ∧ s' extraObjs)
+  return (\extraObjs -> x' emptyObjs ∧ s' extraObjs)
 x ### (Adverbial adv) = Sentence $ do
   x' <- phrToS x
   adv' <- adv
-  return (adv' x')
+  return (relaxAdv adv' x')
   -- Sentence (extAdvS adv (phrToEff x))
   -- FIXME: the adverbs should be pushed to the VP. It should be
   -- possible to do that on the semantics (modify the predicate)
 x ### (PAdverbial conj adv) = Sentence $ do
   x' <- phrToS x
   adv' <- adv
-  return (apConj2 conj x' (adv' x'))
+  return (apConj2S'' conj x' (relaxAdv adv' x'))
   -- FIXME: the adverbs should be pushed to the VP. It should be
   -- possible to do that on the semantics (modify the predicate)
 x ### (PNounPhrase conj np) = Sentence $ do
   x' <- phrToS x
   y' <- predVP np doesTooVP
-  return (apConj2 conj x' y')
+  return (apConj2S'' conj x' (fst . y'))
 
 -------------------------
 -- Quant
@@ -1149,8 +1174,10 @@ relativeAmountQuant pol f cn s = do
   let q :: Quant'
       q _num _cn _role = do
         x <- getFresh
-        return (\vp' extraObjs -> noExtraObjs s' ∧ -- "APCOM won exactly θ orders"
-                                  Quant (f (Nat (Var threshold))) pol x (cn' (Var x) emptyObjs) (vp' (Var x) extraObjs)) -- Itel won at least θ+1 orders
+        return (\vp' extraObjs ->
+                  let (p,t) = (vp' (Var x) extraObjs)
+                  in (noExtraObjs s' ∧ -- "APCOM won exactly θ orders"
+                                  Quant (f (Nat (Var threshold))) pol x (cn' (Var x) emptyObjs) p,t)) -- Itel won at least θ+1 orders
       -- quantifier that implements "there exists (f threshold)"
   return $ MkNP [] Plural (ObliviousQuant q) cn' gender
 
@@ -1169,7 +1196,10 @@ moreThanNPQuant cn np = do
       q _num _cn role = do
         np1 <- evalNPData np' role
         np2 <- boundQuant' Pos (MoreThan (Cardinal 2)) cn' role
-        return $ \vp' extraObjs -> np1 vp' extraObjs ∧ np2 vp' extraObjs
+        return $ \vp' extraObjs ->
+          let (p1,t1) = np1 vp' extraObjs
+              (p2,t2) = np2 vp' extraObjs
+          in (p1 ∧ p2, joinTime t1 t2)
   moreThanQuant' (pure cn') (predVP (pure np') elliptic_VP) -- as in FraCas 230-235
           -- example for 1st reading:  Stergios visited more cities than JP.
     <|> return (MkNP [] Plural (ObliviousQuant q) c g)    -- as in FraCas 236-237
@@ -1255,7 +1285,7 @@ questIAdv = id
 why_IAdv :: IAdv
 why_IAdv cl = do
   cl' <- cl
-  return (\extraObjs -> Con "WHY" `apps` [cl' extraObjs])
+  return (\extraObjs -> let (p,t) = cl' extraObjs in (Con "WHY" `apps` [p],t))
 
 ------------------------
 -- VQ
@@ -1450,8 +1480,6 @@ eType quant x z cn' vp' eos =
       (pz,_) = vp' (Var z) eos
   in (quant x (noExtraObjsCN'' cn' (Var x)) px ∧ Forall z ((noExtraObjsCN'' cn' (Var z)) ∧ pz) true,t)
 
--- nos :: (t -> S') -> t -> Prop
-nos f a = noExtraObjs (f a)
 
 eTypeQuant :: LogicQuant -> Quant'
 eTypeQuant q number (cn',gender) role = do
@@ -1489,7 +1517,7 @@ possess :: Object -> Object -> Prop
 possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
 the_other_Q' :: Quant'
-the_other_Q' _number _cn _role = return $ \vp eos -> apps (Con "theOtherQ") [lam $ \x -> vp x eos]
+the_other_Q' _number _cn _role = return $ \vp eos -> (apps (Con "theOtherQ") [lam $ \x -> fst (vp x eos)],now) -- FIXME: get the time from the right place
 
 exactlyQuant' :: Nat -> (CN'', [Gender]) -> Role -> Dynamic NP'
 exactlyQuant' n' (cn',gender) role = do
@@ -1507,7 +1535,7 @@ bothQuant' _ (cn',_gender) _role = do
   y <- getFresh
   -- FIXME: this interpretation is incoherent with anaphora.
   return $ \vp' extraObjs ->
-    let (py,ty) = vp' (Var y) extraObjs
+    let (py,_ty) = vp' (Var y) extraObjs
         (px,tx) = vp' (Var x) extraObjs
     in (Exists x (noExtraObjsCN'' cn' (Var x)) $ Exists y (noExtraObjsCN'' cn' (Var y)) $ px ∧ py ∧ not' (Var x === Var y),tx) -- FIXME: time???
 
@@ -1515,7 +1543,7 @@ bothQuant' _ (cn',_gender) _role = do
 neitherQuant' :: Quant'
 neitherQuant' n cn role = do
   r <- bothQuant' n cn role
-  return $ \vp -> r (\x -> not' . vp x)
+  return $ \vp -> r (\x -> first not' . vp x)
 
 
 boundQuant' :: Logic.Pol -> Quant'

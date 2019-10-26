@@ -119,7 +119,7 @@ type CN' = (CN'',[Gender])
 type CN'' = Object -> S''
 type CN = Dynamic CN'
 type CN2 = Dynamic CN2'
-type CN2' = (Object -> Object -> S',[Gender])
+type CN2' = (Object -> CN'',[Gender])
 type NP' = (Object -> S') -> S'
 type NP = Dynamic NPData
 
@@ -144,7 +144,7 @@ type RCl' = Object -> Prop
 type RS  = Dynamic RCl'
 type AP = Dynamic A'
 type A = Dynamic A'
-type A' = (Object -> Prop) -> Object -> S'
+type A' = (Object -> Prop) -> CN''
 
 
 data Descriptor = Descriptor {dPluralizable :: Bool
@@ -339,6 +339,9 @@ mkCN p  = (mkPred' p,)
 mkRel2 :: String -> Object -> Object -> S'
 mkRel2 p x y extraObjs = appArgs p [x,y] extraObjs
 
+mkRel2' :: String -> Object -> Object -> S''
+mkRel2' p x y extraObjs = fst (mkRel2 p x y extraObjs)
+
 
 mkRel3 :: String -> Object -> Object -> Object -> S'
 mkRel3 p x y z extraObjs = appArgs p [x,y,z] extraObjs
@@ -433,6 +436,9 @@ emptyObjs = ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = mempty, extr
 noExtraObjs :: S' -> Prop
 noExtraObjs f = fst $ f emptyObjs
 
+relaxTime :: S' -> S''
+relaxTime s' extraObjs = fst (s' extraObjs)
+
 noExtraObjsCN'' :: CN'' -> (Object -> Prop)
 noExtraObjsCN'' f x = f x emptyObjs
 
@@ -452,8 +458,8 @@ appArgs nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subj
 
 
 
-appAdjArgs :: String -> [Object] -> S'
-appAdjArgs nm [cn,obj] (ExtraArgs{..}) = (extraAdvs  (\x -> apps prep'd [cn,x]) obj,extraTime)
+appAdjArgs :: String -> [Object] -> S''
+appAdjArgs nm [cn,obj] (ExtraArgs{..}) = (extraAdvs  (\x -> apps prep'd [cn,x]) obj)
   where prep'd = Con "appA" `app` (Con (nm ++ concatMap fst prepositions) `apps` ((map snd prepositions)))
         prepositions = nubBy ((==) `on` fst) extraPreps
 
@@ -534,3 +540,6 @@ pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
 
 withTense :: Tense -> Dynamic a -> Dynamic a
 withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}
+
+joinTime :: Temporal -> Temporal -> Temporal
+joinTime t1 t2 = t1 -- FIXME
