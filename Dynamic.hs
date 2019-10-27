@@ -535,7 +535,7 @@ temporalToLogic t = case t  of
   IntervalTime s -> Con ("interval" ++ s)
 
 pushFact :: Prop -> Env -> Env
-pushFact (p :∧ q)  = {-pushFact p . -} pushFact q  -- HACK to access atom
+pushFact (p :∧ q)  = {-pushFact p . -} pushFact q  -- HACK to access atom (ATOM)
 pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
 
 withTense :: Tense -> Dynamic a -> Dynamic a

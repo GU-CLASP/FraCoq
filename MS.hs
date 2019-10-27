@@ -886,7 +886,7 @@ predVP np vp = withClause $ do
       -- item). But we do not have dynamic access to arguments at that
       -- level at the moment so this will do temporarily.
       -- Why? Because events could refer to occurences inside a quantifier:
-      -- Example "every boy climbed and fell after they climbed."
+      -- Example "every boy climbed and fell after they climbed." (ATOM)
       case ts of
         [] -> ExactTime <$> freshTime (Con "Past" `app`)
         -- not a reference to a previous event. Allocate own

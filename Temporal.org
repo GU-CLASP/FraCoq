@@ -45,3 +45,18 @@ Whenever a (past) clause is evaluated.
     - push it in "true facts" -- it may be a slightly different version!
     - return P(τ)
 
+
+** Referencing previous times
+
+We search for an event (τ) using a predicate P(t). P mentions all the
+arguments of the verb. The principle seems to be that one should use
+atomic events. Indeed, consider "Jones left quickly. Smith left before
+jones left." The adverb "quickly" should be ignored when looking for
+"jones left". Thus it seems that the right level to search for events
+should be lexical items. Unfortunately, due to the left-to-right
+nature of the dynamic semantics, all the objects of the verb are not
+available at this point. (The motegovian semantics PTQ dictate that
+the subject isn't available *as a dynamic object* at the point of
+processing the verb.) So instead with process events at the predVP
+combinator. To acess atoms we break down the logical formula. See the
+(ATOM) marks in the code.
