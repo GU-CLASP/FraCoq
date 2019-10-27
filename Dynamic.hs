@@ -484,14 +484,14 @@ forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
 useTime :: Exp -> Cl' -> S'
 useTime t s ExtraArgs{..} = s ExtraArgs{extraTime = ForceTime t,..}
 
-
 -- | Look in envFacts for the time at which s' happened.
 -- That is: Find the times t when Prop(t) happened, looking up true facts in environment.
 referenceTimesFor :: Cl' -> Dynamic [Exp]
 referenceTimesFor s' = do
   tMeta <- getFresh
   facts <- gets envFacts
-  return $ catMaybes $ map (solveThe tMeta (forceTime (Var tMeta) s')) facts
+  let e = forceTime (Var tMeta) s'
+  return $ catMaybes $ map (solveThe tMeta e) facts
 
 referenceTimeFor :: Cl' -> Dynamic Exp
 referenceTimeFor s = do
@@ -535,7 +535,7 @@ temporalToLogic t = case t  of
   IntervalTime s -> Con ("interval" ++ s)
 
 pushFact :: Prop -> Env -> Env
--- pushFact (p :∧ q)  = pushFact p . pushFact q
+pushFact (p :∧ q)  = {-pushFact p . -} pushFact q  -- HACK to access atom
 pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
 
 withTense :: Tense -> Dynamic a -> Dynamic a

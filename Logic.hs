@@ -47,6 +47,7 @@ showExp1 (Var x) = x
 showExp1 _ = "<EXP>"
 
 solveThe :: Var -> Exp -> Exp -> Maybe Exp
+solveThe meta (_ :∧ x) inWhere = solveThe meta x inWhere -- HACK to access atom
 solveThe meta what inWhere = case nub <$> solveThe' 0 meta [(what,inWhere)] of
   Just [] -> Nothing
   Just [x] -> Just x

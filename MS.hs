@@ -320,7 +320,7 @@ lexemeSubj "before_Subj" s1 = do
   return $ \s2 extraObjs ->
       let (s1',t1) = s1 extraObjs
           (s2',t2) = s2 extraObjs
-      in (s1' ∧ s2' ∧ (Con "LessThanTime" `apps` [temporalToLogic t1,temporalToLogic t2]), t2)
+      in ((Con "LessThanTime" `apps` [temporalToLogic t1,temporalToLogic t2]) ∧ s1' ∧ s2', t2)
 lexemeSubj s s1 = do
   return $ \s2 extraObjs -> 
     let (s1',_) = s1 extraObjs
@@ -895,9 +895,10 @@ predVP np vp = withClause $ do
         -- point (1) at a later occurence of the same event.
         (t:_) -> return (ExactTime t)
     _ -> return now -- FIXME: other tenses
-  modify (pushFact $ noExtraObjs (usingTime t p'))
+  let p'' = usingTime t p'
+  modify (pushFact $ noExtraObjs p'')
   modify (pushS (predVP np vp))
-  return $ usingCompClass cn (np' vp')
+  return $ usingCompClass cn p''
 
 questCl :: Cl -> Cl
 questCl = id
