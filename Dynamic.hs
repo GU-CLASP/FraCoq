@@ -42,7 +42,8 @@ protected :: Dynamic a -> Dynamic a
 protected a = do
   s <- get
   x <- a
-  put s
+  s' <- get
+  put s {freshVars = freshVars s'}
   return x
 
 sloppily :: Dynamic a -> Dynamic a
