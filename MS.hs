@@ -347,9 +347,11 @@ type AdV = ADV
 lexemeAdv :: String -> Adv
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
-lexemeAdv "year_1996_Adv" = return $ usingTime (IntervalTime "(ATTIME Year_1996)")
-lexemeAdv "since_1992_Adv" = return $ usingTime (IntervalTime "(SINCE Year_1992)")
-lexemeAdv "in_1993_Adv" = return $ usingTime (IntervalTime "(ATTIME Year_1993)")
+lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Year_1996"))
+lexemeAdv "since_1992_Adv" = return $ usingTime (ExactTime (Con "Year_1992"))
+lexemeAdv "in_1993_Adv" = do
+  t <- freshTime (\t -> Con "AFTER" `apps `[Con "Year_1993",t])
+  return $ usingTime (ExactTime t)
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
 appAdverb :: String -> (Object -> Prop) -> (Object -> Prop)
@@ -888,7 +890,7 @@ predVP np vp = withClause $ do
       -- Why? Because events could refer to occurences inside a quantifier:
       -- Example "every boy climbed and fell after they climbed." (ATOM)
       case ts of
-        [] -> ExactTime <$> freshTime (Con "Past" `app`)
+        [] -> ExactTime <$> freshTime (Con "PAST" `app`)
         -- not a reference to a previous event. Allocate own
         -- time. This time MUST be overridable, otherwise we'll never
         -- be able to override it, to search for it when we reach

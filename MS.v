@@ -1222,6 +1222,7 @@ Parameter small_and_large_opposite_K : opposite_adjectives small_A large_A.
 Definition now_AdV : AdV
  := fun vp subject => vp subject. (* We simply ignore "now", because currently "now" is the default *)
 
+(*
 Inductive Temporal : Type :=
   BeforeTimeOf : TProp -> Temporal |
   UnspecifiedTime : Temporal |
@@ -1237,10 +1238,22 @@ Definition appTime : Temporal -> (object -> TProp) -> object -> Prop :=
   | ATTIME t => vp x t
   | SINCE t => forall (t' : Time), (t < t') -> (t' < NOW) -> vp x t' (* apparently fracas wants the NOW constraint? (p252) *)
   end.
+*)
 
+
+Definition UnspecifiedTime := NOW.
+Definition LessThanTime := fun x y => x < y.
+Definition AFTER := fun y x => x < y.
+
+
+Definition appTime : Time -> (object -> TProp) -> object -> Prop := 
+  fun time vp x => vp x time.
+
+Definition PAST e := e < NOW.
 
 
 Parameter Year_1996 : Time.
 Parameter Year_1993 : Time.
 Parameter Year_1992 : Time.
-Parameter present8attending_AwithTime : Temporal -> CN -> object -> Prop.
+Parameter present8attending_AwithTime : Time -> CN -> object -> Prop.
+

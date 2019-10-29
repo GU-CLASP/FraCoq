@@ -544,3 +544,6 @@ withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}
 
 joinTime :: Temporal -> Temporal -> Temporal
 joinTime t1 t2 = t1 -- FIXME
+
+givenTime :: String -> Temporal
+givenTime s = ExactTime (Con s)
