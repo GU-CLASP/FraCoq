@@ -180,7 +180,7 @@ ppExp n ctx e0 =
       (Con x) -> x
       (Var x) -> x
       (Quant k p v dom body) -> case dom of
-         Op And [Con "Time",c] -> "forall (" ++ v ++ ": Time), " ++ parens (ppExp n LAST_OPERATOR (Op And [c,body])) -- hack for time
+         Op And [Con "Time",c] -> "forall (" ++ v ++ ": Time), " ++ parens (ppExp n LAST_OPERATOR (Op Implies [c,body])) -- hack for time
          Con "Nat" -> "forall (" ++ v ++ ": Z), " ++ parens (ppExp n LAST_OPERATOR body) -- hack for nats
          _ -> parens (o ++ " " ++ ppFun dom ++ " " ++ ppFun body)
            where ppFun t = parens("fun " ++ v ++ "=>" ++ ppExp n LAST_OPERATOR t)
