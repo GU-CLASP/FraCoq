@@ -15,7 +15,9 @@ data Exp = Op Op [Exp]
          | Var Var
          | Con String
          | Lam (Exp -> Exp)
-         | Quant Amount Pol Var Exp Exp
+         | Quant Amount Pol Var
+                 Exp -- domain
+                 Exp -- body
 
 
 check :: Bool -> Maybe ()

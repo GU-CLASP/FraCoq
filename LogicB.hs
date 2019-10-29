@@ -16,7 +16,6 @@ import Data.Char (toLower)
 import Data.List
 import Control.Applicative
 import Control.Monad
-import Control.Monad.State
 import Data.Traversable
 
 data Next v = Here | There v deriving (Eq, Functor)
@@ -181,7 +180,8 @@ ppExp n ctx e0 =
       (Con x) -> x
       (Var x) -> x
       (Quant k p v dom body) -> case dom of
-         Con "Nat" -> "forall (" ++ v ++ ": Z), " ++ parens (ppExp n LAST_OPERATOR body)
+         Op And [Con "Time",c] -> "forall (" ++ v ++ ": Time), " ++ parens (ppExp n LAST_OPERATOR (Op And [c,body])) -- hack for time
+         Con "Nat" -> "forall (" ++ v ++ ": Z), " ++ parens (ppExp n LAST_OPERATOR body) -- hack for nats
          _ -> parens (o ++ " " ++ ppFun dom ++ " " ++ ppFun body)
            where ppFun t = parens("fun " ++ v ++ "=>" ++ ppExp n LAST_OPERATOR t)
                  o = case (k,p) of
@@ -195,7 +195,7 @@ ppExp n ctx e0 =
                     (Several,Pos) -> "SEVERALQ"
                     (Exact m@(Var _),Both) -> "EXACT (" ++ ppExp 0 LAST_OPERATOR m ++ ")"  -- if it is a variable, it may not exist. FIXME: evaluate positivity.
                     (Exact n,Both) -> "EXEXACT (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
-                    (AtLeast (Con "1"),Pos) -> "EXISTS" 
+                    (AtLeast (Con "1"),Pos) -> "EXISTS"
                     (AtLeast n,Pos) -> "ATLEAST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
                     (AtLeast n,Neg) -> "ATMOST (" ++ ppExp 0 LAST_OPERATOR n ++ ")"
                     _ -> show (k,p)
