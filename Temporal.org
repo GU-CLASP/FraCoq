@@ -1,3 +1,8 @@
+
+- Add a time parameter to verbs.
+
+(leave t0 smith)
+
 * Transitivity of "before"
 
 Consider Fracas 261:
@@ -22,7 +27,7 @@ left" may refer to two different events (times).
 We can try to use some dynamic semantics to do the identification. We could have:
 
 
-     ∃t1, t2, t3.
+     ∀t1, t2, t3.
 P1   s(t1) ∧ j(t2) ∧ t1 < t2
 P2   j(t2) ∧ a(t3) ∧ t2 < t3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
