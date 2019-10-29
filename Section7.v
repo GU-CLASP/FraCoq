@@ -1,4 +1,3 @@
-
 Load Formulas.
 
 
@@ -39,5 +38,18 @@ Qed.
 Transparent PN2object.
 Theorem  problem262atrue : Problem262aTrue.
 cbv.
+intros.
+split.
 lia.
+firstorder.
+Qed.
+
+Transparent PN2object.
+Theorem  problem267atrue : Problem267aTrue.
+cbv.
+intros.
+destruct H2 as [a [b [H3]]].
+split.
+lia.
+firstorder.
 Qed.

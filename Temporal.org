@@ -68,4 +68,6 @@ happening. This allows interpretation of "before", etc.
 
 ** Time adverbs
 
-"Since" introduces *local* quantification over a timespan.
+"Since" introduces *local* quantification over a timespan. (In
+constrast to the global creation of time references for VPs in
+general.)

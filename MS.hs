@@ -748,6 +748,7 @@ conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
 
 
 lexemeVV :: String -> VV
+lexemeVV "do_VV" = return $ \vp x -> vp x -- "do" has a special meaning (ie. none)
 lexemeVV vv = return $ \vp x -> appArgs vv [lam (\subj -> noExtraObjs (vp subj) ), x]
 
 ---------------------------
