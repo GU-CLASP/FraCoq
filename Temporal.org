@@ -60,3 +60,12 @@ the subject isn't available *as a dynamic object* at the point of
 processing the verb.) So instead with process events at the predVP
 combinator. To acess atoms we break down the logical formula. See the
 (ATOM) marks in the code.
+
+** Reference time
+
+Each clause returns the time which is the reference for it
+happening. This allows interpretation of "before", etc.
+
+** Time adverbs
+
+"Since" introduces *local* quantification over a timespan.

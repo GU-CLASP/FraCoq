@@ -320,7 +320,12 @@ lexemeSubj "before_Subj" s1 = do
   return $ \s2 extraObjs ->
       let (s1',t1) = s1 extraObjs
           (s2',t2) = s2 extraObjs
-      in ((Con "LessThanTime" `apps` [temporalToLogic t1,temporalToLogic t2]) ∧ s1' ∧ s2', t2)
+      in ((Con "AFTER" `apps` [temporalToLogic t1,temporalToLogic t2]) ∧ s1' ∧ s2', t2)
+lexemeSubj "after_Subj" s1 = do
+  return $ \s2 extraObjs ->
+      let (s1',t1) = s1 extraObjs
+          (s2',t2) = s2 extraObjs
+      in ((Con "AFTER" `apps` [temporalToLogic t2,temporalToLogic t1]) ∧ s1' ∧ s2', t2)
 lexemeSubj s s1 = do
   return $ \s2 extraObjs -> 
     let (s1',_) = s1 extraObjs
@@ -885,7 +890,7 @@ predVP np vp = withClause $ do
   vp' <- vp
   let p' = np' vp'
   tense <- asks envTense
-  t <- case tense of
+  p'' <- case tense of
     Past -> do
       ts <- referenceTimesFor p' -- (1)
       -- fixme: this should happen at a lower level (lexical
@@ -893,18 +898,15 @@ predVP np vp = withClause $ do
       -- level at the moment so this will do temporarily.
       -- Why? Because events could refer to occurences inside a quantifier:
       -- Example "every boy climbed and fell after they climbed." (ATOM)
-      case ts of
-        [] -> ExactTime <$> freshTime (Con "PAST" `app`)
-        -- not a reference to a previous event. Allocate own
-        -- time. This time MUST be overridable, otherwise we'll never
-        -- be able to override it, to search for it when we reach
-        -- point (1) at a later occurence of the same event.
-        (t:_) -> return (ExactTime t)
-    _ -> return now -- FIXME: other tenses
-  let p'' :: S'
-      p'' = \e@ExtraArgs{..} -> case extraTime of
-                UnspecifiedTime -> usingTime t p' e
-                _ -> p' e
+      t <- case ts of
+                 [] -> ExactTime <$> freshTime (Con "PAST" `app`)
+                 -- not a reference to a previous event. Allocate own
+                 -- time. This time MUST be overridable by (2), otherwise we'll never
+                 -- be able to override it, to search for it when we reach
+                 -- point (1) at a later occurence of the same event.
+                 (t:_) -> return (ExactTime t) -- (2)
+      return (usingTime t p')
+    _ -> return p' -- no specific time info, leave as such. This is important because the time may come from an adverbial phrase.
   modify (pushFact $ noExtraObjs p'')
   modify (pushS (predVP np vp))
   return $ usingCompClass cn p''
