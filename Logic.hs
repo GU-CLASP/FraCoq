@@ -118,7 +118,8 @@ data Op = Fld String -- ^ field lookup
         | LAST_OPERATOR
   deriving (Eq,Show)
 
-
+pattern TimeDomain :: Exp -> Exp
+pattern TimeDomain constraint = (Con "Time") :∧ constraint
 
 pattern TRUE :: Exp
 pattern TRUE = Con "True"

@@ -16,7 +16,7 @@ import Control.Monad.State hiding (ap)
 import Logic hiding (Pol)
 import LogicB ()
 import qualified Logic
-import Data.List (intersect,nub)
+import Data.List (intersect,nub,isPrefixOf)
 -- import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Control.Applicative.Alternative
@@ -348,11 +348,15 @@ lexemeAdv :: String -> Adv
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
 lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Year_1996"))
-lexemeAdv "since_1992_Adv" = return $ usingTime (ExactTime (Con "Year_1992"))
-lexemeAdv "in_1993_Adv" = do
-  t <- freshTime (\t -> Con "AFTER" `apps `[Con "Year_1993",t])
-  return $ usingTime (ExactTime t)
+lexemeAdv "in_1993_Adv" = return $ usingTime (ExactTime (Con "Year_1993"))
+lexemeAdv adv | "since" `isPrefixOf` adv
+              = do let year = take 4 $ drop 6 $ adv
+                       tRef = Con ("Year_" ++ year)
+                   t <- getFresh
+                   let t' = givenTime t
+                   return $ \s extraObjs -> (quantTime t (Con "AFTER" `apps `[tRef,Var t]) (fst (s extraObjs{extraTime=t'})),t')
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
+
 
 appAdverb :: String -> (Object -> Prop) -> (Object -> Prop)
 appAdverb adv vp obj = apps (Con "appAdv") [Con adv,lam vp, obj]
@@ -897,7 +901,10 @@ predVP np vp = withClause $ do
         -- point (1) at a later occurence of the same event.
         (t:_) -> return (ExactTime t)
     _ -> return now -- FIXME: other tenses
-  let p'' = usingTime t p'
+  let p'' :: S'
+      p'' = \e@ExtraArgs{..} -> case extraTime of
+                UnspecifiedTime -> usingTime t p' e
+                _ -> p' e
   modify (pushFact $ noExtraObjs p'')
   modify (pushS (predVP np vp))
   return $ usingCompClass cn p''

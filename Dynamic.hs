@@ -310,7 +310,7 @@ quantifyMany ((dom,x):xs) e = Forall x (dom `app` (Var x)) (quantifyMany xs e)
 runDynamic :: Dynamic Exp -> [(Exp,Env)]
 runDynamic (Dynamic x)= do
   (formula,env@Env {..}) <- observeAll (runStateT (runReaderT x assumedReadEnv) assumed)
-  let e = quantifyMany [(Lam (\_ -> (Con "Time") :∧ constraint),t) | (constraint,t) <- envTimeVars] $
+  let e = quantifyMany [(Lam (\_ -> TimeDomain constraint),t) | (constraint,t) <- envTimeVars] $
           quantifyMany [(Lam (\_ -> Con "Nat"),v) | (v,_cn) <- quantityEnv] $
           quantifyMany envMissing formula
   return (e,env)
@@ -547,3 +547,5 @@ joinTime t1 t2 = t1 -- FIXME
 
 givenTime :: String -> Temporal
 givenTime s = ExactTime (Con s)
+
+quantTime x constraint body = Forall x (TimeDomain constraint) body
