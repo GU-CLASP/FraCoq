@@ -330,6 +330,11 @@ lexemeSubj "after_Subj" s1 = do
       let (s1',t1) = s1 extraObjs
           (s2',t2) = s2 extraObjs
       in ((Con "AFTER" `apps` [temporalToLogic t2,temporalToLogic t1]) ∧ s1' ∧ s2', t2)
+lexemeSubj "when_Subj" s1 = do
+  return $ \s2 extraObjs ->
+      let (s1',t1) = s1 extraObjs
+          (s2',t2) = s2 extraObjs
+      in ((Con "EQUALTIME" `apps` [temporalToLogic t2,temporalToLogic t1]) ∧ s1' ∧ s2', t2)
 lexemeSubj s s1 = do
   return $ \s2 extraObjs -> 
     let (s1',_) = s1 extraObjs

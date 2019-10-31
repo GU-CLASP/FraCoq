@@ -1249,6 +1249,7 @@ Definition appTime : Temporal -> (object -> TProp) -> object -> Prop :=
 Definition UnspecifiedTime := NOW.
 Definition LessThanTime := fun x y => x < y.
 Definition AFTER := fun x y => x < y.
+Definition EQUALTIME := fun x y => x < y.
 
 
 Definition appTime : Time -> (object -> TProp) -> object -> Prop := 
