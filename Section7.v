@@ -1,10 +1,5 @@
 Load Formulas.
 
-Transparent PN2object.
-Theorem  problem311atrue : Problem311aTrue.
-cbv.
-intros t1 t1Past t2 t2Past theStation isStation theHouse isHouse [P1 P2].
-Abort All.
 
 
 Parameter y1993before1996 : Year_1993 <  Year_1996.
@@ -35,6 +30,19 @@ apply P1.
 apply y1992before1993.
 Qed.
 
+
+Theorem  problem258aFalse : Problem258aFalse.
+cbv.
+intros.
+(* todo: let found_V2 x o b imply  o not exist before t*)
+Abort All.
+
+Theorem  problem259atrue : Problem259aTrue.
+cbv.
+intros.
+(* Syntax wrong, using impersonal "it" in P2 *)
+Abort All.
+
 Require Import Psatz.
 Transparent PN2object.
 Theorem  problem261atrue : Problem261aTrue.
@@ -64,6 +72,20 @@ split.
 lia.
 firstorder.
 Qed.
+
+Transparent PN2object.
+Theorem  problem307atrue : Problem307aTrue.
+cbv.
+(* We need a start and end date for time intervals. "every month", can be interpreted as "every time" for now. *)
+
+Abort All.
+
+Transparent PN2object.
+Theorem  problem311atrue : Problem311aTrue.
+cbv.
+intros t1 t1Past t2 t2Past theStation isStation theHouse isHouse [P1 P2].
+(*TODO: fix the syntax tree so it's the same in P and H *)
+Abort All.
 
 
 Theorem  problem312atrue : Problem312aTrue.
