@@ -359,7 +359,14 @@ type AdvV = ADV
 type AdV = ADV
 
 lexemeAdv :: String -> Adv
-lexemeAdv "never_AdV" = return $ onS' not'
+lexemeAdv "never_AdV" = do
+  t <- getFresh
+  let t' = givenTime t
+  return $ \s extraObjs -> (quantTime t TRUE (not' (fst (s extraObjs{extraTime=t'}))),t') -- for every time
+lexemeAdv "always_AdV" = do -- attn: local quantification
+  t <- getFresh
+  let t' = givenTime t
+  return $ \s extraObjs -> (quantTime t TRUE (fst (s extraObjs{extraTime=t'})),t') 
 lexemeAdv "in_july_1994_Adv" = return $ usingTime (ExactTime (Con "Date_199407")) 
 lexemeAdv "on_july_4th_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940704"))
 lexemeAdv "on_july_8th_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940708"))
