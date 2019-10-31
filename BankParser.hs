@@ -75,10 +75,13 @@ pbName pb = "p_" ++ showPb pb
 
 
 problemDef :: [HypID] -> [String]
-problemDef ((th@(pb,_,_):hs))
+problemDef hs@((pb,_,_):_)
   = [pbName pb ++ " :: (Phr,Phr,[Bool])"
-    ,pbName pb ++ " = (" ++ intercalate " ### " (map hypName hyps') ++ "," ++ hypName th ++ "," ++ show rs ++ ")"]
-  where hyps' = [h | h@(_,_,[_]) <- reverse hs]
+    ,pbName pb ++ " = (" ++ intercalate " ### " (map hypName premises) ++ "," ++ hypName hyp ++ "," ++ show rs ++ ")"]
+  where hyp = case [h | h@(_,_,"h") <- reverse hs] of
+                [h] -> h
+                _ -> error (show hs)
+        premises = [p | p@(_,_,"p") <- reverse hs]
         rs = case lookup pb expectResults of
           Nothing -> [True]
           Just x -> x
@@ -175,7 +178,7 @@ parseHName x = case splitOn "_" x of
   ("s": pbNumber : hypNumber : rest) -> (read pbNumber, read hypNumber, intercalate "_" rest)
   _ -> error ("statement with unexpected format: " ++ x)
 
-type HypID = (Int, Int, [Char])
+type HypID = (Int, Int, [Char]) -- (pb Number, hyp number, kind)
 
 
 expectResults :: [(Int, [Bool])]
