@@ -384,6 +384,10 @@ lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
 lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Year_1996"))
 lexemeAdv "in_1993_Adv" = return $ usingTime (ExactTime (Con "Year_1993"))
+lexemeAdv "in_march_1993_Adv"
+  = return $ usingTime (ExactTime (Con "Year_1993_Month_March"))
+lexemeAdv "in_1992_Adv" = return $ usingTime (ExactTime (Con "Year_1992"))
+lexemeAdv "currently_Adv" = return $ usingTime now
 lexemeAdv adv | "since" `isPrefixOf` adv
               = do let year = take 4 $ drop 6 $ adv
                        tRef = Con ("Year_" ++ year)
