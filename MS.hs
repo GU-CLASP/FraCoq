@@ -366,7 +366,9 @@ lexemeAdv "never_AdV" = do
 lexemeAdv "always_AdV" = do -- attn: local quantification
   t <- getFresh
   let t' = givenTime t
-  return $ \s extraObjs -> (quantTime t TRUE (fst (s extraObjs{extraTime=t'})),t') 
+  return $ \s extraObjs -> (quantTime t TRUE (fst (s extraObjs{extraTime=t'})),t')
+  
+lexemeAdv "at_a_quarter_past_five_Adv" = return $ usingTime (ExactTime (Con "Time_1715"))
 lexemeAdv "in_july_1994_Adv" = return $ usingTime (ExactTime (Con "Date_199407")) 
 lexemeAdv "on_july_4th_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940704"))
 lexemeAdv "on_july_8th_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940708"))
@@ -1136,15 +1138,15 @@ questVP = predVP
 
 --------------------
 -- Phr
-data Phr = Sentence (Dynamic S'') | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
+data Phr = Sentence (Dynamic S') | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
 
 sentence :: S -> Phr
-sentence x = Sentence (relaxTime <$> x)
+sentence x = Sentence (x)
 
 question :: S -> Phr
 question s = Sentence $ do
-  _ <- s
-  (return $ \_ -> TRUE) -- not sure about "TRUE" (but we keep the effects! so we know what we're talking about)
+  s' <- s
+  (return $ (\e -> (TRUE, snd (s' e)))) -- not sure about "TRUE" (but we keep the effects! so we know what we're talking about)
 
 pSentence :: PConj -> S -> Phr
 pSentence _ x = sentence x
@@ -1158,13 +1160,13 @@ pAdverbial = PAdverbial
 pNounphrase :: Conj -> NP -> Phr
 pNounphrase = PNounPhrase
 
-phrToS :: Phr -> Dynamic S''
+phrToS :: Phr -> Dynamic S'
 phrToS p = case p of
   Sentence s -> s
-  _ -> return $  \_ -> TRUE
+  _ -> return $ \_ -> (TRUE,now)
 
 phrToEff :: Phr -> Effect
-phrToEff p = ($ emptyObjs) <$> phrToS p
+phrToEff p = (fst . ($ emptyObjs)) <$> phrToS p
 
 relaxAdv :: ((a1 -> (t, Temporal)) -> a -> (c, b)) -> (a1 -> t) -> a -> c
 relaxAdv adv x = fst . (adv ((,now) . x))
@@ -1174,24 +1176,24 @@ infixl ###
 x ### Sentence s = Sentence $ do
   x' <- phrToS x
   s' <- s
-  return (\extraObjs -> x' emptyObjs ∧ s' extraObjs)
+  return (apConj2S' and_Conj x' s')
 x ### (Adverbial adv) = Sentence $ do
   x' <- phrToS x
   adv' <- adv
-  return (relaxAdv adv' x')
+  return (adv' x')
   -- Sentence (extAdvS adv (phrToEff x))
   -- FIXME: the adverbs should be pushed to the VP. It should be
   -- possible to do that on the semantics (modify the predicate)
 x ### (PAdverbial conj adv) = Sentence $ do
   x' <- phrToS x
   adv' <- adv
-  return (apConj2S'' conj x' (relaxAdv adv' x'))
+  return (apConj2S' conj x' (adv' x'))
   -- FIXME: the adverbs should be pushed to the VP. It should be
   -- possible to do that on the semantics (modify the predicate)
 x ### (PNounPhrase conj np) = Sentence $ do
   x' <- phrToS x
   y' <- predVP np doesTooVP
-  return (apConj2S'' conj x' (fst . y'))
+  return (apConj2S' conj x' y')
 
 -------------------------
 -- Quant

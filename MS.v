@@ -1257,6 +1257,7 @@ Definition appTime : Time -> (object -> TProp) -> object -> Prop :=
 
 Definition PAST e := e < NOW.
 
+Parameter Time_1715 : Time.
 Parameter Time_0800 : Time.
 Parameter Time_0900 : Time.
 Parameter Time_1100 : Time.
