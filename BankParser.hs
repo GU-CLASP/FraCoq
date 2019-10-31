@@ -208,6 +208,7 @@ disabledProblems =
   ,305 -- degenerate problem
   ,309 -- degenerate problem
   ,310 -- degenerate problem
+  ,317 -- comparative which needs special treatment
   ,318 -- missing syntax in the bank?
   ,321 -- syntactic difficulties
   ] ++ [i | (i,Undef) <- answers]

@@ -1113,10 +1113,14 @@ Parameter go8travel_Vby8means : object -> object -> TProp.
 Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> TProp.
 Parameter go8travel_Vby8meansto :  object ->  object -> object -> TProp.
 Parameter go8travel_Vto :  object -> object -> TProp.
+Parameter travel_Von : object -> object -> TProp.
+Parameter pay_V2on : object -> object -> object -> TProp.
 Parameter knowVQ : VS.
 Parameter WHY: Prop -> Prop.
 Definition speak_to_V2to : object -> object -> object -> TProp
   := fun to _ subj t => speak_to_V2 to subj t.
+Parameter taxi_Nto : object -> object -> TProp.
+Parameter job_Nat : object -> object -> TProp.
 
 Parameter work_Vadv : Adv -> object -> Prop.
 Parameter find_V2before : object -> object -> object -> Prop.
@@ -1124,6 +1128,7 @@ Parameter go8walk_Vadv : Adv -> object -> Prop.
 Parameter suggest_to_V2Sto : object -> V2S.
 Parameter have_V2in : object -> V2.
 Parameter travel_Vwithin : object -> V.
+Parameter stop_Vat : object -> V.
 Parameter get_V2in : object -> V2.
 
 Definition committee_member_Nfrom origin x t :=
@@ -1264,4 +1269,6 @@ Parameter Year_1993 : Time.
 Parameter Year_1992 : Time.
 Parameter Year_1991 : Time.
 Parameter present8attending_AwithTime : Time -> CN -> object -> Prop.
+
+Parameter SPEAKER : object.
 
