@@ -1251,9 +1251,17 @@ Definition appTime : Time -> (object -> TProp) -> object -> Prop :=
 
 Definition PAST e := e < NOW.
 
-
+Parameter Time_0800 : Time.
+Parameter Time_0900 : Time.
+Parameter Time_1100 : Time.
+Parameter Date_0714 : Time.
+Parameter Date_0713 : Time.
+Parameter Date_199407 : Time.
+Parameter Date_19940704 : Time.
+Parameter Date_19940708 : Time.
 Parameter Year_1996 : Time.
 Parameter Year_1993 : Time.
 Parameter Year_1992 : Time.
+Parameter Year_1991 : Time.
 Parameter present8attending_AwithTime : Time -> CN -> object -> Prop.
 

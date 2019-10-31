@@ -115,13 +115,14 @@ implicitRP = ()
 ---------------------
 -- Unimplemented categories
 
-conditional,future,pastPerfect,past,present,presentPerfect :: Temp
+futurePerfect,conditional,future,pastPerfect,past,present,presentPerfect :: Temp
 past = Past
 present = Present
 presentPerfect = PresentPerfect
 pastPerfect = PastPerfect
 future = Future
 conditional = Conditional
+futurePerfect = FuturePerfect
 
 ------------------
 -- Pol
@@ -143,6 +144,9 @@ type Card = Num
 adNum :: AdN -> Card -> Card
 adNum = id
 
+half_a_Card :: Num
+half_a_Card = Half
+
 numNumeral :: Numeral -> Card
 numNumeral = Cardinal
 
@@ -153,8 +157,8 @@ type AdN = Card -> Card
 more_than_AdN :: AdN
 more_than_AdN = MoreThan
 
--- less_than_AdN :: AdN
--- less_than_AdN = LessThan
+less_than_AdN :: AdN
+less_than_AdN = LessThan
 
 -----------------
 -- Nums
@@ -350,6 +354,16 @@ type AdvV = ADV
 type AdV = ADV
 
 lexemeAdv :: String -> Adv
+lexemeAdv "never_AdV" = return $ onS' not'
+lexemeAdv "in_july_1994_Adv" = return $ usingTime (ExactTime (Con "Date_199407")) 
+lexemeAdv "on_july_4th_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940704"))
+lexemeAdv "on_july_8th_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940708"))
+lexemeAdv "saturday_july_14th_Adv" = return $ usingTime (ExactTime (Con "Date_0714"))
+lexemeAdv "friday_13th_Adv" = return $ usingTime (ExactTime (Con "Date_0713"))
+lexemeAdv "in_1991_Adv" = return $ usingTime (ExactTime (Con "Year_1991"))
+lexemeAdv "at_8_am_Adv" = return $ usingTime (ExactTime (Con "Time_0800"))
+lexemeAdv "by_11_am_Adv" = return $ usingTime (ExactTime (Con "Time_1100"))
+lexemeAdv "in_two_hours_Adv" = return $ \s ExtraArgs{..} -> s ExtraArgs{extraDuration = Explicit (Con "TwoHours"),..}
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
 lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Year_1996"))
@@ -579,6 +593,9 @@ qPron q = do
   np <- afromList nps
   protected np
 
+i_Pron :: Pron
+i_Pron = return $ MkNP [] Singular (ObjectQuant (Con "SPEAKER")) (mkPred' "person_N") [Male,Female]
+
 sheRefl_Pron :: Pron
 sheRefl_Pron = qPron $ all' [isFemale, isSingular, isCoArgument]
 
@@ -776,6 +793,9 @@ elliptic_VP = doesTooVP
 
 
 -- | Passive
+passV2 :: V2 -> VP
+passV2 = passV2s
+
 passV2s :: V2 -> VP
 passV2s v2 = do
   v2' <- v2
@@ -974,6 +994,9 @@ slashVP np vp = do
 data Conj where
   RightAssoc :: (Prop -> Prop -> Prop) -> Conj
   EitherOr :: Conj
+
+semicolon_and_Conj :: Conj
+semicolon_and_Conj = and_Conj
 
 and_Conj :: Conj
 and_Conj = RightAssoc (∧)
@@ -1247,9 +1270,12 @@ several_Quant = ETypeQuant SEVERAL
 indefArt :: Quant
 indefArt = IndefQuant
 
+-- | Definite which looks up in the environment.
 defArt :: Quant
 defArt = DefiniteQuant
--- | Definite which looks up in the environment.
+
+this_Quant :: Quant
+this_Quant = defArt
 
 genNP :: Pron -> Quant
 genNP = PossQuant

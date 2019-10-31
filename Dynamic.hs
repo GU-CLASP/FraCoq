@@ -80,8 +80,10 @@ data Num where
   Unspecified :: Num
   Singular :: Num
   Plural   :: Num
+  Half :: Num
   AFew :: Num
   MoreThan :: Num -> Num
+  LessThan :: Num -> Num
   Cardinal :: Nat -> Num
   deriving (Show,Eq)
 
@@ -108,6 +110,7 @@ data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
                            , extraAdvs :: (Object -> Prop) -> Object -> Prop -- adverbs
                            , extraCompClass :: Optional CN''
                            , extraTime :: Temporal
+                           , extraDuration :: Optional Exp
                            }
 
 type S'' = ExtraArgs -> Prop
@@ -137,7 +140,7 @@ type VP = Dynamic VP'
 type Cl =  Dynamic Cl'
 type Temp = Tense
 
-data Tense = Conditional | Future | PastPerfect | Past | Present | PresentPerfect
+data Tense = Conditional | Future | PastPerfect | Past | Present | PresentPerfect | FuturePerfect
 
 type ClSlash  = Dynamic VP'
 type RCl  = Dynamic RCl'

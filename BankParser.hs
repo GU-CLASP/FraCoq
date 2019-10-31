@@ -159,7 +159,7 @@ main = do
                   -- pbNumber >= 114, -- start of anaphora section
                   -- pbNumber <= 141, -- end of anaphora section
                   -- pbNumber <= 251, -- end of ellipsis section
-                  (pbNumber >= 326) || (pbNumber < 311),
+                  -- (pbNumber >= 326) || (pbNumber < 313),
                   hypTyp /= "q"]
       problems = filter (not . (`elem` disabledProblems) . frst . fst  . head) $
                  groupBy ((==) `on` (frst . fst)) handled
@@ -190,6 +190,9 @@ overrides (177,1,"p")= Just "s_177_1_p_NEW"
 overrides (122,4,"h")= Just "s_122_4_h_ALT"
 overrides (155,2,"p")= Just "s_155_2_p_ALT"
 overrides (086,3,"h")= Just "s_086_2_h_ALT" -- gf syntax has the wrong noun (accountant vs. lawyer)
+overrides (315,3,"h") = Just "s_315_3_h_NEW"
+overrides (320,3,"h") = Just "s_320_3_h_NEW"
+overrides (322,1,"p") = Just "s_322_1_p_NEW"
 overrides (323,4,"h") = Just "s_323_4_h_NEW"
 overrides (323,1,"p") = Just "s_323_1_p_NEW"
 overrides _ = Nothing
@@ -205,4 +208,6 @@ disabledProblems =
   ,305 -- degenerate problem
   ,309 -- degenerate problem
   ,310 -- degenerate problem
+  ,318 -- missing syntax in the bank?
+  ,321 -- syntactic difficulties
   ] ++ [i | (i,Undef) <- answers]
