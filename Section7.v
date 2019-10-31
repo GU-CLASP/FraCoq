@@ -1,11 +1,22 @@
 Load Formulas.
 
+Transparent PN2object.
+Theorem  problem311atrue : Problem311aTrue.
+cbv.
+intros t1 t1Past t2 t2Past theStation isStation theHouse isHouse [P1 P2].
+Abort All.
+
 
 Parameter y1993before1996 : Year_1993 <  Year_1996.
 Parameter y1992before1996 : Year_1992 <  Year_1996.
 Parameter y1992before1993 : Year_1992 <  Year_1993.
 
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
+
+
+Parameter itIsTheCaseThatIdiom : forall p x, case_N x NOW -> that_Subj p (IMPERSONAL = x) = p.
+
+Parameter know_weakening : forall p x t, know_VS p x t -> p.
 
 
 Theorem  problem252aTrue : Problem252aTrue.
@@ -53,3 +64,32 @@ split.
 lia.
 firstorder.
 Qed.
+
+
+Theorem  problem312atrue : Problem312aTrue.
+cbv.
+intros t1 t1Past t2 t2Past [P1 P2].
+apply P1.
+split.
+Qed.
+
+Theorem  problem313atrue : Problem313aFalse.
+cbv.
+intros t1 t1Past t2 t2Past [P1 P2] [report [isReport Q]].
+apply (P1 Year_1993).
+split.
+exists report.
+split.
+exact isReport.
+exact Q.
+Qed.
+
+Theorem  problem320atrue : Problem320aTrue.
+cbv.
+intros.
+destruct H2 as [t [P1 P2]].
+assert (Q := know_weakening P2).
+rewrite -> itIsTheCaseThatIdiom.
+split.
+intros [memoir [obvious R]].
+Abort All.

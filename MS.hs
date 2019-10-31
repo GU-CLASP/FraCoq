@@ -85,7 +85,7 @@ lexemeV2V :: String -> V2V
 lexemeV2V v2v = return $ \x vp y -> appArgs v2v [x,lam (\z -> noExtraObjs (vp z)),y]
 
 pnTable :: [(String,([Gender],Num))]
-pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following
+pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following; then female in 311
           ,("john_PN" , ([Male],Singular))
           ,("itel_PN" , ([Neutral],Plural))
           ,("gfi_PN" , ([Neutral],Singular))
@@ -238,6 +238,8 @@ lexemeN x@"customer_N" = genderedN x [Male,Female]
 lexemeN x@"executive_N" = genderedN x [Male,Female]
 lexemeN x@"sales_department_N" = genderedN x [Neutral]
 lexemeN x@"invoice_N" = genderedN x [Neutral]
+lexemeN x@"house_N" = genderedN x [Neutral]
+lexemeN x@"station_N" = genderedN x [Neutral]
 lexemeN x@"meeting_N" = genderedN x [Neutral]
 lexemeN x@"report_N" = genderedN x [Neutral]
 lexemeN x@"laptop_computer_N" = genderedN x [Neutral]
@@ -1008,6 +1010,8 @@ slashVP np vp = do
 data Conj where
   RightAssoc :: (Prop -> Prop -> Prop) -> Conj
   EitherOr :: Conj
+  Then :: Conj
+
 
 semicolon_and_Conj :: Conj
 semicolon_and_Conj = and_Conj
@@ -1031,6 +1035,10 @@ if_comma_then_Conj :: Conj
 if_comma_then_Conj = RightAssoc (-->)
 
 apConj2S' :: Conj -> S' -> S' -> S'
+apConj2S' Then p q extras =
+  let (p',t1) = p extras
+      (q',t2) = q extras
+  in ((Con "AFTER" `apps` [temporalToLogic t2,temporalToLogic t1]) ∧ p' ∧ q', t2)
 apConj2S' conj p q extras =
   let (p',t1) = p extras
       (q',t2) = q extras
@@ -1038,6 +1046,7 @@ apConj2S' conj p q extras =
 
 apConj2 :: Conj -> Prop -> Prop -> Prop
 apConj2 conj p q = case conj of
+  Then -> apConj2 and_Conj p q
   RightAssoc c -> c p q
   EitherOr -> (p ∧ not' (q)) ∨ (not' (p) ∧ (q))
 
@@ -1046,11 +1055,13 @@ apConj2S'' conj p q extras = apConj2 conj (p extras) (q extras)
 
 apConj3 :: Conj -> Prop -> Prop -> Prop -> Prop
 apConj3 conj p q r = case conj of
+  Then -> apConj3 and_Conj p q r
   RightAssoc c -> (p `c` q) `c` r
   EitherOr -> (p ∧ not' (q) ∧ not' (r)) ∨ (not' (p) ∧ (q) ∧ not' (r)) ∨ (not' (p) ∧ not' (q) ∧ (r))
 
 apConj3S'' :: Conj -> S'' -> S''-> S''-> S''
 apConj3S'' conj p q r e = case conj of
+  Then -> apConj3S'' and_Conj p q r e
   RightAssoc c -> (p e `c` q e) `c` r e
   EitherOr -> (p e ∧ not' (q e) ∧ not' (r e)) ∨ (not' (p e) ∧ (q e) ∧ not' (r e)) ∨ (not' (p e) ∧ not' (q e) ∧ (r e))
 
@@ -1073,7 +1084,7 @@ but_PConj = and_Conj
 that_is_PConj :: PConj
 that_is_PConj = and_Conj
 then_PConj :: Conj
-then_PConj = and_Conj
+then_PConj = Then
 
 
 ----------------------
@@ -1138,7 +1149,7 @@ questVP = predVP
 
 --------------------
 -- Phr
-data Phr = Sentence (Dynamic S') | Adverbial Adv | PAdverbial Conj Adv | PNounPhrase Conj NP
+data Phr = Sentence (Dynamic S') | Adverbial Adv | PSentence Conj (Dynamic S') | PAdverbial Conj Adv | PNounPhrase Conj NP
 
 sentence :: S -> Phr
 sentence x = Sentence (x)
@@ -1149,7 +1160,7 @@ question s = Sentence $ do
   (return $ (\e -> (TRUE, snd (s' e)))) -- not sure about "TRUE" (but we keep the effects! so we know what we're talking about)
 
 pSentence :: PConj -> S -> Phr
-pSentence _ x = sentence x
+pSentence = PSentence
 
 adverbial :: Adv -> Phr
 adverbial = Adverbial
@@ -1184,6 +1195,10 @@ x ### (Adverbial adv) = Sentence $ do
   -- Sentence (extAdvS adv (phrToEff x))
   -- FIXME: the adverbs should be pushed to the VP. It should be
   -- possible to do that on the semantics (modify the predicate)
+x ### (PSentence conj s) = Sentence $ do
+  x' <- phrToS x
+  y' <- s
+  return (apConj2S' conj x' y')
 x ### (PAdverbial conj adv) = Sentence $ do
   x' <- phrToS x
   adv' <- adv
