@@ -1,7 +1,5 @@
 Load Formulas.
 
-
-
 Parameter y1993before1996 : Year_1993 <  Year_1996.
 Parameter y1992before1996 : Year_1992 <  Year_1996.
 Parameter y1992before1993 : Year_1992 <  Year_1993.
@@ -11,6 +9,7 @@ Parameter y1992before1993 : Year_1992 <  Year_1993.
 
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x NOW -> that_Subj p (IMPERSONAL = x) = p.
 
+(* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
 Parameter know_weakening : forall p x t, know_VS p x t -> p.
 
 
