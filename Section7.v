@@ -1,3 +1,4 @@
+
 Load Formulas.
 
 Parameter y1993before1996 : Year_1993 <  Year_1996.
@@ -12,6 +13,12 @@ Parameter itIsTheCaseThatIdiom : forall p x, case_N x NOW -> that_Subj p (IMPERS
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
 Parameter know_weakening : forall p x t, know_VS p x t -> p.
 
+
+Theorem  problem251aTrue : Problem251aTrue.
+cbv.
+intro.
+assumption.
+Qed.
 
 Theorem  problem252aTrue : Problem252aTrue.
 cbv.
@@ -29,6 +36,8 @@ apply P1.
 apply y1992before1993.
 Qed.
 
+
+Parameter foundNotExisit_K : forall x o t, found_V2 x o t -> forall t', t' < t -> not (exist_V x t).
 
 Theorem  problem258aFalse : Problem258aFalse.
 cbv.

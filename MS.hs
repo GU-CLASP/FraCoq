@@ -361,14 +361,6 @@ type AdvV = ADV
 type AdV = ADV
 
 lexemeAdv :: String -> Adv
-lexemeAdv "never_AdV" = do
-  t <- getFresh
-  let t' = givenTime t
-  return $ \s extraObjs -> (quantTime t TRUE (not' (fst (s extraObjs{extraTime=t'}))),t') -- for every time
-lexemeAdv "always_AdV" = do -- attn: local quantification
-  t <- getFresh
-  let t' = givenTime t
-  return $ \s extraObjs -> (quantTime t TRUE (fst (s extraObjs{extraTime=t'})),t')
   
 lexemeAdv "at_a_quarter_past_five_Adv" = return $ usingTime (ExactTime (Con "Time_1715"))
 lexemeAdv "in_july_1994_Adv" = return $ usingTime (ExactTime (Con "Date_199407")) 
@@ -387,13 +379,21 @@ lexemeAdv "in_1993_Adv" = return $ usingTime (ExactTime (Con "Year_1993"))
 lexemeAdv "in_march_1993_Adv"
   = return $ usingTime (ExactTime (Con "Year_1993_Month_March"))
 lexemeAdv "in_1992_Adv" = return $ usingTime (ExactTime (Con "Year_1992"))
-lexemeAdv "currently_Adv" = return $ usingTime now
+lexemeAdv "currently_AdV" = return $ usingTime now
 lexemeAdv adv | "since" `isPrefixOf` adv
               = do let year = take 4 $ drop 6 $ adv
                        tRef = Con ("Year_" ++ year)
                    t <- getFresh
                    let t' = givenTime t
                    return $ \s extraObjs -> (quantTime t (Con "AFTER" `apps `[tRef,Var t]) (fst (s extraObjs{extraTime=t'})),t')
+lexemeAdv "never_AdV" = do
+  t <- getFresh
+  let t' = givenTime t
+  return $ \s extraObjs -> (quantTime t TRUE (not' (fst (s extraObjs{extraTime=t'}))),t') -- for every time
+lexemeAdv "always_AdV" = do -- attn: local quantification
+  t <- getFresh
+  let t' = givenTime t
+  return $ \s extraObjs -> (quantTime t TRUE (fst (s extraObjs{extraTime=t'})),t')
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
 
