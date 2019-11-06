@@ -68,6 +68,12 @@ happening. This allows interpretation of "before", etc.
 
 ** Time adverbs
 
-"Since" introduces *local* quantification over a timespan. (In
-constrast to the global creation of time references for VPs in
-general.)
+Time adverbs, such as "Since", "always", "never" introduce *local*
+quantification over a timespan. (In constrast to the global creation
+of time references for VPs in general.)
+
+This scope may be extended if the event is referred to:
+
+"john has been eating meat since 1978. When he eats meat he gets sick."
+
+
