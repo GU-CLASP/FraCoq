@@ -1,4 +1,3 @@
-
 Load Formulas.
 
 Parameter y1993before1996 : Year_1993 <  Year_1996.
@@ -37,13 +36,20 @@ apply y1992before1993.
 Qed.
 
 
-Parameter foundNotExisit_K : forall x o t, found_V2 x o t -> forall t', t' < t -> not (exist_V x t).
+Parameter foundNotExisit_K : forall x o t, found_V2 x o t -> forall t', t' < t
+-> exist_V x t' -> False.
+
+Parameter y1992before1993March : Year_1992 <  Year_1993_Month_March.
 
 Theorem  problem258aFalse : Problem258aFalse.
 cbv.
 intros.
-(* todo: let found_V2 x o b imply  o not exist before t*)
-Abort All.
+apply foundNotExisit_K with (x := PN2object itel_PN) (o := (PN2object apcom_PN) )
+                            (t' := Year_1992) (t := Year_1993_Month_March).
+assumption.
+apply y1992before1993March.
+assumption.
+Qed.
 
 Theorem  problem259atrue : Problem259aTrue.
 cbv.

@@ -1268,6 +1268,7 @@ Parameter Date_19940704 : Time.
 Parameter Date_19940708 : Time.
 Parameter Year_1996 : Time.
 Parameter Year_1993 : Time.
+Parameter Year_1993_Month_March : Time.
 Parameter Year_1992 : Time.
 Parameter Year_1991 : Time.
 Parameter present8attending_AwithTime : Time -> CN -> object -> Prop.

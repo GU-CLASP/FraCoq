@@ -939,14 +939,19 @@ predVP np vp = withClause $ do
       -- level at the moment so this will do temporarily.
       -- Why? Because events could refer to occurences inside a quantifier:
       -- Example "every boy climbed and fell after they climbed." (ATOM)
-      t <- case ts of
-                 [] -> ExactTime <$> freshTime (Con "PAST" `app`)
-                 -- not a reference to a previous event. Allocate own
-                 -- time. This time MUST be overridable by (2), otherwise we'll never
-                 -- be able to override it, to search for it when we reach
-                 -- point (1) at a later occurence of the same event.
-                 (t:_) -> return (ExactTime t) -- (2)
-      return (usingTime t p')
+      case ts of
+         [] -> -- not a reference to a previous event.
+           do -- Allocate own time.
+              t <- ExactTime <$> freshTime (Con "PAST" `app`)
+              return $ \e@ExtraArgs{..} ->
+                  case extraTime of
+                    UnspecifiedTime -> usingTime t p' e
+                      -- (b) We do not have a specified time
+                      -- Use own time. This time MUST be overridable by (2), otherwise we'll never
+                      -- be able to override it, to search for it when we reach
+                      -- point (1) at a later occurence of the same event.
+                    _ -> p' e -- (a) We have a specified time already, e.g coming from an adverbial phrase. Change nothing
+         (t:_) -> return (usingTime (ExactTime t) p')  -- (2)
     _ -> return p' -- no specific time info, leave as such. This is important because the time may come from an adverbial phrase.
   modify (pushFact $ noExtraObjs p'')
   modify (pushS (predVP np vp))
