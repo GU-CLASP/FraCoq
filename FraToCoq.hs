@@ -9,7 +9,7 @@ import Text.Printf
 
 prepare :: Exp Zero -> Either String (Exp Zero)
 prepare q = case extendAllScopes q of
-      ([],p) -> Right p
+      ([],p) -> Right (removeUselessQuantifiers p)
       _ -> Left $ "(* Interpretation " ++ show q ++ " can't be scope-extended fully *)"
 
 handleProblem :: Int -> (Phr,Phr,[Bool]) -> IO ()

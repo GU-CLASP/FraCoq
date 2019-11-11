@@ -24,10 +24,13 @@ debug e = do
     putStrLn "Facts:"
     forM_ envFacts print
     let p = (fromHOAS' p0) :: Exp Zero
-    forM_ (extendAllScopesTrace p) $ \(fvs,q) -> do
+        tr = extendAllScopesTrace p
+    forM_ tr $ \(fvs,q) -> do
       putStrLn ("extendAllScopes Step. Freevars = " ++ show fvs)
       putStrLn ("expression = " ++ show q)
-
+    case reverse tr of
+      [] -> return ()
+      ((_,p'):_) -> putStrLn ("cleaned = " ++ show (removeUselessQuantifiers p'))
 
 testIt :: Exp Zero
 testIt = Op And [Op And [Quant One Pos "x" (Con "dom") (Con "body"), Var "x" ], Con "whatever"]

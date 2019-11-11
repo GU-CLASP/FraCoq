@@ -18,7 +18,7 @@ import Control.Applicative
 import Control.Monad
 import Data.Traversable
 
-data Next v = Here | There v deriving (Eq, Functor)
+data Next v = Here | There v deriving (Eq, Functor,Show)
 data Zero
 
 deriving instance (Eq Zero)
@@ -213,7 +213,7 @@ freeVars (V _) = []
 freeVars (Lam f) = freeVars f
 freeVars (Var x) = [x]
 freeVars (Quant _ _ x dom body) = nub (freeVars dom ++ freeVars body) \\ [x]
-freeVars (Op _ xs) = (concatMap (freeVars) xs)
+freeVars (Op _ xs) = concatMap (freeVars) xs
 
 boundVars :: forall t. Exp t -> [String]
 boundVars (V _) = []
@@ -285,6 +285,13 @@ extendAllScopesTrace e = (freeVars e, e) : case freeVars e of
   xs -> case liftQuantifiersAnyWhere xs e of
     Nothing -> []
     Just e' -> extendAllScopesTrace e'
+
+removeUselessQuantifiers :: Exp v -> Exp v
+removeUselessQuantifiers (Quant amount Neg v dom body) =
+  if v `elem` freeVars body
+  then Quant amount Neg v dom (removeUselessQuantifiers body)
+  else removeUselessQuantifiers body
+removeUselessQuantifiers x = x
 
 
 fromHOAS' :: L.Exp -> Exp v
