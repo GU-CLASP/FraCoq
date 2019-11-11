@@ -380,6 +380,7 @@ lexemeAdv "in_march_1993_Adv"
   = return $ usingTime (ExactTime (Con "Year_1993_Month_March"))
 lexemeAdv "in_1992_Adv" = return $ usingTime (ExactTime (Con "Year_1992"))
 lexemeAdv "currently_AdV" = return $ usingTime now
+lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (Con "YESTERDAY"))
 lexemeAdv adv | "since" `isPrefixOf` adv
               = do let year = take 4 $ drop 6 $ adv
                        tRef = Con ("Year_" ++ year)

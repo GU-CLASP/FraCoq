@@ -1,3 +1,4 @@
+
 Load Formulas.
 
 Parameter y1993before1996 : Year_1993 <  Year_1996.
@@ -34,6 +35,20 @@ intros [P1 P2].
 apply P1.
 apply y1992before1993.
 Qed.
+Require Import Psatz.
+
+Theorem  problem260aTrue : Problem260aTrue.
+cbv.
+intros t tPast t2 t2Past.
+intros contract isContract.
+intros [P1 P2].
+destruct P2 as [today [isToday P2']].
+cut (NOW - ONEDAY = Date_0713).
+intro H.
+rewrite <- H.
+assumption. 
+lia.
+Qed.
 
 
 Parameter foundNotExisit_K : forall x o t, found_V2 x o t -> forall t', t' < t
@@ -57,7 +72,6 @@ intros.
 (* Syntax wrong, using impersonal "it" in P2 *)
 Abort All.
 
-Require Import Psatz.
 Transparent PN2object.
 Theorem  problem261atrue : Problem261aTrue.
 cbv.
@@ -65,7 +79,7 @@ intros t1 t1Past t2 t2Past t3 t3Past [p1Order [p1a [p1b [p2Order [p2a p2b]]]]].
 split.
 lia.
 firstorder.
-Qed.
+Abort All.
 
 
 Transparent PN2object.
@@ -75,7 +89,7 @@ intros.
 split.
 lia.
 firstorder.
-Qed.
+Abort All.
 
 Transparent PN2object.
 Theorem  problem267atrue : Problem267aTrue.

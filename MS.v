@@ -1257,12 +1257,14 @@ Definition appTime : Time -> (object -> TProp) -> object -> Prop :=
 
 Definition PAST e := e < NOW.
 
-Parameter Time_1715 : Time.
+Parameter ONEDAY : Time.
+Definition YESTERDAY := NOW - ONEDAY.
 Parameter Time_0800 : Time.
 Parameter Time_0900 : Time.
 Parameter Time_1100 : Time.
-Parameter Date_0714 : Time.
+Parameter Time_1715 : Time.
 Parameter Date_0713 : Time.
+Definition Date_0714 : Time := Date_0713 + ONEDAY.
 Parameter Date_199407 : Time.
 Parameter Date_19940704 : Time.
 Parameter Date_19940708 : Time.
