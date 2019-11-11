@@ -322,26 +322,27 @@ useComparA_prefix a = do
 type Subj = Cl' -> Adv
 
 lexemeSubj :: String -> Subj
-lexemeSubj "before_Subj" s1 = do
-  return $ \s2 extraObjs ->
-      let (s1',t1) = s1 extraObjs
-          (s2',t2) = s2 extraObjs
-      in ((Con "AFTER" `apps` [temporalToLogic t1,temporalToLogic t2]) ∧ s1' ∧ s2', t2)
-lexemeSubj "after_Subj" s1 = do
-  return $ \s2 extraObjs ->
-      let (s1',t1) = s1 extraObjs
-          (s2',t2) = s2 extraObjs
-      in ((Con "AFTER" `apps` [temporalToLogic t2,temporalToLogic t1]) ∧ s1' ∧ s2', t2)
-lexemeSubj "when_Subj" s1 = do
-  return $ \s2 extraObjs ->
-      let (s1',t1) = s1 extraObjs
-          (s2',t2) = s2 extraObjs
-      in ((Con "EQUALTIME" `apps` [temporalToLogic t2,temporalToLogic t1]) ∧ s1' ∧ s2', t2)
+lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "AFTER" `apps` [t1,t2]) s1
+lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` [t2,t1]) s1
+lexemeSubj "when_Subj" s1 = timeSubj  (\t1 t2 -> Con "EQUALTIME" `apps` [t2,t1]) s1
 lexemeSubj s s1 = do
   return $ \s2 extraObjs -> 
     let (s1',_) = s1 extraObjs
         (s2',t2) = s2 extraObjs
     in (Con s `apps` [s1',s2'], t2)
+
+timeSubj constraint s1 = do
+  return $ \s2 extraObjs ->
+      let (s1',t1) = s1 extraObjs{extraTime=UnspecifiedTime}
+          (s2',t2) = s2 extraObjs
+          -- we must use "UnspecifiedTime" here so that we can use the time reference which was created at the time of *dynamic* evaluation of s1.
+      in (constraint (temporalToLogic t1) (temporalToLogic t2) ∧ s1' ∧ s2',t2)
+  -- t2 <- getFresh
+  -- return $ \s2 extraObjs ->
+  --     let (s1',t1) = s1 extraObjs{extraTime=UnspecifiedTime}
+  --         -- we must use "UnspecifiedTime" here so that we can use the time reference which was created at the time of *dynamic* evaluation of s1.
+  --     in withTimeQuant t2 (constraint (temporalToLogic t1)) (s1' ∧) s2 extraObjs
+  --         forcing the time here means that previous occurences will not be able to be looked up.
 
 --------------------
 -- AdA
@@ -385,18 +386,19 @@ lexemeAdv adv | "since" `isPrefixOf` adv
               = do let year = take 4 $ drop 6 $ adv
                        tRef = Con ("Year_" ++ year)
                    t <- getFresh
-                   let t' = givenTime t
-                   return $ \s extraObjs -> (quantTime t (Con "AFTER" `apps `[tRef,Var t]) (fst (s extraObjs{extraTime=t'})),t')
+                   return $ withTimeQuant t (\t' -> Con "AFTER" `apps `[tRef,t']) id
 lexemeAdv "never_AdV" = do
   t <- getFresh
-  let t' = givenTime t
-  return $ \s extraObjs -> (quantTime t TRUE (not' (fst (s extraObjs{extraTime=t'}))),t') -- for every time
+  return $ withTimeQuant t (const TRUE) not' -- for every time
 lexemeAdv "always_AdV" = do -- attn: local quantification
   t <- getFresh
-  let t' = givenTime t
-  return $ \s extraObjs -> (quantTime t TRUE (fst (s extraObjs{extraTime=t'})),t')
+  return $ withTimeQuant t (const TRUE) id
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
+withTimeQuant :: String -> (Exp -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, Temporal)
+withTimeQuant t constr f = \s extraObjs -> (quantTime t (constr (Var t)) (f (fst (s (extraObjs{extraTime=t'})))),t')
+  where t' = ExactTime (Var t)
+  
 
 appAdverb :: String -> (Object -> Prop) -> (Object -> Prop)
 appAdverb adv vp obj = apps (Con "appAdv") [Con adv,lam vp, obj]
@@ -943,16 +945,16 @@ predVP np vp = withClause $ do
       case ts of
          [] -> -- not a reference to a previous event.
            do -- Allocate own time.
-              t <- ExactTime <$> freshTime (Con "PAST" `app`)
+              t <- freshTime (Con "PAST" `app`)
               return $ \e@ExtraArgs{..} ->
                   case extraTime of
-                    UnspecifiedTime -> usingTime t p' e
+                    UnspecifiedTime -> usingTime (ExactTime t) p' e
                       -- (b) We do not have a specified time
                       -- Use own time. This time MUST be overridable by (2), otherwise we'll never
                       -- be able to override it, to search for it when we reach
                       -- point (1) at a later occurence of the same event.
                     _ -> p' e -- (a) We have a specified time already, e.g coming from an adverbial phrase. Change nothing
-         (t:_) -> return (usingTime (ExactTime t) p')  -- (2)
+         (t:_) -> return (usingTime (ForceTime t) p')  -- (2)
     _ -> return p' -- no specific time info, leave as such. This is important because the time may come from an adverbial phrase.
   modify (pushFact $ noExtraObjs p'')
   modify (pushS (predVP np vp))

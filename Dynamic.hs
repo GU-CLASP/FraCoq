@@ -539,6 +539,7 @@ temporalToLogic t = case t  of
   IntervalTime s -> Con ("interval" ++ s)
 
 pushFact :: Prop -> Env -> Env
+pushFact (Quant _amount _pol _var _dom body) = pushFact body -- HACK to access atom
 pushFact (p :∧ q)  = {-pushFact p . -} pushFact q  -- HACK to access atom (ATOM)
 pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
 
@@ -547,8 +548,5 @@ withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}
 
 joinTime :: Temporal -> Temporal -> Temporal
 joinTime t1 t2 = t1 -- FIXME
-
-givenTime :: String -> Temporal
-givenTime s = ExactTime (Con s)
 
 quantTime x constraint body = Forall x (TimeDomain constraint) body

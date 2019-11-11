@@ -43,7 +43,9 @@ tt = extendAllScopes (testIt :: Exp Zero)
 main :: IO ()
 main = do
   -- suite handleProblem >> putStrLn "----------"
-  debug (phrToEff s_267_3_p)
+  -- debug (phrToEff s_261_1_p)
+  debug (probToEff p_261)
+  -- debug (phrToEff s_267_3_p)
   -- debug (probToEff p_267)
   -- handleProblem p
 

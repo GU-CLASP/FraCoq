@@ -1,4 +1,3 @@
-
 Load Formulas.
 
 Parameter y1993before1996 : Year_1993 <  Year_1996.
@@ -72,6 +71,7 @@ intros.
 (* Syntax wrong, using impersonal "it" in P2 *)
 Abort All.
 
+
 Transparent PN2object.
 Theorem  problem261atrue : Problem261aTrue.
 cbv.
@@ -79,7 +79,7 @@ intros t1 t1Past t2 t2Past t3 t3Past [p1Order [p1a [p1b [p2Order [p2a p2b]]]]].
 split.
 lia.
 firstorder.
-Abort All.
+Qed.
 
 
 Transparent PN2object.
@@ -89,7 +89,7 @@ intros.
 split.
 lia.
 firstorder.
-Abort All.
+Qed.
 
 Transparent PN2object.
 Theorem  problem267atrue : Problem267aTrue.
