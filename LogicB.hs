@@ -17,6 +17,7 @@ import Data.List
 import Control.Applicative
 import Control.Monad
 import Data.Traversable
+import Data.Foldable
 
 data Next v = Here | There v deriving (Eq, Functor,Show)
 data Zero
@@ -212,7 +213,7 @@ freeVars (Con _x) = []
 freeVars (V _) = []
 freeVars (Lam f) = freeVars f
 freeVars (Var x) = [x]
-freeVars (Quant _ _ x dom body) = nub (freeVars dom ++ freeVars body) \\ [x]
+freeVars (Quant amount _ x dom body) = nub (concatMap freeVars (toList amount) ++ freeVars dom ++ freeVars body) \\ [x]
 freeVars (Op _ xs) = concatMap (freeVars) xs
 
 boundVars :: forall t. Exp t -> [String]

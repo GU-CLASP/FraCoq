@@ -21,7 +21,6 @@ Qed.
 
 Theorem  problem252aTrue : Problem252aTrue.
 cbv.
-intros t tPast.
 intros [P1 P2].
 apply P1.
 apply y1992before1993.
@@ -29,7 +28,6 @@ Qed.
 
 Theorem  problem255aTrue : Problem255aTrue.
 cbv.
-intros t tPast.
 intros [P1 P2].
 apply P1.
 apply y1992before1993.
@@ -38,7 +36,6 @@ Require Import Psatz.
 
 Theorem  problem260aTrue : Problem260aTrue.
 cbv.
-intros t tPast t2 t2Past.
 intros contract isContract.
 intros [P1 P2].
 destruct P2 as [today [isToday P2']].
@@ -78,7 +75,9 @@ cbv.
 intros t1 t1Past t2 t2Past t3 t3Past [p1Order [p1a [p1b [p2Order [p2a p2b]]]]].
 split.
 lia.
-firstorder.
+split.
+assumption.
+assumption.
 Qed.
 
 
@@ -118,14 +117,14 @@ Abort All.
 
 Theorem  problem312atrue : Problem312aTrue.
 cbv.
-intros t1 t1Past t2 t2Past [P1 P2].
+intros [P1 P2].
 apply P1.
 split.
 Qed.
 
 Theorem  problem313atrue : Problem313aFalse.
 cbv.
-intros t1 t1Past t2 t2Past [P1 P2] [report [isReport Q]].
+intros [P1 P2] [report [isReport Q]].
 apply (P1 Year_1993).
 split.
 exists report.
