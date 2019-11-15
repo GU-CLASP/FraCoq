@@ -82,7 +82,7 @@ lexemeVS :: String -> VS
 lexemeVS vs = return $ \s x -> mkRel2 vs (noExtraObjs s) x
 
 lexemeV2V :: String -> V2V
-lexemeV2V v2v = return $ \x vp y -> appArgs v2v [x,lam (\z -> noExtraObjs (vp z)),y]
+lexemeV2V v2v = return $ \x vp y -> appArgs True v2v [x,lam (\z -> noExtraObjs (vp z)),y]
 
 pnTable :: [(String,([Gender],Num))]
 pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following; then female in 311
@@ -331,6 +331,11 @@ lexemeSubj s s1 = do
         (s2',t2) = s2 extraObjs
     in (Con s `apps` [s1',s2'], t2)
 
+timeSubj :: Monad m =>
+                  (Exp -> Exp -> Exp)
+                  -> (ExtraArgs -> (Exp, Temporal))
+                  -> m ((ExtraArgs -> (Exp, Temporal))
+                        -> ExtraArgs -> (Exp, Temporal))
 timeSubj constraint s1 = do
   return $ \s2 extraObjs ->
       let (s1',t1) = s1 extraObjs{extraTime=UnspecifiedTime}
@@ -762,7 +767,7 @@ compAdv adv = do
   return $ \_xClass x extraObjs -> adv' (beVerb x) extraObjs
 
 beVerb :: VP'
-beVerb y = appArgs "_BE_" [y]
+beVerb y = appArgs True "_BE_" [y]
 
 ---------------------------
 -- V2
@@ -789,7 +794,7 @@ conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
 
 lexemeVV :: String -> VV
 lexemeVV "do_VV" = return $ \vp x -> vp x -- "do" has a special meaning (ie. none)
-lexemeVV vv = return $ \vp x -> appArgs vv [lam (\subj -> noExtraObjs (vp subj) ), x]
+lexemeVV vv = return $ \vp x -> appArgs True vv [lam (\subj -> noExtraObjs (vp subj) ), x]
 
 ---------------------------
 -- VP

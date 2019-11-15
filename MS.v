@@ -107,8 +107,8 @@ Definition NonCommitalA := A.
 
 
 Definition AP:= A.
-Definition N:= object-> TProp.
-Definition N2 := object -> object -> TProp.
+Definition N:= object-> Prop.
+Definition N2 := object -> object -> Prop.
 Inductive Num : Type :=
   singular : Num |
   plural   : Num |
@@ -147,7 +147,7 @@ cbv. intro np. destruct np as [num quant cn]. apply quant. exact num. exact cn. 
 Definition VPSlash:=object -> VP.
 Definition Pron := NP.
 Definition ALWAYS := fun (p:TProp) => forall t, p t.
-Inductive PN : Type := mkPN : forall (x:object) (cn : N), ALWAYS (cn x) -> PN.
+Inductive PN : Type := mkPN : forall (x:object) (cn : N), (cn x) -> PN.
 Definition Cl:=Prop.
 Definition Pol:= Prop->Prop. (* Polarity *)
 Definition Temp:= Prop -> Prop. (* temporal information *)
@@ -577,7 +577,7 @@ Parameter try_VV : VV .
 Parameter use_VV : VV .
 Parameter want_VV : VV .
 Parameter chairman_N2 : N2.
-Definition chairman_N : N :=  fun o t => exists institution, chairman_N2 institution o t.
+Definition chairman_N : N :=  fun o => exists institution, chairman_N2 institution o.
 Parameter group_N2 : N2 .
 Parameter inhabitant_N2 : N2 .
 Parameter nobel_prize_N2 : N2 .
@@ -735,7 +735,7 @@ Parameter katmandu_PN : PN .
 Parameter luxembourg_PN : PN .
 Parameter MARY : object.
 
-Parameter MARY_PERSON : ALWAYS (person_N MARY).
+Parameter MARY_PERSON : (person_N MARY).
 Definition mary_PN : PN := mkPN MARY person_N MARY_PERSON  .
 Parameter mfi_PN : PN .
 Parameter mtalk_PN : PN .
@@ -898,7 +898,7 @@ Parameter moment_N : N .
 Parameter mortgage_interest_N : N .
 Parameter mouse_N : N .
 Parameter newspaper_N : N .
-Definition nobel_prize_N : N := fun o t => exists x, nobel_prize_N2 o x t.
+Definition nobel_prize_N : N := fun o => exists x, nobel_prize_N2 o x.
 Parameter note_N : N .
 Parameter novel_N : N .
 Parameter office_building_N : N .
@@ -953,25 +953,25 @@ Parameter world_N : N .
 Parameter year_N : N .
 
 Parameter MICKEY : object.
-Parameter MICKEY_ANIM : ALWAYS (animal_N MICKEY).
+Parameter MICKEY_ANIM : (animal_N MICKEY).
 Definition mickey_PN := mkPN MICKEY (animal_N) MICKEY_ANIM  .
 Parameter DUMBO : object.
-Parameter DUMBO_ANIM : ALWAYS (animal_N DUMBO).
+Parameter DUMBO_ANIM : (animal_N DUMBO).
 Definition dumbo_PN := mkPN DUMBO (animal_N) DUMBO_ANIM .
 Parameter jones : object.
-Parameter jones_PERSON : ALWAYS (person_N jones).
+Parameter jones_PERSON : (person_N jones).
 Definition jones_PN := mkPN jones (person_N) jones_PERSON.
 
 Parameter SMITH : object.
-Parameter SMITH_PERSON : ALWAYS (person_N SMITH).
+Parameter SMITH_PERSON : (person_N SMITH).
 Definition smith_PN := mkPN SMITH (person_N) SMITH_PERSON.
 
 Parameter KIM : object.
-Parameter KIM_PERSON : ALWAYS (person_N KIM).
+Parameter KIM_PERSON : (person_N KIM).
 Definition kim_PN := mkPN KIM (person_N) KIM_PERSON.
 
 Parameter ANDERSON : object.
-Parameter anderson_PERSON : ALWAYS (person_N ANDERSON).
+Parameter anderson_PERSON : (person_N ANDERSON).
 Definition anderson_PN := mkPN ANDERSON (person_N) anderson_PERSON.
 
 
@@ -1043,8 +1043,8 @@ Parameter sayCovariant_K : forall p q:S, forall s t, (p -> q) -> say_VS p s t ->
 Parameter claimCovariant_K : forall p q:S, forall s t, (p -> q) -> claim_VS p s t -> claim_VS q s t.
 *)
 
-Parameter  person_K: forall (x:object) t, chairman_N x t -> person_N x t. 
-Parameter  committee_member_person_K : forall x t, committee_member_N x t -> person_N x t. 
+Parameter  person_K: forall (x:object), chairman_N x -> person_N x. 
+Parameter  committee_member_person_K : forall x, committee_member_N x -> person_N x. 
 
 (* Parameter Not_stop_means_continue_K : forall x, stop_V x /\ continue_V x -> False. *)
 
@@ -1080,7 +1080,7 @@ Definition PN2Class : PN -> (object -> Prop).
 cbv.
 intro x.
 destruct x.
-exact (fun object => ALWAYS (cn object)).
+exact (fun object => (cn object)).
 Defined.
 Opaque PN2Class.
 
@@ -1107,7 +1107,7 @@ Parameter have_V2for : object -> object -> object ->  TProp.
 Parameter take_V2to : object -> object -> object  -> TProp.
 Parameter take_V2at : object -> object -> object  -> TProp. 
 Definition cover_page_Npossess
-  := fun x: object => fun y : object => fun t => cover_page_N y t /\ have_V2 y x t.
+  := fun x: object => fun y : object => cover_page_N y /\ have_V2 y x NOW.
 Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
 Parameter go8travel_Vby8means : object -> object -> TProp. 
 Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> TProp.
@@ -1119,8 +1119,8 @@ Parameter knowVQ : VS.
 Parameter WHY: Prop -> Prop.
 Definition speak_to_V2to : object -> object -> object -> TProp
   := fun to _ subj t => speak_to_V2 to subj t.
-Parameter taxi_Nto : object -> object -> TProp.
-Parameter job_Nat : object -> object -> TProp.
+Parameter taxi_Nto : object -> object -> Prop.
+Parameter job_Nat : object -> object -> Prop.
 
 Parameter work_Vadv : Adv -> object -> Prop.
 Parameter find_V2before : object -> object -> object -> Prop.
@@ -1131,8 +1131,8 @@ Parameter travel_Vwithin : object -> V.
 Parameter stop_Vat : object -> V.
 Parameter get_V2in : object -> V2.
 
-Definition committee_member_Nfrom origin x t :=
-   _BE_from origin x t /\ committee_member_N x t.
+Definition committee_member_Nfrom origin x :=
+   _BE_from origin x NOW /\ committee_member_N x.
 
 
 Parameter live_Vin : object -> V.
@@ -1170,7 +1170,7 @@ Definition EXEXACT := fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ 
 Definition EXACT := fun n : Z => fun cn=> fun vp=>  (CARD (fun x => cn x /\ vp x) = n).
 
 
-Definition  report_Nfromon := fun source location report time => report_N report time /\ send_V2 report source time /\ _BE_on location report time.
+Definition  report_Nfromon := fun source location report => report_N report /\ send_V2 report source NOW /\ _BE_on location report NOW.
 Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
 
 Definition going_to_VV : VV := fun v object _time => v object. (* FIXME: Not setting tense; this is very wrong *)
@@ -1206,12 +1206,12 @@ Definition le_mono_left := le_mono'.
 Parameter getInK : forall newsPaper result x t, get_V2in newsPaper result x t -> get_V2 result x t.
 (* Analysis: In "get published", published should not be intersectional. *)
 
-Parameter client_people_K : forall x t, client_N x t -> person_N x t.
+Parameter client_people_K : forall x, client_N x -> person_N x.
 
 Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
 
 Definition person_Nat : object -> N :=
-  fun location person t => person_N person t /\ _BE_at location person t.
+  fun location person => person_N person /\ _BE_at location person NOW.
 
 (* Parameter slow_and_fast_disjoint_K : forall cn o, getSubsectiveA slow_A cn o /\ getSubsectiveA fast_A cn o -> False. *)
 Definition opposite_adjectives : SubsectiveA -> SubsectiveA -> Prop

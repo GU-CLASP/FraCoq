@@ -7,7 +7,7 @@ Parameter y1992before1993 : Year_1992 <  Year_1993.
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
 
 
-Parameter itIsTheCaseThatIdiom : forall p x, case_N x NOW -> that_Subj p (IMPERSONAL = x) = p.
+Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
 
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
 Parameter know_weakening : forall p x t, know_VS p x t -> p.

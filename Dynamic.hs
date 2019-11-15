@@ -324,31 +324,35 @@ evalDynamic d = fst <$> (runDynamic d)
 newtype Dynamic a = Dynamic {fromDynamic :: ReaderT ReadEnv (StateT  Env Logic) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic,MonadReader ReadEnv)
 instance Show (Dynamic a) where show _ = "<DYNAMIC>"
 
--- newtype Dynamic a = Dynamic {fromDynamic :: LogicT (State Env) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic)
-
 type Effect = Dynamic Prop
 
 filterKey :: Eq a => a -> [(a, b)] -> [(a, b)]
 filterKey k = filter ((/= k) . fst)
 
+mkPredT :: Bool -> String -> Object -> S'
+mkPredT timed p x extraObjs = appArgs timed p [x] extraObjs
+
 mkPred :: String -> Object -> S'
-mkPred p x extraObjs = appArgs p [x] extraObjs
+mkPred = mkPredT True
 
 mkPred' :: String -> Object -> ExtraArgs -> Prop
-mkPred' p x extraObjs = fst (mkPred p x extraObjs)
+mkPred' p x extraObjs = fst (mkPredT False p x extraObjs)
 
 mkCN :: String -> [Gender] -> CN'
 mkCN p  = (mkPred' p,)
 
+mkRelT :: Bool -> String -> Object -> Object -> S'
+mkRelT timed p x y extraObjs = appArgs timed p [x,y] extraObjs
+
 mkRel2 :: String -> Object -> Object -> S'
-mkRel2 p x y extraObjs = appArgs p [x,y] extraObjs
+mkRel2 = mkRelT True
 
 mkRel2' :: String -> Object -> Object -> S''
-mkRel2' p x y extraObjs = fst (mkRel2 p x y extraObjs)
+mkRel2' p x y extraObjs = fst (mkRelT False p x y extraObjs)
 
 
 mkRel3 :: String -> Object -> Object -> Object -> S'
-mkRel3 p x y z extraObjs = appArgs p [x,y,z] extraObjs
+mkRel3 p x y z extraObjs = appArgs True p [x,y,z] extraObjs
 
 constant :: String -> Exp
 constant x = Con x
@@ -450,10 +454,12 @@ noExtraObjsCN' :: CN' -> (Object -> Prop)
 noExtraObjsCN' (f,_gender) = noExtraObjsCN'' f
 
 
-appArgs :: String -> [Object] -> S'
-appArgs nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime)
+appArgs :: Bool -> String -> [Object] -> S'
+appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime)
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
-        time'd = Con "appTime" `apps` [temporalToLogic extraTime,prep'd]
+        time'd = if isTimed
+                 then Con "appTime" `apps` [temporalToLogic extraTime,prep'd]
+                 else prep'd
         indirectObjects = init objs
         subject = last objs
         cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) extraPreps
