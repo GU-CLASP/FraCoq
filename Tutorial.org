@@ -12,10 +12,10 @@ Aim:
 
 * Why GF
 
-- GF syntaxes generally follow Montague's principle: syntax is a
-  prelude to semantics. (that is, syntax is not there only to give a
-  language model --- a set of strings. It serves to reveal the
-  structure which underlies the semantics)
+- GF syntaxes generally follow Montague's homomorphism principle:
+  syntax is a prelude to semantics. (that is, syntax is not there only
+  to give a language model --- a set of strings. It serves to reveal
+  the structure which underlies the semantics)
 
 * Why Coq
 - Both a programming language and a logical framework
@@ -66,21 +66,23 @@ definitions).
 | Surface syntax | Abstract syntax       | Semantics           |
 |----------------+-----------------------+---------------------|
 | LinCat         | Cat                   | Type                |
+| function       | constructor           | function            |
+|----------------+-----------------------+---------------------|
 | String         | Cl                    | Prop                |
 | ...            | NP                    | object              |
-| ...            | VP                    | object -> Prop      |
-| ...            | mkCl : NP -> VP -> Cl | fun np vp => vp np. |
+| ...            | VP                    | object → Prop      |
+| ...            | mkCl : NP → VP → Cl | fun np vp => vp np. |
 
 
 Example:
 
-- ⟦gives a ball to the boy⟧ : object -> Prop
+- ⟦gives a ball to the boy⟧ : object → Prop
 - ⟦John⟧ : object
 - mkCl ⟦John⟧ ⟦gives a ball to the boy⟧ : Prop
   = ⟦gives a ball to the boy⟧ ⟦John⟧
-* Other possible semantics
+* Prop is not the only possibility
 
-Top-level categories can be mapped to other things than propositions:
+Clause categories can be mapped to other things than propositions:
 
 - Commands (programs)
 - Database queries/updates
@@ -88,6 +90,8 @@ Top-level categories can be mapped to other things than propositions:
 
 In such a case "reasoning" does not take the usual mathematical form
 of proving/testing conjectures
+
+→ not coq
 
 * Hands on: Gathering the categories and types
 
@@ -273,7 +277,7 @@ Eval cbv in UseCl Pos (PredVP (UsePN john_PN) walk_V).
 
 * Quantifiers (1)
 The previous definition of NP is too restrictive in the presence of
-quantifiers. Indeed a PN is to restrictive to represent phrases such
+quantifiers. Indeed a PN is too restrictive to represent phrases such
 as 'every man', 'some tree', etc.  Montague's solution is to
 generalize NPs to be predicates over VPs:
 
@@ -339,7 +343,7 @@ Qed.
 #+END_SRC
 
 * Adjectives (Naive)
-We can try the usual reciepe and represent adjectives as predicates:
+We can try the usual recipe and represent adjectives as predicates:
 
 #+BEGIN_SRC coq
 Definition AP   : Type := PN -> Prop .
@@ -390,15 +394,18 @@ example: green and black are disjoint properties:
 Parameter green_black_disjoint: forall x, green_A x -> black_A x -> False.
 #+END_SRC
 
-Other types of domain knowledge:
+Other types of knowledge which can be treated this way:
 
-- John saw x ⇒ x is true
-- John believes y ∧ (x → y) ⇒ John believes y
+
+- Pragmatics
+  - John saw that x ⇒ x is true
+- Hyperintentionality:
+  - John believes y ∧ John believes (x → y) ⇒ John believes y
 
 * Refining and complexifying the interpretations
 Pause and reflect
 
-The above is a basic approach only. In the paper (linked below) we
+The above is a basic approach only. In the papers (linked below) we
 have supported more (generally useful) constructions.
 
 Wishes?
@@ -665,10 +672,11 @@ General recommended idea:
 - define a concept of environment (discourse background)
 - change the semantics to be functions from an environment to a pair
   of (old) semantics and a new environment [ie. a state monad]
+  example: ~VP~  becomes  ~Env → (Env,VP)~
 - new PN, verbs, etc. update the environment
 - pronouns, etc. lookup what they need in the environment
 * Case studies
-** At least three female commissioners spend time at home
+** FraCoq 063: At least three female commissioners spend time at home
 
 #+BEGIN_SRC coq
 Definition s_063_1_p := (Sentence (UseCl (Present) (PPos) (PredVP
@@ -750,4 +758,6 @@ Here:
 
 - Ranta, 2004. "Computational semantics in type theory". http://msh.revues.org/pdf/2925
 - Bernardy and Chatzikyriakidis, 2017. (IWCS 2017)
+- Bernardy and Chatzikyriakidis, 2019. (NoDaLiDa 2019)
+- Drafts
 
