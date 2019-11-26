@@ -71,11 +71,18 @@ Qed.
 
 Theorem thm1 : UseCl Pos (PredVP (UsePN john_PN) walk_V) ->
                UseCl Neg (PredVP (UsePN john_PN) walk_V) -> False.
-cbv.
+unfold UseCl.
+unfold Pos.
+unfold Neg.
 intros P N.
 exact (N P).
 Qed.
 
+Theorem thm1prime : forall c, UseCl Pos c -> UseCl Neg c -> False.
+cbv.
+intros clause P N.
+exact (N P).
+Qed.
 
 Eval cbv in UseCl Pos (PredVP (UsePN john_PN) walk_V).
 
@@ -96,8 +103,8 @@ Qed.
 (* "every green tree is green." *)
 Theorem thm3 :
     UseCl Pos (PredVP (DetCN every_Det (ModCN (UseA green_A) (UseN tree_N))) (CompAP (UseA green_A))).
-cbv.    
-intuition.
+cbv.
+tauto.
 Qed.
 
 
