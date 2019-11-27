@@ -204,7 +204,7 @@ Opaque PN2object.
 Theorem  problem320atrue : Problem320aTrue.
 cbv.
 intros.
-destruct H2 as [t [P1 P2]].
+destruct H5 as [t [P1 P2]].
 assert (Q := know_weakening P2).
 rewrite -> itIsTheCaseThatIdiom.
 split.
