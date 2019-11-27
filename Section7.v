@@ -4,6 +4,7 @@ Load Formulas.
 Parameter y1993before1996 : Year_1993 <  Year_1996.
 Parameter y1992before1996 : Year_1992 <  Year_1996.
 Parameter y1992before1993 : Year_1992 <  Year_1993.
+Parameter y1991before1993 : Year_1991 <  Year_1992.
 
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
 
@@ -138,11 +139,21 @@ destruct H5 as [P1 [P2 P3]].
 split.
 Abort All.
 
+Definition UniqueEvent : (Time -> Prop) -> Prop
+ := fun p => forall t1 t2, p t1 -> p t2 -> t1 = t2.
+
+
+Parameter writeUnique : forall (x y : object), UniqueEvent (write_V2 x y).
+
 Theorem  problem278atrue : Problem278aFalse.
 cbv.
-intros.
-(* TODO: interpret possesives in the same way as definites *)
-Abort All.
+intros novel isSmithsNovel P1 H.
+specialize writeUnique with (x := novel)(y := SMITH) as A.
+unfold UniqueEvent in A.
+specialize (A _ _ P1 H) as B.
+specialize y1991before1993 as C.
+lia.
+Qed.
 
 
 Transparent PN2object.
@@ -189,6 +200,7 @@ exact isReport.
 exact Q.
 Qed.
 
+Opaque PN2object.
 Theorem  problem320atrue : Problem320aTrue.
 cbv.
 intros.
@@ -197,4 +209,6 @@ assert (Q := know_weakening P2).
 rewrite -> itIsTheCaseThatIdiom.
 split.
 intros [memoir [obvious R]].
+apply Q with (d := NOW).
+split.
 Abort All.
