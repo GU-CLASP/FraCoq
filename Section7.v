@@ -1,3 +1,4 @@
+
 Load Formulas.
 
 Parameter y1993before1996 : Year_1993 <  Year_1996.
@@ -14,7 +15,6 @@ Parameter know_weakening : forall p x t, know_VS p x t -> p.
 
 
 Theorem  problem251aTrue : Problem251aTrue.
-cbv.
 intro.
 assumption.
 Qed.
@@ -34,23 +34,10 @@ apply y1992before1993.
 Qed.
 Require Import Psatz.
 
-Theorem  problem260aTrue : Problem260aTrue.
-cbv.
-intros contract isContract.
-intros [P1 P2].
-destruct P2 as [today [isToday P2']].
-cut (NOW - ONEDAY = Date_0713).
-intro H.
-rewrite <- H.
-assumption. 
-lia.
-Qed.
-
+Parameter y1992before1993March : Year_1992 <  Year_1993_Month_March.
 
 Parameter foundNotExisit_K : forall x o t, found_V2 x o t -> forall t', t' < t
 -> exist_V x t' -> False.
-
-Parameter y1992before1993March : Year_1992 <  Year_1993_Month_March.
 
 Theorem  problem258aFalse : Problem258aFalse.
 cbv.
@@ -64,9 +51,21 @@ Qed.
 
 Theorem  problem259atrue : Problem259aTrue.
 cbv.
-intros.
+intros conf isConf [P1 P2].
 (* Syntax wrong, using impersonal "it" in P2 *)
 Abort All.
+
+Theorem  problem260aTrue : Problem260aTrue.
+cbv.
+intros contract isContract.
+intros [P1 P2].
+destruct P2 as [today [isToday P2']].
+cut (NOW - ONEDAY = Date_0713).
+intro H.
+rewrite <- H.
+assumption. 
+lia.
+Qed.
 
 
 Transparent PN2object.
@@ -90,6 +89,62 @@ lia.
 firstorder.
 Qed.
 
+
+Theorem  problem264atrue : Problem264aTrue.
+cbv.
+intros.
+split.
+lia.
+split.
+tauto.
+tauto.
+Qed.
+
+Theorem  problem265atrue : Problem265aTrue.
+cbv.
+intros.
+split.
+lia.
+split.
+tauto.
+tauto.
+Qed.
+
+Theorem  problem269atrue : Problem269aTrue.
+cbv.
+intros.
+split.
+tauto.
+(* OOPS!! *)
+firstorder.
+Qed.
+
+Theorem  problem270atrue : Problem270aTrue.
+cbv.
+
+Theorem  problem271atrue : Problem271aTrue.
+cbv.
+intros.
+destruct H3 as [P1 [P2 P3]].
+destruct P3 as [A [B C]].
+split.
+(* A fluke: adjectives do not have temporal parameter *)
+Abort All.
+
+Theorem  problem273atrue : Problem273aTrue.
+cbv.
+intros.
+destruct H5 as [P1 [P2 P3]].
+split.
+Abort All.
+
+Theorem  problem278atrue : Problem278aFalse.
+cbv.
+intros.
+(* TODO: interpret possesives in the same way as definites *)
+Abort All.
+
+
 Transparent PN2object.
 Theorem  problem267atrue : Problem267aTrue.
 cbv.
@@ -111,7 +166,8 @@ Transparent PN2object.
 Theorem  problem311atrue : Problem311aTrue.
 cbv.
 intros t1 t1Past t2 t2Past theStation isStation theHouse isHouse [P1 P2].
-(*TODO: fix the syntax tree so it's the same in P and H *)
+(* Deep reason for why it won't work is that "taxi" is existentially quantified, and so, not the same event (see disc. about repeatability)*)
+(* And also, the syntax is anyway not the same in P and H. *)
 Abort All.
 
 

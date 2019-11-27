@@ -802,7 +802,7 @@ Definition own_A : A := fun cn b => True.
 Parameter poor8bad_A : A .
 Parameter poor8penniless_A : A .
 Parameter portuguese_A : IntersectiveA .
-Parameter present8attending_A : A .
+Parameter present8attending_A : IntersectiveA .
 Parameter present8current_A : A .
 Parameter previous_A : A .
 Parameter red_A : A .

@@ -77,3 +77,46 @@ This scope may be extended if the event is referred to:
 "john has been eating meat since 1978. When he eats meat he gets sick."
 
 
+** Dealing with Aspects
+
+- Every verb is associated 2 time parameters (start and end of the
+  event), called x and y below.
+- Possible aspects:
+
+| Name                   | Example                   | Interpretation     |
+|------------------------+---------------------------+--------------------|
+| activity               | swam (269)                | x <= y             |
+| activity with interval | swam *for* 1 minute (269) | x+1min <= y        |
+| accomplishment         | signed the contract (268) | x = y+epsilon      |
+| accomplishment w/ ivl. | wrote a book *in* 2 hours | x+2hours = y       |
+| achievement            | drownend                  | x = y              |
+| stative                | live in london            | TODO (for now x=y) |
+
+** Repeatability of accomplishments
+We capture repeatability via the use of an existential. Example:
+
+smith wrote his novel.
+
+∀t<NOW. ∀x. Novel(x) ∧ Has(smith,x) ∧ write(smith,x,t,t)
+
+And it will be possible to lookup other instances of
+write(smith,x,?,?) in the environment.
+
+On the other hand:
+
+smith wrote a novel.
+
+∀t<NOW. ∃x. novel(x) ∧ write(smith,x,t,t)
+
+but further mentions of "smith wrote a novel" will introduce another
+variable in the existential which won't match that of the environment.
+
+Another evidence for the correctness of the analyis is that, if we have:
+
+
+smith wrote a novel in 1992
+----------------------------
+not (smith wrote it in 1993)
+
+the inference can be made because the object will be the same variable
+again.
