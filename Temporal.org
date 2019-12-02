@@ -3,7 +3,7 @@
 
 (leave t0 smith)
 
-* Transitivity of "before"
+** Transitivity of "before"
 
 Consider Fracas 261:
 

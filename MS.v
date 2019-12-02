@@ -1236,13 +1236,26 @@ Definition AFTER : Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => 
 
                   t0                       t1
                   |------------------------|
-          |---------------|
-          t0'             t1'
+                        |----------------------|
+                        t0'                    t1'
 
 *)
 
-Definition EQUALTIME: Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t1 = t1'. (* FraCas 315, 320, 322; interpretation of "when" *)
+Definition BEFORE : Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t0 < t1'.
 
+(*
+
+                  t0                       t1
+                  |------------------------|
+                     |---------------|
+                     t0'             t1'
+
+*)
+
+
+
+Definition EQUALTIME: Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t1 = t1'. (* FraCas 315, 320, 322; interpretation of "when" *)
+Definition SAMETIME: Time -> Time -> Prop := fun t0 t1 => t0 = t1.
 
 Definition appTime : Time -> Time -> (object -> TProp) -> object -> Prop := 
   fun t0 t1 vp x => vp x t0 t1.
@@ -1274,6 +1287,6 @@ Parameter Date_19930331 : Time.
 Parameter present8attending_AwithTime : Time -> CN -> object -> Prop.
 
 Parameter SPEAKER : object.
-Definition IS_INTERVAL := fun t0 t1 => t0 < t1.
+Definition IS_INTERVAL := fun t0 t1 => t0 <= t1.
 
 Parameter INDEFINITE_FUTURE : Time.

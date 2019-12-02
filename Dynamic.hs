@@ -455,12 +455,22 @@ noExtraObjsCN' :: CN' -> (Object -> Prop)
 noExtraObjsCN' (f,_gender) = noExtraObjsCN'' f
 
 
+data Aspect = Activity | Achievement
+
+verbAspect "swim_V" = Activity
+verbAspect "_BE_in" = Activity
+verbAspect "_BE_" = Activity -- mostly used for "it is now date"
+verbAspect _ = Achievement
+
 appArgs :: Bool -> String -> [Object] -> S'
 appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime)
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
         time'd = if isTimed
-                 then Con "appTime" `apps` (tempToArgs extraTime ++ [prep'd])
+                 then Lam $ \x -> aspect (Con "appTime" `apps` (tempToArgs extraTime ++ [prep'd,x]))
                  else prep'd
+        aspect = case verbAspect nm of
+          Activity -> id
+          Achievement -> (Con "SAMETIME" `apps` tempToArgs extraTime -->)
         indirectObjects = init objs
         subject = last objs
         cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) extraPreps
