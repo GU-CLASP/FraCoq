@@ -125,9 +125,14 @@ Qed.
 Transparent PN2object.
 Theorem  problem261atrue : Problem261aTrue.
 cbv.
-intros t1 t1Past t2 t2Past t3 t3Past [p1Order [p1a [p1b [p2Order [p2a p2b]]]]].
+intros t1 t1Past t2 t2Past t3 t3Past.
+intros t4 p4.
+intros t5 p5.
+intros t6 p6.
+
+intros [p1Order [p1a [p1b [p2Order [p2a p2b]]]]].
 split.
-lia.
+Focus 2.
 split.
 assumption.
 assumption.
