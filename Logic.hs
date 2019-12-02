@@ -8,7 +8,7 @@ module Logic where
 
 import Data.Char (toLower)
 import Data.List
-
+import Control.Monad (forM)
 type Var = String
 
 data Exp = Op Op [Exp]
@@ -31,12 +31,12 @@ check c = if c then Just () else Nothing
 -- special environment, solve for a variable that makes the thing that you lookup true.
 
 -- TODO: hande conjuction and disjunction cleverly.
-solveThe' :: Int -> Var -> [(Exp,Exp)] -> Maybe [Exp]
+solveThe' :: Int -> [Var] -> [(Exp,Exp)] -> Maybe [(Var,Exp)]
 solveThe' _ _ [] = Just []
 solveThe' n meta ((Con x,Con y):cs) = check (x == y) >> solveThe' n meta cs
 solveThe' n meta ((Op op1 e1,Op op2 e2):cs)
   = check (op1 == op2 && length e1 == length e2) >> solveThe' n meta (zip e1 e2 ++ cs)
-solveThe' n meta ((Var x,t):cs) | x == meta = (t:) <$> solveThe' n meta cs
+solveThe' n meta ((Var x,t):cs) | x `elem` meta = ((x,t):) <$> solveThe' n meta cs
 solveThe' n meta ((Var x,Var y):cs) | x == y = solveThe' n meta cs
 solveThe' n meta ((Lam f,Lam g):cs) = solveThe' (n+1) meta ((f v, g v):cs)
   where v = Var $ "_V_" ++ show n
@@ -45,15 +45,15 @@ solveThe' n meta ((Quant a1 p1 v1 d1 b1,Quant a2 p2 v2 d2 b2):cs) =
   solveThe' n meta ((d1,d2):(b1,b2):cs)
 solveThe' _ _ (_:_) = Nothing
 
+showExp1 :: Exp -> Var
 showExp1 (Var x) = x
 showExp1 _ = "<EXP>"
 
-solveThe :: Var -> Exp -> Exp -> Maybe Exp
-solveThe meta (_ :∧ x) inWhere = solveThe meta x inWhere -- HACK to access atom (ATOM)
-solveThe meta what inWhere = case nub <$> solveThe' 0 meta [(what,inWhere)] of
+solveThe :: [Var] -> Exp -> Exp -> Maybe [Exp]
+solveThe metas (_ :∧ x) inWhere = solveThe metas x inWhere -- HACK to access atom (ATOM)
+solveThe metas what inWhere = case nub <$> solveThe' 0 metas [(what,inWhere)] of
   Just [] -> Nothing
-  Just [x] -> Just x
-  Just xs -> error ("solveThe: improve: [" ++ concat (intersperse ", " (map showExp1 xs)) ++ "]")
+  Just xs -> forM metas $ \m -> lookup m xs
   Nothing -> Nothing
 
 eqExp' :: Exp -> Exp -> Bool

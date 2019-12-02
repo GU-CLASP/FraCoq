@@ -13,7 +13,7 @@ Opaque Z.le.
 (** Basic concepts **)
 Parameter object : Type.
 Definition Time := Z.
-Definition TProp := Time -> Prop.
+Definition TProp := Time -> Time -> Prop.
 Parameter NOW : Time.
 (** Categories **)
 Definition S:= Prop.
@@ -146,7 +146,7 @@ Definition apNP : NP -> NP0.
 cbv. intro np. destruct np as [num quant cn]. apply quant. exact num. exact cn. Defined.
 Definition VPSlash:=object -> VP.
 Definition Pron := NP.
-Definition ALWAYS := fun (p:TProp) => forall t, p t.
+(* Definition ALWAYS := fun (p:TProp) => forall t, p t. *)
 Inductive PN : Type := mkPN : forall (x:object) (cn : N), (cn x) -> PN.
 Definition Cl:=Prop.
 Definition Pol:= Prop->Prop. (* Polarity *)
@@ -1096,7 +1096,7 @@ Definition appAdv : Adv -> (object -> Prop) -> (object -> Prop)
 Definition appoint_V2by : V3
   := fun x y _ => appoint_V2 x y.
 
-Definition _BE_ : TVP := fun x time => time = NOW.
+Definition _BE_ : TVP := fun x start stop => start <= NOW /\ NOW <= stop. (* It is now ...*)
 Parameter _BE_on : object -> TVP.
 Parameter _BE_in  : object -> TVP.
 Parameter _BE_from : object -> TVP.
@@ -1107,7 +1107,7 @@ Parameter have_V2for : object -> object -> object ->  TProp.
 Parameter take_V2to : object -> object -> object  -> TProp.
 Parameter take_V2at : object -> object -> object  -> TProp. 
 Definition cover_page_Npossess
-  := fun x: object => fun y : object => cover_page_N y /\ have_V2 y x NOW.
+  := fun x: object => fun y : object => cover_page_N y /\ have_V2 y x NOW NOW.
 Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
 Parameter go8travel_Vby8means : object -> object -> TProp. 
 Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> TProp.
@@ -1132,7 +1132,7 @@ Parameter stop_Vat : object -> V.
 Parameter get_V2in : object -> V2.
 
 Definition committee_member_Nfrom origin x :=
-   _BE_from origin x NOW /\ committee_member_N x.
+   _BE_from origin x NOW NOW /\ committee_member_N x.
 
 
 Parameter live_Vin : object -> V.
@@ -1159,7 +1159,7 @@ Definition QQ := CN -> VP -> Prop.
 Definition FEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) <= A_FEW).
 Definition AFEWQ  := fun cn => fun vp => A_FEW <= (CARD (fun x => cn x /\ vp x) ) /\ exists x, cn x /\ vp x.
 
-Definition EQUAL : object -> object -> TProp := fun x y t => x = y.
+Definition EQUAL : object -> object -> TProp := fun x y start stop => x = y.
 Definition MOSTQ := fun cn => fun vp => CARD_MOST cn <= CARD (fun x => cn x /\ vp x)  /\ exists x, cn x /\ vp x.
 Definition MANYQ := fun cn => fun vp => (MANY <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
 Definition LOTSQ := fun cn => fun vp => (LOTS_OF <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
@@ -1170,11 +1170,11 @@ Definition EXEXACT := fun n : Z => fun cn=> fun vp=>  exists x, cn x /\ vp x /\ 
 Definition EXACT := fun n : Z => fun cn=> fun vp=>  (CARD (fun x => cn x /\ vp x) = n).
 
 
-Definition  report_Nfromon := fun source location report => report_N report /\ send_V2 report source NOW /\ _BE_on location report NOW.
+Definition  report_Nfromon := fun source location report => report_N report /\ send_V2 report source NOW NOW /\ _BE_on location report NOW NOW.
 Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
 
-Definition going_to_VV : VV := fun v object _time => v object. (* FIXME: Not setting tense; this is very wrong *)
-Definition do_VV : VV := fun v x _time => v x.
+Definition going_to_VV : VV := fun v object _start _stop => v object. (* FIXME: Not setting tense; this is very wrong *)
+Definition do_VV : VV := fun v x _start _stop => v x.
 Definition NOT:= not.
 
 Lemma le_mono : forall n, forall (p q : CN), (forall x, p x -> q x) -> n <= CARD p -> n <= CARD q.
@@ -1203,7 +1203,7 @@ Definition le_mono_left := le_mono'.
 
 (*Parameter usedToBeCov_K : forall (p q : VP), (forall x, p x -> q x) -> forall x , use_VV p x -> use_VV q x.
 *)
-Parameter getInK : forall newsPaper result x t, get_V2in newsPaper result x t -> get_V2 result x t.
+Parameter getInK : forall newsPaper result x start stop, get_V2in newsPaper result x start stop -> get_V2 result x start stop.
 (* Analysis: In "get published", published should not be intersectional. *)
 
 Parameter client_people_K : forall x, client_N x -> person_N x.
@@ -1211,7 +1211,7 @@ Parameter client_people_K : forall x, client_N x -> person_N x.
 Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun x => p x) = 1 -> x = y.
 
 Definition person_Nat : object -> N :=
-  fun location person => person_N person /\ _BE_at location person NOW.
+  fun location person => person_N person /\ _BE_at location person NOW NOW.
 
 (* Parameter slow_and_fast_disjoint_K : forall cn o, getSubsectiveA slow_A cn o /\ getSubsectiveA fast_A cn o -> False. *)
 Definition opposite_adjectives : SubsectiveA -> SubsectiveA -> Prop
@@ -1227,33 +1227,17 @@ Parameter small_and_large_opposite_K : opposite_adjectives small_A large_A.
 Definition now_AdV : AdV
  := fun vp subject => vp subject. (* We simply ignore "now", because currently "now" is the default *)
 
-(*
-Inductive Temporal : Type :=
-  BeforeTimeOf : TProp -> Temporal |
-  UnspecifiedTime : Temporal |
-  ATTIME : Time -> Temporal |
-  SINCE : Time -> Temporal.
-
-Definition RefTime := ATTIME.
-
-Definition appTime : Temporal -> (object -> TProp) -> object -> Prop :=
-  fun time vp x => match time with
-  | UnspecifiedTime => vp x NOW
-  | BeforeTimeOf tp => exists (t1 : Time) (t2 : Time), tp t1 /\ vp x t2
-  | ATTIME t => vp x t
-  | SINCE t => forall (t' : Time), (t < t') -> (t' < NOW) -> vp x t' (* apparently fracas wants the NOW constraint? (p252) *)
-  end.
-*)
-
-
 Definition UnspecifiedTime := NOW.
 Definition LessThanTime := fun x y => x < y.
-Definition AFTER := fun x y => x < y.
-Definition EQUALTIME := fun x y => x < y.
+
+Definition AFTER : Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t1 > t0'.
+Definition BEFORE: Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t0 < t1'.
+
+Definition EQUALTIME: Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t1 = t1'. (* FraCas 315, 320, 322; interpretation of "when" *)
 
 
-Definition appTime : Time -> (object -> TProp) -> object -> Prop := 
-  fun time vp x => vp x time.
+Definition appTime : Time -> Time -> (object -> TProp) -> object -> Prop := 
+  fun t0 t1 vp x => vp x t0 t1.
 
 Definition PAST e := e < NOW.
 
@@ -1265,15 +1249,23 @@ Parameter Time_1100 : Time.
 Parameter Time_1715 : Time.
 Parameter Date_0713 : Time.
 Definition Date_0714 : Time := Date_0713 + ONEDAY.
-Parameter Date_199407 : Time.
+Parameter Date_19940701 : Time.
+Parameter Date_19940731 : Time.
 Parameter Date_19940704 : Time.
 Parameter Date_19940708 : Time.
-Parameter Year_1996 : Time.
-Parameter Year_1993 : Time.
-Parameter Year_1993_Month_March : Time.
-Parameter Year_1992 : Time.
-Parameter Year_1991 : Time.
+Parameter Date_19920101 : Time.
+Parameter Date_19921231 : Time.
+Parameter Date_19930101 : Time.
+Parameter Date_19931231 : Time.
+Parameter Date_19960101 : Time.
+Parameter Date_19961231 : Time.
+Parameter Date_19911231 : Time.
+Parameter Date_19910101 : Time.
+Parameter Date_19930301 : Time.
+Parameter Date_19930331 : Time.
 Parameter present8attending_AwithTime : Time -> CN -> object -> Prop.
 
 Parameter SPEAKER : object.
+Definition IS_INTERVAL := fun t0 t1 => t0 < t1.
 
+Parameter INDEFINITE_FUTURE : Time.

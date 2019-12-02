@@ -1,10 +1,6 @@
 
 Load Formulas.
 
-Parameter y1993before1996 : Year_1993 <  Year_1996.
-Parameter y1992before1996 : Year_1992 <  Year_1996.
-Parameter y1992before1993 : Year_1992 <  Year_1993.
-Parameter y1991before1993 : Year_1991 <  Year_1992.
 
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
 
@@ -12,7 +8,7 @@ Parameter y1991before1993 : Year_1991 <  Year_1992.
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
 
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
-Parameter know_weakening : forall p x t, know_VS p x t -> p.
+Parameter know_weakening : forall p x t0 t1, know_VS p x t0 t1 -> p.
 
 
 Theorem  problem251aTrue : Problem251aTrue.
@@ -20,34 +16,50 @@ intro.
 assumption.
 Qed.
 
+Parameter y1993before1996 : Date_19931231 < Date_19960101.
+Parameter y1993 : Date_19930101 < Date_19931231.
+Parameter y1992 : Date_19920101 < Date_19921231.
+
+Require Import Psatz.
+
 Theorem  problem252aTrue : Problem252aTrue.
+specialize y1993before1996 as H.
+specialize y1993 as H2.
+unfold Problem252aTrue.
 cbv.
-intros [P1 P2].
+intros [P1 [P2a P2b]].
 apply P1.
-apply y1992before1993.
+split.
+split.
+lia.
+lia.
 Qed.
 
 Theorem  problem255aTrue : Problem255aTrue.
+specialize y1993before1996 as H.
+specialize y1993 as H2.
 cbv.
 intros [P1 P2].
 apply P1.
-apply y1992before1993.
+split.
+split.
+lia.
+lia.
 Qed.
-Require Import Psatz.
 
-Parameter y1992before1993March : Year_1992 <  Year_1993_Month_March.
+Parameter y1992before1993March : Date_19921231 <  Date_19930301.
 
-Parameter foundNotExisit_K : forall x o t, found_V2 x o t -> forall t', t' < t
--> exist_V x t' -> False.
+Parameter foundNotExisit_K : forall x o t0 t1, found_V2 x o t0 t1 -> forall t' t1', t' < t0
+-> exist_V x t' t1' -> False.
 
 Theorem  problem258aFalse : Problem258aFalse.
 cbv.
-intros.
-apply foundNotExisit_K with (x := PN2object itel_PN) (o := (PN2object apcom_PN) )
-                            (t' := Year_1992) (t := Year_1993_Month_March).
-assumption.
-apply y1992before1993March.
-assumption.
+intros P1 P2.
+assert (Date_19920101 < Date_19930301).
+specialize y1992before1993March as H.
+specialize y1992 as Q.
+lia.
+apply (foundNotExisit_K P1 H P2).
 Qed.
 
 Theorem  problem259atrue : Problem259aTrue.
@@ -212,3 +224,6 @@ intros [memoir [obvious R]].
 apply Q with (d := NOW).
 split.
 Abort All.
+Parameter y1992before1996 : Year_1992 <  Year_1996.
+Parameter y1992before1993 : Year_1992 <  Year_1993.
+Parameter y1991before1993 : Year_1991 <  Year_1992.

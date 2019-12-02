@@ -91,10 +91,11 @@ onS' :: (Prop -> Prop) -> S' -> S'
 onS' f s extra = first f (s extra)
   -- f (p eos)
 
-data Temporal = ForceTime Exp | ExactTime Exp | IntervalTime String | UnspecifiedTime | TenseTime Temporal deriving Show
+type TimeSpan = (Exp,Exp)
+data Temporal = ForceTime TimeSpan | ExactTime TimeSpan | UnspecifiedTime | TenseTime Temporal deriving Show
 
 now :: Temporal
-now = ExactTime (Con "NOW")
+now = ExactTime (Con "NOW", Con "NOW")
 
 instance Monoid Temporal where
   mempty = UnspecifiedTime
@@ -458,7 +459,7 @@ appArgs :: Bool -> String -> [Object] -> S'
 appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime)
   where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
         time'd = if isTimed
-                 then Con "appTime" `apps` [temporalToLogic extraTime,prep'd]
+                 then Con "appTime" `apps` (tempToArgs extraTime ++ [prep'd])
                  else prep'd
         indirectObjects = init objs
         subject = last objs
@@ -485,31 +486,33 @@ sentenceApplyAdv adv s' ExtraArgs{..} = s' ExtraArgs {extraAdvs = adv . extraAdv
 --------------------------
 -- Time
 
-forceTime :: Exp -> Cl' -> Prop
+forceTime :: TimeSpan -> Cl' -> Prop
 forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
 -- HACK: setting the time is at the "UseCl" level, which has to set a
 -- time. But we need to override it from the level above (S), so we
 -- use the "ForceTime" hack.
 
-useTime :: Exp -> Cl' -> S'
+useTime :: TimeSpan -> Cl' -> S'
 useTime t s ExtraArgs{..} = s ExtraArgs{extraTime = ForceTime t,..}
 
 -- | Look in envFacts for the time at which s' happened.
 -- That is: Find the times t when Prop(t) happened, looking up true facts in environment.
-referenceTimesFor :: Cl' -> Dynamic [Exp]
+referenceTimesFor :: Cl' -> Dynamic [TimeSpan]
 referenceTimesFor s' = do
-  tMeta <- getFresh
+  tMeta0 <- getFresh
+  tMeta1 <- getFresh
   facts <- gets envFacts
-  let e = forceTime (Var tMeta) s'
-  return $ catMaybes $ map (solveThe tMeta e) facts
+  let e = forceTime (Var tMeta0, Var tMeta1) s'
+  return $ map mkSpan $ catMaybes $ map (solveThe [tMeta0,tMeta1] e) facts
+  where mkSpan [t0,t1] = (t0,t1)
 
-referenceTimeFor :: Cl' -> Dynamic Exp
+referenceTimeFor :: Cl' -> Dynamic TimeSpan
 referenceTimeFor s = do
   ts <- referenceTimesFor s
   case ts of
     [] -> do
       facts <- gets envFacts
-      error ("referenceTimesFor: no time for " ++ show (forceTime (Var "τ") s) ++ "\n facts:\n" ++ intercalate "\n" (map show facts))
+      error ("referenceTimesFor: no time for " ++ show (forceTime (Var "τ₀", Var "τ₁") s) ++ "\n facts:\n" ++ intercalate "\n" (map show facts))
     (t:_) -> return t
 
 -- | Allocate a fresh time constant with a certain value.
@@ -536,13 +539,18 @@ usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..}
 --   ForceTime t -> k t
 --   _ -> error ("constrainTime: " ++ show extraTime)
 
-temporalToLogic :: Temporal -> Exp
+temporalToLogic :: Temporal -> TimeSpan
 temporalToLogic t = case t  of
   ExactTime e -> e
   ForceTime e -> e
   TenseTime t' -> temporalToLogic t'
-  UnspecifiedTime -> Con "UnspecifiedTime"
-  IntervalTime s -> Con ("interval" ++ s)
+  UnspecifiedTime -> (Con "UnspecifiedTime",Con "UnspecifiedTime")
+
+tempToArgs :: Temporal -> [Exp]
+tempToArgs = pairToList . temporalToLogic
+
+pairToList :: (t, t) -> [t]
+pairToList (x,y) = [x,y]
 
 pushFact :: Prop -> Env -> Env
 pushFact (Quant _amount _pol _var _dom body) = pushFact body -- HACK to access atom
@@ -555,4 +563,5 @@ withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}
 joinTime :: Temporal -> Temporal -> Temporal
 joinTime t1 t2 = t1 -- FIXME
 
+quantTime :: Var -> Exp -> Exp -> Exp
 quantTime x constraint body = Forall x (TimeDomain constraint) body

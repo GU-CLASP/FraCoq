@@ -322,9 +322,9 @@ useComparA_prefix a = do
 type Subj = Cl' -> Adv
 
 lexemeSubj :: String -> Subj
-lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "AFTER" `apps` [t1,t2]) s1
-lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` [t2,t1]) s1
-lexemeSubj "when_Subj" s1 = timeSubj  (\t1 t2 -> Con "EQUALTIME" `apps` [t2,t1]) s1
+lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "BEFORE" `apps` (pairToList t1 ++ pairToList t2)) s1
+lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t2 ++ pairToList t1)) s1
+lexemeSubj "when_Subj" s1 = timeSubj  (\t1 t2 -> Con "EQUALTIME" `apps` (pairToList t2 ++ pairToList t1)) s1
 lexemeSubj s s1 = do
   return $ \s2 extraObjs -> 
     let (s1',_) = s1 extraObjs
@@ -332,7 +332,7 @@ lexemeSubj s s1 = do
     in (Con s `apps` [s1',s2'], t2)
 
 timeSubj :: Monad m =>
-                  (Exp -> Exp -> Exp)
+                  (TimeSpan -> TimeSpan -> Exp)
                   -> (ExtraArgs -> (Exp, Temporal))
                   -> m ((ExtraArgs -> (Exp, Temporal))
                         -> ExtraArgs -> (Exp, Temporal))
@@ -367,42 +367,50 @@ type AdvV = ADV
 type AdV = ADV
 
 lexemeAdv :: String -> Adv
-  
-lexemeAdv "at_a_quarter_past_five_Adv" = return $ usingTime (ExactTime (Con "Time_1715"))
-lexemeAdv "in_july_1994_Adv" = return $ usingTime (ExactTime (Con "Date_199407")) 
-lexemeAdv "on_july_4th_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940704"))
-lexemeAdv "on_july_8th_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940708"))
-lexemeAdv "saturday_july_14th_Adv" = return $ usingTime (ExactTime (Con "Date_0714"))
-lexemeAdv "friday_13th_Adv" = return $ usingTime (ExactTime (Con "Date_0713"))
-lexemeAdv "in_1991_Adv" = return $ usingTime (ExactTime (Con "Year_1991"))
-lexemeAdv "at_8_am_Adv" = return $ usingTime (ExactTime (Con "Time_0800"))
-lexemeAdv "by_11_am_Adv" = return $ usingTime (ExactTime (Con "Time_1100"))
+
+timePoint :: t -> (t, t)
+timePoint x = (x,x)
+
+lexemeAdv "at_a_quarter_past_five_Adv" = return $ usingTime (ExactTime (timePoint (Con "Time_1715")))
+lexemeAdv "in_july_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940701", Con "Date_19940731")) 
+lexemeAdv "on_july_4th_1994_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_19940704")))
+lexemeAdv "on_july_8th_1994_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_19940708")))
+lexemeAdv "saturday_july_14th_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_0714")))
+lexemeAdv "friday_13th_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_0713")))
+lexemeAdv "in_1991_Adv" = return $ usingTime (ExactTime (Con "Date_19910101",Con "Date_19911231"))
+lexemeAdv "at_8_am_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Time_0800"))
+lexemeAdv "by_11_am_Adv" = return $ usingTime (ExactTime (Con "Time_1100", Con "INDEFINITE_FUTURE"))
 lexemeAdv "in_two_hours_Adv" = return $ \s ExtraArgs{..} -> s ExtraArgs{extraDuration = Explicit (Con "TwoHours"),..}
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
-lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Year_1996"))
-lexemeAdv "in_1993_Adv" = return $ usingTime (ExactTime (Con "Year_1993"))
-lexemeAdv "in_march_1993_Adv"
-  = return $ usingTime (ExactTime (Con "Year_1993_Month_March"))
-lexemeAdv "in_1992_Adv" = return $ usingTime (ExactTime (Con "Year_1992"))
+lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Date_19960101", Con "Date_19961231"))
+lexemeAdv "in_1993_Adv" = return $ usingTime (ExactTime (Con "Date_19930101", Con "Date_19931231"))
+lexemeAdv "in_march_1993_Adv" = return $ usingTime (ExactTime (Con "Date_19930301",Con "Date_19930331"))
+lexemeAdv "in_1992_Adv" = return $ usingTime (ExactTime (Con "Date_19920101", Con "Date_19921231"))
 lexemeAdv "currently_AdV" = return $ usingTime now
-lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (Con "YESTERDAY"))
+lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
 lexemeAdv adv | "since" `isPrefixOf` adv
               = do let year = take 4 $ drop 6 $ adv
-                       tRef = Con ("Year_" ++ year)
-                   t <- getFresh
-                   return $ withTimeQuant t (\t' -> Con "AFTER" `apps `[tRef,t']) id
+                       tStart = Con ("Date_" ++ year ++ "0101")
+                       tStop = Con "NOW"
+                   t1 <- getFresh
+                   t2 <- getFresh
+                   return $ withTimeQuant (t1,t2) (\(t1',t2') -> Con "AFTER" `apps `[tStart,tStop,t1',t2']) id
 lexemeAdv "never_AdV" = do
   t <- getFresh
-  return $ withTimeQuant t (const TRUE) not' -- for every time
+  t' <- getFresh
+  return $ withTimeQuant (t,t') (const TRUE) not' -- for every time
 lexemeAdv "always_AdV" = do -- attn: local quantification
   t <- getFresh
-  return $ withTimeQuant t (const TRUE) id
+  t' <- getFresh
+  return $ withTimeQuant (t,t') (const TRUE) id
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
-withTimeQuant :: String -> (Exp -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, Temporal)
-withTimeQuant t constr f = \s extraObjs -> (quantTime t (constr (Var t)) (f (fst (s (extraObjs{extraTime=t'})))),t')
-  where t' = ExactTime (Var t)
+withTimeQuant :: (String,String) -> (TimeSpan -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, Temporal)
+withTimeQuant (t1,t2) constr f = \s extraObjs -> (quantTime t1 (true) $
+                                                  quantTime t2 (constr (Var t1, Var t2) ∧ (Con "IS_INTERVAL" `apps` [Var t1,Var t2]) ) $
+                                                  f (fst (s (extraObjs{extraTime=t'}))),t')
+  where t' = ExactTime (Var t1, Var t2)
   
 
 appAdverb :: String -> (Object -> Prop) -> (Object -> Prop)
@@ -953,7 +961,7 @@ predVP np vp = withClause $ do
               t <- freshTime (Con "PAST" `app`)
               return $ \e@ExtraArgs{..} ->
                   case extraTime of
-                    UnspecifiedTime -> usingTime (ExactTime t) p' e
+                    UnspecifiedTime -> usingTime (ExactTime $ timePoint t) p' e
                       -- (b) We do not have a specified time
                       -- Use own time. This time MUST be overridable by (2), otherwise we'll never
                       -- be able to override it, to search for it when we reach
@@ -1055,7 +1063,7 @@ apConj2S' :: Conj -> S' -> S' -> S'
 apConj2S' Then p q extras =
   let (p',t1) = p extras
       (q',t2) = q extras
-  in ((Con "AFTER" `apps` [temporalToLogic t2,temporalToLogic t1]) ∧ p' ∧ q', t2)
+  in ((Con "AFTER" `apps` (tempToArgs t2 ++ tempToArgs t1)) ∧ p' ∧ q', t2)
 apConj2S' conj p q extras =
   let (p',t1) = p extras
       (q',t2) = q extras
