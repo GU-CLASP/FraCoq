@@ -1,4 +1,3 @@
-
 Load Formulas.
 
 
@@ -17,6 +16,7 @@ assumption.
 Qed.
 
 Parameter y1993before1996 : Date_19931231 < Date_19960101.
+Parameter y1992before1993 : Date_19921231 < Date_19930101.
 Parameter y1993 : Date_19930101 < Date_19931231.
 Parameter y1992 : Date_19920101 < Date_19921231.
 
@@ -24,7 +24,9 @@ Require Import Psatz.
 
 Theorem  problem252aTrue : Problem252aTrue.
 specialize y1993before1996 as H.
+specialize y1992before1993 as H4.
 specialize y1993 as H2.
+specialize y1992 as H3.
 unfold Problem252aTrue.
 cbv.
 intros [P1 [P2a P2b]].
@@ -37,7 +39,9 @@ Qed.
 
 Theorem  problem255aTrue : Problem255aTrue.
 specialize y1993before1996 as H.
-specialize y1993 as H2.
+specialize y1992 as H2.
+specialize y1992before1993 as H4.
+specialize y1993 as H3.
 cbv.
 intros [P1 P2].
 apply P1.
@@ -105,7 +109,8 @@ Qed.
 
 Theorem  problem264atrue : Problem264aTrue.
 cbv.
-intros.
+intros t1 past1 t2 past2 [P1 P2].
+
 split.
 lia.
 split.
@@ -121,6 +126,16 @@ lia.
 split.
 tauto.
 tauto.
+Qed.
+
+Transparent PN2object.
+Theorem  problem267atrue : Problem267aTrue.
+cbv.
+intros.
+destruct H2 as [a [b [H3]]].
+split.
+lia.
+firstorder.
 Qed.
 
 Theorem  problem269atrue : Problem269aTrue.
@@ -167,16 +182,6 @@ specialize y1991before1993 as C.
 lia.
 Qed.
 
-
-Transparent PN2object.
-Theorem  problem267atrue : Problem267aTrue.
-cbv.
-intros.
-destruct H2 as [a [b [H3]]].
-split.
-lia.
-firstorder.
-Qed.
 
 Transparent PN2object.
 Theorem  problem307atrue : Problem307aTrue.

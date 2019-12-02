@@ -1230,8 +1230,16 @@ Definition now_AdV : AdV
 Definition UnspecifiedTime := NOW.
 Definition LessThanTime := fun x y => x < y.
 
-Definition AFTER : Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t1 > t0'.
-Definition BEFORE: Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t0 < t1'.
+Definition AFTER : Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t0 < t1'.
+
+(*
+
+                  t0                       t1
+                  |------------------------|
+          |---------------|
+          t0'             t1'
+
+*)
 
 Definition EQUALTIME: Time -> Time -> Time -> Time -> Prop := fun t0 t1 t0' t1' => t1 = t1'. (* FraCas 315, 320, 322; interpretation of "when" *)
 
