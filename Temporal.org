@@ -120,3 +120,16 @@ not (smith wrote it in 1993)
 
 the inference can be made because the object will be the same variable
 again.
+** Intervals
+
+Each predicate is associated a start and stop time. 
+
+swim t0 t1 jones
+
+We could imagine
+using a FOL representation; eg:
+
+forall t in [t0,t1].  swim t jones
+
+But we need to have access to time intervals in the semantics of
+before/after (fracas 269).
