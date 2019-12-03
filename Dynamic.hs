@@ -92,7 +92,7 @@ onS' f s extra = first f (s extra)
   -- f (p eos)
 
 type TimeSpan = (Exp,Exp)
-data Temporal = ForceTime TimeSpan | ExactTime TimeSpan | UnspecifiedTime | TenseTime Temporal deriving Show
+data Temporal = ForceTime TimeSpan | ExactTime TimeSpan | UnspecifiedTime {-  TenseTime Temporal-} deriving Show
 
 now :: Temporal
 now = ExactTime (Con "NOW", Con "NOW")
@@ -103,8 +103,8 @@ instance Monoid Temporal where
   _ `mappend` ForceTime t = ForceTime t
   UnspecifiedTime `mappend` x = x
   x `mappend` UnspecifiedTime = x
-  TenseTime _ `mappend` x = x -- time specification given by tense, this is overridden by specific times.
-  x `mappend` TenseTime _ = x
+  -- TenseTime _ `mappend` x = x -- time specification given by tense, this is overridden by specific times.
+  -- x `mappend` TenseTime _ = x
   x `mappend` y = error ("`mappend Temporal:" ++ show x ++ " <> " ++ show y)
 
 data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
@@ -463,14 +463,17 @@ verbAspect "_BE_" = Activity -- mostly used for "it is now date"
 verbAspect _ = Achievement
 
 appArgs :: Bool -> String -> [Object] -> S'
-appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime)
+appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime')
   where prep'd = Con nmPrep `apps` (map snd prepositions ++ indirectObjects)
         time'd = if isTimed
-                 then Lam $ \x -> aspect (Con "appTime" `apps` (tempToArgs extraTime ++ [prep'd,x]))
+                 then Con "appTime" `apps` (tempToArgs extraTime' ++ [prep'd])
                  else prep'd
-        aspect = case verbAspect nmPrep of
-          Activity -> id
-          Achievement -> (Con "SAMETIME" `apps` tempToArgs extraTime -->)
+        extraTime' = case verbAspect nmPrep of
+          Activity -> extraTime
+          Achievement -> case extraTime of
+            ExactTime (t0,_) -> ExactTime (t0,t0)
+            ForceTime span -> ForceTime span
+            UnspecifiedTime -> UnspecifiedTime
         nmPrep = nm ++ concatMap fst prepositions
         indirectObjects = init objs
         subject = last objs
@@ -554,7 +557,7 @@ temporalToLogic :: Temporal -> TimeSpan
 temporalToLogic t = case t  of
   ExactTime e -> e
   ForceTime e -> e
-  TenseTime t' -> temporalToLogic t'
+  -- TenseTime t' -> temporalToLogic t'
   UnspecifiedTime -> (Con "UnspecifiedTime",Con "UnspecifiedTime")
 
 tempToArgs :: Temporal -> [Exp]

@@ -52,20 +52,24 @@ intros t0 p0.
 intros [P1 P2].
 intros t1 p1.
 intros t2 p2.
-apply P1.
+eapply P1.
 split.
 split.
 lia.
 split.
-lia.
+Focus 2.
+reflexivity.
 lia.
 Qed.
+
+
 
 Parameter y1992before1993March : Date_19921231 <  Date_19930301.
 Parameter y1993March : Date_19930301 < Date_19930331.
 
 Parameter foundNotExisit_K : forall x o t0 t1, found_V2 x o t0 t1 -> forall t' t1', t' < t0
 -> exist_V x t' t1' -> False.
+
 
 
 Theorem  problem258aFalse : Problem258aFalse.
@@ -79,25 +83,21 @@ assert (Date_19920101 < Date_19930301).
 lia.
 intros P1 P2.
 eapply foundNotExisit_K.
-apply P1.
-split.
-split.
-reflexivity.
-Focus 2.
-reflexivity.
-split.
-lia.
-reflexivity.
-Focus 2.
-apply P2.
+eapply P1.
 split.
 split.
 reflexivity.
 split.
-Focus 3.
 reflexivity.
 lia.
+Focus 2.
+eapply P2.
+split.
+split.
 reflexivity.
+split.
+reflexivity.
+lia.
 lia.
 Qed.
 
@@ -122,17 +122,14 @@ lia.
 Qed.
 
 
-(*Transparent PN2object.
+Transparent PN2object.
 Theorem  problem261atrue : Problem261aTrue.
 cbv.
 intros t1 t1Past t2 t2Past t3 t3Past.
-intros t4 p4.
-intros t5 p5.
-intros t6 p6.
 
 intros [p1Order [p1a [p1b [p2Order [p2a p2b]]]]].
 split.
-Focus 2.
+lia.
 split.
 assumption.
 assumption.
@@ -178,7 +175,7 @@ split.
 lia.
 firstorder.
 Qed.
-*)
+
 
 Theorem  problem269atrue : Problem269aTrue.
 cbv.
@@ -189,7 +186,7 @@ Abort All.
 Theorem  problem270atrue : Problem270aTrue.
 cbv.
 intros.
-destruct H4 as [A [B [C [D E]]]].
+destruct H2 as [A [B [C [D E]]]].
 split.
 assumption.
 split.
@@ -213,7 +210,7 @@ split.
 Abort All.
 
 Definition UniqueEvent : (TProp) -> Prop
- := fun p => forall t0 t1 t0' t1', p t0 t1 -> p t0' t1' -> t0 = t1'.
+ := fun p => forall t0 t0' , p t0 t0 -> p t0' t0' -> t0 = t0'.
 
 
 Parameter writeUnique : forall (x y : object), UniqueEvent (write_V2 x y).
@@ -224,7 +221,7 @@ intros t1 p1 t2 p2.
 intros novel isSmithsNovel P1 H.
 specialize writeUnique with (x := novel)(y := SMITH) as A.
 unfold UniqueEvent in A.
-specialize (A _ _ _ _ P1 H) as B.
+specialize (A _ _ P1 H) as B.
 specialize y1991before1993 as C.
 lia.
 Qed.
