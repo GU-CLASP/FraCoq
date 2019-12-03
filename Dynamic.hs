@@ -464,13 +464,14 @@ verbAspect _ = Achievement
 
 appArgs :: Bool -> String -> [Object] -> S'
 appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime)
-  where prep'd = Con (nm ++ concatMap fst prepositions) `apps` (map snd prepositions ++ indirectObjects)
+  where prep'd = Con nmPrep `apps` (map snd prepositions ++ indirectObjects)
         time'd = if isTimed
                  then Lam $ \x -> aspect (Con "appTime" `apps` (tempToArgs extraTime ++ [prep'd,x]))
                  else prep'd
-        aspect = case verbAspect nm of
+        aspect = case verbAspect nmPrep of
           Activity -> id
           Achievement -> (Con "SAMETIME" `apps` tempToArgs extraTime -->)
+        nmPrep = nm ++ concatMap fst prepositions
         indirectObjects = init objs
         subject = last objs
         cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) extraPreps
