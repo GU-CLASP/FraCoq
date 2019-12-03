@@ -133,3 +133,15 @@ forall t in [t0,t1].  swim t jones
 
 But we need to have access to time intervals in the semantics of
 before/after (fracas 269).
+
+** Tricks
+
+- PredVP is the deepest level which has access to the subject
+- Therefore, it is the deepest place which can lookup events/times
+  (because events depend on the subject)
+- In turn, is also the deepest place where we can introduce time points
+  (because we have access to the dynamic semantics of the clause as a
+  whole)
+- However, it is only at an even deeper place (lexical items) that we
+  - construct the predicate (and so we need to lookup time info here)
+  - have access to the aspects of the verb
