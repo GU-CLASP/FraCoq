@@ -122,7 +122,7 @@ lia.
 Qed.
 
 
-Transparent PN2object.
+(*Transparent PN2object.
 Theorem  problem261atrue : Problem261aTrue.
 cbv.
 intros t1 t1Past t2 t2Past t3 t3Past.
@@ -137,7 +137,6 @@ split.
 assumption.
 assumption.
 Qed.
-
 
 Transparent PN2object.
 Theorem  problem262atrue : Problem262aTrue.
@@ -179,15 +178,13 @@ split.
 lia.
 firstorder.
 Qed.
+*)
 
 Theorem  problem269atrue : Problem269aTrue.
 cbv.
 intros t1 p1 t2 p2 t3 p3 t4 p4 [P1 P2].
 split.
-tauto.
-(* OOPS; I cannot figure out the semantics of BEFORE vs AFTER. (in MS.v) *)
-firstorder.
-Qed.
+Abort All.
 
 Theorem  problem270atrue : Problem270aTrue.
 cbv.
