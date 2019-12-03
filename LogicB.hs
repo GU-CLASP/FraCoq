@@ -73,6 +73,14 @@ pattern TRUE = Con "True"
 pattern FALSE :: Exp v
 pattern FALSE = Con "False"
 
+(∧) :: Exp v -> Exp v -> Exp v
+LogicB.TRUE ∧ y = y
+x ∧ y = Op And [x,y]
+
+(-->) :: Exp v -> Exp v -> Exp v
+LogicB.TRUE --> y = y
+x --> y = Op Implies [x,y]
+
 lapp :: Exp (Next w) -> Exp w -> Exp w
 lapp f a = f >>= \case
   Here -> a
@@ -181,7 +189,9 @@ ppExp n ctx e0 =
       (Con x) -> x
       (Var x) -> x
       (Quant k p v dom body) -> case dom of
-         Op And [Con "Time",c] -> parens ("forall (" ++ v ++ ": Time), " ++ parens (ppExp n LAST_OPERATOR (Op Implies [c,body]))) -- hack for time
+         Op And [Con "Time",c] -> parens (q ++" (" ++ v ++ ": Time), " ++ parens (ppExp n LAST_OPERATOR (c `op` body))) -- hack for time
+           where q = case p of Pos -> "exists"; Neg -> "forall"
+                 op = case p of Pos -> (LogicB.∧); Neg -> (LogicB.-->)
          Con "Nat" -> "forall (" ++ v ++ ": Z), " ++ parens (ppExp n LAST_OPERATOR body) -- hack for nats
          _ -> parens (o ++ " " ++ ppFun dom ++ " " ++ ppFun body)
            where ppFun t = parens("fun " ++ v ++ "=>" ++ ppExp n LAST_OPERATOR t)

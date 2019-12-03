@@ -7,10 +7,11 @@ Load Formulas.
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
 
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
-Parameter know_weakening : forall p x t0 t1, know_VS p x t0 t1 -> p.
 
 Parameter y1993before1996 : Date_19931231 < Date_19960101.
 Parameter y1992before1993 : Date_19921231 < Date_19930101.
+Parameter y1991before1993 : Date_19911231 < Date_19930101.
+Parameter y1991before1992 : Date_19911231 < Date_19920101.
 Parameter y1993 : Date_19930101 < Date_19931231.
 Parameter y1992 : Date_19920101 < Date_19921231.
 Parameter future : NOW <= INDEFINITE_FUTURE.
@@ -31,9 +32,15 @@ specialize future as H5.
 unfold Problem252aTrue.
 cbv.
 intros.
-destruct H1.
-apply H1.
+exists Date_19930101.
+exists Date_19930101.
 split.
+reflexivity.
+split.
+lia.
+split.
+lia.
+apply H1.
 split.
 lia.
 split.
@@ -50,10 +57,15 @@ specialize y1993 as H3.
 cbv.
 intros t0 p0.
 intros [P1 P2].
-intros t1 p1.
-intros t2 p2.
-eapply P1.
+exists Date_19930101.
+exists Date_19930101.
 split.
+lia.
+split.
+lia.
+split.
+lia.
+eapply P1.
 split.
 lia.
 split.
@@ -76,28 +88,18 @@ Theorem  problem258aFalse : Problem258aFalse.
 cbv.
 intros t0 p0.
 intros t1 p1.
+intros P1 P2.
 specialize y1992before1993March as H.
 specialize y1992 as Q.
 specialize y1993March as M.
 assert (Date_19920101 < Date_19930301).
 lia.
-intros P1 P2.
+destruct P1 as [tF [tF' [cF1 [cF2 [cF3 P1]]]]].
+destruct P2 as [tE [tE' [cE1 [cE2 [cE3 P2]]]]].
 eapply foundNotExisit_K.
 eapply P1.
-split.
-split.
-reflexivity.
-split.
-reflexivity.
-lia.
 Focus 2.
 eapply P2.
-split.
-split.
-reflexivity.
-split.
-reflexivity.
-lia.
 lia.
 Qed.
 
@@ -217,12 +219,14 @@ Parameter writeUnique : forall (x y : object), UniqueEvent (write_V2 x y).
 
 Theorem  problem278atrue : Problem278aFalse.
 cbv.
-intros t1 p1 t2 p2.
+intros a b c e.
 intros novel isSmithsNovel P1 H.
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
 specialize writeUnique with (x := novel)(y := SMITH) as A.
 unfold UniqueEvent in A.
 specialize (A _ _ P1 H) as B.
-specialize y1991before1993 as C.
+specialize y1991before1992 as C.
 lia.
 Qed.
 
@@ -242,37 +246,56 @@ intros t1 t1Past t2 t2Past theStation isStation theHouse isHouse [P1 P2].
 (* And also, the syntax is anyway not the same in P and H. *)
 Abort All.
 
+Parameter MarchIn93 : (Date_19930101 < Date_19930301) /\  Date_19930331  < Date_19931231.
 
+Opaque PN2object.
 Theorem  problem312atrue : Problem312aTrue.
+specialize y1993March as M.
+specialize MarchIn93 as [M1 M2].
 cbv.
-intros [P1 P2].
-apply P1.
+intros t0 p0 t1 p1 [P1 P2].
+exists Date_19930301.
+exists Date_19930331.
 split.
+lia.
+split.
+lia.
+split.
+lia.
+eapply P1.
+reflexivity.
 Qed.
 
 Theorem  problem313atrue : Problem313aFalse.
 cbv.
-intros [P1 P2] [report [isReport Q]].
-apply (P1 Year_1993).
-split.
+intros t0 p0 t1 p1.
+intros [P1 P2].
+intro Q.
+destruct Q as [t [t' [tC1 [ tC2 [tC3 [report [isReport Q]]]]]]].
+eapply P1.
+Focus 2.
 exists report.
 split.
-exact isReport.
+assumption.
 exact Q.
+reflexivity.
 Qed.
 
+Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
+
 Opaque PN2object.
-Theorem  problem320atrue : Problem320aTrue.
+Theorem  problem320btrue : Problem320aTrue.
 cbv.
-intros.
-destruct H5 as [t [P1 P2]].
-assert (Q := know_weakening P2).
+intros ta pa tb pb.
+intros memoir hisMemoir.
+intros theCase isCase.
+intros failAnaphora hisMemoir'.
+(*TODO: look at possible readings *)
+(*destruct H5 as [t [P1 P2]].
+specialize (know_implicature P2) as Q.
 rewrite -> itIsTheCaseThatIdiom.
 split.
 intros [memoir [obvious R]].
-apply Q with (d := NOW).
-split.
+eapply Q.
+reflexivity.*)
 Abort All.
-Parameter y1992before1996 : Year_1992 <  Year_1996.
-Parameter y1992before1993 : Year_1992 <  Year_1993.
-Parameter y1991before1993 : Year_1991 <  Year_1992.

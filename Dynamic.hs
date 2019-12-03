@@ -577,5 +577,6 @@ withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}
 joinTime :: Temporal -> Temporal -> Temporal
 joinTime t1 t2 = t1 -- FIXME
 
-quantTime :: Var -> Exp -> Exp -> Exp
-quantTime x constraint body = Forall x (TimeDomain constraint) body
+
+quantTime :: (Var -> Exp -> Exp -> Exp) -> Var -> Exp -> Exp -> Exp
+quantTime quantifier x constraint body = quantifier x (TimeDomain constraint) body

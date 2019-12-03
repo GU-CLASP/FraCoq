@@ -389,33 +389,38 @@ lexemeAdv "in_1993_Adv" = inInterval (Con "Date_19930101") (Con "Date_19931231")
 lexemeAdv "in_march_1993_Adv" = inInterval (Con "Date_19930301") (Con "Date_19930331")
 lexemeAdv "currently_AdV" = return $ usingTime now
 lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
-lexemeAdv adv | "since" `isPrefixOf` adv
-              = let year = take 4 $ drop 6 $ adv
-                    tStart = Con ("Date_" ++ year ++ "0101")
-                    tStop = Con "INDEFINITE_FUTURE"
-                in inInterval tStart tStop
+lexemeAdv adv | "since" `isPrefixOf` adv =
+  do let year = take 4 $ drop 6 $ adv
+         tStart = Con ("Date_" ++ year ++ "0101")
+         tStop = Con "INDEFINITE_FUTURE"
+     t1 <- getFresh
+     t2 <- getFresh
+     return $ withTimeQuant Forall (t1,t2) (\(t1',t2') -> isInterval tStart t1' ∧ isInterval t2' tStop) id
+
 lexemeAdv "never_AdV" = do
   t <- getFresh
   t' <- getFresh
-  return $ withTimeQuant (t,t') (const TRUE) not' -- for every time
+  return $ withTimeQuant Forall (t,t') (const TRUE) not' -- for every time
 lexemeAdv "always_AdV" = do -- attn: local quantification
   t <- getFresh
   t' <- getFresh
-  return $ withTimeQuant (t,t') (const TRUE) id
+  return $ withTimeQuant Forall (t,t') (const TRUE) id
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
+inInterval :: Exp -> Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
 inInterval tStart tStop = do
   t1 <- getFresh
   t2 <- getFresh
-  return $ withTimeQuant (t1,t2) (\(t1',t2') -> isInterval tStart t1' ∧ isInterval t2' tStop) id
+  return $ withTimeQuant Exists (t1,t2) (\(t1',t2') -> isInterval tStart t1' ∧ isInterval t2' tStop) id
 
 isInterval :: Exp -> Exp -> Exp
 isInterval t0 t1 = Con "IS_INTERVAL" `apps` [t0,t1]
 
-withTimeQuant :: (String,String) -> (TimeSpan -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, Temporal)
-withTimeQuant (t1,t2) constr f = \s extraObjs -> (quantTime t1 (true) $
-                                                  quantTime t2 (constr (Var t1, Var t2) ∧ (isInterval (Var t1) (Var t2)) ) $
-                                                  f (fst (s (extraObjs{extraTime=t'}))),t')
+withTimeQuant :: (Var -> Exp -> Exp -> Exp) -> (String,String) -> (TimeSpan -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, Temporal)
+withTimeQuant quantifier (t1,t2) constr f
+  = \s extraObjs -> (quantTime quantifier t1 (true) $
+                     quantTime quantifier t2 (constr (Var t1, Var t2) ∧ (isInterval (Var t1) (Var t2)) ) $
+                      f (fst (s (extraObjs{extraTime=t'}))),t')
   where t' = ExactTime (Var t1, Var t2)
   
 
