@@ -378,8 +378,13 @@ lexemeAdv "on_july_8th_1994_Adv" = return $ usingTime (ExactTime (timePoint (Con
 lexemeAdv "saturday_july_14th_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_0714")))
 lexemeAdv "friday_13th_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_0713")))
 lexemeAdv "at_8_am_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Time_0800"))
-lexemeAdv "by_11_am_Adv" = return $ usingTime (ExactTime (Con "Time_1100", Con "INDEFINITE_FUTURE"))
-lexemeAdv "in_two_hours_Adv" = return $ \s ExtraArgs{..} -> s ExtraArgs{extraDuration = Explicit (Con "TwoHours"),..}
+lexemeAdv "by_11_am_Adv" = return $ usingTime (ExactTime (Con "INDEFINITE_PAST",Con "Time_1100"))
+lexemeAdv "in_two_hours_Adv" = do -- with duration meaning, as in FraCas 278
+  t <- getFresh
+  let tSpan = ExactTime (Var t, Con "PlusTwoHours" `app` Var t)
+  return (\s extraObjs ->
+           (quantTime Forall t true $ fst $ s extraObjs {extraTime = tSpan}, tSpan))
+  -- return $ \s ExtraArgs{..} -> s ExtraArgs{extraForceActivity=True,extraDuration = Explicit (Con "TwoHours"),..}
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
 lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Date_19960101", Con "Date_19961231"))
@@ -810,10 +815,22 @@ conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
 ---------------------------
 -- VV
 
+timingVVs :: [String]
+timingVVs = ["start_VV", "finish_VV"]
 
 lexemeVV :: String -> VV
-lexemeVV "do_VV" = return $ \vp x -> vp x -- "do" has a special meaning (ie. none)
+lexemeVV "do_VV" = return $ \vp x -> vp x -- "do" has a special meaning (ie. none); this is important to be able to lookup events.
+lexemeVV vv
+  | vv `elem` timingVVs
+  = return $ \vp x ->
+      appArgs True (vv++"Timing") [lam $ \t0 -> -- This allows the VV to modify timing information for its arguments.
+                                      -- Could be made the general case.
+                                      lam $ \t1 ->
+                                      lam (\subj -> fst $ vp subj emptyObjs {extraTime = ExactTime (t0,t1)}),
+                                    x]
 lexemeVV vv = return $ \vp x -> appArgs True vv [lam (\subj -> noExtraObjs (vp subj) ), x]
+
+
 
 ---------------------------
 -- VP

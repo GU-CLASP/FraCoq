@@ -145,3 +145,13 @@ before/after (fracas 269).
 - However, it is only at an even deeper place (lexical items) that we
   - construct the predicate (and so we need to lookup time info here)
   - have access to the aspects of the verb
+** Activity modal verbs (start, finish)
+
+Lexical semantics transform the interval (see start_VVTiming in Coq code)
+
+** Duration adverbs
+
+see "in_two_hours_Adv"
+
+** Interval adverbs
+see "inInterval"

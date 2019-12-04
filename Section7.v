@@ -1,3 +1,4 @@
+
 Load Formulas.
 
 
@@ -17,6 +18,8 @@ Variable y1992 : Date_19920101 < Date_19921231.
 Variable future : NOW <= INDEFINITE_FUTURE.
 Variable y1992before1993March : Date_19921231 <  Date_19930301.
 Variable y1993March : Date_19930301 < Date_19930331.
+Variable MarchIn93a : Date_19930101 < Date_19930301.
+Variable MarchIn93b : Date_19930331  < Date_19931231.
 
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
@@ -238,8 +241,10 @@ Abort All.
 Definition UniqueEvent : (TProp) -> Prop
  := fun p => forall t0 t0' , p t0 t0 -> p t0' t0' -> t0 = t0'.
 
+Definition UniqueActivity : (TProp) -> Prop
+ := fun p => forall t0 t0' t1 t1' , p t0 t1 -> p t0' t1' -> t0 = t0' /\ t1 = t1'.
 
-Parameter writeUnique : forall (x y : object), UniqueEvent (write_V2 x y).
+Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 
 Theorem  problem278atrue : Problem278aFalse.
 cbv.
@@ -248,8 +253,8 @@ intros novel isSmithsNovel P1 H.
 destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
 destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
 specialize writeUnique with (x := novel)(y := SMITH) as A.
-unfold UniqueEvent in A.
-specialize (A _ _ P1 H) as B.
+unfold UniqueActivity in A.
+specialize (A _ _ _ _ P1 H) as B.
 lia.
 Qed.
 
@@ -261,8 +266,8 @@ intros novel isSmithsNovel P1 H.
 destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
 destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
 specialize writeUnique with (x := novel)(y := SMITH) as A.
-unfold UniqueEvent in A.
-specialize (A _ _ P1 H) as B.
+unfold UniqueActivity in A.
+specialize (A _ _ _ _ P1 H) as B.
 lia.
 Qed.
 
@@ -281,9 +286,30 @@ specialize (A _ _ P1 H) as B.
 lia.
 Qed.
 
+
+Definition Time_1000 := PlusTwoHours Time_0800.
+Variable hoursPositive : OneHour > 0.
+Parameter past : forall t, INDEFINITE_PAST <= t.
 Theorem  problem284 : Problem284aTrue.
-(* Lexical semantics *)
-Abort All.
+cbv.
+intros t0 p0.
+intros t1 p1.
+intros report isReport.
+intros [P1 P2].
+specialize P1 with (b := Time_0800).
+destruct P2 as [t2 P2].
+specialize writeUnique with (x := report)(y := SMITH) as A.
+unfold UniqueActivity in A.
+specialize (A _ _ _ _ P2 P1) as B.
+eexists.
+eexists.
+split.
+Focus 2.
+exact P2.
+split.
+apply past.
+lia.
+Qed.
 
 Transparent PN2object.
 Theorem  problem307atrue : Problem307aTrue.
@@ -296,16 +322,13 @@ Transparent PN2object.
 Theorem  problem311atrue : Problem311aTrue.
 cbv.
 intros t1 t1Past t2 t2Past theStation isStation theHouse isHouse [P1 P2].
-(* Deep reason for why it won't work is that "taxi" is existentially quantified, and so, not the same event (see disc. about repeatability)*)
+(* Deep reason for why it won't work is that "taxi" is existentially quantified, and so, not the same event (see discussion about repeatability in Temporal.org)*)
 (* And also, the syntax is anyway not the same in P and H. *)
 Abort All.
 
-Parameter MarchIn93 : (Date_19930101 < Date_19930301) /\  Date_19930331  < Date_19931231.
 
 Opaque PN2object.
 Theorem  problem312atrue : Problem312aTrue.
-specialize y1993March as M.
-specialize MarchIn93 as [M1 M2].
 cbv.
 intros t0 p0 t1 p1 [P1 P2].
 exists Date_19930301.

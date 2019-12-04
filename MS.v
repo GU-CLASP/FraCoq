@@ -565,14 +565,17 @@ Parameter IMPRESSED_BY : object -> object -> Prop.
 Definition impressed_by_A2 : A2 :=
    fun impressee class impressor => class impressee /\ IMPRESSED_BY impressee impressor.
 
+
+Definition VVT := (Time -> Time -> VP) -> object -> TProp.
+Definition finish_VVTiming : VVT := fun tvp => fun x => fun t0 t1 => exists t0', exists t1', t0 <= t1' <= t1 /\ tvp t0' t1' x.
+Definition start_VVTiming  : VVT := fun tvp => fun x => fun t0 t1 => exists t1', tvp t0 t1' x. (* FIXME, maybe *)
+
 Parameter can8know_VV : VV .
 Parameter can_VV : VV .
-Parameter finish_VV : VV .
 Parameter manage_VV : VV .
 Parameter must_VV : VV .
 Parameter need_VV : VV .
 Parameter shall_VV : VV .
-Parameter start_VV : VV .
 Parameter try_VV : VV .
 Parameter use_VV : VV .
 Parameter want_VV : VV .
@@ -1264,9 +1267,11 @@ Definition PAST e := e < NOW.
 
 Parameter ONEDAY : Time.
 Definition YESTERDAY := NOW - ONEDAY.
+Parameter OneHour : Time.
 Parameter Time_0800 : Time.
-Parameter Time_0900 : Time.
-Parameter Time_1100 : Time.
+Definition Time_0900 : Time := Time_0800 + OneHour.
+Definition PlusTwoHours : Time -> Time := fun x => x + OneHour + OneHour.
+Definition Time_1100 : Time := PlusTwoHours Time_0900.
 Parameter Time_1715 : Time.
 Parameter Date_0713 : Time.
 Definition Date_0714 : Time := Date_0713 + ONEDAY.
@@ -1290,3 +1295,4 @@ Parameter SPEAKER : object.
 Definition IS_INTERVAL := fun t0 t1 => t0 <= t1.
 
 Parameter INDEFINITE_FUTURE : Time.
+Parameter INDEFINITE_PAST : Time.

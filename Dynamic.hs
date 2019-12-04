@@ -455,11 +455,13 @@ noExtraObjsCN' :: CN' -> (Object -> Prop)
 noExtraObjsCN' (f,_gender) = noExtraObjsCN'' f
 
 
-data Aspect = Activity | Achievement
+data Aspect = Activity | Achievement deriving Eq
 
 verbAspect "swim_V" = Activity
+verbAspect "write_V2" = Activity
 verbAspect "_BE_in" = Activity
 verbAspect "_BE_" = Activity -- mostly used for "it is now date"
+verbAspect "finish_VVTiming" = Activity -- Because we can finish "within" an interval, see Coq code.
 verbAspect _ = Achievement
 
 appArgs :: Bool -> String -> [Object] -> S'
@@ -472,7 +474,7 @@ appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'
           Activity -> extraTime
           Achievement -> case extraTime of
             ExactTime (t0,_) -> ExactTime (t0,t0)
-            ForceTime span -> ForceTime span
+            ForceTime tspan -> ForceTime tspan
             UnspecifiedTime -> UnspecifiedTime
         nmPrep = nm ++ concatMap fst prepositions
         indirectObjects = init objs
