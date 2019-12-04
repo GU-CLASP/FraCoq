@@ -311,6 +311,29 @@ apply past.
 lia.
 Qed.
 
+(*Theorem problem286 : Problem286aFalse.
+Abort All.
+FIXME: Horrid syntax.
+*) 
+
+Theorem problem288 : Problem288aTrue.
+cbv.
+intros t0 p0 t1 p1 t2 p2.
+intros P1.
+specialize P1 with (b := t0).
+destruct P1 as [report [isReport P1]].
+exists report.
+split.
+assumption.
+
+(* FIXME: the event lookup fails due to the existential
+quantification; but the time points are quantified at the toplevel.
+Perhaps we should not quantify at the top-level (ever); but rather
+always quantify locally and use the "unique" property of events more
+liberally.
+*)
+Abort All.
+
 Transparent PN2object.
 Theorem  problem307atrue : Problem307aTrue.
 cbv.
