@@ -7,14 +7,16 @@ Load Formulas.
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
 
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
-
-Parameter y1993before1996 : Date_19931231 < Date_19960101.
-Parameter y1992before1993 : Date_19921231 < Date_19930101.
-Parameter y1991before1993 : Date_19911231 < Date_19930101.
-Parameter y1991before1992 : Date_19911231 < Date_19920101.
-Parameter y1993 : Date_19930101 < Date_19931231.
-Parameter y1992 : Date_19920101 < Date_19921231.
-Parameter future : NOW <= INDEFINITE_FUTURE.
+Section Temps.
+Variable y1993before1996 : Date_19931231 < Date_19960101.
+Variable y1992before1993 : Date_19921231 < Date_19930101.
+Variable y1991before1993 : Date_19911231 < Date_19930101.
+Variable y1991before1992 : Date_19911231 < Date_19920101.
+Variable y1993 : Date_19930101 < Date_19931231.
+Variable y1992 : Date_19920101 < Date_19921231.
+Variable future : NOW <= INDEFINITE_FUTURE.
+Variable y1992before1993March : Date_19921231 <  Date_19930301.
+Variable y1993March : Date_19930301 < Date_19930331.
 
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
@@ -24,23 +26,19 @@ Qed.
 Require Import Psatz.
 
 Theorem  problem252aTrue : Problem252aTrue.
-specialize y1993before1996 as H.
-specialize y1992before1993 as H4.
-specialize y1993 as H2.
-specialize y1992 as H3.
-specialize future as H5.
 unfold Problem252aTrue.
 cbv.
-intros.
-exists Date_19930101.
-exists Date_19930101.
+intros t p.
+intros [P1 P2].
+eexists.
+eexists.
+split.
+reflexivity.
 split.
 reflexivity.
 split.
 lia.
-split.
-lia.
-apply H1.
+apply P1.
 split.
 lia.
 split.
@@ -49,11 +47,6 @@ lia.
 Qed.
 
 Theorem  problem255aTrue : Problem255aTrue.
-specialize future as F.
-specialize y1993before1996 as H.
-specialize y1992 as H2.
-specialize y1992before1993 as H4.
-specialize y1993 as H3.
 cbv.
 intros t0 p0.
 intros [P1 P2].
@@ -74,10 +67,25 @@ reflexivity.
 lia.
 Qed.
 
-
-
-Parameter y1992before1993March : Date_19921231 <  Date_19930301.
-Parameter y1993March : Date_19930301 < Date_19930331.
+Theorem  problem257aTrue : Problem257aTrue.
+cbv.
+intros t p.
+intros [P1 P2].
+eexists.
+eexists.
+split.
+reflexivity.
+split.
+reflexivity.
+split.
+lia.
+eapply P1.
+split.
+lia.
+split.
+reflexivity.
+lia.
+Qed.
 
 Parameter foundNotExisit_K : forall x o t0 t1, found_V2 x o t0 t1 -> forall t' t1', t' < t0
 -> exist_V x t' t1' -> False.
@@ -89,9 +97,6 @@ cbv.
 intros t0 p0.
 intros t1 p1.
 intros P1 P2.
-specialize y1992before1993March as H.
-specialize y1992 as Q.
-specialize y1993March as M.
 assert (Date_19920101 < Date_19930301).
 lia.
 destruct P1 as [tF [tF' [cF1 [cF2 [cF3 P1]]]]].
@@ -143,7 +148,7 @@ cbv.
 intros.
 split.
 lia.
-firstorder.
+intuition.
 Qed.
 
 
@@ -168,6 +173,16 @@ tauto.
 tauto.
 Qed.
 
+Theorem  problem266atrue : Problem266aTrue.
+cbv.
+intros.
+split.
+lia.
+split.
+tauto.
+tauto.
+Qed.
+
 Transparent PN2object.
 Theorem  problem267atrue : Problem267aTrue.
 cbv.
@@ -175,7 +190,16 @@ intros.
 destruct H2 as [a [b [H3]]].
 split.
 lia.
-firstorder.
+intuition.
+Qed.
+
+Theorem  problem268atrue : Problem268aTrue.
+cbv.
+intros.
+destruct H2 as [a [b [H3]]].
+split.
+lia.
+intuition.
 Qed.
 
 
@@ -226,10 +250,40 @@ destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
 specialize writeUnique with (x := novel)(y := SMITH) as A.
 unfold UniqueEvent in A.
 specialize (A _ _ P1 H) as B.
-specialize y1991before1992 as C.
 lia.
 Qed.
 
+Theorem  problem279 : Problem279aFalse.
+cbv.
+intros tt0 p0.
+intros tt1 p1.
+intros novel isSmithsNovel P1 H.
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
+specialize writeUnique with (x := novel)(y := SMITH) as A.
+unfold UniqueEvent in A.
+specialize (A _ _ P1 H) as B.
+lia.
+Qed.
+
+Parameter discoverUnique : forall (x y : object), UniqueEvent (discover_V2 x y).
+
+Theorem  problem282 : Problem282aFalse.
+cbv.
+intros tt0 p0.
+intros tt1 p1.
+intros species isNewSpecies P1 H.
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
+specialize discoverUnique with (x := species)(y := SMITH) as A.
+unfold UniqueEvent in A.
+specialize (A _ _ P1 H) as B.
+lia.
+Qed.
+
+Theorem  problem284 : Problem284aTrue.
+(* Lexical semantics *)
+Abort All.
 
 Transparent PN2object.
 Theorem  problem307atrue : Problem307aTrue.
