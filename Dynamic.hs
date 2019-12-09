@@ -22,7 +22,6 @@ import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Data.Function (on)
 import Data.Maybe (catMaybes)
-import Data.Monoid
 
 type Object = Exp
 type Prop = Exp
@@ -198,7 +197,6 @@ data Env = Env {vpEnv :: VPEnv
                ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
                ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
                ,envPluralizingQuantifier :: Bool
-               ,envTimeVars :: [(Exp,Var)]
                ,envFacts :: [Prop]
                ,freshVars :: [String]
                }
@@ -314,8 +312,7 @@ quantifyMany ((dom,x):xs) e = Forall x (dom `app` (Var x)) (quantifyMany xs e)
 runDynamic :: Dynamic Exp -> [(Exp,Env)]
 runDynamic (Dynamic x)= do
   (formula,env@Env {..}) <- observeAll (runStateT (runReaderT x assumedReadEnv) assumed)
-  let e = quantifyMany [(Lam (\_ -> TimeDomain constraint),t) | (constraint,t) <- envTimeVars] $
-          quantifyMany [(Lam (\_ -> Con "Nat"),v) | (v,_cn) <- quantityEnv] $
+  let e = quantifyMany [(Lam (\_ -> Con "Nat"),v) | (v,_cn) <- quantityEnv] $
           quantifyMany envMissing formula
   return (e,env)
 
@@ -396,7 +393,6 @@ assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
                ,envDefinites = []
                ,envMissing = []
                ,envPluralizingQuantifier = False
-               ,envTimeVars = []
                ,envFacts = []
                ,freshVars = allVars}
 
@@ -473,7 +469,7 @@ appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'
         extraTime' = case verbAspect nmPrep of
           Activity -> extraTime
           Achievement -> case extraTime of
-            ExactTime (t0,_) -> ExactTime (t0,t0)
+            ExactTime (_,t0) -> ExactTime (t0,t0)
             ForceTime tspan -> ForceTime tspan
             UnspecifiedTime -> UnspecifiedTime
         nmPrep = nm ++ concatMap fst prepositions
@@ -531,29 +527,9 @@ referenceTimeFor s = do
       error ("referenceTimesFor: no time for " ++ show (forceTime (Var "τ₀", Var "τ₁") s) ++ "\n facts:\n" ++ intercalate "\n" (map show facts))
     (t:_) -> return t
 
--- | Allocate a fresh time constant with a certain value.
-freshTime :: (Exp -> Exp) -> Dynamic Exp
-freshTime constraint = do
-  t <- getFresh
-  modify (pushTimeConstraint t (constraint $ Var t))
-  return (Var t)
-
-pushTimeConstraint :: Var -> Exp -> Env -> Env
-pushTimeConstraint t c Env{..} = Env{envTimeVars = (c,t):envTimeVars,..}
-
--- -- | S' shall use the given time constraint
--- usingTime :: Temporal -> S' -> S'
--- usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = extraTime <> e, ..} 
-
 -- | S' shall use the given time constraint
 usingTime :: Temporal -> S' -> S'
 usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..} 
-
--- constrainTime :: (Exp -> Exp) -> S'
--- constrainTime k ExtraArgs{..} = case extraTime of
---   ExactTime t -> k t
---   ForceTime t -> k t
---   _ -> error ("constrainTime: " ++ show extraTime)
 
 temporalToLogic :: Temporal -> TimeSpan
 temporalToLogic t = case t  of
@@ -578,7 +554,6 @@ withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}
 
 joinTime :: Temporal -> Temporal -> Temporal
 joinTime t1 t2 = t1 -- FIXME
-
 
 quantTime :: (Var -> Exp -> Exp -> Exp) -> Var -> Exp -> Exp -> Exp
 quantTime quantifier x constraint body = quantifier x (TimeDomain constraint) body

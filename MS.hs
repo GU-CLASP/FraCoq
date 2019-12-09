@@ -986,11 +986,13 @@ predVP np vp = withClause $ do
       case ts of
          [] -> -- not a reference to a previous event.
            do -- Allocate own time.
-              t1 <- freshTime (Con "PAST" `app`)
-              t2 <- freshTime ((Con "IS_INTERVAL" `app` t1) `app`)
+              t1 <- getFresh
+              t2 <- getFresh
               return $ \e@ExtraArgs{..} ->
                   case extraTime of
-                    UnspecifiedTime -> usingTime (ExactTime $ (t1,t2)) p' e
+                    UnspecifiedTime -> modP (quantTime Exists t2 (Con "PAST" `app` Var t2) .
+                                            quantTime Exists t1 ((Con "IS_INTERVAL" `app` Var t1) `app` Var t2))
+                                            (usingTime (ExactTime $ (Var t1,Var t2)) p' e)
                       -- (b) We do not have a specified time
                       -- Use own time. This time MUST be overridable by (2), otherwise we'll never
                       -- be able to override it, to search for it when we reach
@@ -1005,6 +1007,7 @@ predVP np vp = withClause $ do
 questCl :: Cl -> Cl
 questCl = id
 
+modP f (p,t) = (f p, t)
 
 soDoI :: NP -> Cl
 soDoI np = predVP np doesTooVP
