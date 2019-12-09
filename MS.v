@@ -1263,7 +1263,17 @@ Definition SAMETIME: Time -> Time -> Prop := fun t0 t1 => t0 = t1.
 Definition appTime : Time -> Time -> (object -> TProp) -> object -> Prop := 
   fun t0 t1 vp x => vp x t0 t1.
 
-Definition PAST e := e < NOW.
+Definition PAST e := e < NOW. (* This is strict, so that we cannot deduce:
+ie, should we have:
+
+John is tall.
+--------------
+John was tall.
+
+
+(But this is not in the scope of the fracas suite)
+
+*)
 
 Parameter ONEDAY : Time.
 Definition YESTERDAY := NOW - ONEDAY.
