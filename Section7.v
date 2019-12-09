@@ -1,4 +1,3 @@
-
 Load Formulas.
 
 
@@ -20,6 +19,9 @@ Variable y1992before1993March : Date_19921231 <  Date_19930301.
 Variable y1993March : Date_19930301 < Date_19930331.
 Variable MarchIn93a : Date_19930101 < Date_19930301.
 Variable MarchIn93b : Date_19930331  < Date_19931231.
+Variable hoursPositive : OneHour > 0.
+Parameter past : forall t, INDEFINITE_PAST <= t.
+Variable isPast : INDEFINITE_PAST < NOW.
 
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
@@ -28,11 +30,16 @@ Qed.
 
 Require Import Psatz.
 
+(* Parameter Date_19960606. *)
+(* Variable someIn96 : Variable y1993before1996 : Date_19931231 < Date_19960101. *)
+
 Theorem  problem252aTrue : Problem252aTrue.
 unfold Problem252aTrue.
 cbv.
-intros t p.
 intros [P1 P2].
+exists INDEFINITE_PAST.
+split.
+lia.
 eexists.
 eexists.
 split.
@@ -51,29 +58,33 @@ Qed.
 
 Theorem  problem255aTrue : Problem255aTrue.
 cbv.
-intros t0 p0.
 intros [P1 P2].
-exists Date_19930101.
-exists Date_19930101.
-split.
+exists INDEFINITE_PAST.
+eexists.
 lia.
+eexists.
+eexists.
 split.
-lia.
+reflexivity.
+split.
+reflexivity.
 split.
 lia.
 eapply P1.
 split.
-lia.
-split.
-Focus 2.
 reflexivity.
+split.
+lia.
 lia.
 Qed.
 
+
 Theorem  problem257aTrue : Problem257aTrue.
 cbv.
-intros t p.
 intros [P1 P2].
+exists INDEFINITE_PAST.
+split.
+lia.
 eexists.
 eexists.
 split.
@@ -81,12 +92,13 @@ reflexivity.
 split.
 reflexivity.
 split.
+
 lia.
-eapply P1.
-split.
-lia.
+eapply P1 with (c := Date_19931231).
 split.
 reflexivity.
+split.
+lia.
 lia.
 Qed.
 
@@ -97,8 +109,6 @@ Parameter foundNotExisit_K : forall x o t0 t1, found_V2 x o t0 t1 -> forall t' t
 
 Theorem  problem258aFalse : Problem258aFalse.
 cbv.
-intros t0 p0.
-intros t1 p1.
 intros P1 P2.
 assert (Date_19920101 < Date_19930301).
 lia.
@@ -119,15 +129,17 @@ Abort All.
 
 Theorem  problem260aTrue : Problem260aTrue.
 cbv.
-intros t0 p0.
-intros t1 p1.
 intros contract isContract.
 intros [P1 P2].
 destruct P2 as [today [isToday P2']].
 cut (NOW - ONEDAY = Date_0713).
 intro H.
 rewrite <- H.
-assumption. 
+eexists.
+split.
+Focus 2.
+apply P1.
+apply isPast.
 lia.
 Qed.
 
@@ -135,30 +147,40 @@ Qed.
 Transparent PN2object.
 Theorem  problem261atrue : Problem261aTrue.
 cbv.
-intros t1 t1Past t2 t2Past t3 t3Past.
-
-intros [p1Order [p1a [p1b [p2Order [p2a p2b]]]]].
+intros t1 t1Past t2 t2Past.
+intro P1.
+destruct P1 as [t3 [c2 [t5 [c5 [t4 [c3 [c4 Q]]]]]]].
 split.
 lia.
-split.
-assumption.
-assumption.
+intuition.
 Qed.
 
 Transparent PN2object.
 Theorem  problem262atrue : Problem262aTrue.
 cbv.
 intros.
+destruct H1.
+destruct H1.
+destruct H2.
+destruct H3.
+destruct H4.
+destruct H5.
+destruct H6.
 split.
 lia.
+split.
+intuition.
 intuition.
 Qed.
 
 
 Theorem  problem264atrue : Problem264aTrue.
 cbv.
-intros t1 past1 t2 past2 [P1 P2].
-
+intros.
+destruct H1.
+destruct H2.
+destruct H3.
+destruct H4.
 split.
 lia.
 split.
@@ -169,6 +191,11 @@ Qed.
 Theorem  problem265atrue : Problem265aTrue.
 cbv.
 intros.
+destruct H1.
+destruct H2.
+destruct H3.
+destruct H4.
+
 split.
 lia.
 split.
@@ -225,17 +252,30 @@ Qed.
 
 Theorem  problem271atrue : Problem271aTrue.
 cbv.
-intros t1 p1 t2 p2 t3 p3 t4 p4 t5 p5 t6 p6 t7 p7 t8 p8 t9 p9 t10 p10.
-intros [P1 [P2 P3]].
+intros.
+exists INDEFINITE_PAST.
 split.
-(* A fluke: adjectives do not have temporal parameter *)
-Abort All.
+lia.
+exists INDEFINITE_PAST.
+split.
+lia.
+exists INDEFINITE_PAST.
+split.
+lia.
+exists (INDEFINITE_PAST - OneHour).
+split.
+lia.
+split.
+lia.
+split.
+firstorder.
+firstorder.
+(* Error: adjectives do not have temporal parameter *)
+Qed.
 
 Theorem  problem273atrue : Problem273aTrue.
 cbv.
 intros.
-destruct H5 as [P1 [P2 P3]].
-split.
 Abort All.
 
 Definition UniqueEvent : (TProp) -> Prop
@@ -248,10 +288,9 @@ Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 
 Theorem  problem278atrue : Problem278aFalse.
 cbv.
-intros a b c e.
 intros novel isSmithsNovel P1 H.
-destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
-destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 [t4 [ct4 P1]]]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 [u4 [cu4 H]]]]]]].
 specialize writeUnique with (x := novel)(y := SMITH) as A.
 unfold UniqueActivity in A.
 specialize (A _ _ _ _ P1 H) as B.
@@ -260,11 +299,9 @@ Qed.
 
 Theorem  problem279 : Problem279aFalse.
 cbv.
-intros tt0 p0.
-intros tt1 p1.
 intros novel isSmithsNovel P1 H.
-destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
-destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 [t4 [ct4 P1]]]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 [u4 [cu4 H]]]]]]].
 specialize writeUnique with (x := novel)(y := SMITH) as A.
 unfold UniqueActivity in A.
 specialize (A _ _ _ _ P1 H) as B.
@@ -275,11 +312,9 @@ Parameter discoverUnique : forall (x y : object), UniqueEvent (discover_V2 x y).
 
 Theorem  problem282 : Problem282aFalse.
 cbv.
-intros tt0 p0.
-intros tt1 p1.
 intros species isNewSpecies P1 H.
-destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
-destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 [t4 [ct4 P1]]]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 [u4 [cu4 H]]]]]]].
 specialize discoverUnique with (x := species)(y := SMITH) as A.
 unfold UniqueEvent in A.
 specialize (A _ _ P1 H) as B.
@@ -288,14 +323,12 @@ Qed.
 
 
 Definition Time_1000 := PlusTwoHours Time_0800.
-Variable hoursPositive : OneHour > 0.
-Parameter past : forall t, INDEFINITE_PAST <= t.
 Theorem  problem284 : Problem284aTrue.
 cbv.
-intros t0 p0.
-intros t1 p1.
 intros report isReport.
 intros [P1 P2].
+destruct P1 as [t0 [c0 P1]].
+destruct P2 as [u0 [d0 P2]].
 specialize P1 with (b := Time_0800).
 destruct P2 as [t2 P2].
 specialize writeUnique with (x := report)(y := SMITH) as A.
@@ -318,33 +351,37 @@ FIXME: Horrid syntax.
 
 Theorem problem288 : Problem288aTrue.
 cbv.
-intros t0 p0 t1 p1 t2 p2.
-intros P1.
-specialize P1 with (b := t0).
-destruct P1 as [report [isReport P1]].
-exists report.
+exists INDEFINITE_PAST.
+split.
+lia.
+exists (INDEFINITE_PAST - OneHour - OneHour).
+split.
+lia.
+destruct H as [t0 [p B]].
+specialize B with (b := INDEFINITE_PAST - OneHour - OneHour).
+destruct B.
+destruct H.
+exists x.
 split.
 assumption.
-
-(* FIXME: the event lookup fails due to the existential
-quantification; but the time points are quantified at the toplevel.
-Perhaps we should not quantify at the top-level (ever); but rather
-always quantify locally and use the "unique" property of events more
-liberally.
-*)
-Abort All.
+cut (INDEFINITE_PAST - OneHour - OneHour + OneHour + OneHour = INDEFINITE_PAST).
+intro Q.
+rewrite -> Q in H0.
+assumption.
+lia.
+Qed.
 
 Transparent PN2object.
 Theorem  problem307atrue : Problem307aTrue.
 cbv.
-(* We need a start and end date for time intervals. "every month", can be interpreted as "every time" for now. *)
+(* TODO  *)
 
 Abort All.
 
 Transparent PN2object.
 Theorem  problem311atrue : Problem311aTrue.
 cbv.
-intros t1 t1Past t2 t2Past theStation isStation theHouse isHouse [P1 P2].
+intros theStation isStation theHouse isHouse [P1 P2].
 (* Deep reason for why it won't work is that "taxi" is existentially quantified, and so, not the same event (see discussion about repeatability in Temporal.org)*)
 (* And also, the syntax is anyway not the same in P and H. *)
 Abort All.
@@ -353,25 +390,27 @@ Abort All.
 Opaque PN2object.
 Theorem  problem312atrue : Problem312aTrue.
 cbv.
-intros t0 p0 t1 p1 [P1 P2].
-exists Date_19930301.
-exists Date_19930331.
+intros [P1 P2].
+eexists.
 split.
-lia.
-split.
-lia.
-split.
-lia.
+Focus 2.
+eexists.
+eexists.
+repeat split.
+Focus 4.
 eapply P1.
 reflexivity.
+reflexivity.
+reflexivity.
+lia.
+apply isPast.
 Qed.
 
 Theorem  problem313atrue : Problem313aFalse.
 cbv.
-intros t0 p0 t1 p1.
 intros [P1 P2].
 intro Q.
-destruct Q as [t [t' [tC1 [ tC2 [tC3 [report [isReport Q]]]]]]].
+destruct Q as [t [t' [tC1 [ tC2 [tC3 [tC4 [tC5 [report [isReport Q]]]]]]]]].
 eapply P1.
 Focus 2.
 exists report.
