@@ -371,6 +371,34 @@ assumption.
 lia.
 Qed.
 
+Theorem problem289 : Problem289aFalse.
+cbv.
+intros species newSpecies.
+intros [t1 [tPast P1]].
+(* "Spend 2 hours has not a correct interpretation "*)
+Abort All.
+
+Theorem problem290 : Problem290aTrue.
+cbv.
+intro P1.
+destruct P1 as [t1 [p1 P1]].
+exists ((INDEFINITE_PAST - OneHour - OneHour) + OneHour + OneHour).
+split.
+Focus 2.
+eapply P1.
+lia.
+Qed.
+
+Theorem problem294 : Problem294aTrue.
+cbv.
+intros business isBusiness.
+(* FIXME: inconsistent syntax for "in two years" compared to 285, etc. *)
+Abort All.
+
+Opaque PN2object.
+Theorem problem298 : Problem298aTrue.
+cbv.
+
 Transparent PN2object.
 Theorem  problem307atrue : Problem307aTrue.
 cbv.
@@ -425,13 +453,14 @@ Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
 Opaque PN2object.
 Theorem  problem320btrue : Problem320aTrue.
 cbv.
-intros ta pa tb pb.
 intros memoir hisMemoir.
 intros theCase isCase.
 intros failAnaphora hisMemoir'.
 (*TODO: look at possible readings *)
-(*destruct H5 as [t [P1 P2]].
-specialize (know_implicature P2) as Q.
+intros theJob isCIAJob.
+intros [t1 [c1 [c2 [c3 [c4 P1]]]]].
+destruct P1 as [gotJob knowStuff].
+specialize (know_implicature knowStuff) as Q.
 rewrite -> itIsTheCaseThatIdiom.
 split.
 intros [memoir [obvious R]].

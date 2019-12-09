@@ -379,12 +379,9 @@ lexemeAdv "saturday_july_14th_Adv" = return $ usingTime (ExactTime (timePoint (C
 lexemeAdv "friday_13th_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_0713")))
 lexemeAdv "at_8_am_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Time_0800"))
 lexemeAdv "by_11_am_Adv" = return $ usingTime (ExactTime (Con "INDEFINITE_PAST",Con "Time_1100"))
-lexemeAdv "in_two_hours_Adv" = do -- with duration meaning, as in FraCas 278
-  t <- getFresh
-  let tSpan = ExactTime (Var t, Con "PlusTwoHours" `app` Var t)
-  return (\s extraObjs ->
-           (quantTime Forall t true $ fst $ s extraObjs {extraTime = tSpan}, tSpan))
-  -- return $ \s ExtraArgs{..} -> s ExtraArgs{extraForceActivity=True,extraDuration = Explicit (Con "TwoHours"),..}
+lexemeAdv "in_two_hours_Adv" = withExactDuration (Con "TwoHours")
+lexemeAdv "for_two_years_Adv" = withAtLeastDuration (Con "TwoYears")
+lexemeAdv "for_exactly_a_year_Adv" = withExactDuration (Con "OneYear")
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
 lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Date_19960101", Con "Date_19961231"))
@@ -401,7 +398,6 @@ lexemeAdv adv | "since" `isPrefixOf` adv =
      t1 <- getFresh
      t2 <- getFresh
      return $ withTimeQuant Forall (t1,t2) (\(t1',t2') -> isInterval tStart t1' ∧ isInterval t2' tStop) id
-
 lexemeAdv "never_AdV" = do
   t <- getFresh
   t' <- getFresh
@@ -411,6 +407,24 @@ lexemeAdv "always_AdV" = do -- attn: local quantification
   t' <- getFresh
   return $ withTimeQuant Forall (t,t') (const TRUE) id
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
+
+
+withAtLeastDuration :: Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
+withAtLeastDuration delta = do -- with duration meaning, as in FraCas 278
+  t1 <- getFresh
+  t2 <- getFresh
+  let tSpan = ExactTime (Var t1, Var t2)
+  return (\s extraObjs ->
+           (quantTime Exists t1 true $
+            quantTime Exists t2 (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2]) $
+            fst $ s extraObjs {extraTime = tSpan}, tSpan))
+
+withExactDuration :: Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
+withExactDuration delta = do -- with duration meaning, as in FraCas 278
+  t <- getFresh
+  let tSpan = ExactTime (Var t, Con "Plus" `apps` [Var t,delta])
+  return (\s extraObjs ->
+           (quantTime Exists t true $ fst $ s extraObjs {extraTime = tSpan}, tSpan))
 
 inInterval :: Exp -> Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
 inInterval tStart tStop = do

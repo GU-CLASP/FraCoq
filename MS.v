@@ -1278,10 +1278,12 @@ John was tall.
 Parameter ONEDAY : Time.
 Definition YESTERDAY := NOW - ONEDAY.
 Parameter OneHour : Time.
+Parameter OneYear : Time.
+Parameter TwoHours : Time := OneHour + OneHour.
+Parameter TwoYears : Time := OneYear + OneYear.
 Parameter Time_0800 : Time.
 Definition Time_0900 : Time := Time_0800 + OneHour.
-Definition PlusTwoHours : Time -> Time := fun x => x + OneHour + OneHour.
-Definition Time_1100 : Time := PlusTwoHours Time_0900.
+Definition Time_1100 : Time := Time_0900 + TwoHours.
 Parameter Time_1715 : Time.
 Parameter Date_0713 : Time.
 Definition Date_0714 : Time := Date_0713 + ONEDAY.
