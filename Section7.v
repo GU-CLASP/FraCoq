@@ -434,6 +434,7 @@ cbv.
 firstorder.
 Qed.
 
+
 Theorem problem301 : Problem301aTrue.
 cbv.
 intros business isBusiness.
@@ -449,13 +450,46 @@ eexists.
 eexists.
 repeat split.
 Focus 4.
-firstorder.
+exact P1.
+reflexivity.
+reflexivity.
+lia.
+lia.
+lia.
 Qed.
 
+Theorem problem302 : Problem302aTrue.
+cbv.
+intros.
+assumption.
+Qed.
 
-Transparent PN2object.
-
-
+Theorem problem303 : Problem303aTrue.
+cbv.
+intro P1.
+destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [c5 [report [isReport P1]]]]]]]]]]].
+eexists.
+split.
+Focus 2.
+eexists.
+split.
+Focus 2.
+exists report.
+split.
+assumption.
+exact P1.
+eexists.
+eexists.
+repeat split.
+Focus 4.
+exact P1.
+reflexivity.
+reflexivity.
+lia.
+lia.
+lia.
+Qed.
+ 
 Theorem  problem307atrue : Problem307aTrue.
 cbv.
 (* TODO  *)
