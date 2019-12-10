@@ -385,10 +385,10 @@ lexemeAdv "for_exactly_a_year_Adv" = withExactDuration (Con "OneYear")
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
 lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Date_19960101", Con "Date_19961231"))
-lexemeAdv "in_1991_Adv" = inInterval (Con "Date_19910101") (Con "Date_19911231")
-lexemeAdv "in_1992_Adv" = inInterval (Con "Date_19920101") (Con "Date_19921231")
-lexemeAdv "in_1993_Adv" = inInterval (Con "Date_19930101") (Con "Date_19931231")
-lexemeAdv "in_march_1993_Adv" = inInterval (Con "Date_19930301") (Con "Date_19930331")
+lexemeAdv "in_1991_Adv" = inIntervalAdv (Con "Date_19910101") (Con "Date_19911231")
+lexemeAdv "in_1992_Adv" = inIntervalAdv (Con "Date_19920101") (Con "Date_19921231")
+lexemeAdv "in_1993_Adv" = inIntervalAdv (Con "Date_19930101") (Con "Date_19931231")
+lexemeAdv "in_march_1993_Adv" = inIntervalAdv (Con "Date_19930301") (Con "Date_19930331")
 lexemeAdv "currently_AdV" = return $ usingTime now
 lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
 lexemeAdv adv | "since" `isPrefixOf` adv =
@@ -416,21 +416,29 @@ withAtLeastDuration delta = do -- with duration meaning, as in FraCas 278
   let tSpan = ExactTime (Var t1, Var t2)
   return (\s extraObjs ->
            (quantTime Exists t1 true $
-            quantTime Exists t2 (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2]) $
+            quantTime Exists t2 ((tSpan `inInterval` extraTime extraObjs) ∧ (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2])) $
             fst $ s extraObjs {extraTime = tSpan}, tSpan))
 
 withExactDuration :: Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
-withExactDuration delta = do -- with duration meaning, as in FraCas 278
+withExactDuration delta = do -- as in FraCas 278
   t <- getFresh
   let tSpan = ExactTime (Var t, Con "Plus" `apps` [Var t,delta])
   return (\s extraObjs ->
-           (quantTime Exists t true $ fst $ s extraObjs {extraTime = tSpan}, tSpan))
+           (quantTime Exists t (tSpan `inInterval` extraTime extraObjs) $ fst $ s extraObjs {extraTime = tSpan}, tSpan))
 
-inInterval :: Exp -> Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
-inInterval tStart tStop = do
+inInterval :: Temporal -> Temporal -> Exp
+UnspecifiedTime `inInterval` _ = true
+_ `inInterval` UnspecifiedTime = true
+ExactTime s' `inInterval` ExactTime s = s' `includedIn` s
+
+includedIn :: (Exp, Exp) -> (Exp, Exp) -> Exp
+(t0',t1') `includedIn` (t0,t1) = isInterval t0 t0' ∧ isInterval t1' t1
+
+inIntervalAdv :: Exp -> Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
+inIntervalAdv tStart tStop = do
   t1 <- getFresh
   t2 <- getFresh
-  return $ withTimeQuant Exists (t1,t2) (\(t1',t2') -> isInterval tStart t1' ∧ isInterval t2' tStop) id
+  return $ withTimeQuant Exists (t1,t2) (\(t1',t2') -> (t1',t2') `includedIn` (tStart,tStop)) id
 
 isInterval :: Exp -> Exp -> Exp
 isInterval t0 t1 = Con "IS_INTERVAL" `apps` [t0,t1]
@@ -1005,7 +1013,7 @@ predVP np vp = withClause $ do
               return $ \e@ExtraArgs{..} ->
                   case extraTime of
                     UnspecifiedTime -> modP (quantTime Exists t2 (Con "PAST" `app` Var t2) .
-                                            quantTime Exists t1 ((Con "IS_INTERVAL" `app` Var t1) `app` Var t2))
+                                             quantTime Exists t1 (Con "IS_INTERVAL" `apps` [Var t1,Var t2]))
                                             (usingTime (ExactTime $ (Var t1,Var t2)) p' e)
                       -- (b) We do not have a specified time
                       -- Use own time. This time MUST be overridable by (2), otherwise we'll never

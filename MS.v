@@ -1279,10 +1279,12 @@ Parameter ONEDAY : Time.
 Definition YESTERDAY := NOW - ONEDAY.
 Parameter OneHour : Time.
 Parameter OneYear : Time.
-Parameter TwoHours : Time := OneHour + OneHour.
-Parameter TwoYears : Time := OneYear + OneYear.
+Definition Plus : Time -> Time -> Time := fun x y => x + y.
+Definition TwoHours : Time := OneHour + OneHour.
+Definition TwoYears : Time := OneYear + OneYear.
 Parameter Time_0800 : Time.
 Definition Time_0900 : Time := Time_0800 + OneHour.
+Definition Time_1000 := Time_0800 + TwoHours.
 Definition Time_1100 : Time := Time_0900 + TwoHours.
 Parameter Time_1715 : Time.
 Parameter Date_0713 : Time.

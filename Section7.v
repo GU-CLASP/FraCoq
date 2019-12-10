@@ -322,15 +322,14 @@ lia.
 Qed.
 
 
-Definition Time_1000 := PlusTwoHours Time_0800.
 Theorem  problem284 : Problem284aTrue.
 cbv.
 intros report isReport.
 intros [P1 P2].
 destruct P1 as [t0 [c0 P1]].
 destruct P2 as [u0 [d0 P2]].
-specialize P1 with (b := Time_0800).
 destruct P2 as [t2 P2].
+destruct P1 as [t1 [c3 [t3 [c2 [c4 P1]]]]].
 specialize writeUnique with (x := report)(y := SMITH) as A.
 unfold UniqueActivity in A.
 specialize (A _ _ _ _ P2 P1) as B.
@@ -351,24 +350,18 @@ FIXME: Horrid syntax.
 
 Theorem problem288 : Problem288aTrue.
 cbv.
-exists INDEFINITE_PAST.
+intro P1.
+destruct P1 as [t0 [c1 [t1 [c4 [t2 [c2 [c3 [report [isReport B]]]]]]]]].
+exists (t2 + (OneHour + OneHour)).
 split.
 lia.
-exists (INDEFINITE_PAST - OneHour - OneHour).
+exists t2.
 split.
 lia.
-destruct H as [t0 [p B]].
-specialize B with (b := INDEFINITE_PAST - OneHour - OneHour).
-destruct B.
-destruct H.
-exists x.
+exists report.
 split.
 assumption.
-cut (INDEFINITE_PAST - OneHour - OneHour + OneHour + OneHour = INDEFINITE_PAST).
-intro Q.
-rewrite -> Q in H0.
 assumption.
-lia.
 Qed.
 
 Theorem problem289 : Problem289aFalse.
@@ -381,12 +374,11 @@ Abort All.
 Theorem problem290 : Problem290aTrue.
 cbv.
 intro P1.
-destruct P1 as [t1 [p1 P1]].
-exists ((INDEFINITE_PAST - OneHour - OneHour) + OneHour + OneHour).
+destruct P1 as [t1 [p1 [c2 [p2 [t3 [c3 [c4 P1]]]]]]].
+exists (t3 + (OneHour + OneHour)).
 split.
-Focus 2.
-eapply P1.
 lia.
+eapply P1.
 Qed.
 
 Theorem problem294 : Problem294aTrue.
