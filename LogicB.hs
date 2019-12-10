@@ -306,9 +306,9 @@ removeUselessQuantifiers e = case e of
   (Var v ) -> Var v
   Quant amount pol v dom body ->
     if v `elem` freeVars body
-    then Quant amount pol v dom (removeUselessQuantifiers body)
-    else removeUselessQuantifiers body
-
+    then Quant amount pol v dom body'
+    else body'
+    where body' = removeUselessQuantifiers body
 
 fromHOAS' :: L.Exp -> Exp v
 fromHOAS' = fromHOAS 0 (error "nein!")
