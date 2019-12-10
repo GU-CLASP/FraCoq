@@ -560,6 +560,13 @@ exact Q.
 reflexivity.
 Qed.
 
+Theorem  problem314 : Problem314aTrue.
+cbv.
+intros [P1 [P2 P3]].
+(* define on_the_7th_of_may_1995_Adv, on_the_5th_of_may_1995_Adv, the_15th_of_may_1995_Adv, still_AdV as identity
+    
+*)
+Abort All.
 Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
 
 Opaque PN2object.
