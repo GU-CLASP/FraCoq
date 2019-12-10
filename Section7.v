@@ -502,13 +502,29 @@ cbv.
 
 Abort All.
 
+Parameter taxiIdiom : forall dst taxi x t0 t1,
+ (taxi_Nto dst taxi /\ take_V2 taxi x t0 t1) =
+ (taxi_N taxi /\ take_V2to dst taxi x t0 t1).
+(* The syntax is not the same in P and H. *)
+
 Transparent PN2object.
 Theorem  problem311atrue : Problem311aTrue.
 cbv.
-intros theStation isStation theHouse isHouse [P1 P2].
-(* Deep reason for why it won't work is that "taxi" is existentially quantified, and so, not the same event (see discussion about repeatability in Temporal.org)*)
-(* And also, the syntax is anyway not the same in P and H. *)
-Abort All.
+intros theStation isStation theHouse isHouse.
+intro Ps.
+destruct Ps as [t0 [c0 [c1 [ P1 [taxi P2]]]]].
+specialize taxiIdiom with (dst := theStation) (taxi := taxi) (x := SMITH) (t0 := t0) (t1 := t0) as A.
+exists t0.
+split.
+lia.
+split.
+lia.
+split.
+exists taxi.
+rewrite <- A.
+assumption.
+assumption.
+Qed.
 
 
 Opaque PN2object.
@@ -530,7 +546,7 @@ lia.
 apply isPast.
 Qed.
 
-Theorem  problem313atrue : Problem313aFalse.
+Theorem  problem313 : Problem313aFalse.
 cbv.
 intros [P1 P2].
 intro Q.
