@@ -484,7 +484,18 @@ assumption.
 lia.
 lia.
 Qed.
- 
+
+Theorem  problem306atrue : Problem306aTrue.
+cbv.
+intro P1.
+destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [c5 [report [isReport P1]]]]]]]]]]].
+repeat eexists.
+Focus 3.
+exact P1.
+lia.
+assumption.
+Qed.
+
 Theorem  problem307atrue : Problem307aTrue.
 cbv.
 (* TODO  *)
