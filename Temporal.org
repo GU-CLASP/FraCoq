@@ -153,5 +153,14 @@ Lexical semantics transform the interval (see start_VVTiming in Coq code)
 
 see "in_two_hours_Adv"
 
+(Basically we have current interval modifiers)
+
 ** Interval adverbs
 see "inInterval"
+
+** Leading explanantion in terms of temporal reference
+
+We can resolve all temporal references using the "UniqueActivity"
+idiom (strictly speaking, no need for an environment nor dynamic
+semantics).
+
