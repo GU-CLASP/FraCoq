@@ -474,18 +474,13 @@ Focus 2.
 eexists.
 split.
 Focus 2.
-exists report.
-split.
-assumption.
-exact P1.
-eexists.
-eexists.
-repeat split.
-Focus 4.
+repeat eexists.
+Focus 5.
 exact P1.
 reflexivity.
 reflexivity.
 lia.
+assumption.
 lia.
 lia.
 Qed.
