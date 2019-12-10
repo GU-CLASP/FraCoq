@@ -720,7 +720,6 @@ Parameter alan_PN : PN .
 Parameter apcom_PN : PN .
 Parameter berlin_PN : PN .
 Parameter bill_PN : PN .
-Parameter birmingham_PN : PN .
 Parameter bt_PN : PN .
 Parameter bug_32985_PN : PN .
 Parameter cambridge_PN : PN .
@@ -977,6 +976,11 @@ Parameter ANDERSON : object.
 Parameter anderson_PERSON : (person_N ANDERSON).
 Definition anderson_PN := mkPN ANDERSON (person_N) anderson_PERSON.
 
+Parameter city_N : N.
+
+Parameter BIRMINGHAM : object.
+Parameter BIRMINGHAM_CITY : (city_N BIRMINGHAM).
+Definition birmingham_PN := mkPN BIRMINGHAM city_N BIRMINGHAM_CITY.
 
 Parameter accept_V2 : V2 .
 Parameter answer_V2 : V2 .

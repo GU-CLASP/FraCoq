@@ -20,6 +20,7 @@ Variable y1993March : Date_19930301 < Date_19930331.
 Variable MarchIn93a : Date_19930101 < Date_19930301.
 Variable MarchIn93b : Date_19930331  < Date_19931231.
 Variable hoursPositive : OneHour > 0.
+Variable yearsPositive : OneYear > 0.
 Parameter past : forall t, INDEFINITE_PAST <= t.
 Variable isPast : INDEFINITE_PAST < NOW.
 
@@ -368,7 +369,8 @@ Theorem problem289 : Problem289aFalse.
 cbv.
 intros species newSpecies.
 intros [t1 [tPast P1]].
-(* "Spend 2 hours has not a correct interpretation "*)
+(* Spend 2 hours has not a correct interpretation *)
+(* JP: has no idea why the judgement is so *)
 Abort All.
 
 Theorem problem290 : Problem290aTrue.
@@ -387,11 +389,73 @@ intros business isBusiness.
 (* FIXME: inconsistent syntax for "in two years" compared to 285, etc. *)
 Abort All.
 
+
 Opaque PN2object.
 Theorem problem298 : Problem298aTrue.
 cbv.
+intro P1.
+destruct P1 as [t1 [c1 [t2 [c2 [t3 [t4 [c3 [c4 [c5 P1]]]]]]]]].
+eexists.
+split.
+Focus 2.
+eexists.
+split.
+Focus 2.
+eexists.
+eexists.
+repeat split.
+Focus 4.
+exact P1.
+reflexivity.
+reflexivity.
+lia.
+lia.
+lia.
+Qed.
+
+
+Parameter liveInUnique : forall (x y : object), UniqueActivity (live_Vin x y).
 
 Transparent PN2object.
+Theorem problem299 : Problem299aFalse.
+cbv.
+intros P1 Q.
+destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [c5 P1]]]]]]]]].
+destruct Q as [u1 [d1[u2[d2 [u3 [d3 [d4 Q]]]]]]].
+specialize liveInUnique with (x := BIRMINGHAM)(y := SMITH) as A.
+unfold UniqueActivity in A.
+specialize (A _ _ _ _ Q P1) as B.
+destruct B as [C D].
+lia.
+Qed.
+
+Theorem problem300 : Problem300aTrue.
+cbv.
+firstorder.
+Qed.
+
+Theorem problem301 : Problem301aTrue.
+cbv.
+intros business isBusiness.
+intro P1.
+destruct P1 as [t1 [c1 [t2 [c2 [t3 [t4 [c3 [c4 [c5 P1]]]]]]]]].
+eexists.
+split.
+Focus 2.
+eexists.
+split.
+Focus 2.
+eexists.
+eexists.
+repeat split.
+Focus 4.
+firstorder.
+Qed.
+
+
+Transparent PN2object.
+
+
 Theorem  problem307atrue : Problem307aTrue.
 cbv.
 (* TODO  *)

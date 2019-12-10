@@ -381,6 +381,7 @@ lexemeAdv "at_8_am_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Time_0
 lexemeAdv "by_11_am_Adv" = return $ usingTime (ExactTime (Con "INDEFINITE_PAST",Con "Time_1100"))
 lexemeAdv "in_two_hours_Adv" = withExactDuration (Con "TwoHours")
 lexemeAdv "for_two_years_Adv" = withAtLeastDuration (Con "TwoYears")
+lexemeAdv "for_a_year_Adv" = withAtLeastDuration (Con "OneYear")
 lexemeAdv "for_exactly_a_year_Adv" = withExactDuration (Con "OneYear")
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
