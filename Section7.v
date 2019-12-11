@@ -1,4 +1,3 @@
-
 Load Formulas.
 
 
@@ -21,17 +20,19 @@ Variable y1993March : Date_19930301 < Date_19930331.
 Variable MarchIn93a : Date_19930101 < Date_19930301.
 Variable MarchIn93b : Date_19930331  < Date_19931231.
 Variable hoursPositive : OneHour > 0.
-Variable yearsPositive : OneYear > 0.
 Variable daysPositive : ONEDAY > 0.
+Variable monthPositive : OneMonth > 0.
 Parameter past : forall t, INDEFINITE_PAST <= t.
 Variable isPast : INDEFINITE_PAST < NOW.
+
+Require Import Psatz.
+
 
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
 assumption.
 Qed.
 
-Require Import Psatz.
 
 (* Parameter Date_19960606. *)
 (* Variable someIn96 : Variable y1993before1996 : Date_19931231 < Date_19960101. *)
@@ -501,9 +502,19 @@ lia.
 assumption.
 Qed.
 
+Opaque PN2object.
 Theorem  problem307atrue : Problem307aTrue.
 cbv.
-(* TODO  *)
+intro P1.
+eexists.
+eexists.
+apply isPast.
+apply P1.
+split.
+lia.
+lia.
+Qed.
+
 
 Abort All.
 

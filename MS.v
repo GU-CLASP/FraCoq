@@ -5,6 +5,7 @@ Open Scope Z_scope.
 Opaque Z.gt.
 Opaque Z.lt.
 Opaque Z.add.
+Opaque Z.mul.
 Opaque Z.sub.
 Opaque Z.ge.
 Opaque Z.le.
@@ -1280,7 +1281,8 @@ John was tall.
 *)
 
 Parameter OneHour : Time.
-Parameter OneYear : Time.
+Parameter OneMonth : Time.
+Definition OneYear : Time := 12 * OneMonth.
 Parameter ONEDAY : Time.
 Definition OneDay : Time := ONEDAY.
 Definition YESTERDAY := NOW - ONEDAY.
@@ -1302,10 +1304,12 @@ Parameter Date_19930101 : Time.
 Parameter Date_19930301 : Time.
 Parameter Date_19930331 : Time.
 Parameter Date_19931231 : Time.
-Parameter Date_19940701 : Time.
+Parameter Date_19940101 : Time.
+Definition Date_19941231 : Time := Date_19940101 + OneYear.
+Definition Date_19940701 : Time := Date_19940101 + 7*OneMonth.
 Parameter Date_19940704 : Time.
 Parameter Date_19940708 : Time.
-Parameter Date_19940731 : Time.
+Definition Date_19940731 : Time := Date_19940701 + OneMonth.
 Parameter  Date_19950505 : Time.
 Definition Date_19950507 : Time := Date_19950505 + OneDay+ OneDay.
 Definition Date_19950515 : Time := Date_19950507+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay.

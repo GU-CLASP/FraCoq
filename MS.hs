@@ -395,6 +395,7 @@ lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Date_19960101", 
 lexemeAdv "in_1991_Adv" = inIntervalAdv (Con "Date_19910101") (Con "Date_19911231")
 lexemeAdv "in_1992_Adv" = inIntervalAdv (Con "Date_19920101") (Con "Date_19921231")
 lexemeAdv "in_1993_Adv" = inIntervalAdv (Con "Date_19930101") (Con "Date_19931231")
+lexemeAdv "in_1994_Adv" = return $  usingTime (ExactTime (Con "Date_19940101",Con "Date_19941231")) -- in 307 only. This interpretation is strenghened pragmatically
 lexemeAdv "in_march_1993_Adv" = inIntervalAdv (Con "Date_19930301") (Con "Date_19930331")
 lexemeAdv "on_the_7th_of_may_1995_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Date_19950507"))
 lexemeAdv "on_the_5th_of_may_1995_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Date_19950505"))
@@ -421,10 +422,16 @@ lexemeAdv "never_AdV" = do
   t <- getFresh
   t' <- getFresh
   return $ withTimeQuant Forall (t,t') (const TRUE) not' -- for every time
-lexemeAdv "always_AdV" = do -- attn: local quantification
+lexemeAdv "always_AdV" = do
   t <- getFresh
   t' <- getFresh
   return $ withTimeQuant Forall (t,t') (const TRUE) id
+lexemeAdv "every_month_Adv" = do
+  t1 <- getFresh
+  let tSpan = ExactTime (Var t1, Con "Plus" `apps` [Var t1,Con "OneMonth"])
+  return $ \s extraObjs ->
+    (quantTime Forall t1 (tSpan `inInterval` extraTime extraObjs) $
+      (fst (s (extraObjs{extraTime=tSpan}))),tSpan)
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
 
