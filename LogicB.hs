@@ -299,16 +299,17 @@ extendAllScopesTrace e = (freeVars e, e) : case freeVars e of
 
 removeUselessQuantifiers :: Exp v -> Exp v
 removeUselessQuantifiers e = case e of
-  (Lam f) -> Lam f
+  (Lam f) -> Lam (removeUselessQuantifiers f)
   (Op o args) -> Op o (map removeUselessQuantifiers args)
   (Con c) -> Con c
   (V v) -> V v
   (Var v ) -> Var v
   Quant amount pol v dom body ->
     if v `elem` freeVars body
-    then Quant amount pol v dom body'
+    then Quant amount pol v dom' body'
     else body'
     where body' = removeUselessQuantifiers body
+          dom' = removeUselessQuantifiers dom
 
 fromHOAS' :: L.Exp -> Exp v
 fromHOAS' = fromHOAS 0 (error "nein!")
