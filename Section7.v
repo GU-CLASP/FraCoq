@@ -27,15 +27,10 @@ Variable isPast : INDEFINITE_PAST < NOW.
 
 Require Import Psatz.
 
-
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
 assumption.
 Qed.
-
-
-(* Parameter Date_19960606. *)
-(* Variable someIn96 : Variable y1993before1996 : Date_19931231 < Date_19960101. *)
 
 Theorem  problem252aTrue : Problem252aTrue.
 unfold Problem252aTrue.
