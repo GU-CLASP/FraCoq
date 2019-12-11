@@ -1,3 +1,4 @@
+
 Load Formulas.
 
 
@@ -21,6 +22,7 @@ Variable MarchIn93a : Date_19930101 < Date_19930301.
 Variable MarchIn93b : Date_19930331  < Date_19931231.
 Variable hoursPositive : OneHour > 0.
 Variable yearsPositive : OneYear > 0.
+Variable daysPositive : ONEDAY > 0.
 Parameter past : forall t, INDEFINITE_PAST <= t.
 Variable isPast : INDEFINITE_PAST < NOW.
 
@@ -126,6 +128,8 @@ Theorem  problem259atrue : Problem259aTrue.
 cbv.
 (* intros conf isConf [P1 P2]. *)
 (* Syntax wrong, using impersonal "it" in P2 *)
+(* Also: We do not have time span on nouns. *)
+(* Also: We need special treatment for "last n days" *)
 Abort All.
 
 Theorem  problem260aTrue : Problem260aTrue.
@@ -345,9 +349,10 @@ lia.
 Qed.
 
 (*Theorem problem286 : Problem286aFalse.
+- Horrid syntax, can't interpret it
+- Need special treatment for "spend ... "
 Abort All.
-FIXME: Horrid syntax.
-*) 
+ *)
 
 Theorem problem288 : Problem288aTrue.
 cbv.
@@ -560,13 +565,35 @@ exact Q.
 reflexivity.
 Qed.
 
+Definition StativeInclusion : TProp -> Prop
+:= fun stative => forall t0 t1 t0' t1', stative t0 t1 -> t0 <= t0' -> t1' <= t1 -> stative t0' t1'.
+
+Parameter inParisStative : StativeInclusion (_BE_in (PN2object paris_PN) (PN2object smith_PN)).
+Parameter arrive_be_in : forall loc x t0 t1, arrive_in_V2 loc x t0 t1 -> _BE_in loc x t1 t1.
+
 Theorem  problem314 : Problem314aTrue.
+unfold Problem314aTrue.
+unfold appTime.
+unfold UnspecifiedTime.
+unfold _BE_.
+unfold PAST.
+intro H.
+destruct H  as [[t0 [p0 P1]] [[today [isToday P2]] P3]].
+specialize (arrive_be_in P1) as A.
+eexists.
+split.
+apply isPast.
+eapply inParisStative.
+eapply P3.
+eapply arrive_be_in.
+exact P1.
 cbv.
-intros [P1 [P2 P3]].
-(* define on_the_7th_of_may_1995_Adv, on_the_5th_of_may_1995_Adv, the_15th_of_may_1995_Adv, still_AdV as identity
-    
-*)
-Abort All.
+lia.
+cbv.
+cbv in P2.
+lia.
+Qed.
+
 Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
 
 Opaque PN2object.
@@ -582,7 +609,10 @@ destruct P1 as [gotJob knowStuff].
 specialize (know_implicature knowStuff) as Q.
 rewrite -> itIsTheCaseThatIdiom.
 split.
-intros [memoir [obvious R]].
-eapply Q.
-reflexivity.*)
+Abort All.
+
+Theorem  problem324btrue : Problem324aTrue.
+cbv.
+intros.
+(* Need definition of Until *)
 Abort All.

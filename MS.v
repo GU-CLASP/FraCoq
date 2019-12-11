@@ -1279,10 +1279,11 @@ John was tall.
 
 *)
 
-Parameter ONEDAY : Time.
-Definition YESTERDAY := NOW - ONEDAY.
 Parameter OneHour : Time.
 Parameter OneYear : Time.
+Parameter ONEDAY : Time.
+Definition OneDay : Time := ONEDAY.
+Definition YESTERDAY := NOW - ONEDAY.
 Definition Plus : Time -> Time -> Time := fun x y => x + y.
 Definition TwoHours : Time := OneHour + OneHour.
 Definition TwoYears : Time := OneYear + OneYear.
@@ -1293,20 +1294,23 @@ Definition Time_1100 : Time := Time_0900 + TwoHours.
 Parameter Time_1715 : Time.
 Parameter Date_0713 : Time.
 Definition Date_0714 : Time := Date_0713 + ONEDAY.
-Parameter Date_19940701 : Time.
-Parameter Date_19940731 : Time.
-Parameter Date_19940704 : Time.
-Parameter Date_19940708 : Time.
+Parameter Date_19910101 : Time.
+Parameter Date_19911231 : Time.
 Parameter Date_19920101 : Time.
 Parameter Date_19921231 : Time.
 Parameter Date_19930101 : Time.
-Parameter Date_19931231 : Time.
-Parameter Date_19960101 : Time.
-Parameter Date_19961231 : Time.
-Parameter Date_19911231 : Time.
-Parameter Date_19910101 : Time.
 Parameter Date_19930301 : Time.
 Parameter Date_19930331 : Time.
+Parameter Date_19931231 : Time.
+Parameter Date_19940701 : Time.
+Parameter Date_19940704 : Time.
+Parameter Date_19940708 : Time.
+Parameter Date_19940731 : Time.
+Parameter  Date_19950505 : Time.
+Definition Date_19950507 : Time := Date_19950505 + OneDay+ OneDay.
+Definition Date_19950515 : Time := Date_19950507+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay.
+Parameter Date_19960101 : Time.
+Parameter Date_19961231 : Time.
 Parameter present8attending_AwithTime : Time -> CN -> object -> Prop.
 
 Parameter SPEAKER : object.

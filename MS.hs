@@ -90,6 +90,8 @@ pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but
           ,("itel_PN" , ([Neutral],Plural))
           ,("gfi_PN" , ([Neutral],Singular))
           ,("bt_PN" , ([Neutral],Plural))
+          ,("the_cia_PN" , ([Neutral],Singular))
+          ,("paris_PN" , ([Neutral],Singular))
           ,("mary_PN" , ([Female],Singular))]
 
 lexemePN :: String -> PN
@@ -231,22 +233,24 @@ lexemeN2 x = genderedN2 x [Male,Female,Neutral]
 
 lexemeN :: String -> N
 lexemeN "one_N" = one_N
-lexemeN x@"line_N" = genderedN x [Neutral]
-lexemeN x@"department_N" = genderedN x [Neutral]
-lexemeN x@"committee_N" = genderedN x [Neutral]
-lexemeN x@"customer_N" = genderedN x [Male,Female]
-lexemeN x@"executive_N" = genderedN x [Male,Female]
-lexemeN x@"sales_department_N" = genderedN x [Neutral]
-lexemeN x@"invoice_N" = genderedN x [Neutral]
-lexemeN x@"house_N" = genderedN x [Neutral]
-lexemeN x@"station_N" = genderedN x [Neutral]
-lexemeN x@"meeting_N" = genderedN x [Neutral]
-lexemeN x@"report_N" = genderedN x [Neutral]
-lexemeN x@"laptop_computer_N" = genderedN x [Neutral]
 lexemeN x@"car_N" = genderedN x [Neutral]
-lexemeN x@"company_N" = genderedN x [Neutral]
-lexemeN x@"proposal_N" = genderedN x [Neutral]
 lexemeN x@"chairman_N" = genderedN x [Male]
+lexemeN x@"committee_N" = genderedN x [Neutral]
+lexemeN x@"company_N" = genderedN x [Neutral]
+lexemeN x@"customer_N" = genderedN x [Male,Female]
+lexemeN x@"department_N" = genderedN x [Neutral]
+lexemeN x@"executive_N" = genderedN x [Male,Female]
+lexemeN x@"house_N" = genderedN x [Neutral]
+lexemeN x@"invoice_N" = genderedN x [Neutral]
+lexemeN x@"laptop_computer_N" = genderedN x [Neutral]
+lexemeN x@"line_N" = genderedN x [Neutral]
+lexemeN x@"meeting_N" = genderedN x [Neutral]
+lexemeN x@"memoir_N" = genderedN x [Neutral]
+lexemeN x@"proposal_N" = genderedN x [Neutral]
+lexemeN x@"report_N" = genderedN x [Neutral]
+lexemeN x@"sales_department_N" = genderedN x [Neutral]
+lexemeN x@"station_N" = genderedN x [Neutral]
+lexemeN x@"today_N" = genderedN x [Neutral]
 lexemeN x = genderedN x [Male,Female,Neutral]
 
 one_N :: N
@@ -392,6 +396,18 @@ lexemeAdv "in_1991_Adv" = inIntervalAdv (Con "Date_19910101") (Con "Date_1991123
 lexemeAdv "in_1992_Adv" = inIntervalAdv (Con "Date_19920101") (Con "Date_19921231")
 lexemeAdv "in_1993_Adv" = inIntervalAdv (Con "Date_19930101") (Con "Date_19931231")
 lexemeAdv "in_march_1993_Adv" = inIntervalAdv (Con "Date_19930301") (Con "Date_19930331")
+lexemeAdv "on_the_7th_of_may_1995_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Date_19950507"))
+lexemeAdv "on_the_5th_of_may_1995_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Date_19950505"))
+lexemeAdv "the_15th_of_may_1995_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Date_19950515"))
+lexemeAdv "still_AdV" = do
+  t1 <- getFresh
+  t2 <- getFresh
+  return $ \s extraObjs ->
+    (quantTime Forall t1 true $
+      quantTime Forall t2 true $
+      (fst (s (extraObjs{extraTime=ExactTime (Var t1,Var t2)}))) -->  -- if s is true for some interval
+      (fst (s (extraObjs{extraTime=ExactTime (Var t1,Con "NOW")})))   -- then the interval can be extended to now.
+    ,ExactTime (Var t1,Con "NOW"))
 lexemeAdv "currently_AdV" = return $ usingTime now
 lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
 lexemeAdv adv | "since" `isPrefixOf` adv =
@@ -1773,6 +1789,7 @@ s_155_2_p_ALT = (sentence (useCl (present) (pPos) (predVP (usePN (lexemePN "bill
 
 s_086_2_h_ALT :: Phr
 s_086_2_h_ALT = (sentence (useCl (past) (pPos) (predVP (detCN (detQuant (indefArt) (numCard (numNumeral (n_six)))) (useN (lexemeN "lawyer_N"))) (complSlash (slashV2a (lexemeV2 "sign_V2")) (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "contract_N")))))))
+
 
 -- s_099_1_p_fixed :: Phr
 -- s_099_1_p_fixed = sentence (useCl (past) (pPos) (predVP (detCN (detQuant (defArt) (numPl)) (advCN (useN (lexemeN "client_N")) (prepNP (lexemePrep "at_Prep") (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "demonstration_N")))))) (adVVP (lexemeAdv "all_Adv") (useComp (compAP (complA2 (lexemeA2 "impressed_by_A2") (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "system_N")))) (numSg)) (useN (lexemeN "performance_N")))))))))

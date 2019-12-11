@@ -164,3 +164,7 @@ We can resolve all temporal references using the "UniqueActivity"
 idiom (strictly speaking, no need for an environment nor dynamic
 semantics).
 
+"UniqueActivity" applies only for atomic verbs of the right aspect
+(eg. not statives as "be in paris" (314))
+
+For statives, StativeInclusion applies instead.
