@@ -756,7 +756,7 @@ Parameter the_m25_PN : PN .
 
 Parameter ambitious_A : A .
 Parameter ancient_A : A .
-Parameter asleep_A : A .
+Parameter asleep_A : IntersectiveA .
 Parameter blue_A : A .
 Parameter british_A : IntersectiveA .
 Parameter broke_A : A .

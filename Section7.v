@@ -1,6 +1,5 @@
 Load Formulas.
 
-
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
 
 
@@ -631,9 +630,28 @@ apply P1.
 assumption.
 Qed.
 
+(*
+Theorem  problem321 : Problem321aTrue.
+Abort All.
+Syntactic difficulties and problem that we do not have a mechanism to count occurences of events
+*)
 
-Theorem  problem324btrue : Problem324aTrue.
+
+Theorem  problem323 : Problem323aTrue.
+Abort All.
+(* Everything in this problem requires special treatment (start, stop, continue, until ) *)
+
+
+
+Theorem problem324 : Problem324aTrue.
 cbv.
-intros.
-(* Need definition of Until *)
+intro P1.
+(* need special support for continue_V / stop_V
+(they should be V2V with an elliptic_VP)
+*)
+Abort All.
+
+Theorem problem325 : Problem325aTrue.
+cbv.
+(* Problem with anaphora: people know that they ... (they does not manage to refer correctly)*)
 Abort All.

@@ -327,11 +327,22 @@ useComparA_prefix a = do
 type Subj = Cl' -> Adv
 
 lexemeSubj :: String -> Subj
+lexemeSubj "until_Subj" s1 = do
+  t0 <- getFresh
+  t1 <- getFresh
+  t2 <- getFresh
+  return $ \s2 extraObjs ->
+    let (s1',_t1) = s1 extraObjs{extraTime=ExactTime (Var t1,Var t2)}
+        (s2',tspan2) = s2 extraObjs{extraTime=ExactTime (Var t0,Var t1)}
+   in (quantTime Exists t0 true $
+       quantTime Exists t1 true $
+       quantTime Exists t2 true $
+       s1' ∧ s2', tspan2)
 lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "BEFORE" `apps` (pairToList t1 ++ pairToList t2)) s1
 lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t2 ++ pairToList t1)) s1
 lexemeSubj "when_Subj" s1 = timeSubj  (\t1 t2 -> Con "EQUALTIME" `apps` (pairToList t2 ++ pairToList t1)) s1
 lexemeSubj s s1 = do
-  return $ \s2 extraObjs -> 
+  return $ \s2 extraObjs ->
     let (s1',_) = s1 extraObjs
         (s2',t2) = s2 extraObjs
     in (Con s `apps` [s1',s2'], t2)
