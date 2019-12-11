@@ -991,6 +991,7 @@ slashV2V :: V2V -> VP -> VPSlash
 slashV2V v2v vp = do
   v2v' <- v2v
   vp' <- vp
+  modify (pushV2 (slashV2V v2v vp)) -- 320
   return $ \directObject subject -> v2v' directObject vp' subject
 
 slashVV :: VV -> VPSlash -> VPSlash
@@ -1798,6 +1799,8 @@ s_155_2_p_ALT = (sentence (useCl (present) (pPos) (predVP (usePN (lexemePN "bill
 s_086_2_h_ALT :: Phr
 s_086_2_h_ALT = (sentence (useCl (past) (pPos) (predVP (detCN (detQuant (indefArt) (numCard (numNumeral (n_six)))) (useN (lexemeN "lawyer_N"))) (complSlash (slashV2a (lexemeV2 "sign_V2")) (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "contract_N")))))))
 
+s_320_1_p_ALT :: Phr
+s_320_1_p_ALT =((sentence) ((extAdvS) ((subjS) ((lexemeSubj "when_Subj")) ((useCl) ((past)) ((pPos)) ((predVP) ((usePN) ((lexemePN "jones_PN"))) ((complSlash) ((slashV2a) ((lexemeV2 "get_V2"))) ((detCN) ((detQuant) ((possPron) ((he_Pron))) ((numSg))) ((advCN) ((useN) ((lexemeN "job_N"))) ((prepNP) ((lexemePrep "at_Prep")) ((usePN) ((lexemePN "the_cia_PN")))))))))) ((useCl) ((past)) ((pPos)) ((predVP) ((usePron) ((he_Pron))) ((complVS) ((lexemeVS "know_VS")) ((useCl) ((conditional)) ((pPos)) ((predVP) ((usePron) ((he_Pron))) ((adVVP) ((lexemeAdV "never_AdV")) ((passVPSlash) ((slashV2V) ((lexemeV2V "allow_V2V")) ((complSlash) ((slashV2a) ((lexemeV2 "write_V2"))) ((detCN) ((detQuant) ((possPron) ((he_Pron))) ((numPl))) ((useN) ((lexemeN "memoir_N")))))))))))))))
 
 -- s_099_1_p_fixed :: Phr
 -- s_099_1_p_fixed = sentence (useCl (past) (pPos) (predVP (detCN (detQuant (defArt) (numPl)) (advCN (useN (lexemeN "client_N")) (prepNP (lexemePrep "at_Prep") (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "demonstration_N")))))) (adVVP (lexemeAdv "all_Adv") (useComp (compAP (complA2 (lexemeA2 "impressed_by_A2") (detCN (detQuant (genNP (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "system_N")))) (numSg)) (useN (lexemeN "performance_N")))))))))

@@ -25,6 +25,7 @@ Variable monthPositive : OneMonth > 0.
 Parameter past : forall t, INDEFINITE_PAST <= t.
 Variable isPast : INDEFINITE_PAST < NOW.
 
+
 Require Import Psatz.
 
 
@@ -610,17 +611,26 @@ Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
 Opaque PN2object.
 Theorem  problem320btrue : Problem320aTrue.
 cbv.
-intros memoir hisMemoir.
 intros theCase isCase.
-intros failAnaphora hisMemoir'.
-(*TODO: look at possible readings *)
+intros memoir hisMemoir.
 intros theJob isCIAJob.
 intros [t1 [c1 [c2 [c3 [c4 P1]]]]].
 destruct P1 as [gotJob knowStuff].
-specialize (know_implicature knowStuff) as Q.
+specialize (know_implicature knowStuff) as P1.
 rewrite -> itIsTheCaseThatIdiom.
 split.
-Abort All.
+intro H.
+specialize P1  with (f := NOW) (g := NOW) as P1'.
+cut (NOW <= NOW).
+intro PP.
+specialize (P1' PP) as P1'.
+apply P1'.
+apply H.
+reflexivity.
+apply P1.
+assumption.
+Qed.
+
 
 Theorem  problem324btrue : Problem324aTrue.
 cbv.
