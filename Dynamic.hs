@@ -14,6 +14,7 @@ module Dynamic where
 import Prelude hiding (pred,Ord,Num)
 import Control.Monad.State hiding (ap)
 import Control.Monad.Reader hiding (ap)
+import Control.Monad.Fail hiding (ap)
 import Logic hiding (Pol)
 import LogicB ()
 import qualified Logic
@@ -22,16 +23,18 @@ import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Data.Function (on)
 import Data.Maybe (catMaybes)
-
+import Data.Foldable (asum)
 type Object = Exp
 type Prop = Exp
 
 data Optional a = Default | Explicit a
+instance Semigroup (Optional a) where
+  Default <> x = x
+  x <> Default = x
+  x <> _ = x -- FIXME: issue some warning
+
 instance Monoid (Optional a) where
   mempty = Default
-  Default `mappend` x = x
-  x `mappend` Default = x
-  x `mappend` _ = x -- FIXME: issue some warning
 
 --------------------------------
 -- Operators
@@ -96,15 +99,16 @@ data Temporal = ForceTime TimeSpan | ExactTime TimeSpan | UnspecifiedTime {-  Te
 now :: Temporal
 now = ExactTime (Con "NOW", Con "NOW")
 
+instance Semigroup Temporal where
+  ForceTime t <> _ = ForceTime t
+  _ <> ForceTime t = ForceTime t
+  UnspecifiedTime <> x = x
+  x <> UnspecifiedTime = x
+  -- TenseTime _ <> x = x -- time specification given by tense, this is overridden by specific times.
+  -- x <> TenseTime _ = x
+  x <> y = error ("`mappend Temporal:" ++ show x ++ " <> " ++ show y)
 instance Monoid Temporal where
   mempty = UnspecifiedTime
-  ForceTime t `mappend` _ = ForceTime t
-  _ `mappend` ForceTime t = ForceTime t
-  UnspecifiedTime `mappend` x = x
-  x `mappend` UnspecifiedTime = x
-  -- TenseTime _ `mappend` x = x -- time specification given by tense, this is overridden by specific times.
-  -- x `mappend` TenseTime _ = x
-  x `mappend` y = error ("`mappend Temporal:" ++ show x ++ " <> " ++ show y)
 
 data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
                            , extraAdvs :: (Object -> Prop) -> Object -> Prop -- adverbs
@@ -321,6 +325,9 @@ evalDynamic d = fst <$> (runDynamic d)
 
 newtype Dynamic a = Dynamic {fromDynamic :: ReaderT ReadEnv (StateT  Env Logic) a} deriving (Monad,Applicative,Functor,MonadState Env,Alternative,MonadPlus,MonadLogic,MonadReader ReadEnv)
 instance Show (Dynamic a) where show _ = "<DYNAMIC>"
+
+instance MonadFail Dynamic where
+  
 
 type Effect = Dynamic Prop
 
@@ -559,3 +566,6 @@ joinTime t1 t2 = t1 -- FIXME
 
 quantTime :: (Var -> Exp -> Exp -> Exp) -> Var -> Exp -> Exp -> Exp
 quantTime quantifier x constraint body = quantifier x (TimeDomain constraint) body
+
+afromList :: Alternative f => [a] -> f a
+afromList = asum . map pure

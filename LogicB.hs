@@ -16,6 +16,7 @@ import Data.Char (toLower)
 import Data.List
 import Control.Applicative
 import Control.Monad
+import Control.Monad.Fail hiding (fail)
 import Data.Traversable
 import Data.Foldable
 
@@ -257,7 +258,7 @@ negativePol = \case
   Neg -> True
   _ -> False
 
-liftQuantifiers :: (Alternative m, Monad m) => [Var] -> Exp v -> m (Exp v)
+liftQuantifiers :: (Alternative m, Monad m, MonadFail m) => [Var] -> Exp v -> m (Exp v)
 liftQuantifiers xs (Quant amount pol x dom q@(Quant a' pol' x' dom' body))
   | bindsAnyOf xs q = return (Quant a' pol' x' dom' (Quant amount pol x dom body))
 liftQuantifiers xs (Quant amount pol x q@(Quant a' pol' x' dom' body') body)
@@ -282,7 +283,7 @@ anywhere f e = f e <|> case e of
   Op op args -> Op op <$> anywhereList (anywhere f) args
   _ -> empty
 
-liftQuantifiersAnyWhere :: (Monad m, Alternative m) => [Var] -> (Exp v) -> m (Exp v)
+liftQuantifiersAnyWhere :: (Monad m, Alternative m, MonadFail m) => [Var] -> (Exp v) -> m (Exp v)
 liftQuantifiersAnyWhere x = anywhere (liftQuantifiers x)
 
 

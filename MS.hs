@@ -19,7 +19,7 @@ import qualified Logic
 import Data.List (intersect,nub,isPrefixOf)
 -- import Control.Monad.Logic hiding (ap)
 import Control.Applicative
-import Control.Applicative.Alternative
+-- import Control.Applicative.Alternative
 import Dynamic
 import Control.Monad.Reader (asks)
 -------------------
