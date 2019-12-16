@@ -304,9 +304,10 @@ removeUselessQuantifiers e = case e of
   (Op o args) -> Op o (map removeUselessQuantifiers args)
   (Con c) -> Con c
   (V v) -> V v
-  (Var v ) -> Var v
-  Quant amount pol v dom body ->
-    if v `elem` freeVars body
+  (Var v) -> Var v
+  
+  Quant amount pol v dom body -> 
+    if v `elem` freeVars body'
     then Quant amount pol v dom' body'
     else body'
     where body' = removeUselessQuantifiers body
