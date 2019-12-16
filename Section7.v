@@ -309,6 +309,11 @@ specialize (A _ _ _ _ P1 H) as B.
 lia.
 Qed.
 
+Theorem  problem280 : Problem280aFalse.
+cbv.
+(* Existential means we have two different activities; so writeUnique cannot be used*)
+Abort All.
+
 Parameter discoverUnique : forall (x y : object), UniqueEvent (discover_V2 x y).
 
 Theorem  problem282 : Problem282aFalse.
@@ -371,7 +376,9 @@ cbv.
 intros species newSpecies.
 intros [t1 [tPast P1]].
 (* Spend 2 hours has not a correct interpretation *)
-(* JP: has no idea why the judgement is so *)
+
+(* Also we believe that the judgement should actually be "unknown" (he
+could be faster, but it could also be exactly two hours.) *)
 Abort All.
 
 Theorem problem290 : Problem290aTrue.
@@ -383,6 +390,10 @@ split.
 lia.
 eapply P1.
 Qed.
+
+Theorem problem291 : Problem291aTrue.
+(* meaning/syntax for spend *)
+Abort All.
 
 Theorem problem294 : Problem294aTrue.
 cbv.
@@ -416,6 +427,7 @@ Qed.
 
 
 Parameter liveInUnique : forall (x y : object), UniqueActivity (live_Vin x y).
+(* FIXME: one should be using a stative instead *)
 
 Transparent PN2object.
 Theorem problem299 : Problem299aFalse.
@@ -510,9 +522,6 @@ lia.
 lia.
 Qed.
 
-
-Abort All.
-
 Parameter taxiIdiom : forall dst taxi x t0 t1,
  (taxi_Nto dst taxi /\ take_V2 taxi x t0 t1) =
  (taxi_N taxi /\ take_V2to dst taxi x t0 t1).
@@ -600,6 +609,29 @@ cbv in P2.
 lia.
 Qed.
 
+Theorem problem315 : Problem315aTrue.
+cbv.
+(* TODO *)
+Abort All.
+
+Theorem problem316 : Problem316aTrue.
+(* TODO *)
+Abort All.
+
+(*
+No syntax for that.
+Theorem problem318 : Problem318aFalse.
+Abort All.
+*)
+
+Theorem problem319 : Problem319aTrue.
+cbv.
+(* P1  means that we have payment 8 years in the past with the buying as reference *)
+(* P2  means that we have payment 8 years in the future with the buying as reference *)
+
+(* TODO *)
+Abort All.
+
 Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
 
 Opaque PN2object.
@@ -631,10 +663,21 @@ Abort All.
 Syntactic difficulties and problem that we do not have a mechanism to count occurences of events
 *)
 
+Theorem problem322 : Problem322aTrue.
+cbv.
+(*TODO
+P1 should be parsed as:
+
+Last week I already knew that
+  (when, in a month's time, Smith would discover that she had been duped) she would be furious. *)
+Abort All.
+
 
 Theorem  problem323 : Problem323aTrue.
+(* need special support for continue_V / stop_V *)
+(* Everything in this problem requires special treatment (start, stop, continue, until )
+*)
 Abort All.
-(* Everything in this problem requires special treatment (start, stop, continue, until ) *)
 
 
 
@@ -646,7 +689,6 @@ intro P1.
 *)
 Abort All.
 
-Theorem problem325 : Problem325aTrue.
-cbv.
-(* Problem with anaphora: people know that they ... (they does not manage to refer correctly)*)
-Abort All.
+
+
+(* DONE *)

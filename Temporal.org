@@ -45,7 +45,6 @@ Whenever a (past) clause is evaluated.
     - push it in "true facts" -- it may be a slightly different version!
     - return P(τ)
 
-
 ** Referencing previous times
 
 We search for an event (τ) using a predicate P(t). P mentions all the
@@ -68,14 +67,14 @@ happening. This allows interpretation of "before", etc.
 
 ** Time adverbs
 
-Time adverbs, such as "Since", "always", "never" introduce *local*
-quantification over a timespan. (In constrast to the global creation
-of time references for VPs in general.)
+Time adverbs, such as "Since", "always", "never", "in two years", "by
+11 am", etc. introduce *local* quantification over a timespan. (In
+constrast to the global creation of time references for VPs in
+general.)
 
-This scope may be extended if the event is referred to:
+This scope may be extended if the event is referred to (actually just an optimization):
 
 "john has been eating meat since 1978. When he eats meat he gets sick."
-
 
 ** Dealing with Aspects
 
@@ -83,14 +82,14 @@ This scope may be extended if the event is referred to:
   event), called x and y below.
 - Possible aspects:
 
-| Name                   | Example                   | Interpretation     |
-|------------------------+---------------------------+--------------------|
-| activity               | swam (269)                | x <= y             |
-| activity with interval | swam *for* 1 minute (269) | x+1min <= y        |
-| accomplishment         | signed the contract (268) | x = y+epsilon      |
-| accomplishment w/ ivl. | wrote a book *in* 2 hours | x+2hours = y       |
-| achievement            | drownend                  | x = y              |
-| stative                | live in london            | TODO (for now x=y) |
+| Name                   | Example                   | Interpretation     | Unicity   |
+|------------------------+---------------------------+--------------------+-----------|
+| activity               | swam (269)                | x <= y             | yes       |
+| activity with interval | swam *for* 1 minute (269) | x+1min <= y        | yes       |
+| accomplishment         | signed the contract (268) | x = y+epsilon      | yes       |
+| accomplishment w/ ivl. | wrote a book *in* 2 hours | x+2hours = y       | yes       |
+| achievement            | drownend                  | x = y              | yes       |
+| stative                | live in london            | TODO (for now x=y) | inclusion |
 
 ** Repeatability of accomplishments
 We capture repeatability via the use of an existential. Example:
