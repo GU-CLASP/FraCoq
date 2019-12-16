@@ -24,6 +24,12 @@ Variable monthPositive : OneMonth > 0.
 Parameter past : forall t, INDEFINITE_PAST <= t.
 Variable isPast : INDEFINITE_PAST < NOW.
 
+Definition StativeInclusion : TProp -> Prop
+:= fun stative => forall t0 t1 t0' t1', stative t0 t1 -> t0 <= t0' -> t1' <= t1 -> stative t0' t1'.
+
+Parameter inStative : forall loc x, StativeInclusion (_BE_in loc x).
+Definition inParisStative := inStative (loc := (PN2object paris_PN)).
+Definition inBirminghamStative := inStative (loc := BIRMINGHAM).
 
 Require Import Psatz.
 
@@ -36,9 +42,6 @@ Theorem  problem252aTrue : Problem252aTrue.
 unfold Problem252aTrue.
 cbv.
 intros [P1 P2].
-exists INDEFINITE_PAST.
-split.
-lia.
 eexists.
 eexists.
 split.
@@ -47,58 +50,74 @@ split.
 reflexivity.
 split.
 lia.
+specialize inBirminghamStative with (x:= PN2object itel_PN) as A.
+cbv in A.
+eapply A.
 apply P1.
-split.
-lia.
-split.
 lia.
 lia.
 Qed.
 
-Theorem  problem255aTrue : Problem255aTrue.
+
+Theorem  problem253t : Problem253aTrue. 
 cbv.
 intros [P1 P2].
-exists INDEFINITE_PAST.
+(* No way to link d with NOW*)
+Abort All.
+
+
+Theorem  problem253f : Problem253aFalse. 
+cbv.
+intros [P1 P2].
+(* The existential means that we can't use unicity of actions *)
+Abort All.
+
+Theorem  problem254t : Problem254aTrue. 
+cbv.
+intros [P1 P2].
 eexists.
+eexists.
+repeat split.
+Focus 4.
+exact P1.
+Abort All.
+
+
+Theorem  problem254f : Problem253aFalse. 
+cbv.
+intros [P1 P2].
+(* The existential means that we can't use unicity of actions *)
+Abort All.
+
+
+Parameter makeALossStative : forall x, StativeInclusion (fun t0 t1 => exists loss, loss_N loss /\ make8do_V2 loss x t0 t1).
+
+Theorem  problem255 : Problem255aTrue.
+cbv.
+intros [P1 P2].
+eexists.
+eexists.
+repeat split.
+reflexivity.
+reflexivity.
 lia.
-eexists.
-eexists.
-split.
-reflexivity.
-split.
-reflexivity.
-split.
-lia.
-eapply P1.
-split.
-reflexivity.
-split.
+specialize makeALossStative with (x := (PN2object itel_PN)) as A.
+cbv in A.
+eapply A.
+exact P1.
 lia.
 lia.
 Qed.
 
+Theorem problem256 : Problem256aTrue.
+(* TODO: not sure what this reading is *)
+cbv.
+exact problem255.
+Qed.
 
 Theorem  problem257aTrue : Problem257aTrue.
 cbv.
-intros [P1 P2].
-exists INDEFINITE_PAST.
-split.
-lia.
-eexists.
-eexists.
-split.
-reflexivity.
-split.
-reflexivity.
-split.
-
-lia.
-eapply P1 with (c := Date_19931231).
-split.
-reflexivity.
-split.
-lia.
-lia.
+exact problem255.
 Qed.
 
 Parameter foundNotExisit_K : forall x o t0 t1, found_V2 x o t0 t1 -> forall t' t1', t' < t0
@@ -136,11 +155,7 @@ destruct P2 as [today [isToday P2']].
 cut (NOW - ONEDAY = Date_0713).
 intro H.
 rewrite <- H.
-eexists.
-split.
-Focus 2.
 apply P1.
-apply isPast.
 lia.
 Qed.
 
@@ -290,8 +305,8 @@ Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 Theorem  problem278atrue : Problem278aFalse.
 cbv.
 intros novel isSmithsNovel P1 H.
-destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 [t4 [ct4 P1]]]]]]].
-destruct H as [u0 [u1 [cu1 [cu2 [cu3 [u4 [cu4 H]]]]]]].
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
 specialize writeUnique with (x := novel)(y := SMITH) as A.
 unfold UniqueActivity in A.
 specialize (A _ _ _ _ P1 H) as B.
@@ -301,8 +316,8 @@ Qed.
 Theorem  problem279 : Problem279aFalse.
 cbv.
 intros novel isSmithsNovel P1 H.
-destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 [t4 [ct4 P1]]]]]]].
-destruct H as [u0 [u1 [cu1 [cu2 [cu3 [u4 [cu4 H]]]]]]].
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
 specialize writeUnique with (x := novel)(y := SMITH) as A.
 unfold UniqueActivity in A.
 specialize (A _ _ _ _ P1 H) as B.
@@ -319,8 +334,8 @@ Parameter discoverUnique : forall (x y : object), UniqueEvent (discover_V2 x y).
 Theorem  problem282 : Problem282aFalse.
 cbv.
 intros species isNewSpecies P1 H.
-destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 [t4 [ct4 P1]]]]]]].
-destruct H as [u0 [u1 [cu1 [cu2 [cu3 [u4 [cu4 H]]]]]]].
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
 specialize discoverUnique with (x := species)(y := SMITH) as A.
 unfold UniqueEvent in A.
 specialize (A _ _ P1 H) as B.
@@ -333,8 +348,7 @@ cbv.
 intros report isReport.
 intros [P1 P2].
 destruct P1 as [t0 [c0 P1]].
-destruct P2 as [u0 [d0 P2]].
-destruct P2 as [t2 P2].
+destruct P2 as [u0 P2].
 destruct P1 as [t1 [c3 [t3 [c2 [c4 P1]]]]].
 specialize writeUnique with (x := report)(y := SMITH) as A.
 unfold UniqueActivity in A.
@@ -513,9 +527,6 @@ Opaque PN2object.
 Theorem  problem307atrue : Problem307aTrue.
 cbv.
 intro P1.
-eexists.
-eexists.
-apply isPast.
 apply P1.
 split.
 lia.
@@ -552,9 +563,6 @@ Theorem  problem312atrue : Problem312aTrue.
 cbv.
 intros [P1 P2].
 eexists.
-split.
-Focus 2.
-eexists.
 eexists.
 repeat split.
 Focus 4.
@@ -563,14 +571,13 @@ reflexivity.
 reflexivity.
 reflexivity.
 lia.
-apply isPast.
 Qed.
 
 Theorem  problem313 : Problem313aFalse.
 cbv.
 intros [P1 P2].
 intro Q.
-destruct Q as [t [t' [tC1 [ tC2 [tC3 [tC4 [tC5 [report [isReport Q]]]]]]]]].
+destruct Q as [t [t' [tC1 [tC2 [ tC3 [report [isReport Q]]]]]]].
 eapply P1.
 Focus 2.
 exists report.
@@ -580,10 +587,7 @@ exact Q.
 reflexivity.
 Qed.
 
-Definition StativeInclusion : TProp -> Prop
-:= fun stative => forall t0 t1 t0' t1', stative t0 t1 -> t0 <= t0' -> t1' <= t1 -> stative t0' t1'.
 
-Parameter inParisStative : StativeInclusion (_BE_in (PN2object paris_PN) (PN2object smith_PN)).
 Parameter arrive_be_in : forall loc x t0 t1, arrive_in_V2 loc x t0 t1 -> _BE_in loc x t1 t1.
 
 Theorem  problem314 : Problem314aTrue.
@@ -592,12 +596,10 @@ unfold appTime.
 unfold UnspecifiedTime.
 unfold _BE_.
 unfold PAST.
+
 intro H.
-destruct H  as [[t0 [p0 P1]] [[today [isToday P2]] P3]].
+destruct H  as [P1 [[today [isToday P2]] P3]].
 specialize (arrive_be_in P1) as A.
-eexists.
-split.
-apply isPast.
 eapply inParisStative.
 eapply P3.
 eapply arrive_be_in.

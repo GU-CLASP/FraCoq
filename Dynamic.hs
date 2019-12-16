@@ -460,6 +460,9 @@ noExtraObjsCN' (f,_gender) = noExtraObjsCN'' f
 
 data Aspect = Activity | Achievement deriving Eq
 
+verbAspect :: [Char] -> Aspect
+verbAspect "expand_V" = Activity
+verbAspect "make8do_V2" = Activity
 verbAspect "swim_V" = Activity
 verbAspect "write_V2" = Activity
 verbAspect "_BE_in" = Activity

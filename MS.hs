@@ -423,13 +423,11 @@ lexemeAdv "still_AdV" = do
     ,ExactTime (Var t1,Con "NOW"))
 lexemeAdv "currently_AdV" = return $ usingTime now
 lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
-lexemeAdv adv | "since" `isPrefixOf` adv =
-  do let year = take 4 $ drop 6 $ adv
-         tStart = Con ("Date_" ++ year ++ "0101")
-         tStop = Con "INDEFINITE_FUTURE"
-     t1 <- getFresh
-     t2 <- getFresh
-     return $ withTimeQuant Forall (t1,t2) (\(t1',t2') -> isInterval tStart t1' ∧ isInterval t2' tStop) id
+lexemeAdv adv | "since" `isPrefixOf` adv = 
+  let year = take 4 $ drop 6 $ adv
+      tStart = Con ("Date_" ++ year ++ "0101")
+      tStop = Con "NOW" -- "INDEFINITE_FUTURE"
+  in return $ usingTime $ ExactTime (tStart, tStop)
 lexemeAdv "never_AdV" = do
   t <- getFresh
   t' <- getFresh
@@ -484,7 +482,7 @@ isInterval t0 t1 = Con "IS_INTERVAL" `apps` [t0,t1]
 withTimeQuant :: (Var -> Exp -> Exp -> Exp) -> (String,String) -> (TimeSpan -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, Temporal)
 withTimeQuant quantifier (t1,t2) constr f
   = \s extraObjs -> (quantTime quantifier t1 (true) $
-                     quantTime quantifier t2 (constr (Var t1, Var t2) ∧ (isInterval (Var t1) (Var t2)) ) $
+                     quantTime quantifier t2 (constr (Var t1, Var t2) ∧ (isInterval (Var t1) (Var t2))) $
                       f (fst (s (extraObjs{extraTime=t'}))),t')
   where t' = ExactTime (Var t1, Var t2)
   
