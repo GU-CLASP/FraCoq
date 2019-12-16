@@ -26,10 +26,15 @@ Variable isPast : INDEFINITE_PAST < NOW.
 
 Definition StativeInclusion : TProp -> Prop
 := fun stative => forall t0 t1 t0' t1', stative t0 t1 -> t0 <= t0' -> t1' <= t1 -> stative t0' t1'.
+Definition UniqueEvent : (TProp) -> Prop
+ := fun p => forall t0 t0' , p t0 t0 -> p t0' t0' -> t0 = t0'.
+Definition UniqueActivity : (TProp) -> Prop
+ := fun p => forall t0 t0' t1 t1' , p t0 t1 -> p t0' t1' -> t0 = t0' /\ t1 = t1'.
 
 Parameter inStative : forall loc x, StativeInclusion (_BE_in loc x).
 Definition inParisStative := inStative (loc := (PN2object paris_PN)).
 Definition inBirminghamStative := inStative (loc := BIRMINGHAM).
+Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 
 Require Import Psatz.
 
@@ -189,6 +194,20 @@ intuition.
 intuition.
 Qed.
 
+Theorem problem264a : Problem263aTrue.
+cbv.
+firstorder.
+exists INDEFINITE_PAST.
+split.
+lia.
+eexists.
+split.
+Focus 2.
+exists (INDEFINITE_PAST + OneYear).
+split.
+Focus 2.
+(* FIXME: This can actually be proven because present8attending_A has no time info *)
+Abort All.
 
 Theorem  problem264atrue : Problem264aTrue.
 cbv.
@@ -286,21 +305,43 @@ lia.
 split.
 firstorder.
 firstorder.
-(* Error: adjectives do not have temporal parameter *)
+(* FIXME Error: adjectives do not have temporal parameter *)
 Qed.
+
 
 Theorem  problem273atrue : Problem273aTrue.
 cbv.
 intros.
 Abort All.
 
-Definition UniqueEvent : (TProp) -> Prop
- := fun p => forall t0 t0' , p t0 t0 -> p t0' t0' -> t0 = t0'.
 
-Definition UniqueActivity : (TProp) -> Prop
- := fun p => forall t0 t0' t1 t1' , p t0 t1 -> p t0' t1' -> t0 = t0' /\ t1 = t1'.
+Theorem  problem274atrue : Problem274aTrue.
+cbv.
+(* cannot use Writeunique because of the existential (not the same report) *)
+Abort All.
 
-Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
+Theorem  problem274atrue : Problem274aFalse.
+cbv.
+(* obviously the events are not incompatible *)
+Abort All.
+
+(* FIXME: 275 "before" uses a conjuction, perhaps it should be changed to implication? *)
+
+(* 276 undef *)
+
+Theorem  problem277t : Problem277aTrue.
+cbv.
+intros [t0 [t1 [c0 [c1 [c2 P1]]]]].
+repeat eexists.
+Focus 4.
+exact P1.
+(* cannot conclude *)
+Abort All.
+
+Theorem  problem277f : Problem277aFalse.
+cbv.
+(* Even if we have inclusion we can't have a contradiction (statives are never unique)*)
+Abort All.
 
 Theorem  problem278atrue : Problem278aFalse.
 cbv.
@@ -329,6 +370,20 @@ cbv.
 (* Existential means we have two different activities; so writeUnique cannot be used*)
 Abort All.
 
+Theorem  problem281 : Problem281aTrue.
+cbv.
+intros business isBusiness.
+intro P1.
+(* Can't conclude *)
+Abort All.
+
+Theorem  problem281f : Problem281aFalse.
+cbv.
+intros business isBusiness.
+intros P1 H.
+(* Note: Can't conclude, but FraCas says that "run a business" is an activity --- however if it were we could use unicity to show that there is a contradiction *)
+Abort All.
+
 Parameter discoverUnique : forall (x y : object), UniqueEvent (discover_V2 x y).
 
 Theorem  problem282 : Problem282aFalse.
@@ -342,6 +397,17 @@ specialize (A _ _ P1 H) as B.
 lia.
 Qed.
 
+Theorem  problem283f : Problem283aFalse.
+cbv.
+intros P1 H.
+(* Can't use unicity due to the existential *)
+Abort All.
+
+Theorem  problem283t : Problem283aTrue.
+cbv.
+intros P1.
+(* Can't use unicity due to the existential *)
+Abort All.
 
 Theorem  problem284 : Problem284aTrue.
 cbv.
@@ -363,11 +429,23 @@ apply past.
 lia.
 Qed.
 
+(* 285: No support for terrible GF syntax yet *)
+
 (*Theorem problem286 : Problem286aFalse.
 - Horrid syntax, can't interpret it
 - Need special treatment for "spend ... "
 Abort All.
  *)
+
+Theorem problem287 : Problem287aTrue.
+cbv. 
+(* Can't use unicity due to the existential *)
+Abort All.
+
+Theorem problem287f : Problem287aFalse.
+cbv. 
+(* Can't use unicity due to the existential *)
+Abort All.
 
 Theorem problem288 : Problem288aTrue.
 cbv.
@@ -409,10 +487,48 @@ Theorem problem291 : Problem291aTrue.
 (* meaning/syntax for spend *)
 Abort All.
 
+Theorem problem292 : Problem292aTrue.
+(* meaning/syntax for spend *)
+Abort All.
+
+Theorem problem293 : Problem293aTrue.
+(* meaning/syntax for spend *)
+Abort All.
+
 Theorem problem294 : Problem294aTrue.
 cbv.
 intros business isBusiness.
 (* FIXME: inconsistent syntax for "in two years" compared to 285, etc. *)
+(* TODO *)
+Abort All.
+
+Theorem problem295t : Problem295aTrue.
+cbv.
+(* Terrible syntax for in_two_years (what does it even mean?)*)
+(* Can't conclude anyway *)
+Abort All.
+
+Theorem problem295f : Problem295aFalse.
+cbv.
+(* Terrible syntax for in_two_years (what does it even mean?)*)
+(* Can't conclude anyway *)
+Abort All.
+
+Theorem problem296t : Problem296aTrue.
+cbv.
+(* Terrible syntax for in_two_years (what does it even mean?)*)
+(* Can't conclude anyway *)
+Abort All.
+Theorem problem296f : Problem296aFalse.
+cbv.
+(* Terrible syntax for in_two_years (what does it even mean?)*)
+(* Can't conclude anyway *)
+Abort All.
+
+Theorem problem297t : Problem297aTrue.
+cbv.
+(* Terrible syntax for in_two_years (what does it even mean?)*)
+(* TODO *)
 Abort All.
 
 
@@ -441,7 +557,7 @@ Qed.
 
 
 Parameter liveInUnique : forall (x y : object), UniqueActivity (live_Vin x y).
-(* FIXME: one should be using a stative instead *)
+(* TODO: one should be using a stative instead *)
 
 Transparent PN2object.
 Theorem problem299 : Problem299aFalse.
@@ -512,6 +628,20 @@ lia.
 lia.
 Qed.
 
+Theorem problem304t : Problem304aTrue.
+cbv.
+intros [t0 [c0 [ t1 [c1 [t2 [t3 [c2 [c3 [c4 P1]]]]]]]]].
+destruct P1 as [report [isReport P1]].
+repeat eexists.
+Focus 4.
+exact P1.
+lia.
+lia.
+assumption.
+(* TODO: need to change definition of 'for two hours' *)
+Qed.
+
+
 Theorem  problem306atrue : Problem306aTrue.
 cbv.
 intro P1.
@@ -533,6 +663,7 @@ lia.
 lia.
 Qed.
 
+(* 308 309 310 undef *)
 Parameter taxiIdiom : forall dst taxi x t0 t1,
  (taxi_Nto dst taxi /\ take_V2 taxi x t0 t1) =
  (taxi_N taxi /\ take_V2to dst taxi x t0 t1).
@@ -697,4 +828,3 @@ cbv.
 Abort All.
 
 
-(* DONE *)
