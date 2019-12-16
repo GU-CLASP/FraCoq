@@ -689,6 +689,10 @@ intro P1.
 *)
 Abort All.
 
+Theorem problem325 : Problem325aTrue.
+cbv.
+(* Problem with anaphora: people know that they ... (they does not manage to refer correctly)*)
+Abort All.
 
 
 (* DONE *)

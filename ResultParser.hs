@@ -19,7 +19,8 @@ data Result = Result
 parseWords :: Maybe (Int,Bool) -> [String] -> [Result]
 parseWords c@(Just(rNumber,rPolarity)) ("Qed.":ws) = Result{rProven = True, ..}:parseWords c ws
 parseWords c@(Just(rNumber,rPolarity)) ("Abort":ws) = Result{rProven = False, ..}:parseWords c ws
-parseWords _ ({-"Theorem":_thmName:-}('P':'r':'o':'b':'l':'e':'m':pbInfo):ws) = parseWords (Just (rNumber,rPolarity)) ws
+parseWords _ ({-"Theorem":_thmName:-}('P':'r':'o':'b':'l':'e':'m':pbInfo):ws)
+  | not (null pbInfo) = parseWords (Just (rNumber,rPolarity)) ws
   where (read -> rNumber,_variant:(read . takeWhile isAlpha -> rPolarity)) = span isDigit pbInfo
 parseWords c (_:ws) = parseWords c ws
 parseWords _ [] = []
