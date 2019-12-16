@@ -742,9 +742,14 @@ cbv in P2.
 lia.
 Qed.
 
+
 Theorem problem315 : Problem315aTrue.
 cbv.
-(* TODO *)
+intros arrivalTime arrPast.
+intros dayBefore [arrTime' [arrive isDay]].
+intros [arrtime'' [P2]].
+(* "the day before" is not interpreted correctly (we do not know that dayBefore is the day before...) *)
+(* However, arrtime is inconsistent with arrtime''. arrtime'' is not a correct thing to get. *)
 Abort All.
 
 Theorem problem316 : Problem316aTrue.
@@ -757,11 +762,14 @@ Theorem problem318 : Problem318aFalse.
 Abort All.
 *)
 
-Theorem problem319 : Problem319aTrue.
+Theorem problem319 : Problem319iTrue.
 cbv.
+intros previousOffice isOffice.
+intros currentOffice isOffice'.
+intros [t0 [tp [tp' [buy [P1 P2]]]]].
+(* Incorrect syntax: use of impersonal ^^ *)
 (* P1  means that we have payment 8 years in the past with the buying as reference *)
 (* P2  means that we have payment 8 years in the future with the buying as reference *)
-
 (* TODO *)
 Abort All.
 
