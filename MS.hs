@@ -432,6 +432,7 @@ lexemeAdv "never_AdV" = do
   t <- getFresh
   t' <- getFresh
   return $ withTimeQuant Forall (t,t') (const TRUE) not' -- for every time
+lexemeAdv "ever_AdV" = lexemeAdv "always_AdV"
 lexemeAdv "always_AdV" = do
   t <- getFresh
   t' <- getFresh
@@ -1043,7 +1044,7 @@ predVP np vp = withClause $ do
   let p' = np' vp'
   tense <- asks envTense
   p'' <- case tense of
-    Past -> do
+    t | t `elem` [Past, PresentPerfect] -> do
       ts <- referenceTimesFor p' -- (1)
       -- fixme: this should happen at a lower level (lexical
       -- item). But we do not have dynamic access to arguments at that

@@ -11,7 +11,7 @@
 
 module Dynamic where
 
-import Prelude hiding (pred,Ord,Num)
+import Prelude hiding (pred,Num)
 import Control.Monad.State hiding (ap)
 import Control.Monad.Reader hiding (ap)
 import Control.Monad.Fail hiding (ap)
@@ -144,7 +144,7 @@ type VP = Dynamic VP'
 type Cl =  Dynamic Cl'
 type Temp = Tense
 
-data Tense = Conditional | Future | PastPerfect | Past | Present | PresentPerfect | FuturePerfect
+data Tense = Conditional | Future | PastPerfect | Past | Present | PresentPerfect | FuturePerfect deriving (Ord,Eq)
 
 type ClSlash  = Dynamic VP'
 type RCl  = Dynamic RCl'
@@ -327,7 +327,7 @@ newtype Dynamic a = Dynamic {fromDynamic :: ReaderT ReadEnv (StateT  Env Logic) 
 instance Show (Dynamic a) where show _ = "<DYNAMIC>"
 
 instance MonadFail Dynamic where
-  
+  fail = error
 
 type Effect = Dynamic Prop
 

@@ -473,7 +473,7 @@ Parameter already_AdV : AdV .
 Parameter also_AdV : AdV .
 Parameter always_AdV : AdV .
 Parameter currently_AdV : AdV .
-Definition ever_AdV : AdV := fun vp => vp. (* only used in Fracas 325 with no specific meaning *)
+Parameter ever_AdV : AdV .
 Parameter never_AdV : AdV .
 Parameter still_AdV : AdV .
 

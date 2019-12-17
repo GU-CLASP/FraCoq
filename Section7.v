@@ -821,12 +821,11 @@ intro P1.
 *)
 Abort All.
 
-Theorem problem325 : Problem325aTrue.
+
+
+Theorem problem325 : Problem325bTrue.
 cbv.
-intros person isPerson.
-intro P1.
-specialize P1 with (x:=person).
-(* need support for "have been" tense *)
+(* Problem with anaphora: *)
+(* Reading A does not give existence for P2 *)
+(* Reading B lifts existence at toplevel *)
 Abort All.
-
-
