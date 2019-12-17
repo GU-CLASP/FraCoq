@@ -494,7 +494,7 @@ Theorem problem292 : Problem292aTrue.
 Abort All.
 
 Theorem problem293 : Problem293aTrue.
-(* meaning/syntax for spend *)
+(* meaning/syntax for spending time *)
 Abort All.
 
 Theorem problem294 : Problem294aTrue.
@@ -734,7 +734,10 @@ intros [arrtime'' [P2]].
 Abort All.
 
 Theorem problem316 : Problem316aTrue.
-(* TODO *)
+cbv.
+(* TODO
+Need implicit reference to time (ever_since_Adv) and other lexical items
+*)
 Abort All.
 
 (*
@@ -813,7 +816,10 @@ Abort All.
 
 Theorem problem325 : Problem325aTrue.
 cbv.
-(* Problem with anaphora: people know that they ... (they does not manage to refer correctly)*)
+intros person isPerson.
+intro P1.
+specialize P1 with (x:=person).
+(* need support for "have been" tense *)
 Abort All.
 
 
