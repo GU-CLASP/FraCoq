@@ -1,5 +1,6 @@
 Load Formulas.
 
+
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
 
 
@@ -37,6 +38,7 @@ Definition inBirminghamStative := inStative (loc := BIRMINGHAM).
 Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 
 Require Import Psatz.
+
 
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
@@ -536,21 +538,14 @@ Opaque PN2object.
 Theorem problem298 : Problem298aTrue.
 cbv.
 intro P1.
-destruct P1 as [t1 [c1 [t2 [c2 [t3 [t4 [c3 [c4 [c5 P1]]]]]]]]].
-eexists.
-split.
-Focus 2.
-eexists.
-split.
-Focus 2.
-eexists.
-eexists.
-repeat split.
-Focus 4.
+destruct P1 as [t1 [c1 [t2 [c2 [t3 [t4 [c3 [c4 P1]]]]]]]].
+repeat eexists.
+Focus 5.
 exact P1.
+Focus 3.
 reflexivity.
+Focus 2.
 reflexivity.
-lia.
 lia.
 lia.
 Qed.
@@ -558,13 +553,13 @@ Qed.
 
 Parameter liveInUnique : forall (x y : object), UniqueActivity (live_Vin x y).
 (* TODO: one should be using a stative instead; but the definition of
-"exactly" needs to be strengthened to do that. *)
+"for_exactly_a_year_Adv" needs to be strengthened to do that. *)
 
 Transparent PN2object.
 Theorem problem299 : Problem299aFalse.
 cbv.
 intros P1 Q.
-destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [c5 P1]]]]]]]]].
+destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 P1]]]]]]]].
 destruct Q as [u1 [d1[u2[d2 [u3 [d3 [d4 Q]]]]]]].
 specialize liveInUnique with (x := BIRMINGHAM)(y := SMITH) as A.
 unfold UniqueActivity in A.
@@ -583,21 +578,14 @@ Theorem problem301 : Problem301aTrue.
 cbv.
 intros business isBusiness.
 intro P1.
-destruct P1 as [t1 [c1 [t2 [c2 [t3 [t4 [c3 [c4 [c5 P1]]]]]]]]].
-eexists.
-split.
-Focus 2.
-eexists.
-split.
-Focus 2.
-eexists.
-eexists.
-repeat split.
-Focus 4.
+destruct P1 as [t1 [c1 [t2 [c2 [t3 [t4 [c3 [c4 P1]]]]]]]].
+repeat eexists.
+Focus 5.
 exact P1.
+Focus 2.
 reflexivity.
+Focus 2.
 reflexivity.
-lia.
 lia.
 lia.
 Qed.
@@ -611,48 +599,40 @@ Qed.
 Theorem problem303 : Problem303aTrue.
 cbv.
 intro P1.
-destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [c5 [report [isReport P1]]]]]]]]]]].
-eexists.
-split.
-Focus 2.
-eexists.
-split.
-Focus 2.
+destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [report [isReport P1]]]]]]]]]].
 repeat eexists.
-Focus 5.
+Focus 6.
 exact P1.
+Focus 2.
 reflexivity.
+Focus 2.
 reflexivity.
+lia.
 lia.
 assumption.
-lia.
-lia.
 Qed.
 
 Theorem problem304t : Problem304aTrue.
 cbv.
-intros [t0 [c0 [ t1 [c1 [t2 [t3 [c2 [c3 [c4 P1]]]]]]]]].
+intros [t0 [c0 [ t1 [c1 [t2 [t3 [c2 [c3 P1]]]]]]]].
 destruct P1 as [report [isReport P1]].
 repeat eexists.
 Focus 4.
 exact P1.
-lia.
-lia.
-assumption.
-(* TODO: need to change definition of 'for two hours' *)
-Qed.
-
+(*lia.  cannot conclude*)
+Abort All.
 
 Theorem  problem306atrue : Problem306aTrue.
 cbv.
 intro P1.
-destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [c5 [report [isReport P1]]]]]]]]]]].
+destruct P1 as [g [c1[f [c2 [b [c [c3 [c4 [report [isReport P1]]]]]]]]]].
 repeat eexists.
 Focus 3.
 exact P1.
 lia.
 assumption.
 Qed.
+
 
 Opaque PN2object.
 Theorem  problem307atrue : Problem307aTrue.

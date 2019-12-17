@@ -445,15 +445,20 @@ lexemeAdv "every_month_Adv" = do
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
 
-withAtLeastDuration :: Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
+withAtLeastDuration :: Exp -> Dynamic (S' -> S')
 withAtLeastDuration delta = do -- with duration meaning, as in FraCas 278
   t1 <- getFresh
   t2 <- getFresh
   let tSpan = ExactTime (Var t1, Var t2)
   return (\s extraObjs ->
-           (quantTime Exists t1 true $
-            quantTime Exists t2 ((tSpan `inInterval` extraTime extraObjs) ∧ (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2])) $
-            fst $ s extraObjs {extraTime = tSpan}, tSpan))
+           let (p,actualSpan) = s extraObjs {extraTime = tSpan}
+           in (quantTime Exists t1 true $
+               quantTime Exists t2 ((Con "IS_INTERVAL" `apps` [intervalStart (actualSpan),intervalStart (extraTime extraObjs)])
+                                ∧
+                                -- it may finish later, see Fracas 304
+                                -- we constraint the returned time, so that we have a stronger interpretation of achievements (see Fracas 306)
+                                 (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2])) $
+               p, tSpan))
 
 withExactDuration :: Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
 withExactDuration delta = do -- as in FraCas 278
@@ -461,6 +466,9 @@ withExactDuration delta = do -- as in FraCas 278
   let tSpan = ExactTime (Var t, Con "Plus" `apps` [Var t,delta])
   return (\s extraObjs ->
            (quantTime Exists t (tSpan `inInterval` extraTime extraObjs) $ fst $ s extraObjs {extraTime = tSpan}, tSpan))
+
+intervalStart UnspecifiedTime = Con "NOW"
+intervalStart (ExactTime (a,b)) = a
 
 inInterval :: Temporal -> Temporal -> Exp
 UnspecifiedTime `inInterval` _ = true
