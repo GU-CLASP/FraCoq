@@ -557,7 +557,8 @@ Qed.
 
 
 Parameter liveInUnique : forall (x y : object), UniqueActivity (live_Vin x y).
-(* TODO: one should be using a stative instead *)
+(* TODO: one should be using a stative instead; but the definition of
+"exactly" needs to be strengthened to do that. *)
 
 Transparent PN2object.
 Theorem problem299 : Problem299aFalse.
