@@ -791,6 +791,13 @@ Syntactic difficulties and problem that we do not have a mechanism to count occu
 Theorem problem322 : Problem322aTrue.
 cbv.
 (*TODO
+
+Missing items:
+already_AdV
+last_week_Adv
+in_a_months_time_Adv
+in_a_few_weeks_Adv
+
 P1 should be parsed as:
 
 Last week I already knew that
