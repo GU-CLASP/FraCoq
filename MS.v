@@ -1281,11 +1281,14 @@ John was tall.
 *)
 
 Parameter OneHour : Time.
-Parameter OneMonth : Time.
-Definition OneYear : Time := 12 * OneMonth.
 Parameter ONEDAY : Time.
 Definition OneDay : Time := ONEDAY.
+Parameter OneMonth : Time.
+Definition OneYear : Time := 12 * OneMonth.
+
+Definition AFewWeeks : Time := 15 * OneDay.
 Definition YESTERDAY := NOW - ONEDAY.
+Definition LASTWEEK := NOW - 7*OneDay.
 Definition Plus : Time -> Time -> Time := fun x y => x + y.
 Definition TwoHours : Time := OneHour + OneHour.
 Definition TwoYears : Time := OneYear + OneYear.

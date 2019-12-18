@@ -5,6 +5,7 @@ Load Formulas.
 
 
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
+Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
 
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
 Section Temps.
@@ -728,7 +729,7 @@ Theorem problem315 : Problem315aTrue.
 cbv.
 intros arrivalTime arrPast.
 intros dayBefore [arrTime' [arrive isDay]].
-intros [arrtime'' [P2]].
+intros [arr P2].
 (* "the day before" is not interpreted correctly (we do not know that dayBefore is the day before...) *)
 (* However, arrtime is inconsistent with arrtime''. arrtime'' is not a correct thing to get. *)
 Abort All.
@@ -757,15 +758,14 @@ intros [t0 [tp [tp' [buy [P1 P2]]]]].
 (* TODO *)
 Abort All.
 
-Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
 
 Opaque PN2object.
 Theorem  problem320btrue : Problem320aTrue.
 cbv.
 intros theCase isCase.
 intros memoir hisMemoir.
-intros theJob isCIAJob.
-intros [t1 [c1 [c2 [c3 [c4 P1]]]]].
+intros job1 job2.
+intros [t1 [t2 P1]].
 destruct P1 as [gotJob knowStuff].
 specialize (know_implicature knowStuff) as P1.
 rewrite -> itIsTheCaseThatIdiom.
@@ -789,19 +789,17 @@ Syntactic difficulties and problem that we do not have a mechanism to count occu
 *)
 
 Theorem problem322 : Problem322aTrue.
+
+unfold Problem322aTrue.
 cbv.
-(*TODO
+intros theCase isTheCase.
+intro P1.
+rewrite -> itIsTheCaseThatIdiom.
+specialize (know_implicature P1) as H.
+destruct H as [A B].
+split.
 
-Missing items:
-already_AdV
-last_week_Adv
-in_a_months_time_Adv
-in_a_few_weeks_Adv
-
-P1 should be parsed as:
-
-Last week I already knew that
-  (when, in a month's time, Smith would discover that she had been duped) she would be furious. *)
+(* TODO: discover implication *)
 Abort All.
 
 

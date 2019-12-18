@@ -167,3 +167,5 @@ semantics).
 (eg. not statives as "be in paris" (314))
 
 For statives, StativeInclusion applies instead.
+** _VS lexical class
+The time info propagates into the embedded close of know_VS, etc. (see FraCas 322)

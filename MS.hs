@@ -79,7 +79,7 @@ lexemeV2S :: String -> V2S
 lexemeV2S v2s = return $ \x s y -> mkRel3 v2s x (noExtraObjs s) y
 
 lexemeVS :: String -> VS
-lexemeVS vs = return $ \s x -> mkRel2 vs (noExtraObjs s) x
+lexemeVS vs = return $ \s x extraObjs -> mkRel2 vs (fst (s emptyObjs {extraTime = extraTime extraObjs})) x extraObjs
 
 lexemeV2V :: String -> V2V
 lexemeV2V v2v = return $ \x vp y -> appArgs True v2v [x,lam (\z -> noExtraObjs (vp z)),y]
@@ -340,7 +340,11 @@ lexemeSubj "until_Subj" s1 = do
        s1' ∧ s2', tspan2)
 lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "BEFORE" `apps` (pairToList t1 ++ pairToList t2)) s1
 lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t2 ++ pairToList t1)) s1
-lexemeSubj "when_Subj" s1 = timeSubj  (\t1 t2 -> Con "EQUALTIME" `apps` (pairToList t2 ++ pairToList t1)) s1
+lexemeSubj "when_Subj" s1 = return $ \s2 extraObjs ->
+  let (s1',t1) = s1 extraObjs
+      (s2',t2) = s2 (extraObjs {extraTime = t1})
+  in (s1' ∧ s2', t2)
+  -- timeSubj  (\t1 t2 -> Con "EQUALTIME" `apps` (pairToList t2 ++ pairToList t1)) s1
 lexemeSubj s s1 = do
   return $ \s2 extraObjs ->
     let (s1',_) = s1 extraObjs
@@ -358,12 +362,6 @@ timeSubj constraint s1 = do
           (s2',t2) = s2 extraObjs
           -- we must use "UnspecifiedTime" here so that we can use the time reference which was created at the time of *dynamic* evaluation of s1.
       in (constraint (temporalToLogic t1) (temporalToLogic t2) ∧ s1' ∧ s2',t2)
-  -- t2 <- getFresh
-  -- return $ \s2 extraObjs ->
-  --     let (s1',t1) = s1 extraObjs{extraTime=UnspecifiedTime}
-  --         -- we must use "UnspecifiedTime" here so that we can use the time reference which was created at the time of *dynamic* evaluation of s1.
-  --     in withTimeQuant t2 (constraint (temporalToLogic t1)) (s1' ∧) s2 extraObjs
-  --         forcing the time here means that previous occurences will not be able to be looked up.
 
 --------------------
 -- AdA
@@ -422,7 +420,13 @@ lexemeAdv "still_AdV" = do
       (fst (s (extraObjs{extraTime=ExactTime (Var t1,Con "NOW")})))   -- then the interval can be extended to now.
     ,ExactTime (Var t1,Con "NOW"))
 lexemeAdv "currently_AdV" = return $ usingTime now
+lexemeAdv "already_AdV" = return $ id
+lexemeAdv "last_week_Adv" = return $ usingTime (ExactTime (timePoint $ Con "LASTWEEK"))
+lexemeAdv "in_a_months_time_Adv" = return $ \s ExtraArgs{..} -> s (ExtraArgs {extraTime = plusTemporal (Con "OneMonth") extraTime,..})
+lexemeAdv "in_a_few_weeks_Adv" = return $ \s ExtraArgs{..} -> s (ExtraArgs {extraTime = plusTemporal (Con "AFewWeeks") extraTime,..})
 lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
+
+
 lexemeAdv adv | "since" `isPrefixOf` adv = 
   let year = take 4 $ drop 6 $ adv
       tStart = Con ("Date_" ++ year ++ "0101")
@@ -445,6 +449,9 @@ lexemeAdv "every_month_Adv" = do
       (fst (s (extraObjs{extraTime=tSpan}))),tSpan)
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
+plusTemporal :: Exp -> Temporal -> Temporal
+plusTemporal delta UnspecifiedTime = UnspecifiedTime
+plusTemporal delta (ExactTime (t1,t2)) = ExactTime (Con "Plus" `apps` [t1,delta],Con "Plus" `apps` [t2,delta])
 
 withAtLeastDuration :: Exp -> Dynamic (S' -> S')
 withAtLeastDuration delta = do -- with duration meaning, as in FraCas 278
@@ -1044,7 +1051,7 @@ predVP np vp = withClause $ do
   let p' = np' vp'
   tense <- asks envTense
   p'' <- case tense of
-    t | t `elem` [Past, PresentPerfect] -> do
+    t | t `elem` [Past, PresentPerfect, PastPerfect] -> do
       ts <- referenceTimesFor p' -- (1)
       -- fixme: this should happen at a lower level (lexical
       -- item). But we do not have dynamic access to arguments at that
