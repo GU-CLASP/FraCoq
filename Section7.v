@@ -39,6 +39,7 @@ Definition inBirminghamStative := inStative (loc := BIRMINGHAM).
 Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 
 Require Import Psatz.
+Parameter DiscoverCovariant_K : forall (p q : S), forall (t t':Time), forall s, (q -> p) -> discover_VS q s t t' -> discover_VS p s t t'.
 
 
 Theorem  problem251aTrue : Problem251aTrue.
@@ -488,6 +489,7 @@ Qed.
 
 Theorem problem291 : Problem291aTrue.
 (* meaning/syntax for spend *)
+(* TODO perhaps use an idiom (similar to "is the case")*)
 Abort All.
 
 Theorem problem292 : Problem292aTrue.
@@ -789,7 +791,6 @@ Syntactic difficulties and problem that we do not have a mechanism to count occu
 *)
 
 Theorem problem322 : Problem322aTrue.
-
 unfold Problem322aTrue.
 cbv.
 intros theCase isTheCase.
@@ -798,9 +799,19 @@ rewrite -> itIsTheCaseThatIdiom.
 specialize (know_implicature P1) as H.
 destruct H as [A B].
 split.
+repeat eexists.
+Focus 3.
+cut (NOW - 7 * ONEDAY + 30 * ONEDAY = NOW + 23 * ONEDAY).
+intro T.
+rewrite -> T in A.
+exact A.
+lia.
+lia.
+lia.
+exact B.
+assumption.
+Qed.
 
-(* TODO: discover implication *)
-Abort All.
 
 
 Theorem  problem323 : Problem323aTrue.

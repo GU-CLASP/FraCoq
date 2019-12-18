@@ -423,9 +423,13 @@ lexemeAdv "currently_AdV" = return $ usingTime now
 lexemeAdv "already_AdV" = return $ id
 lexemeAdv "last_week_Adv" = return $ usingTime (ExactTime (timePoint $ Con "LASTWEEK"))
 lexemeAdv "in_a_months_time_Adv" = return $ \s ExtraArgs{..} -> s (ExtraArgs {extraTime = plusTemporal (Con "OneMonth") extraTime,..})
-lexemeAdv "in_a_few_weeks_Adv" = return $ \s ExtraArgs{..} -> s (ExtraArgs {extraTime = plusTemporal (Con "AFewWeeks") extraTime,..})
-lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
+lexemeAdv "in_a_few_weeks_Adv" = do
+  fewWeeks <- getFresh
+  return $ \s ExtraArgs{..} ->
+    let (p,tspan) = s (ExtraArgs {extraTime = plusTemporal (Var fewWeeks) extraTime,..})
+    in (quantTime Exists fewWeeks (isInterval (Con "OneWeek") (Var fewWeeks) ∧ isInterval (Var fewWeeks) (Con "FiveWeeks")) p,tspan)
 
+lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
 
 lexemeAdv adv | "since" `isPrefixOf` adv = 
   let year = take 4 $ drop 6 $ adv
@@ -450,7 +454,7 @@ lexemeAdv "every_month_Adv" = do
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
 plusTemporal :: Exp -> Temporal -> Temporal
-plusTemporal delta UnspecifiedTime = UnspecifiedTime
+plusTemporal delta UnspecifiedTime = plusTemporal delta now
 plusTemporal delta (ExactTime (t1,t2)) = ExactTime (Con "Plus" `apps` [t1,delta],Con "Plus" `apps` [t2,delta])
 
 withAtLeastDuration :: Exp -> Dynamic (S' -> S')
@@ -467,6 +471,9 @@ withAtLeastDuration delta = do -- with duration meaning, as in FraCas 278
                                 -- we constraint the returned time, so that we have a stronger interpretation of achievements (see Fracas 306)
                                  (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2])) $
                p, tSpan))
+
+isInterval :: Exp -> Exp -> Exp
+isInterval x y = Con "IS_INTERVAL" `apps` [x,y]
 
 withExactDuration :: Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
 withExactDuration delta = do -- as in FraCas 278
@@ -492,8 +499,6 @@ inIntervalAdv tStart tStop = do
   t2 <- getFresh
   return $ withTimeQuant Exists (t1,t2) (\(t1',t2') -> (t1',t2') `includedIn` (tStart,tStop)) id
 
-isInterval :: Exp -> Exp -> Exp
-isInterval t0 t1 = Con "IS_INTERVAL" `apps` [t0,t1]
 
 withTimeQuant :: (Var -> Exp -> Exp -> Exp) -> (String,String) -> (TimeSpan -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, Temporal)
 withTimeQuant quantifier (t1,t2) constr f
