@@ -737,11 +737,21 @@ intros [arr P2].
 Abort All.
 
 Theorem problem316 : Problem316aTrue.
+unfold Problem316aTrue.
 cbv.
 (* TODO
-Need implicit reference to time (ever_since_Adv) and other lexical items
+- No time points for adjectives (unemployed_A)
+- Need implicit reference to time (ever_since_Adv) and other lexical items
 *)
 Abort All.
+
+
+(*
+No syntax for that.
+Theorem problem317 : Problem317aFalse.
+We lack proper counting abilities.
+Abort All.
+*)
 
 (*
 No syntax for that.
@@ -833,8 +843,10 @@ Abort All.
 
 
 Theorem problem325 : Problem325bTrue.
+unfold Problem325bTrue.
 cbv.
-(* Problem with anaphora: *)
+(* - we need timepoints on asleep_A *)
+(* - Problem with anaphora: *)
 (* Reading A does not give existence for P2 *)
 (* Reading B lifts existence at toplevel *)
 Abort All.
