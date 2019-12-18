@@ -1,5 +1,5 @@
-Load Formulas.
 
+Load Formulas.
 
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
 
@@ -40,6 +40,12 @@ Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 
 Require Import Psatz.
 Parameter DiscoverCovariant_K : forall (p q : S), forall (t t':Time), forall s, (q -> p) -> discover_VS q s t t' -> discover_VS p s t t'.
+
+
+Parameter pay_interest_combined: forall x i1 i2 t1 t2 t2' t3, pay_V2 i1 x t1 t2 -> pay_V2 i2 x t2' t3 -> t2 >= t2' ->
+mortgage_interest_N i1 ->
+mortgage_interest_N i2 ->
+exists i3, mortgage_interest_N i3 /\ pay_V2 i3 x t1 t3.
 
 
 Theorem  problem251aTrue : Problem251aTrue.
@@ -759,17 +765,33 @@ Theorem problem318 : Problem318aFalse.
 Abort All.
 *)
 
-Theorem problem319 : Problem319iTrue.
+
+Require Import Coq.Program.Tactics.
+Theorem problem319 : Problem319aTrue.
 cbv.
 intros previousOffice isOffice.
 intros currentOffice isOffice'.
-intros [t0 [tp [tp' [buy [P1 P2]]]]].
-(* Incorrect syntax: use of impersonal ^^ *)
-(* P1  means that we have payment 8 years in the past with the buying as reference *)
-(* P2  means that we have payment 8 years in the future with the buying as reference *)
-(* TODO *)
+intros.
+destruct_conjs.
+cut (H8 >= H14).
+intro overlap.
+specialize (pay_interest_combined H28 H26 overlap) as [combinedInterest [isInterest3 A]].
+assumption.
+assumption.
+repeat eexists.
+Focus 6.
+exact A.
+Focus 2.
+reflexivity.
+Focus 2.
+reflexivity.
+lia.
+Focus 2.
+assumption.
+(* TODO: Something is wrong with the definition of "before" or "since" *)
+(* P1  means that we have payment 8 years in the past with H as reference *)
+(* P2  means that we have payment 10 years in the future with H as reference *)
 Abort All.
-
 
 Opaque PN2object.
 Theorem  problem320btrue : Problem320aTrue.

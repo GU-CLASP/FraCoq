@@ -1122,7 +1122,9 @@ Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> TPr
 Parameter go8travel_Vby8meansto :  object ->  object -> object -> TProp.
 Parameter go8travel_Vto :  object -> object -> TProp.
 Parameter travel_Von : object -> object -> TProp.
-Parameter pay_V2on : object -> object -> object -> TProp.
+Definition pay_V2on : object -> object -> object -> TProp
+  := fun onWhat what who => pay_V2 what who.
+ (* Only used in 319; simplistic def here *)
 Parameter knowVQ : VS.
 Parameter WHY: Prop -> Prop.
 Definition speak_to_V2to : object -> object -> object -> TProp

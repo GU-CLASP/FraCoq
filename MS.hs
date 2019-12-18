@@ -339,6 +339,7 @@ lexemeSubj "until_Subj" s1 = do
        quantTime Exists t2 true $
        s1' ∧ s2', tspan2)
 lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "BEFORE" `apps` (pairToList t1 ++ pairToList t2)) s1
+lexemeSubj "since_Subj" s1 = timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t2 ++ pairToList t1)) s1
 lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t2 ++ pairToList t1)) s1
 lexemeSubj "when_Subj" s1 = return $ \s2 extraObjs ->
   let (s1',t1) = s1 extraObjs
@@ -398,6 +399,9 @@ lexemeAdv "for_two_years_Adv" = withAtLeastDuration (Con "TwoYears")
 lexemeAdv "for_a_year_Adv" = withAtLeastDuration (Con "OneYear")
 lexemeAdv "for_two_hours_Adv" = withAtLeastDuration (Con "TwoHours")
 lexemeAdv "for_an_hour_Adv" = withAtLeastDuration (Con "OneHour")
+lexemeAdv "for_8_years_Adv" = withAtLeastDuration (Con "(8*OneYear)")
+lexemeAdv "for_more_than_10_years_Adv" = withAtLeastDuration (Con "(10*OneYear)")
+lexemeAdv "for_a_total_of_15_years_or_more_Adv" = withAtLeastDuration (Con "(15*OneYear)")
 lexemeAdv "for_exactly_a_year_Adv" = withExactDuration (Con "OneYear")
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
@@ -1828,6 +1832,12 @@ s_155_2_p_ALT = (sentence (useCl (present) (pPos) (predVP (usePN (lexemePN "bill
 
 s_086_2_h_ALT :: Phr
 s_086_2_h_ALT = (sentence (useCl (past) (pPos) (predVP (detCN (detQuant (indefArt) (numCard (numNumeral (n_six)))) (useN (lexemeN "lawyer_N"))) (complSlash (slashV2a (lexemeV2 "sign_V2")) (detCN (detQuant (defArt) (numSg)) (useN (lexemeN "contract_N")))))))
+
+s_319_1_p_ALT :: Phr
+s_319_1_p_ALT =((sentence) ((extAdvS) ((subjS) ((lexemeSubj "before_Subj")) ((useCl) ((past)) ((pPos)) ((predVP) ((usePN) ((lexemePN "apcom_PN"))) ((complSlash) ((slashV2a) ((lexemeV2 "buy_V2"))) ((detCN) ((detQuant) ((possPron) ((itRefl_Pron))) ((numSg))) ((adjCN) ((positA) ((lexemeA "present8current_A"))) ((useN) ((lexemeN "office_building_N"))))))))) ((useCl) ((pastPerfect)) ((pPos)) (predVP ((usePron) ((it_Pron))) ((advVP) ((advVP) ((progrVPa) ((complSlash) ((slashV2a) ((lexemeV2 "pay_V2"))) ((massNP) ((useN) ((lexemeN "mortgage_interest_N")))))) ((prepNP) ((lexemePrep "on_Prep")) ((detCN) ((detQuant) ((defArt)) ((numSg))) ((adjCN) ((positA) ((lexemeA "previous_A"))) ((useN) ((lexemeN "one_N"))))))) ((lexemeAdv "for_8_years_Adv")))))))
+
+s_319_2_p_ALT :: Phr
+s_319_2_p_ALT = ((sentence) ((advS) ((subjS) ((lexemeSubj "since_Subj")) ((useCl) ((past)) ((pPos)) ((predVP) ((usePN) ((lexemePN "apcom_PN"))) ((complSlash) ((slashV2a) ((lexemeV2 "buy_V2"))) ((detCN) ((detQuant) ((possPron) ((itRefl_Pron))) ((numSg))) ((adjCN) ((positA) ((lexemeA "present8current_A"))) ((useN) ((lexemeN "office_building_N"))))))))) ((useCl) ((presentPerfect)) ((pPos)) (predVP (usePron it_Pron) ((advVP) ((advVP) ((progrVPa) ((complSlash) ((slashV2a) ((lexemeV2 "pay_V2"))) ((massNP) ((useN) ((lexemeN "mortgage_interest_N")))))) ((prepNP) ((lexemePrep "on_Prep")) ((usePron) ((it_Pron))))) ((lexemeAdv "for_more_than_10_years_Adv")))))))
 
 s_320_1_p_ALT :: Phr
 s_320_1_p_ALT =((sentence) ((extAdvS) ((subjS) ((lexemeSubj "when_Subj")) ((useCl) ((past)) ((pPos)) ((predVP) ((usePN) ((lexemePN "jones_PN"))) ((complSlash) ((slashV2a) ((lexemeV2 "get_V2"))) ((detCN) ((detQuant) ((possPron) ((he_Pron))) ((numSg))) ((advCN) ((useN) ((lexemeN "job_N"))) ((prepNP) ((lexemePrep "at_Prep")) ((usePN) ((lexemePN "the_cia_PN")))))))))) ((useCl) ((past)) ((pPos)) ((predVP) ((usePron) ((he_Pron))) ((complVS) ((lexemeVS "know_VS")) ((useCl) ((conditional)) ((pPos)) ((predVP) ((usePron) ((he_Pron))) ((adVVP) ((lexemeAdV "never_AdV")) ((passVPSlash) ((slashV2V) ((lexemeV2V "allow_V2V")) ((complSlash) ((slashV2a) ((lexemeV2 "write_V2"))) ((detCN) ((detQuant) ((possPron) ((he_Pron))) ((numPl))) ((useN) ((lexemeN "memoir_N")))))))))))))))
