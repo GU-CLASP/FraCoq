@@ -332,7 +332,9 @@ cbv.
 (* obviously the events are not incompatible *)
 Abort All.
 
-(* FIXME: 275 "before" uses a conjuction, perhaps it should be changed to implication? *)
+(* 275 "before" uses a conjuction, perhaps it should be changed to implication?
+However if we do that then 261 is no longer provable.
+*)
 
 (* 276 undef *)
 
