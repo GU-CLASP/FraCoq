@@ -338,9 +338,9 @@ lexemeSubj "until_Subj" s1 = do
        quantTime Exists t1 true $
        quantTime Exists t2 true $
        s1' ∧ s2', tspan2)
-lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "BEFORE" `apps` (pairToList t1 ++ pairToList t2)) s1
-lexemeSubj "since_Subj" s1 = timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t2 ++ pairToList t1)) s1
-lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t2 ++ pairToList t1)) s1
+lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "BEFORE" `apps` (pairToList t2 ++ pairToList t1 )) s1
+lexemeSubj "since_Subj" s1 = timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t1 ++ pairToList t2)) s1
+lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t1 ++ pairToList t2)) s1
 lexemeSubj "when_Subj" s1 = return $ \s2 extraObjs ->
   let (s1',t1) = s1 extraObjs
       (s2',t2) = s2 (extraObjs {extraTime = t1})
@@ -1179,7 +1179,7 @@ apConj2S' :: Conj -> S' -> S' -> S'
 apConj2S' Then p q extras =
   let (p',t1) = p extras
       (q',t2) = q extras
-  in ((Con "AFTER" `apps` (tempToArgs t2 ++ tempToArgs t1)) ∧ p' ∧ q', t2)
+  in ((Con "AFTER" `apps` (tempToArgs t1 ++ tempToArgs t2)) ∧ p' ∧ q', t2)
 apConj2S' conj p q extras =
   let (p',t1) = p extras
       (q',t2) = q extras

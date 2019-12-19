@@ -48,6 +48,7 @@ mortgage_interest_N i2 ->
 exists i3, mortgage_interest_N i3 /\ pay_V2 i3 x t1 t3.
 
 
+
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
 assumption.
@@ -204,20 +205,32 @@ intuition.
 intuition.
 Qed.
 
+Require Import Coq.Program.Tactics.
+
 Theorem problem264a : Problem263aTrue.
 cbv.
-firstorder.
-exists INDEFINITE_PAST.
-split.
-lia.
+intros.
+destruct_conjs.
 eexists.
-split.
+eexists. Focus 2.
+exists (INDEFINITE_PAST).
+eexists.
+reflexivity.
+eexists.
+eexists.
 Focus 2.
-exists (INDEFINITE_PAST + OneYear).
-split.
-Focus 2.
+exists (INDEFINITE_PAST - ONEDAY).
+repeat eexists.
+reflexivity.
+lia.
+tauto.
+tauto.
+tauto.
+tauto.
+lia.
+tauto.
 (* FIXME: This can actually be proven because present8attending_A has no time info *)
-Abort All.
+Qed.
 
 Theorem  problem264atrue : Problem264aTrue.
 cbv.
@@ -298,23 +311,22 @@ Qed.
 Theorem  problem271atrue : Problem271aTrue.
 cbv.
 intros.
-exists INDEFINITE_PAST.
-split.
-lia.
-exists INDEFINITE_PAST.
-split.
-lia.
-exists INDEFINITE_PAST.
-split.
-lia.
+eexists.
+eexists. Focus 2.
 exists (INDEFINITE_PAST - OneHour).
-split.
+eexists. Focus 2.
+exists (INDEFINITE_PAST).
+repeat eexists.
+destruct_conjs.
 lia.
-split.
+reflexivity.
 lia.
-split.
-firstorder.
-firstorder.
+tauto.
+tauto.
+tauto.
+tauto.
+reflexivity.
+lia.
 (* FIXME Error: adjectives do not have temporal parameter *)
 Qed.
 
@@ -661,6 +673,7 @@ Parameter taxiIdiom : forall dst taxi x t0 t1,
 
 Transparent PN2object.
 Theorem  problem311atrue : Problem311aTrue.
+unfold Problem311aTrue.
 cbv.
 intros theStation isStation theHouse isHouse.
 intro Ps.
@@ -765,8 +778,6 @@ Theorem problem318 : Problem318aFalse.
 Abort All.
 *)
 
-
-Require Import Coq.Program.Tactics.
 Theorem problem319 : Problem319aTrue.
 cbv.
 intros previousOffice isOffice.
@@ -788,10 +799,16 @@ reflexivity.
 lia.
 Focus 2.
 assumption.
-(* TODO: Something is wrong with the definition of "before" or "since" *)
 (* P1  means that we have payment 8 years in the past with H as reference *)
 (* P2  means that we have payment 10 years in the future with H as reference *)
+(* What we need is a bound on H8 (end of interval for P1), but instead
+we have a bound on H3, which is the start of the interval. (This bound
+on the start of the interval is required to get "unknown" for several
+problems.) What seems to happen is that when we have an explicit
+duration, then "before" is (pragmatically) strengthened to act on the
+end of the interval. This is very hard to support.  *)
 Abort All.
+
 
 Opaque PN2object.
 Theorem  problem320btrue : Problem320aTrue.
