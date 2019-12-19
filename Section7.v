@@ -187,17 +187,13 @@ lia.
 intuition.
 Qed.
 
+Require Import Coq.Program.Tactics.
+
 Transparent PN2object.
 Theorem  problem262atrue : Problem262aTrue.
 cbv.
 intros.
-destruct H1.
-destruct H1.
-destruct H2.
-destruct H3.
-destruct H4.
-destruct H5.
-destruct H6.
+destruct_conjs.
 split.
 lia.
 split.
@@ -205,9 +201,7 @@ intuition.
 intuition.
 Qed.
 
-Require Import Coq.Program.Tactics.
-
-Theorem problem264a : Problem263aTrue.
+Theorem problem263 : Problem263aTrue.
 cbv.
 intros.
 destruct_conjs.
@@ -235,13 +229,9 @@ Qed.
 Theorem  problem264atrue : Problem264aTrue.
 cbv.
 intros.
-destruct H1.
-destruct H2.
-destruct H3.
-destruct H4.
-split.
+destruct_conjs.
+repeat split.
 lia.
-split.
 tauto.
 tauto.
 Qed.
@@ -249,14 +239,9 @@ Qed.
 Theorem  problem265atrue : Problem265aTrue.
 cbv.
 intros.
-destruct H1.
-destruct H2.
-destruct H3.
-destruct H4.
-
-split.
+destruct_conjs.
+repeat split.
 lia.
-split.
 tauto.
 tauto.
 Qed.
