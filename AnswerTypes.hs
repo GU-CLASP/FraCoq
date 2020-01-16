@@ -23,7 +23,7 @@ answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   ,(181, Yes) -- this works for the same reason 180 works.
   ,(199, Unclear "FIXME: This is YES in the suite, but is says 'yes for a former university student', which is not what the conclusion actually says. If we were to fix the conclusion then the example becomes trivial.")
   ,(226,Yes) -- should be obvious
-  
+
   -- Clarified
   ,(87 , Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ,(88 , Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
@@ -47,6 +47,7 @@ answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   ,(244, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ,(245, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ,(250, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(256, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ]
   ++ officialAnswers
 
