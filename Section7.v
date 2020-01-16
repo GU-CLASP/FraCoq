@@ -499,8 +499,19 @@ lia.
 eapply P1.
 Qed.
 
+Parameter SpendHoursIdiom :
+forall P subj t0 t1 n,
+(n <= CARD
+   (fun x0 : object =>
+     SentCN hour_N (fun x1 : object => P x1 NOW NOW) x0 /\ spend_V2 x0 subj t0 t1))
+= exists t0' t1', P subj t0' t1' /\ (t0' + n * OneHour <= t1').
+
 Theorem problem291 : Problem291aTrue.
 cbv.
+intro.
+
+(*rewrite -> (SpendHoursIdiom (fun subj t0 t1 => 
+  exists x2 : object, new_A species_N x2 /\ discover_V2 x2 subj t0 t1) SMITH).*)
 (* meaning/syntax for spend *)
 (* TODO perhaps use an idiom (similar to "is the case")*)
 Abort All.
