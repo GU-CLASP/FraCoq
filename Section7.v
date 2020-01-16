@@ -78,7 +78,7 @@ Qed.
 Theorem  problem253t : Problem253aTrue. 
 cbv.
 intros [P1 P2].
-(* No way to link d with NOW*)
+(* No way to link variable h with NOW ; because 'h' is in the conclusion and Activity time equality works on hypotheses. *)
 Abort All.
 
 
@@ -280,6 +280,7 @@ Theorem  problem269atrue : Problem269aTrue.
 cbv.
 intros t1 p1 t2 p2 t3 p3 t4 p4 [P1 P2].
 split.
+(* no link between t1 and t4 *)
 Abort All.
 
 Theorem  problem270atrue : Problem270aTrue.
@@ -332,6 +333,12 @@ cbv.
 (* obviously the events are not incompatible *)
 Abort All.
 
+Theorem  problem275atrue : Problem275aTrue.
+cbv.
+intros.
+destruct_conjs.
+assumption.
+Qed.
 (* 275 "before" uses a conjuction, perhaps it should be changed to implication?
 However if we do that then 261 is no longer provable.
 *)
