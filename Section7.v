@@ -5,7 +5,7 @@ Load Formulas.
 
 
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
-Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p.
+Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p. (* Actually a factive pressuposition *)
 
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
 Section Temps.
@@ -126,7 +126,6 @@ lia.
 Qed.
 
 Theorem problem256 : Problem256aTrue.
-(* TODO: not sure what this reading is *)
 cbv.
 exact problem255.
 Qed.
@@ -340,7 +339,7 @@ destruct_conjs.
 assumption.
 Qed.
 (* 275 "before" uses a conjuction, perhaps it should be changed to implication?
-However if we do that then 261 is no longer provable.
+However if we do that then 261 is no longer provable. TODO: check this again. (Also not exactly)
 *)
 
 (* 276 undef *)
@@ -390,7 +389,7 @@ Theorem  problem281 : Problem281aTrue.
 cbv.
 intros business isBusiness.
 intro P1.
-(* Can't conclude *)
+(* Can't conclude (only one predicate as hyp) *)
 Abort All.
 
 Theorem  problem281f : Problem281aFalse.
@@ -500,6 +499,7 @@ eapply P1.
 Qed.
 
 Theorem problem291 : Problem291aTrue.
+cbv.
 (* meaning/syntax for spend *)
 (* TODO perhaps use an idiom (similar to "is the case")*)
 Abort All.
@@ -515,7 +515,8 @@ Abort All.
 Theorem problem294 : Problem294aTrue.
 cbv.
 intros business isBusiness.
-(* FIXME: inconsistent syntax for "in two years" compared to 285, etc. *)
+(* FIXME: inconsistent syntax for "in two years" compared to 285, etc.
+*)
 (* TODO *)
 Abort All.
 
@@ -544,8 +545,9 @@ Abort All.
 
 Theorem problem297t : Problem297aTrue.
 cbv.
-(* Terrible syntax for in_two_years (what does it even mean?)*)
-(* TODO *)
+intro.
+destruct_conjs.
+(* TODO deal with the card stuff *)
 Abort All.
 
 
@@ -635,6 +637,12 @@ repeat eexists.
 Focus 4.
 exact P1.
 (*lia.  cannot conclude*)
+Abort All.
+
+Theorem problem304f : Problem304aFalse.
+cbv.
+intro.
+(*Existential, cannot conclude*)
 Abort All.
 
 Theorem  problem306atrue : Problem306aTrue.
@@ -800,7 +808,9 @@ we have a bound on H3, which is the start of the interval. (This bound
 on the start of the interval is required to get "unknown" for several
 problems.) What seems to happen is that when we have an explicit
 duration, then "before" is (pragmatically) strengthened to act on the
-end of the interval. This is very hard to support.  *)
+end of the interval. This is very hard to support.
+Or maybe we can use the past perfect continuous tense to tweak the interpretation?
+*)
 Abort All.
 
 
@@ -858,6 +868,7 @@ Qed.
 
 
 Theorem  problem323 : Problem323aTrue.
+cbv.
 (* need special support for continue_V / stop_V *)
 (* Everything in this problem requires special treatment (start, stop, continue, until )
 *)
