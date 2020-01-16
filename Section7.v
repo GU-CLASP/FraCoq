@@ -1,4 +1,5 @@
 
+
 Load Formulas.
 
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
@@ -543,12 +544,27 @@ cbv.
 (* Can't conclude anyway *)
 Abort All.
 
+Lemma CARD_exists' : forall n, forall P:(object -> Prop), n <= CARD P -> 0 < n -> exists x, P x.
+intros.
+apply CARD_exists.
+lia.
+Qed.
+
 Theorem problem297t : Problem297aTrue.
 cbv.
 intro.
 destruct_conjs.
-(* TODO deal with the card stuff *)
-Abort All.
+assert (0 < 2) as B.
+lia.
+specialize (CARD_exists' H2 B) as A.
+destruct_conjs.
+repeat eexists.
+Focus 4.
+exact H14.
+lia.
+exact H15.
+assumption.
+Qed.
 
 
 Opaque PN2object.

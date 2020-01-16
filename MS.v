@@ -1162,7 +1162,8 @@ Definition stock_market_trader_N := stockmarket_trader_N. (* spelling *)
 Parameter swim_Vto : object -> V.
 Parameter run_V2in : object -> V2.
 Parameter chain_Npart : object -> N.
-Parameter own_V2in : object -> V2.
+Definition own_V2in : object -> V2
+ := fun _ => own_V2. (* we ignore "in" because of crap syntax in pb. 295 to 297 *)
 
 
 Definition QQ := CN -> VP -> Prop.
