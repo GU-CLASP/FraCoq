@@ -48,7 +48,9 @@ answers = nubBy ((==) `on` fst) $ sortBy (compare `on` fst) $
   ,(244, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ,(245, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
   ,(250, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
-  ,(256, Yes) -- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(256, Yes)-- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(257, Yes)-- because usually in FraCaS, if one reading entails, then problem marked as Yes.
+  ,(291, Yes) -- spurious question mark before: "?Yes"
   ]
   ++ officialAnswers
 
