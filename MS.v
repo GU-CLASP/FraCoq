@@ -1045,12 +1045,12 @@ Parameter write_V2 : V2 .
 Parameter write_to_V2 : V2 .
 
 (** Knowledge **)
-(*
-Parameter wantCovariant_K : forall p q:VP, forall (t:Time), forall s, (q s t -> p s t) -> want_VV q s t -> want_VV p s t.
-Parameter sayCovariant_K : forall p q:S, forall s t, (p -> q) -> say_VS p s t -> say_VS q s t.
+
+
+Parameter wantCovariant_K : forall (t0 t1 :Time), forall p q:TVP, forall s, (q s t0 t1  -> p s t0 t1) -> want_VV (fun x => q x t0 t1) s t0 t1 -> want_VV (fun x => p x t0 t1) s t0 t1.
+(*Parameter sayCovariant_K : forall p q:S, forall s t, (p -> q) -> say_VS p s t -> say_VS q s t.
 Parameter claimCovariant_K : forall p q:S, forall s t, (p -> q) -> claim_VS p s t -> claim_VS q s t.
 *)
-
 Parameter  person_K: forall (x:object), chairman_N x -> person_N x. 
 Parameter  committee_member_person_K : forall x, committee_member_N x -> person_N x. 
 
