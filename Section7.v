@@ -807,9 +807,10 @@ Abort All.
 Theorem problem316 : Problem316aTrue.
 unfold Problem316aTrue.
 cbv.
-(* TODO
+(*
 - No time points for adjectives (unemployed_A)
-- Need implicit reference to time (ever_since_Adv) and other lexical items
+- Need implicit reference to time (ever_since_Adv)
+- other lexical items
 *)
 Abort All.
 
