@@ -1,6 +1,10 @@
+
 Load Formulas.
 
-Theorem T001a: Problem001aTrue. cbv. firstorder. Qed.
+Theorem T001a: Problem001aTrue. cbv.
+intros.
+(* Must do something about tense and relative clauses. *)
+Abort All.
 
 Theorem T002a: Problem002aTrue.
 cbv. destruct great_A as [great].
@@ -12,14 +16,8 @@ split.
 exact H2.
 assert (H' := H1 x H2).
 generalize H'.
-apply wantCovariant_K.
-intro H4.
-exists x.
-split.
-exact H4.
-split.
-split.
-Qed.
+specialize wantCovariant_K with (t0 := NOW) (t1 := NOW) (s := x) as A.
+Abort All.
 
 Theorem T003a: Problem003aTrue.
 cbv.
@@ -97,7 +95,8 @@ Theorem T017a: Problem017aTrue. cbv.
 intro the_nobel_prize.
 intros H P1.
 destruct H as [literature [isLiterature isNobelPrize]].
-destruct P1 as [irishman [isIrish hasWon]]. 
+destruct P1 as [t0 [ c0[irishman [isIrish hasWon]]]]. 
+
 exists irishman.
 split.
 assumption.
