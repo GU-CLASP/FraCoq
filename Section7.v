@@ -310,6 +310,7 @@ lia.
 (*  Error: adjectives do not have temporal parameter *)
 Qed.
 
+(* Not doing 272 which has the same form as 271 *)
 
 Theorem  problem273atrue : Problem273aTrue.
 cbv.
@@ -439,11 +440,11 @@ apply past.
 lia.
 Qed.
 
-(* 285: No support for terrible GF syntax yet *)
+(* 285: Yet another insane syntax for "spend" *)
 
 (*Theorem problem286 : Problem286aFalse.
-- Horrid syntax, can't interpret it
-- Need special treatment for "spend ... "
+- Same as 285, plus
+- Horrid syntax for "more than", can't interpret it
 Abort All.
  *)
 
