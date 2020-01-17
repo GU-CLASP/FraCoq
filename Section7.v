@@ -1,13 +1,10 @@
 
 Load Formulas.
 
-(* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
-
-
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
 Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p. (* Actually a factive pressuposition *)
-
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
+
 Section Temps.
 Variable y1993before1996 : Date_19931231 < Date_19960101.
 Variable y1992before1993 : Date_19921231 < Date_19930101.
@@ -46,8 +43,6 @@ Parameter pay_interest_combined: forall x i1 i2 t1 t2 t2' t3, pay_V2 i1 x t1 t2 
 mortgage_interest_N i1 ->
 mortgage_interest_N i2 ->
 exists i3, mortgage_interest_N i3 /\ pay_V2 i3 x t1 t3.
-
-
 
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
@@ -222,7 +217,7 @@ tauto.
 tauto.
 lia.
 tauto.
-(* FIXME: This can actually be proven because present8attending_A has no time info *)
+(* Error: This can actually be proven because present8attending_A has no time info *)
 Qed.
 
 Theorem  problem264atrue : Problem264aTrue.
@@ -312,7 +307,7 @@ tauto.
 tauto.
 reflexivity.
 lia.
-(* FIXME Error: adjectives do not have temporal parameter *)
+(*  Error: adjectives do not have temporal parameter *)
 Qed.
 
 
