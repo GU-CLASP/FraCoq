@@ -1,5 +1,4 @@
 
-
 Load Formulas.
 
 (* Parameter idiom : forall t, appAdv now_AdV (appTime (ATTIME t) _BE_) IMPERSONAL = (NOW = t). *)
@@ -400,7 +399,7 @@ intros P1 H.
 (* Note: Can't conclude, but FraCas says that "run a business" is an activity --- however if it were we could use unicity to show that there is a contradiction *)
 Abort All.
 
-Parameter discoverUnique : forall (x y : object), UniqueEvent (discover_V2 x y).
+Parameter discoverUnique : forall (x y : object), UniqueActivity (discover_V2 x y).
 
 Theorem  problem282 : Problem282aFalse.
 cbv.
@@ -408,8 +407,8 @@ intros species isNewSpecies P1 H.
 destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
 destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
 specialize discoverUnique with (x := species)(y := SMITH) as A.
-unfold UniqueEvent in A.
-specialize (A _ _ P1 H) as B.
+unfold UniqueActivity in A.
+specialize (A _ _ _ _ P1 H) as B.
 lia.
 Qed.
 
@@ -496,7 +495,13 @@ destruct P1 as [t1 [p1 [c2 [p2 [t3 [c3 [c4 P1]]]]]]].
 exists (t3 + (OneHour + OneHour)).
 split.
 lia.
-eapply P1.
+destruct_conjs.
+repeat eexists.
+Focus 2.
+exact H.
+Focus 2.
+exact H0.
+lia.
 Qed.
 
 Definition discoverNewSpecies subj t0 t1 := exists x2 : object, new_A species_N x2 /\ discover_V2 x2 subj t0 t1.
@@ -522,22 +527,29 @@ destruct_conjs.
 repeat eexists.
 exact H9.
 exact H10.
-Abort All.
+lia.
+lia.
+Qed.
+
 
 Theorem problem292 : Problem292aTrue.
-(* meaning/syntax for spend *)
+cbv.
+intros.
+(* inconsistent syntax for "in two years" compared to 285. *)
+(* incomprehensible problem *)
 Abort All.
 
 Theorem problem293 : Problem293aTrue.
-(* meaning/syntax for spending time *)
+(* inconsistent syntax for "in two years" compared to 285. *)
+(* incomprehensible problem *)
 Abort All.
 
 Theorem problem294 : Problem294aTrue.
 cbv.
 intros business isBusiness.
-(* FIXME: inconsistent syntax for "in two years" compared to 285, etc.
-*)
-(* TODO *)
+intro P1.
+(* inconsistent syntax for "in two years" compared to 285. *)
+(* incomprehensible problem *)
 Abort All.
 
 Theorem problem295t : Problem295aTrue.
