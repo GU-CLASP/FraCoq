@@ -1,18 +1,38 @@
 Load Formulas.
 
-
-
+Require Import Coq.Program.Tactics.
 Require Import Omega.
 
-Theorem T114a: Problem114aTrue. cbv. intros. destruct H. destruct H. exists x. split. exact H. exists (PN2object mary_PN). split. apply I. exact H0. Qed. 
+Theorem T114a:
+Problem114aTrue.
+cbv.
+intros.
+destruct_conjs.
+exists H0.
+firstorder.
+Qed. 
 
 
-Theorem T115A: Problem115aTrue. cbv. intros. destruct H. destruct H. destruct H.  exists x. split. exact H1. exact H. Qed. 
+Theorem T115A: Problem115aTrue.
+cbv.
+cbv.
+intros.
+destruct_conjs.
+exists x.
+firstorder.
+Qed.
 
-Theorem T116a: Problem116aTrue. cbv. intros.  split. apply mary_PN_Female.  destruct H.   destruct H. destruct mkPN. exact c. Qed.
+Theorem T116a: Problem116aTrue. cbv. intros.
+split.
+apply mary_PN_Female.
+destruct mkPN. exact c. Qed.
 
 
-Theorem T117a: Problem117aTrue. cbv. intros.  elim H. intros. apply H. exact H1. Qed. 
+Theorem T117: Problem117aTrue. cbv.
+
+exists x.
+
+elim H. intros. apply H. exact H1. Qed. 
 
 Theorem T118a: Problem118aTrue.
 cbv.
