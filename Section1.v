@@ -1,4 +1,3 @@
-
 Load Formulas.
 
 Theorem T001a: Problem001aTrue. cbv.
@@ -96,7 +95,9 @@ intro the_nobel_prize.
 intros H P1.
 destruct H as [literature [isLiterature isNobelPrize]].
 destruct P1 as [t0 [ c0[irishman [isIrish hasWon]]]]. 
-
+eexists.
+split.
+Focus 2.
 exists irishman.
 split.
 assumption.
@@ -104,7 +105,8 @@ exists the_nobel_prize.
 split.
 exists literature.
 assumption.
-assumption.
+exact hasWon.
+exact c0.
 Qed.
 
 Theorem T018a: Problem018aTrue. cbv. firstorder. Qed.
@@ -123,23 +125,38 @@ Qed.
 
 Theorem T022a: Problem022aTrue. cbv. firstorder. Abort All.
 Theorem T022a: Problem022aFalse. cbv. firstorder. Abort All.
+
 Theorem T023a: Problem023aTrue. cbv.
-destruct on_time_Adv. firstorder. Qed.
+destruct on_time_Adv. firstorder.
+exists x1.
+firstorder.
+Qed.
+
 Theorem T024a: Problem024aTrue. cbv.
 intros.
 firstorder.
-generalize H0.
+exists x0.
+split.
+assumption.
+split.
+split.
+generalize H1.
 apply le_mono_right.
 firstorder.
+firstorder.
+assumption.
 Qed. 
 
 Theorem T025a: Problem025aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
 destruct in_Prep as [inPrep inVerid inVeridCov].
-intros [[Pcard Pexist] Pc].
+
+intros [t0 [c0[[Pcard Pexist] Pc]]].
 clear Pc.
 destruct Pexist as [delegate [isDelegate [newsPaper [isNewsPaper gotIn]]]].
+exists t0.
+split. assumption.
 split.
 split.
 
@@ -198,17 +215,13 @@ Theorem T028a: Problem028aFalse. cbv.
 firstorder.
 Abort All.
 
+Require Import Coq.Program.Tactics.
+
 Theorem T029a: Problem029aTrue. cbv.
-firstorder. destruct leading_A as [leading].
-exists x.
-firstorder.
-exists x0. 
-firstorder.
-generalize H1.
-apply usedToBeCov_K.
-firstorder. 
-generalize H2.
-apply usedToBeCov_K.
+intros.
+destruct_conjs.
+exists H.
+split. assumption.
 firstorder. 
 Qed.
 
@@ -297,8 +310,10 @@ Abort All.
 
 Theorem T038a: Problem038aFalse. cbv.
 destruct on_time_Adv as [adv verid].
-firstorder.
-Qed.
+intros.
+
+(* FIXME Error: negation is not handled correctly *)
+Abort All.
 
 Theorem T039a: Problem039aTrue. cbv.
 destruct on_time_Adv as [adv verid].
@@ -313,10 +328,18 @@ Abort All.
 
 Theorem T040a: Problem040aTrue. cbv.
 destruct on_time_Adv as [adv verid].
-firstorder.
-generalize H0.
+intros.
+destruct_conjs.
+repeat eexists.
+exact H1.
+generalize H2.
 apply le_mono_right.
-(* firstorder. *)
+intros.
+destruct_conjs.
+repeat eexists.
+assumption.
+Focus 3.
+exact H12.
 Abort All.
 
 Theorem T040a: Problem040aFalse. cbv.
@@ -328,10 +351,16 @@ Abort All.
 Theorem T041a: Problem041aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
-firstorder.
-generalize H.
+intros.
+destruct_conjs.
+exists H.
+split. assumption.
+split.
+split.
+generalize H1.
 apply le_mono_right.
-firstorder.
+intros.
+destruct_conjs.
 Abort All.
 
 Theorem T041a: Problem041aFalse. cbv.
@@ -398,6 +427,9 @@ firstorder.
 Qed.
 
 Theorem T049a: Problem049aTrue. cbv.
+intros.
+destruct_conjs.
+exists H.
 firstorder.
 Qed.
 
@@ -442,17 +474,29 @@ Qed.
 
 Theorem T056a: Problem056aTrue. cbv.
 firstorder.
-generalize H0.
+exists x0.
+split. assumption.
+split.
+split.
+generalize H1.
 apply le_mono_right.
 firstorder.
+firstorder.
+tauto.
 Qed. (* See note in the xml *)
 
 Theorem T057a: Problem057aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
-firstorder.
-generalize H.
+intros.
+destruct_conjs.
+exists H.
+split.
+assumption.
+repeat split.
+generalize H1.
 apply le_mono_right.
+firstorder.
 firstorder.
 Qed.
 
@@ -535,8 +579,9 @@ Abort All. (* Problem is broken *)
 Theorem T070a: Problem070aFalse. cbv.
 destruct on_time_Adv as [onTime].
 destruct scandinavian_A as [scandinavian].
-firstorder.
-Qed. (* Note: I don't understand how this could be proven in FraCoq without scandinavian_A subsective *)
+intros.
+(* FIXME Error: negation is not handled correctly *)
+Abort All.
 
 Theorem T071a: Problem071aTrue. cbv.
 destruct on_time_Adv as [onTime].
@@ -551,7 +596,6 @@ Abort All.
 Theorem T072a: Problem072aTrue. cbv.
 firstorder.
 generalize H0.
-apply le_mono_right.
 firstorder.
 Abort All.
 
@@ -564,7 +608,6 @@ destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national].
 firstorder.
 generalize H.
-apply le_mono_right.
 firstorder.
 Abort All.
 
