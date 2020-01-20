@@ -75,6 +75,7 @@ pattern FALSE :: Exp v
 pattern FALSE = Con "False"
 
 (∧) :: Exp v -> Exp v -> Exp v
+x ∧ LogicB.TRUE = x
 LogicB.TRUE ∧ y = y
 x ∧ y = Op And [x,y]
 
