@@ -217,12 +217,16 @@ Abort All.
 
 Require Import Coq.Program.Tactics.
 
+
 Theorem T029a: Problem029aTrue. cbv.
+destruct leading_A as [leading].
 intros.
 destruct_conjs.
-exists H.
-split. assumption.
-firstorder. 
+exists H. split. assumption.
+exists H1. split. assumption.
+exists H3. split. assumption.
+exists H5. split. assumption.
+intuition.
 Qed.
 
 
@@ -662,4 +666,3 @@ generalize H.
 apply le_mono_left.
 firstorder.
 Qed.
-
