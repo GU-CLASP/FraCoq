@@ -316,7 +316,7 @@ Theorem T038a: Problem038aFalse. cbv.
 destruct on_time_Adv as [adv verid].
 intros.
 
-(* FIXME Error: negation is not handled correctly *)
+(* Temporal Error: negation is not handled correctly *)
 Abort All.
 
 Theorem T039a: Problem039aTrue. cbv.
@@ -584,7 +584,7 @@ Theorem T070a: Problem070aFalse. cbv.
 destruct on_time_Adv as [onTime].
 destruct scandinavian_A as [scandinavian].
 intros.
-(* FIXME Error: negation is not handled correctly *)
+(* Temporal Error: negation is not handled correctly *)
 Abort All.
 
 Theorem T071a: Problem071aTrue. cbv.

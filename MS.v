@@ -1332,3 +1332,10 @@ Definition IS_INTERVAL := fun t0 t1 => t0 <= t1.
 
 Parameter INDEFINITE_FUTURE : Time.
 Parameter INDEFINITE_PAST : Time.
+
+Definition StativeInclusion : TProp -> Prop
+:= fun stative => forall t0 t1 t0' t1', stative t0 t1 -> t0 <= t0' -> t1' <= t1 -> stative t0' t1'.
+Definition UniqueEvent : (TProp) -> Prop
+ := fun p => forall t0 t0' , p t0 t0 -> p t0' t0' -> t0 = t0'.
+Definition UniqueActivity : (TProp) -> Prop
+ := fun p => forall t0 t0' t1 t1' , p t0 t1 -> p t0' t1' -> t0 = t0' /\ t1 = t1'.

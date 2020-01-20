@@ -1,5 +1,7 @@
+
 Load Formulas.
 
+Require Import Coq.Program.Tactics.
 
 Require Import Omega.
 
@@ -37,21 +39,15 @@ Require Import Psatz.
 Theorem T085a: Problem085aFalse.
 cbv.
 intros contract isContract.
-intros [[lawyer [isLawyer [lsigned P1]]] P2].
-rewrite -> P1.
-intros [l' [isLawyer' [lsigned' H]]].
-destruct H.
-split.
-Qed.
+intros.
+destruct_conjs.
+(* Temporal Error: bad interaction between unicity of events and group readings of quantifiers *) 
+Abort All.
 
 Theorem T086a: Problem086aFalse. cbv.
 intros contract isContract.
-intros [[lawyer [isLawyer [lsigned P1]]] P2].
-rewrite -> P1.
-intros [l' [isLawyer' [lsigned' H]]].
-destruct H.
-split.
-Qed.
+(* Temporal Error: bad interaction between unicity of events and group readings of quantifiers *) 
+Abort All.
 
 Theorem T087a: Problem087aTrue. cbv.
 firstorder.
@@ -102,16 +98,14 @@ Theorem T098a: Problem098aFalse. cbv. firstorder. Abort All.
 Transparent PN2object.
 Transparent PN2Class.
 Theorem T099a: Problem099aTrue. cbv.
-intros theSystem isSystem theDemo isDemo.
+intros theSystem isSystem.
+intros thePerf isPerf.
+intros theDemo isDemo.
 intros [P1 P2].
 lapply (P1 SMITH).
-intros [thePerf [H1 [H2 H3]]].
-exists thePerf.
-split.
-exact H1.
-split.
+intros.
+firstorder.
 exact SMITH_PERSON.
-assumption.
 firstorder.
 Qed.
 
@@ -146,13 +140,17 @@ Theorem T104a: Problem104aFalse. cbv.
 firstorder.
 Abort All.
 
+Parameter attendUnique : forall (x y : object), UniqueActivity (attend_V2 x y).
+
 Theorem T105a: Problem105aFalse. cbv.
-firstorder.
-Qed.
+intros.
+(* Temporal Error: negation is not handled correctly *)
+Abort All.
 
 Theorem T106a: Problem106aFalse. cbv.
 firstorder.
-Qed.
+(* Temporal Error: negation is not handled correctly *)
+Abort All.
 
 Theorem T107a: Problem107aTrue. cbv.
 intros theMeeting isMeeting.
@@ -178,9 +176,18 @@ firstorder.
 Abort All.
 
 Theorem T112a: Problem112aTrue. cbv.
-firstorder.
-Qed.
+intros.
+destruct_conjs.
+repeat eexists.
+Focus 3.
+exact H9.
+assumption.
+assumption.
+assumption.
+Focus 2.
+(* Temporal Error: bad interaction between unicity of events and group readings of quantifiers *) 
+Abort All.
 
 Theorem T113a: Problem113aTrue. cbv.
-firstorder.
-Qed.
+(* Temporal Error: bad interaction between unicity of events and group readings of quantifiers *) 
+Abort All.

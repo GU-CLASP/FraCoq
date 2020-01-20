@@ -23,12 +23,6 @@ Variable monthPositive : OneMonth > 0.
 Parameter past : forall t, INDEFINITE_PAST <= t.
 Variable isPast : INDEFINITE_PAST < NOW.
 
-Definition StativeInclusion : TProp -> Prop
-:= fun stative => forall t0 t1 t0' t1', stative t0 t1 -> t0 <= t0' -> t1' <= t1 -> stative t0' t1'.
-Definition UniqueEvent : (TProp) -> Prop
- := fun p => forall t0 t0' , p t0 t0 -> p t0' t0' -> t0 = t0'.
-Definition UniqueActivity : (TProp) -> Prop
- := fun p => forall t0 t0' t1 t1' , p t0 t1 -> p t0' t1' -> t0 = t0' /\ t1 = t1'.
 
 Parameter inStative : forall loc x, StativeInclusion (_BE_in loc x).
 Definition inParisStative := inStative (loc := (PN2object paris_PN)).
