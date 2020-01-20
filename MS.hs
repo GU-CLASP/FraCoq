@@ -899,7 +899,7 @@ conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
 -- VV
 
 timingVVs :: [String]
-timingVVs = ["start_VV", "finish_VV"]
+timingVVs = ["start_VV", "finish_VV", "use_VV"]
 
 lexemeVV :: String -> VV
 lexemeVV "do_VV" = return $ \vp x -> vp x -- "do" has a special meaning (ie. none); this is important to be able to lookup events.

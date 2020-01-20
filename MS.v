@@ -568,6 +568,8 @@ Definition impressed_by_A2 : A2 :=
 
 
 Definition VVT := (Time -> Time -> VP) -> object -> TProp.
+Definition use_VVTiming : VVT := fun tvp => fun x => fun t0 t1 => tvp t0 t1 x.
+(* "use_VV" as in the idiom "used to be"; see FraCas 029. We take t0,t1 as the bounds because "used to" is already a past and an activity. *)
 Definition finish_VVTiming : VVT := fun tvp => fun x => fun t0 t1 => exists t0', exists t1', t0 <= t1' <= t1 /\ tvp t0' t1' x.
 Definition start_VVTiming  : VVT := fun tvp => fun x => fun t0 t1 => exists t1', tvp t0 t1' x. (* FIXME, maybe *)
 

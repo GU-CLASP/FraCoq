@@ -470,6 +470,7 @@ verbAspect "write_V2" = Activity
 verbAspect "_BE_in" = Activity
 verbAspect "live_Vin" = Activity
 verbAspect "run_V2" = Activity
+verbAspect "use_VVTiming" = Activity
 verbAspect "discover_V2" = Activity -- treated as such in FraCas 291
 verbAspect "_BE_" = Activity -- mostly used for "it is now date"
 verbAspect "finish_VVTiming" = Activity -- Because we can finish "within" an interval, see Coq code.
