@@ -3,6 +3,11 @@
 - Add a time parameter to verbs.
 - Quantify over time intervals
 
+** TODO Handling negation
+ATM we handle negation by simply negating at the level of
+propositions. This does not work for our temporal analysis, (See 038) but it
+already did not work for quantifiers with narrow scoping. (But Fracas
+does not test this combination !?)
 ** Scoping of quantification on time intervals
 Note that we introduce the quantification at the level of the
 predicate, not at the level of the lexical item.

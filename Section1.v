@@ -2,7 +2,7 @@ Load Formulas.
 
 Theorem T001a: Problem001aTrue. cbv.
 intros.
-(* Must do something about tense and relative clauses. *)
+(* Temporal Error: Must do something about tense and relative clauses. *)
 Abort All.
 
 Theorem T002a: Problem002aTrue.
