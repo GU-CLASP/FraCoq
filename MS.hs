@@ -437,9 +437,9 @@ lexemeAdv "yesterday_Adv" = return $ usingTime (exactInterval (timePoint $ Con "
 
 lexemeAdv adv | "since" `isPrefixOf` adv = 
   let year = take 4 $ drop 6 $ adv
-      tStart = Con ("Date_" ++ year ++ "0101")
-      tStop = Con "NOW" -- "INDEFINITE_FUTURE"
-  in return $ usingTime $ exactInterval (tStart, tStop)
+      startBound = (Ultra,Con ("Date_" ++ year ++ "0101"))
+      stopBound = (Equal,Con "NOW") -- "INDEFINITE_FUTURE"
+  in return $ usingTime $ Temporal{durationBound=freeDuration,..}
 lexemeAdv "never_AdV" = do
   t <- getFresh
   t' <- getFresh
@@ -844,7 +844,7 @@ compAP ap = do
 compNP :: NP -> Comp
 compNP np = do
   np' <- interpNP np Other
-  f <- mkRel2 "EQUAL"
+  f <- mkRel2 "EQUAL'"
   return $ \_xClass x extraObjs -> (np' (\y -> (f x y))) extraObjs
 
 (===) :: Exp -> Exp -> Exp
@@ -854,10 +854,11 @@ x === y = mkRel2' "EQUAL" x y emptyObjs
 compAdv :: Adv -> Comp
 compAdv adv = do
   adv' <- adv
-  return $ \_xClass x extraObjs -> adv' (beVerb x) extraObjs
+  be' <- beVerb
+  return $ \_xClass x extraObjs -> adv' (be' x) extraObjs
 
-beVerb :: VP'
-beVerb y = appArgs'' "_BE_" [y]
+beVerb :: VP
+beVerb = mkPred "_BE_"
 
 
 ---------------------------
@@ -887,15 +888,17 @@ timingVVs = ["start_VV", "finish_VV", "use_VV"]
 
 lexemeVV :: String -> VV
 lexemeVV "do_VV" = return $ \vp x -> vp x -- "do" has a special meaning (ie. none); this is important to be able to lookup events.
-lexemeVV vv
-  | vv `elem` timingVVs
-  = return $ \vp x ->
-      appArgs'' (vv++"Timing") [lam $ \t0 -> -- This allows the VV to modify timing information for its arguments.
-                                      -- Could be made the general case.
-                                      lam $ \t1 ->
-                                      lam (\subj -> fst $ vp subj emptyObjs {extraTime = exactInterval (t0,t1)}),
-                                    x]
-lexemeVV vv = return $ \vp x -> appArgs'' vv [lam (\subj -> noExtraObjs (vp subj) ), x]
+lexemeVV vv | vv `elem` timingVVs
+  = do f <- appArgs (vv++"Timing")
+       return $ \vp x ->
+         f [lam $ \t0 -> -- This allows the VV to modify timing information for its arguments.
+                    -- Could be made the general case.
+                    lam $ \t1 ->
+                            lam (\subj -> fst $ vp subj emptyObjs {extraTime = exactInterval (t0,t1)}),
+             x]
+lexemeVV vv = do
+  f <- appArgs vv
+  return $ \vp x -> f [lam (\subj -> noExtraObjs (vp subj) ), x]
 
 
 
@@ -1034,7 +1037,8 @@ impersCl vp = do
 existNP :: NP -> Cl
 existNP np = do
   np' <- interpNP np Other
-  return $ (np' beVerb)
+  be' <- beVerb
+  return (np' be')
 
 predVP :: NP -> VP -> Cl
 predVP np vp = withClause $ do
@@ -1045,9 +1049,11 @@ predVP np vp = withClause $ do
   tense <- asks envTense
   let tt = \temp -> case tense of
         t | t `elem` [Past, PresentPerfect, PastPerfect] ->
-            let b0 = (Free,Con "UNDEFINED_PAST")
+            let b0 = (Free,Con "INDEFINITE_PAST")
                 b1 = (Inequal,fst (temporalSpan temp))
-            in  Temporal{startBound=b0,stopBound=b1,durationBound=(Free,Con"FREE")}
+            in if temp == now
+               then Temporal{startBound=b0,stopBound=b1,durationBound=freeDuration}
+               else temp -- we already have something from an adverb; use that.
         _ -> temp
       p'' = modifyTime tt p'
   modify (pushS (predVP np vp))
@@ -1696,7 +1702,7 @@ genNPAll np _number (cn',_gender) _role = do
              in (Forall x (possess y (Var x) ∧ noExtraObjsCN'' cn' (Var x)) p,t))
 
 possess :: Object -> Object -> Prop
-possess x y = mkRel2' "have_V2" y x emptyObjs -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
+possess x y = mkRel2' "HAVE" y x emptyObjs -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
 the_other_Q' :: Quant'
 the_other_Q' _number _cn _role = return $ \vp eos -> (apps (Con "theOtherQ") [lam $ \x -> fst (vp x eos)],nowSpan) -- FIXME: get the time from the right place

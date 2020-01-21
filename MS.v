@@ -1009,7 +1009,8 @@ Parameter finish_V2 : V2 .
 Parameter found_V2 : V2 .
 Parameter get_V2 : V2 .
 Parameter hate_V2 : V2 .
-Parameter have_V2 : V2 .
+Parameter HAVE : object -> object -> Prop.
+Definition have_V2 : V2 := fun x y t1 t2 => HAVE x y.
 Parameter hurt_V2 : V2 .
 Parameter last_V2 : V2 .
 Parameter leave_V2 : V2 .
@@ -1172,7 +1173,8 @@ Definition QQ := CN -> VP -> Prop.
 Definition FEWQ  := fun cn => fun vp => (CARD (fun x => cn x /\ vp x) <= A_FEW).
 Definition AFEWQ  := fun cn => fun vp => A_FEW <= (CARD (fun x => cn x /\ vp x) ) /\ exists x, cn x /\ vp x.
 
-Definition EQUAL : object -> object -> TProp := fun x y start stop => x = y.
+Definition EQUAL : object -> object -> Prop := fun x y => x = y.
+Definition EQUAL' : object -> object -> TProp := fun x y start stop => EQUAL x y.
 Definition MOSTQ := fun cn => fun vp => CARD_MOST cn <= CARD (fun x => cn x /\ vp x)  /\ exists x, cn x /\ vp x.
 Definition MANYQ := fun cn => fun vp => (MANY <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.
 Definition LOTSQ := fun cn => fun vp => (LOTS_OF <= CARD (fun x => cn x /\ vp x))  /\ exists x, cn x /\ vp x.

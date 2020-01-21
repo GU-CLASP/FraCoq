@@ -93,19 +93,19 @@ onS' :: (Prop -> Prop) -> S' -> S'
 onS' f s extra = first f (s extra)
   -- f (p eos)
 
-data BoundKind = Inequal | Equal | Free
+data BoundKind = Inequal | Equal | Free | Ultra deriving Eq
 type TimeBound = (BoundKind,Exp)
 type TimeSpan = (Exp,Exp)
 data Temporal = Temporal { startBound, stopBound :: TimeBound
-                         , durationBound :: TimeBound }
+                         , durationBound :: TimeBound } deriving Eq
 
 exactInterval :: TimeSpan -> Temporal
 exactInterval (t0,t1) = Temporal {startBound = (Equal,t0),
                                   stopBound = (Equal,t1),
-                                  durationBound = (Free,Con "Free")
+                                  durationBound = freeDuration
                                  }
   -- ExactInterval TimeSpan | InInterval TimeSpan{- | ConstrainedInterval (TimeSpan -> Prop)-}  deriving Show
-
+freeDuration = (Free,Con "Free")
 temporalSpan :: Temporal -> TimeSpan
 temporalSpan Temporal{..} = (snd startBound, snd stopBound)
 
@@ -483,8 +483,6 @@ verbAspect "_BE_" = Activity -- mostly used for "it is now date"
 verbAspect "finish_VVTiming" = Activity -- Because we can finish "within" an interval, see Coq code.
 verbAspect _ = Achievement
 
-appArgs'' nm objs eos = (appArgs' id nm objs eos,temporalSpan(extraTime eos))
-
 appArgs' :: (Exp -> Exp) -> String -> [Object] -> S''
 appArgs' modifier nm objs@(_:_) (ExtraArgs {..}) =  extraAdvs (app (pAdverbs (modifier prep'd))) subject
   where prep'd = Con nmPrep `apps` (map snd prepositions ++ indirectObjects)
@@ -521,14 +519,17 @@ quantInterval :: (Var -> Exp -> Exp -> Exp) -> Var -> Var -> Temporal -> Exp -> 
 quantInterval q x0 x1 Temporal{startBound = (b0,t0), stopBound = (b1,t1), durationBound = (db,dt)} body =
   ((t0',t1'),q0 (q1 body))
   where [x0',x1'] = map Var [x0,x1]
-        k0 = case b0 of Inequal -> isInterval t0 x0';_->true -- constraint on the interval start
+        k0 = case b0 of
+          Inequal -> isInterval t0 x0'
+          Ultra -> isInterval x0' t0
+          _->true -- constraint on the interval start
         k1 = case b1 of Inequal -> isInterval x1' t1;_->true -- constraint on the interval end
-        (t0',q0) = case b0 of Equal -> (t0,id); _ -> (x0',q x0 k0) -- start quantifier/value
+        (t0',q0) = case b0 of Equal -> (t0,id); _ -> (x0',q x0 (TimeDomain k0)) -- start quantifier/value
         (t1',q1) = case b1 of -- end quantifier/value
                      Equal -> (t1,id)
                      _ -> case db of
                        Equal -> (t0 `plusTime` dt,id)
-                       _ -> (x1',q x1 (k1 ∧ iCond))
+                       _ -> (x1',q x1 (TimeDomain (k1 ∧ iCond)))
         iCond = case db of
               Free -> isInterval t0' t1'
               Inequal -> isInterval (t0' `plusTime` dt) t1'
