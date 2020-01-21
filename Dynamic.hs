@@ -14,15 +14,15 @@ module Dynamic where
 import Prelude hiding (pred,Num)
 import Control.Monad.State hiding (ap)
 import Control.Monad.Reader hiding (ap)
-import Control.Monad.Fail hiding (ap)
+import Control.Monad.Fail
 import Logic hiding (Pol)
 import LogicB ()
 import qualified Logic
-import Data.List (intersect,partition,nubBy,sortBy,find,nub,intersperse,intercalate)
+import Data.List (intersect,partition,nubBy,sortBy,find)
 import Control.Monad.Logic hiding (ap)
 import Control.Applicative
 import Data.Function (on)
-import Data.Maybe (catMaybes)
+-- import Data.Maybe (catMaybes)
 import Data.Foldable (asum)
 type Object = Exp
 type Prop = Exp
@@ -93,33 +93,40 @@ onS' :: (Prop -> Prop) -> S' -> S'
 onS' f s extra = first f (s extra)
   -- f (p eos)
 
+data BoundKind = Inequal | Equal | Free
+type TimeBound = (BoundKind,Exp)
 type TimeSpan = (Exp,Exp)
-data Temporal = ForceTime TimeSpan | ExactTime TimeSpan | UnspecifiedTime {-  TenseTime Temporal-} deriving Show
+data Temporal = Temporal { startBound, stopBound :: TimeBound
+                         , durationBound :: TimeBound }
+
+exactInterval :: TimeSpan -> Temporal
+exactInterval (t0,t1) = Temporal {startBound = (Equal,t0),
+                                  stopBound = (Equal,t1),
+                                  durationBound = (Free,Con "Free")
+                                 }
+  -- ExactInterval TimeSpan | InInterval TimeSpan{- | ConstrainedInterval (TimeSpan -> Prop)-}  deriving Show
+
+temporalSpan :: Temporal -> TimeSpan
+temporalSpan Temporal{..} = (snd startBound, snd stopBound)
+
+timePoint :: b -> (b, b)
+timePoint x = (x,x)
 
 now :: Temporal
-now = ExactTime (Con "NOW", Con "NOW")
+now = exactInterval nowSpan
 
-instance Semigroup Temporal where
-  ForceTime t <> _ = ForceTime t
-  _ <> ForceTime t = ForceTime t
-  UnspecifiedTime <> x = x
-  x <> UnspecifiedTime = x
-  -- TenseTime _ <> x = x -- time specification given by tense, this is overridden by specific times.
-  -- x <> TenseTime _ = x
-  x <> y = error ("`mappend Temporal:" ++ show x ++ " <> " ++ show y)
-instance Monoid Temporal where
-  mempty = UnspecifiedTime
+nowSpan :: TimeSpan
+nowSpan = (Con "NOW", Con "NOW")
 
 data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
                            , extraAdvs :: (Object -> Prop) -> Object -> Prop -- adverbs
                            , extraCompClass :: Optional CN''
                            , extraTime :: Temporal
-                           , extraDuration :: Optional Exp
                            }
 
 type S'' = ExtraArgs -> Prop
 type Cl' = S'
-type S' = ExtraArgs -> (Prop,Temporal)
+type S' = ExtraArgs -> (Prop,TimeSpan)
 type S = Dynamic S'
 type V2 = Dynamic (Object -> Object -> S') --  Object first, subject second.
 type V3 = Dynamic (Object -> Object -> Object -> S')
@@ -270,6 +277,7 @@ getQuantity = do
   qs <- gets quantityEnv
   case qs of
     ((q,cn'):_) -> return (Nat (Var q),cn')
+    [] -> error "getQuantity: panic"
 
 -------------------------------
 -- Pushes
@@ -334,30 +342,30 @@ type Effect = Dynamic Prop
 filterKey :: Eq a => a -> [(a, b)] -> [(a, b)]
 filterKey k = filter ((/= k) . fst)
 
-mkPredT :: Bool -> String -> Object -> S'
-mkPredT timed p x extraObjs = appArgs timed p [x] extraObjs
-
-mkPred :: String -> Object -> S'
-mkPred = mkPredT True
+mkPred :: String -> Dynamic (Object -> S')
+mkPred p = do
+  f <- appArgs p
+  return (\x -> f [x])
 
 mkPred' :: String -> Object -> ExtraArgs -> Prop
-mkPred' p x extraObjs = fst (mkPredT False p x extraObjs)
+mkPred' p x = appArgs' id p [x]
 
 mkCN :: String -> [Gender] -> CN'
 mkCN p  = (mkPred' p,)
 
-mkRelT :: Bool -> String -> Object -> Object -> S'
-mkRelT timed p x y extraObjs = appArgs timed p [x,y] extraObjs
-
-mkRel2 :: String -> Object -> Object -> S'
-mkRel2 = mkRelT True
+mkRel2 :: String -> Dynamic (Object -> Object -> S')
+mkRel2 p = do
+  f <- appArgs p
+  return (\x y -> f [x,y])
 
 mkRel2' :: String -> Object -> Object -> S''
-mkRel2' p x y extraObjs = fst (mkRelT False p x y extraObjs)
+mkRel2' p x y = appArgs' id p [x,y]
 
 
-mkRel3 :: String -> Object -> Object -> Object -> S'
-mkRel3 p x y z extraObjs = appArgs True p [x,y,z] extraObjs
+mkRel3 :: String -> Dynamic (Object -> Object -> Object -> S')
+mkRel3 p = do
+  f <- appArgs p
+  return (\x y z -> f [x,y,z])
 
 constant :: String -> Exp
 constant x = Con x
@@ -379,8 +387,7 @@ getFresh = do
 -- Assumed
 
 assumedPred :: String -> Dynamic (Object -> S')
-assumedPred predName = do
-  return $ \x -> (mkPred predName x)
+assumedPred = mkPred
 
 assumedCN :: CN'
 assumedCN = mkCN "assumedCN" [Male,Female,Neutral]
@@ -389,12 +396,12 @@ assumedNum :: Num
 assumedNum = Singular
 
 assumed :: Env
-assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
+assumed = Env {vp2Env = (mkRel2 "assumedV2")
                , vpEnv = []
                -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
                -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular
                ,objEnv = []
-               ,sEnv = return (\_ -> (constant "assumedCl",now))
+               ,sEnv = return (\_ -> (constant "assumedCl",timePoint (Con "NOW")))
                ,quantityEnv = []
                ,cnEnv = []
                ,envDefinites = []
@@ -443,7 +450,7 @@ type Pron = NP
 -- Extra objects and S'
 
 emptyObjs :: ExtraArgs
-emptyObjs = ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = mempty, extraCompClass = mempty}
+emptyObjs = ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = now, extraCompClass = mempty}
 
 noExtraObjs :: S' -> Prop
 noExtraObjs f = fst $ f emptyObjs
@@ -476,18 +483,11 @@ verbAspect "_BE_" = Activity -- mostly used for "it is now date"
 verbAspect "finish_VVTiming" = Activity -- Because we can finish "within" an interval, see Coq code.
 verbAspect _ = Achievement
 
-appArgs :: Bool -> String -> [Object] -> S'
-appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'd)) subject,extraTime')
+appArgs'' nm objs eos = (appArgs' id nm objs eos,temporalSpan(extraTime eos))
+
+appArgs' :: (Exp -> Exp) -> String -> [Object] -> S''
+appArgs' modifier nm objs@(_:_) (ExtraArgs {..}) =  extraAdvs (app (pAdverbs (modifier prep'd))) subject
   where prep'd = Con nmPrep `apps` (map snd prepositions ++ indirectObjects)
-        time'd = if isTimed
-                 then Con "appTime" `apps` (tempToArgs extraTime' ++ [prep'd])
-                 else prep'd
-        extraTime' = case verbAspect nmPrep of
-          Activity -> extraTime
-          Achievement -> case extraTime of
-            ExactTime (_,t0) -> ExactTime (t0,t0)
-            ForceTime tspan -> ForceTime tspan
-            UnspecifiedTime -> UnspecifiedTime
         nmPrep = nm ++ concatMap fst prepositions
         indirectObjects = init objs
         subject = last objs
@@ -495,7 +495,47 @@ appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'
         (adverbialPrepositions,prepositions) = partition ((== "before") . fst) cleanedPrepositions
         pAdverbs x = foldr app x [Con (p ++ "_PREP") `app` arg | (p,arg) <- adverbialPrepositions]
 
+appArgs :: String -> Dynamic ([Object] -> S')
+appArgs nm  = do
+  v0 <- getFresh
+  v1 <- getFresh
+  return $ \objs (eos@ExtraArgs {..}) ->
+    let timing p = Con "appTime" `apps` ([t0,t1] ++ [p])
+        body = appArgs' timing nm objs eos
+        ((r0,r1),q) = quantInterval Exists v0 v1 extraTime body
+        (t0,t1) = case verbAspect nmPrep of
+          Activity -> (r0,r1)
+          Achievement -> (r1,r1)
+        nmPrep = nm ++ concatMap fst prepositions
+        cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) extraPreps
+        (_,prepositions) = partition ((== "before") . fst) cleanedPrepositions
+    in (q ,(t0,t1))
 
+-- normalizeTemporal (Temporal {startBound = (Equal,_), stopBound = (Equal,_), durationBound=(Equal,_)}) = error "normalizeTemporal: panic"
+-- normalizeTemporal (Temporal {startBound = (Equal,_), stopBound = (Equal,_), durationBound=(Inequal,_)}) = error "normalizeTemporal: panic"
+-- normalizeTemporal (Temporal {startBound = (_,_),     stopBound = (Equal,_), durationBound=(Equal,dt)}) =
+--   Temporal {startBound=(Equal,t1-dt), stopBound = (Equal,t1)}
+-- normalizeTemporal t = t
+  
+quantInterval :: (Var -> Exp -> Exp -> Exp) -> Var -> Var -> Temporal -> Exp -> (TimeSpan,Exp)
+quantInterval q x0 x1 Temporal{startBound = (b0,t0), stopBound = (b1,t1), durationBound = (db,dt)} body =
+  ((t0',t1'),q0 (q1 body))
+  where [x0',x1'] = map Var [x0,x1]
+        k0 = case b0 of Inequal -> isInterval t0 x0';_->true -- constraint on the interval start
+        k1 = case b1 of Inequal -> isInterval x1' t1;_->true -- constraint on the interval end
+        (t0',q0) = case b0 of Equal -> (t0,id); _ -> (x0',q x0 k0) -- start quantifier/value
+        (t1',q1) = case b1 of -- end quantifier/value
+                     Equal -> (t1,id)
+                     _ -> case db of
+                       Equal -> (t0 `plusTime` dt,id)
+                       _ -> (x1',q x1 (k1 ∧ iCond))
+        iCond = case db of
+              Free -> isInterval t0' t1'
+              Inequal -> isInterval (t0' `plusTime` dt) t1'
+              _ -> error "quantInterval: panic"
+
+plusTime :: Exp -> Exp -> Exp
+plusTime x y = Con "Plus" `apps` [x,y]
 
 appAdjArgs :: String -> [Object] -> S''
 appAdjArgs nm [cn,obj] (ExtraArgs{..}) = (extraAdvs  (\x -> apps prep'd [cn,x]) obj)
@@ -514,65 +554,72 @@ sentenceApplyAdv adv s' ExtraArgs{..} = s' ExtraArgs {extraAdvs = adv . extraAdv
 --------------------------
 -- Time
 
-forceTime :: TimeSpan -> Cl' -> Prop
-forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
--- HACK: setting the time is at the "UseCl" level, which has to set a
--- time. But we need to override it from the level above (S), so we
--- use the "ForceTime" hack.
+-- forceTime :: TimeSpan -> Cl' -> Prop
+-- forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
+-- -- HACK: setting the time is at the "UseCl" level, which has to set a
+-- -- time. But we need to override it from the level above (S), so we
+-- -- use the "ForceTime" hack.
 
-useTime :: TimeSpan -> Cl' -> S'
-useTime t s ExtraArgs{..} = s ExtraArgs{extraTime = ForceTime t,..}
+-- useTime :: TimeSpan -> Cl' -> S'
+-- useTime t s ExtraArgs{..} = s ExtraArgs{extraTime = ForceTime t,..}
 
--- | Look in envFacts for the time at which s' happened.
--- That is: Find the times t when Prop(t) happened, looking up true facts in environment.
-referenceTimesFor :: Cl' -> Dynamic [TimeSpan]
-referenceTimesFor s' = do
-  tMeta0 <- getFresh
-  tMeta1 <- getFresh
-  facts <- gets envFacts
-  let e = forceTime (Var tMeta0, Var tMeta1) s'
-  return $ map mkSpan $ catMaybes $ map (solveThe [tMeta0,tMeta1] e) facts
-  where mkSpan [t0,t1] = (t0,t1)
+-- -- | Look in envFacts for the time at which s' happened.
+-- -- That is: Find the times t when Prop(t) happened, looking up true facts in environment.
+-- referenceTimesFor :: Cl' -> Dynamic [TimeSpan]
+-- referenceTimesFor s' = do
+--   tMeta0 <- getFresh
+--   tMeta1 <- getFresh
+--   facts <- gets envFacts
+--   let e = forceTime (Var tMeta0, Var tMeta1) s'
+--   return $ map mkSpan $ catMaybes $ map (solveThe [tMeta0,tMeta1] e) facts
+--   where mkSpan [t0,t1] = (t0,t1)
 
-referenceTimeFor :: Cl' -> Dynamic TimeSpan
-referenceTimeFor s = do
-  ts <- referenceTimesFor s
-  case ts of
-    [] -> do
-      facts <- gets envFacts
-      error ("referenceTimesFor: no time for " ++ show (forceTime (Var "τ₀", Var "τ₁") s) ++ "\n facts:\n" ++ intercalate "\n" (map show facts))
-    (t:_) -> return t
+-- referenceTimeFor :: Cl' -> Dynamic TimeSpan
+-- referenceTimeFor s = do
+--   ts <- referenceTimesFor s
+--   case ts of
+--     [] -> do
+--       facts <- gets envFacts
+--       error ("referenceTimesFor: no time for " ++ show (forceTime (Var "τ₀", Var "τ₁") s) ++ "\n facts:\n" ++ intercalate "\n" (map show facts))
+--     (t:_) -> return t
 
 -- | S' shall use the given time constraint
 usingTime :: Temporal -> S' -> S'
 usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..} 
 
-temporalToLogic :: Temporal -> TimeSpan
-temporalToLogic t = case t  of
-  ExactTime e -> e
-  ForceTime e -> e
-  -- TenseTime t' -> temporalToLogic t'
-  UnspecifiedTime -> (Con "UnspecifiedTime",Con "UnspecifiedTime")
+modifyTime :: (Temporal -> Temporal) -> S' -> S'
+modifyTime f s' ExtraArgs{..} = s' ExtraArgs{extraTime = f extraTime, ..} 
 
-tempToArgs :: Temporal -> [Exp]
-tempToArgs = pairToList . temporalToLogic
+-- temporalToLogic :: Temporal -> TimeSpan
+-- temporalToLogic t = case t  of
+--   ExactTime e -> e
+--   ForceTime e -> e
+--   -- TenseTime t' -> temporalToLogic t'
+--   UnspecifiedTime -> (Con "UnspecifiedTime",Con "UnspecifiedTime")
+
+tempToArgs :: TimeSpan -> [Exp]
+tempToArgs = pairToList --  . temporalToLogic
 
 pairToList :: (t, t) -> [t]
 pairToList (x,y) = [x,y]
 
-pushFact :: Prop -> Env -> Env
-pushFact (Quant _amount _pol _var _dom body) = pushFact body -- HACK to access atom
-pushFact (p :∧ q)  = {-pushFact p . -} pushFact q  -- HACK to access atom (ATOM)
-pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
+-- pushFact :: Prop -> Env -> Env
+-- pushFact (Quant _amount _pol _var _dom body) = pushFact body -- HACK to access atom
+-- pushFact (p :∧ q)  = {-pushFact p . -} pushFact q  -- HACK to access atom (ATOM)
+-- pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
 
 withTense :: Tense -> Dynamic a -> Dynamic a
 withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}
 
-joinTime :: Temporal -> Temporal -> Temporal
+joinTime :: TimeSpan -> TimeSpan -> TimeSpan
 joinTime t1 t2 = t1 -- FIXME
 
 quantTime :: (Var -> Exp -> Exp -> Exp) -> Var -> Exp -> Exp -> Exp
 quantTime quantifier x constraint body = quantifier x (TimeDomain constraint) body
+
+isInterval :: Exp -> Exp -> Exp
+isInterval x y = Con "IS_INTERVAL" `apps` [x,y]
+
 
 afromList :: Alternative f => [a] -> f a
 afromList = asum . map pure

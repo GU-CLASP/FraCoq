@@ -34,10 +34,10 @@ genderedN2 s gender =
   do modify (pushCN2 (genderedN2 s gender))
      return (mkRel2' s,gender)
 
-pureV2 :: (Object -> Object -> S') -> V2
+pureV2 :: V2 -> V2
 pureV2 v2 = do
   modify (pushV2 (pureV2 v2))
-  return (\x y -> (v2 x y))
+  v2
 
 pureV3 :: (Object -> Object -> Object -> S') -> V3
 pureV3 v3 = do
@@ -50,11 +50,11 @@ meta :: Exp
 meta = Con "META"
 
 lexemeV :: String -> V
-lexemeV x = return $ mkPred x
+lexemeV x = mkPred x
 
 lexemeVP :: String -> VP
 lexemeVP "elliptic_VP" = elliptic_VP
-lexemeVP x = return $ mkPred x
+lexemeVP x = mkPred x
 
 class IsAdj a where
   fromAdj :: String -> a
@@ -70,19 +70,25 @@ lexemeA :: IsAdj a => String -> Dynamic a
 lexemeA a = return $ fromAdj a
 
 lexemeV3 :: String -> V3
-lexemeV3 x = return $ mkRel3 x
+lexemeV3 x = mkRel3 x
 
 lexemeV2 :: String -> V2
 lexemeV2 x = pureV2 (mkRel2 x)
 
 lexemeV2S :: String -> V2S
-lexemeV2S v2s = return $ \x s y -> mkRel3 v2s x (noExtraObjs s) y
+lexemeV2S v2s = do
+  f <- mkRel3 v2s
+  return $ \x s y -> f x (noExtraObjs s) y
 
 lexemeVS :: String -> VS
-lexemeVS vs = return $ \s x extraObjs -> mkRel2 vs (fst (s emptyObjs {extraTime = extraTime extraObjs})) x extraObjs
+lexemeVS vs = do
+  f <- mkRel2 vs
+  return $ \s x extraObjs -> f (fst (s emptyObjs {extraTime = extraTime extraObjs})) x extraObjs
 
 lexemeV2V :: String -> V2V
-lexemeV2V v2v = return $ \x vp y -> appArgs True v2v [x,lam (\z -> noExtraObjs (vp z)),y]
+lexemeV2V v2v = do
+  r <- appArgs v2v
+  return $ \x vp y -> r [x,lam (\z -> noExtraObjs (vp z)),y]
 
 pnTable :: [(String,([Gender],Num))]
 pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following; then female in 311
@@ -272,7 +278,7 @@ type A2' = Object -> (Object -> Prop) -> Object -> S'
 type A2 = Dynamic A2'
 
 lexemeA2 :: String -> A2
-lexemeA2 a = return $ \x cn y ExtraArgs{..} -> (Con a `apps` [x,lam cn,y],extraTime)
+lexemeA2 a = return $ \x cn y ExtraArgs{..} -> (Con a `apps` [x,lam cn,y],temporalSpan extraTime)
 
 --------------------
 -- AP
@@ -282,7 +288,7 @@ advAP :: AP -> Adv -> AP -- basically wrong syntax in the input. (Instead of AP 
 advAP ap adv = do
   adv' <- adv
   ap' <- ap
-  return (\cn x -> fst . adv' ((,now) . ap' cn x))
+  return (\cn x -> fst . adv' ((,nowSpan) . ap' cn x))
 
 sentAP :: AP -> SC -> AP
 sentAP ap cl = do
@@ -307,13 +313,13 @@ comparA a np = do
   GradableA a' <- a
   np' <- interpNP np Other
   return $ \cn' x -> fst . np'
-          (\ y ExtraArgs{..} -> (Con "compareGradableMore" `apps` [Con a',lam cn',x,y],extraTime))
+          (\ y ExtraArgs{..} -> (Con "compareGradableMore" `apps` [Con a',lam cn',x,y],temporalSpan extraTime))
 
 comparAsAs :: Dynamic GradableA -> NP -> AP
 comparAsAs a np = do
   GradableA a' <- a
   np' <- interpNP np Other
-  return $ \cn' x -> fst . np' (\ y ExtraArgs{..} -> (Con "compareGradableEqual" `apps` [Con a',lam cn',x,y],extraTime))
+  return $ \cn' x -> fst . np' (\ y ExtraArgs{..} -> (Con "compareGradableEqual" `apps` [Con a',lam cn',x,y],temporalSpan extraTime))
 
 -- FIXME: very questionable that this should even be in the syntax.
 useComparA_prefix :: A -> AP
@@ -327,25 +333,24 @@ useComparA_prefix a = do
 type Subj = Cl' -> Adv
 
 lexemeSubj :: String -> Subj
-lexemeSubj "until_Subj" s1 = do
-  t0 <- getFresh
-  t1 <- getFresh
-  t2 <- getFresh
-  return $ \s2 extraObjs ->
-    let (s1',_t1) = s1 extraObjs{extraTime=ExactTime (Var t1,Var t2)}
-        (s2',tspan2) = s2 extraObjs{extraTime=ExactTime (Var t0,Var t1)}
-   in (quantTime Exists t0 true $
-       quantTime Exists t1 true $
-       quantTime Exists t2 true $
-       s1' ∧ s2', tspan2)
+-- lexemeSubj "until_Subj" s1 = do
+--   t0 <- getFresh
+--   t1 <- getFresh
+--   t2 <- getFresh
+--   return $ \s2 extraObjs ->
+--     let (s1',_t1) = s1 extraObjs{extraTime=exactInterval (Var t1,Var t2)}
+--         (s2',tspan2) = s2 extraObjs{extraTime=exactInterval (Var t0,Var t1)}
+--    in (quantTime Exists t0 true $
+--        quantTime Exists t1 true $
+--        quantTime Exists t2 true $
+--        s1' ∧ s2', tspan2)
 lexemeSubj "before_Subj" s1 = timeSubj (\t1 t2 -> Con "BEFORE" `apps` (pairToList t2 ++ pairToList t1 )) s1
 lexemeSubj "since_Subj" s1 = timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t1 ++ pairToList t2)) s1
 lexemeSubj "after_Subj" s1 =  timeSubj (\t1 t2 -> Con "AFTER" `apps` (pairToList t1 ++ pairToList t2)) s1
-lexemeSubj "when_Subj" s1 = return $ \s2 extraObjs ->
-  let (s1',t1) = s1 extraObjs
-      (s2',t2) = s2 (extraObjs {extraTime = t1})
-  in (s1' ∧ s2', t2)
-  -- timeSubj  (\t1 t2 -> Con "EQUALTIME" `apps` (pairToList t2 ++ pairToList t1)) s1
+-- lexemeSubj "when_Subj" s1 = return $ \s2 extraObjs ->
+--   let (s1',t1) = s1 extraObjs
+--       (s2',t2) = s2 (extraObjs {extraTime = t1})
+--   in (s1' ∧ s2', t2)
 lexemeSubj s s1 = do
   return $ \s2 extraObjs ->
     let (s1',_) = s1 extraObjs
@@ -353,16 +358,14 @@ lexemeSubj s s1 = do
     in (Con s `apps` [s1',s2'], t2)
 
 timeSubj :: Monad m =>
-                  (TimeSpan -> TimeSpan -> Exp)
-                  -> (ExtraArgs -> (Exp, Temporal))
-                  -> m ((ExtraArgs -> (Exp, Temporal))
-                        -> ExtraArgs -> (Exp, Temporal))
+            (TimeSpan -> TimeSpan -> Exp)
+         -> S' -> m (S' -> S')
 timeSubj constraint s1 = do
   return $ \s2 extraObjs ->
-      let (s1',t1) = s1 extraObjs{extraTime=UnspecifiedTime}
+      let (s1',t1) = s1 extraObjs
           (s2',t2) = s2 extraObjs
           -- we must use "UnspecifiedTime" here so that we can use the time reference which was created at the time of *dynamic* evaluation of s1.
-      in (constraint (temporalToLogic t1) (temporalToLogic t2) ∧ s1' ∧ s2',t2)
+      in (constraint t1 t2 ∧ s1' ∧ s2',t2)
 
 --------------------
 -- AdA
@@ -383,17 +386,14 @@ type AdV = ADV
 
 lexemeAdv :: String -> Adv
 
-timePoint :: t -> (t, t)
-timePoint x = (x,x)
-
-lexemeAdv "at_a_quarter_past_five_Adv" = return $ usingTime (ExactTime (timePoint (Con "Time_1715")))
-lexemeAdv "in_july_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940701", Con "Date_19940731")) 
-lexemeAdv "on_july_4th_1994_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_19940704")))
-lexemeAdv "on_july_8th_1994_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_19940708")))
-lexemeAdv "saturday_july_14th_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_0714")))
-lexemeAdv "friday_13th_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_0713")))
-lexemeAdv "at_8_am_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Time_0800"))
-lexemeAdv "by_11_am_Adv" = return $ usingTime (ExactTime (Con "INDEFINITE_PAST",Con "Time_1100"))
+lexemeAdv "at_a_quarter_past_five_Adv" = return $ usingTime (exactInterval (timePoint (Con "Time_1715")))
+lexemeAdv "in_july_1994_Adv" = return $ usingTime (exactInterval (Con "Date_19940701", Con "Date_19940731")) 
+lexemeAdv "on_july_4th_1994_Adv" = return $ usingTime (exactInterval (timePoint (Con "Date_19940704")))
+lexemeAdv "on_july_8th_1994_Adv" = return $ usingTime (exactInterval (timePoint (Con "Date_19940708")))
+lexemeAdv "saturday_july_14th_Adv" = return $ usingTime (exactInterval (timePoint (Con "Date_0714")))
+lexemeAdv "friday_13th_Adv" = return $ usingTime (exactInterval (timePoint (Con "Date_0713")))
+lexemeAdv "at_8_am_Adv" = return $ usingTime (exactInterval (timePoint $ Con "Time_0800"))
+lexemeAdv "by_11_am_Adv" = return $ usingTime (exactInterval (Con "INDEFINITE_PAST",Con "Time_1100"))
 lexemeAdv "in_two_hours_Adv" = withExactDuration (Con "TwoHours")
 lexemeAdv "for_two_years_Adv" = withAtLeastDuration (Con "TwoYears")
 lexemeAdv "for_a_year_Adv" = withAtLeastDuration (Con "OneYear")
@@ -405,27 +405,27 @@ lexemeAdv "for_a_total_of_15_years_or_more_Adv" = withAtLeastDuration (Con "(15*
 lexemeAdv "for_exactly_a_year_Adv" = withExactDuration (Con "OneYear")
 lexemeAdv "too_Adv" = uninformativeAdv -- TODO: in coq
 lexemeAdv "also_AdV" = uninformativeAdv -- TODO: in coq
-lexemeAdv "year_1996_Adv" = return $ usingTime (ExactTime (Con "Date_19960101", Con "Date_19961231"))
+lexemeAdv "year_1996_Adv" = return $ usingTime (exactInterval (Con "Date_19960101", Con "Date_19961231"))
 lexemeAdv "in_1991_Adv" = inIntervalAdv (Con "Date_19910101") (Con "Date_19911231")
 lexemeAdv "in_1992_Adv" = inIntervalAdv (Con "Date_19920101") (Con "Date_19921231")
 lexemeAdv "in_1993_Adv" = inIntervalAdv (Con "Date_19930101") (Con "Date_19931231")
-lexemeAdv "in_1994_Adv" = return $  usingTime (ExactTime (Con "Date_19940101",Con "Date_19941231")) -- in 307 only. This interpretation is strenghened pragmatically
+lexemeAdv "in_1994_Adv" = return $  usingTime (exactInterval (Con "Date_19940101",Con "Date_19941231")) -- in 307 only. This interpretation is strenghened pragmatically
 lexemeAdv "in_march_1993_Adv" = inIntervalAdv (Con "Date_19930301") (Con "Date_19930331")
-lexemeAdv "on_the_7th_of_may_1995_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Date_19950507"))
-lexemeAdv "on_the_5th_of_may_1995_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Date_19950505"))
-lexemeAdv "the_15th_of_may_1995_Adv" = return $ usingTime (ExactTime (timePoint $ Con "Date_19950515"))
+lexemeAdv "on_the_7th_of_may_1995_Adv" = return $ usingTime (exactInterval (timePoint $ Con "Date_19950507"))
+lexemeAdv "on_the_5th_of_may_1995_Adv" = return $ usingTime (exactInterval (timePoint $ Con "Date_19950505"))
+lexemeAdv "the_15th_of_may_1995_Adv" = return $ usingTime (exactInterval (timePoint $ Con "Date_19950515"))
 lexemeAdv "still_AdV" = do
   t1 <- getFresh
   t2 <- getFresh
   return $ \s extraObjs ->
     (quantTime Forall t1 true $
       quantTime Forall t2 true $
-      (fst (s (extraObjs{extraTime=ExactTime (Var t1,Var t2)}))) -->  -- if s is true for some interval
-      (fst (s (extraObjs{extraTime=ExactTime (Var t1,Con "NOW")})))   -- then the interval can be extended to now.
-    ,ExactTime (Var t1,Con "NOW"))
+      (fst (s (extraObjs{extraTime=exactInterval (Var t1,Var t2)}))) -->  -- if s is true for some interval
+      (fst (s (extraObjs{extraTime=exactInterval (Var t1,Con "NOW")})))   -- then the interval can be extended to now.
+    ,(Var t1,Con "NOW"))
 lexemeAdv "currently_AdV" = return $ usingTime now
 lexemeAdv "already_AdV" = return $ id
-lexemeAdv "last_week_Adv" = return $ usingTime (ExactTime (timePoint $ Con "LASTWEEK"))
+lexemeAdv "last_week_Adv" = return $ usingTime (exactInterval (timePoint $ Con "LASTWEEK"))
 lexemeAdv "in_a_months_time_Adv" = return $ \s ExtraArgs{..} -> s (ExtraArgs {extraTime = plusTemporal (Con "OneMonth") extraTime,..})
 lexemeAdv "in_a_few_weeks_Adv" = do
   fewWeeks <- getFresh
@@ -433,13 +433,13 @@ lexemeAdv "in_a_few_weeks_Adv" = do
     let (p,tspan) = s (ExtraArgs {extraTime = plusTemporal (Var fewWeeks) extraTime,..})
     in (quantTime Exists fewWeeks (isInterval (Con "OneWeek") (Var fewWeeks) ∧ isInterval (Var fewWeeks) (Con "FiveWeeks")) p,tspan)
 
-lexemeAdv "yesterday_Adv" = return $ usingTime (ExactTime (timePoint $ Con "YESTERDAY"))
+lexemeAdv "yesterday_Adv" = return $ usingTime (exactInterval (timePoint $ Con "YESTERDAY"))
 
 lexemeAdv adv | "since" `isPrefixOf` adv = 
   let year = take 4 $ drop 6 $ adv
       tStart = Con ("Date_" ++ year ++ "0101")
       tStop = Con "NOW" -- "INDEFINITE_FUTURE"
-  in return $ usingTime $ ExactTime (tStart, tStop)
+  in return $ usingTime $ exactInterval (tStart, tStop)
 lexemeAdv "never_AdV" = do
   t <- getFresh
   t' <- getFresh
@@ -451,65 +451,47 @@ lexemeAdv "always_AdV" = do
   return $ withTimeQuant Forall (t,t') (const TRUE) id
 lexemeAdv "every_month_Adv" = do
   t1 <- getFresh
-  let tSpan = ExactTime (Var t1, Con "Plus" `apps` [Var t1,Con "OneMonth"])
+  let tSpan = (Var t1, Con "Plus" `apps` [Var t1,Con "OneMonth"])
   return $ \s extraObjs ->
-    (quantTime Forall t1 (tSpan `inInterval` extraTime extraObjs) $
-      (fst (s (extraObjs{extraTime=tSpan}))),tSpan)
+    (quantTime Forall t1 (tSpan `includedIn` temporalSpan(extraTime extraObjs)) $
+      (fst (s (extraObjs{extraTime=exactInterval tSpan}))),tSpan)
 lexemeAdv adv = return $ sentenceApplyAdv (appAdverb adv)
 
 plusTemporal :: Exp -> Temporal -> Temporal
-plusTemporal delta UnspecifiedTime = plusTemporal delta now
-plusTemporal delta (ExactTime (t1,t2)) = ExactTime (Con "Plus" `apps` [t1,delta],Con "Plus" `apps` [t2,delta])
+plusTemporal delta Temporal {startBound=(b0,t0),stopBound=(b1,t1),..}
+  = Temporal {startBound = (b0,plusTime t0 delta),stopBound =  (b1,plusTime t1 delta) ,..}
 
 withAtLeastDuration :: Exp -> Dynamic (S' -> S')
 withAtLeastDuration delta = do -- with duration meaning, as in FraCas 278
-  t1 <- getFresh
-  t2 <- getFresh
-  let tSpan = ExactTime (Var t1, Var t2)
-  return (\s extraObjs ->
-           let (p,actualSpan) = s extraObjs {extraTime = tSpan}
-           in (quantTime Exists t1 true $
-               quantTime Exists t2 ((Con "IS_INTERVAL" `apps` [intervalStart (actualSpan),intervalStart (extraTime extraObjs)])
-                                ∧
-                                -- it may finish later, see Fracas 304
-                                -- we constraint the returned time, so that we have a stronger interpretation of achievements (see Fracas 306)
-                                 (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2])) $
-               p, tSpan))
+  return (modifyTime (\Temporal{..} -> Temporal{durationBound=(Inequal,delta),..}))
 
-isInterval :: Exp -> Exp -> Exp
-isInterval x y = Con "IS_INTERVAL" `apps` [x,y]
 
-withExactDuration :: Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
-withExactDuration delta = do -- as in FraCas 278
-  t <- getFresh
-  let tSpan = ExactTime (Var t, Con "Plus" `apps` [Var t,delta])
-  return (\s extraObjs ->
-           (quantTime Exists t (tSpan `inInterval` extraTime extraObjs) $ fst $ s extraObjs {extraTime = tSpan}, tSpan))
+withExactDuration :: Exp -> Dynamic (S' -> S')
+withExactDuration delta = return (modifyTime (\Temporal{..} -> Temporal{durationBound=(Equal,delta),..}))
 
-intervalStart UnspecifiedTime = Con "NOW"
-intervalStart (ExactTime (a,b)) = a
+  -- do -- as in FraCas 278
+  -- t <- getFresh
+  -- let tSpan = exactInterval (Var t, Con "Plus" `apps` [Var t,delta])
+  -- return (\s extraObjs ->
+  --          (quantTime Exists t (tSpan `inInterval` extraTime extraObjs) $ fst $ s extraObjs {extraTime = tSpan}, tSpan))
 
-inInterval :: Temporal -> Temporal -> Exp
-UnspecifiedTime `inInterval` _ = true
-_ `inInterval` UnspecifiedTime = true
-ExactTime s' `inInterval` ExactTime s = s' `includedIn` s
+-- intervalStart UnspecifiedTime = Con "NOW"
+-- intervalStart (exactInterval (a,b)) = a
+
 
 includedIn :: (Exp, Exp) -> (Exp, Exp) -> Exp
 (t0',t1') `includedIn` (t0,t1) = isInterval t0 t0' ∧ isInterval t1' t1
 
-inIntervalAdv :: Exp -> Exp -> Dynamic ((ExtraArgs -> (Exp, b)) -> ExtraArgs -> (Exp, Temporal))
-inIntervalAdv tStart tStop = do
-  t1 <- getFresh
-  t2 <- getFresh
-  return $ withTimeQuant Exists (t1,t2) (\(t1',t2') -> (t1',t2') `includedIn` (tStart,tStop)) id
+inIntervalAdv :: Exp -> Exp -> Dynamic (S' -> S')
+inIntervalAdv tStart tStop = return (modifyTime (\Temporal{..} -> Temporal{startBound=(Inequal,tStart),stopBound=(Inequal,tStop),..})) 
 
 
-withTimeQuant :: (Var -> Exp -> Exp -> Exp) -> (String,String) -> (TimeSpan -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, Temporal)
+withTimeQuant :: (Var -> Exp -> Exp -> Exp) -> (String,String) -> (TimeSpan -> Exp) -> (t -> Exp) -> (ExtraArgs -> (t, b)) -> ExtraArgs -> (Exp, TimeSpan)
 withTimeQuant quantifier (t1,t2) constr f
   = \s extraObjs -> (quantTime quantifier t1 (true) $
                      quantTime quantifier t2 (constr (Var t1, Var t2) ∧ (isInterval (Var t1) (Var t2))) $
-                      f (fst (s (extraObjs{extraTime=t'}))),t')
-  where t' = ExactTime (Var t1, Var t2)
+                      f (fst (s (extraObjs{extraTime=exactInterval t'}))),t')
+  where t' = (Var t1, Var t2)
   
 
 appAdverb :: String -> (Object -> Prop) -> (Object -> Prop)
@@ -569,7 +551,7 @@ advCN :: CN -> Adv -> CN
 advCN cn adv = do
   (cn',gender) <- cn
   adv' <- adv
-  return (\x eos -> fst $ adv' ((,extraTime eos) . cn' x) eos ,gender) -- FIXME: lift cn
+  return (\x eos -> fst $ adv' ((,temporalSpan (extraTime eos)) . cn' x) eos ,gender) -- FIXME: lift cn
 
 
 adjCN :: A -> CN -> CN
@@ -590,7 +572,7 @@ complN2 :: N2 -> NP -> CN
 complN2 n2 np = do
   (n2',gender) <- n2
   np' <- interpNP np Other
-  return (\y -> fst . (np' $ \x eos -> (n2' y x eos,now)), gender)
+  return (\y -> fst . (np' $ \x eos -> (n2' y x eos,nowSpan)), gender)
 
 sentCN :: CN -> SC -> CN
 sentCN cn sc = do
@@ -660,7 +642,7 @@ advNP np adv = do
   adv' <- adv
   return $ MkNP pre num1
            (ObliviousQuant $ \num' (cn',gender) role -> do
-               p1 <- evalQuant pre q1 num' (\x eos -> fst (adv' (\eos' -> (cn' x eos',now)) eos),gender) role -- Yargh; use relaxAdv
+               p1 <- evalQuant pre q1 num' (\x eos -> fst (adv' (\eos' -> (cn' x eos',nowSpan)) eos),gender) role -- Yargh; use relaxAdv
                return $ \vp -> p1 vp) 
            cn1 gender1
 
@@ -852,20 +834,21 @@ useComp c = do
 compCN :: CN -> Comp
 compCN cn = do
   (cn',_gender) <- cn
-  return (\_xClass x extraObjs ->  (cn' x extraObjs,extraTime extraObjs))
+  return (\_xClass x extraObjs ->  (cn' x extraObjs,temporalSpan(extraTime extraObjs)))
 
 compAP :: AP -> Comp
 compAP ap = do
   a' <- ap
-  return $ \xClass x extraObjs -> ((a' xClass x) extraObjs,extraTime extraObjs)
+  return $ \xClass x extraObjs -> ((a' xClass x) extraObjs,temporalSpan(extraTime extraObjs))
 
 compNP :: NP -> Comp
 compNP np = do
   np' <- interpNP np Other
-  return $ \_xClass x extraObjs -> (np' (\y -> (mkRel2 "EQUAL" x y))) extraObjs
+  f <- mkRel2 "EQUAL"
+  return $ \_xClass x extraObjs -> (np' (\y -> (f x y))) extraObjs
 
 (===) :: Exp -> Exp -> Exp
-x === y = noExtraObjs (mkRel2 "EQUAL" x y)
+x === y = mkRel2' "EQUAL" x y emptyObjs
 
 
 compAdv :: Adv -> Comp
@@ -874,7 +857,8 @@ compAdv adv = do
   return $ \_xClass x extraObjs -> adv' (beVerb x) extraObjs
 
 beVerb :: VP'
-beVerb y = appArgs True "_BE_" [y]
+beVerb y = appArgs'' "_BE_" [y]
+
 
 ---------------------------
 -- V2
@@ -906,12 +890,12 @@ lexemeVV "do_VV" = return $ \vp x -> vp x -- "do" has a special meaning (ie. non
 lexemeVV vv
   | vv `elem` timingVVs
   = return $ \vp x ->
-      appArgs True (vv++"Timing") [lam $ \t0 -> -- This allows the VV to modify timing information for its arguments.
+      appArgs'' (vv++"Timing") [lam $ \t0 -> -- This allows the VV to modify timing information for its arguments.
                                       -- Could be made the general case.
                                       lam $ \t1 ->
-                                      lam (\subj -> fst $ vp subj emptyObjs {extraTime = ExactTime (t0,t1)}),
+                                      lam (\subj -> fst $ vp subj emptyObjs {extraTime = exactInterval (t0,t1)}),
                                     x]
-lexemeVV vv = return $ \vp x -> appArgs True vv [lam (\subj -> noExtraObjs (vp subj) ), x]
+lexemeVV vv = return $ \vp x -> appArgs'' vv [lam (\subj -> noExtraObjs (vp subj) ), x]
 
 
 
@@ -1059,39 +1043,18 @@ predVP np vp = withClause $ do
   vp' <- vp
   let p' = np' vp'
   tense <- asks envTense
-  p'' <- case tense of
-    t | t `elem` [Past, PresentPerfect, PastPerfect] -> do
-      ts <- referenceTimesFor p' -- (1)
-      -- fixme: this should happen at a lower level (lexical
-      -- item). But we do not have dynamic access to arguments at that
-      -- level at the moment so this will do temporarily.
-      -- Why? Because events could refer to occurences inside a quantifier:
-      -- Example "every boy climbed and fell after they climbed." (ATOM)
-      case ts of
-         [] -> -- not a reference to a previous event.
-           do -- Allocate own time.
-              t1 <- getFresh
-              t2 <- getFresh
-              return $ \e@ExtraArgs{..} ->
-                  case extraTime of
-                    UnspecifiedTime -> modP (quantTime Exists t2 (Con "PAST" `app` Var t2) .
-                                             quantTime Exists t1 (Con "IS_INTERVAL" `apps` [Var t1,Var t2]))
-                                            (usingTime (ExactTime $ (Var t1,Var t2)) p' e)
-                      -- (b) We do not have a specified time
-                      -- Use own time. This time MUST be overridable by (2), otherwise we'll never
-                      -- be able to override it, to search for it when we reach
-                      -- point (1) at a later occurence of the same event.
-                    _ -> p' e -- (a) We have a specified time already, e.g coming from an adverbial phrase. Change nothing
-         (t:_) -> return (usingTime (ForceTime t) p')  -- (2)
-    _ -> return p' -- no specific time info, leave as such. This is important because the time may come from an adverbial phrase.
-  modify (pushFact $ noExtraObjs p'')
+  let tt = \temp -> case tense of
+        t | t `elem` [Past, PresentPerfect, PastPerfect] ->
+            let b0 = (Free,Con "UNDEFINED_PAST")
+                b1 = (Inequal,fst (temporalSpan temp))
+            in  Temporal{startBound=b0,stopBound=b1,durationBound=(Free,Con"FREE")}
+        _ -> temp
+      p'' = modifyTime tt p'
   modify (pushS (predVP np vp))
   return $ usingCompClass cn p''
 
 questCl :: Cl -> Cl
 questCl = id
-
-modP f (p,t) = (f p, t)
 
 soDoI :: NP -> Cl
 soDoI np = predVP np doesTooVP
@@ -1315,7 +1278,7 @@ pNounphrase = PNounPhrase
 phrToS :: Phr -> Dynamic S'
 phrToS p = case p of
   Sentence s -> s
-  _ -> return $ \_ -> (TRUE,now)
+  _ -> return $ \_ -> (TRUE,nowSpan)
 
 phrToEff :: Phr -> Effect
 phrToEff p = (fst . ($ emptyObjs)) <$> phrToS p
@@ -1504,7 +1467,8 @@ type VQ = QS -> VP
 know_VQ :: VQ
 know_VQ qs = do
   qs' <- qs
-  return $ mkRel2 "knowVQ" (noExtraObjs $ qs') -- stop prepositions from propagating: TODO: other VVs  (say, etc.)
+  f <- mkRel2 "knowVQ"
+  return $ f (noExtraObjs $ qs') -- stop prepositions from propagating: TODO: other VVs  (say, etc.)
 
 ------------------
 -- Additional combinators
@@ -1719,7 +1683,7 @@ genNPDef :: NP -> Quant'
 genNPDef np _number (cn',gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
   let theirCN :: CN''
-      theirCN x = fst . (them $ \y eos -> (possess y x ∧ noExtraObjsCN'' cn' x,extraTime eos))
+      theirCN x = fst . (them $ \y eos -> (possess y x ∧ noExtraObjsCN'' cn' x,temporalSpan (extraTime eos)))
   it <- getDefinite (theirCN,gender)
   return (\vp' -> vp' it)
 
@@ -1732,10 +1696,10 @@ genNPAll np _number (cn',_gender) _role = do
              in (Forall x (possess y (Var x) ∧ noExtraObjsCN'' cn' (Var x)) p,t))
 
 possess :: Object -> Object -> Prop
-possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
+possess x y = mkRel2' "have_V2" y x emptyObjs -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
 
 the_other_Q' :: Quant'
-the_other_Q' _number _cn _role = return $ \vp eos -> (apps (Con "theOtherQ") [lam $ \x -> fst (vp x eos)],now) -- FIXME: get the time from the right place
+the_other_Q' _number _cn _role = return $ \vp eos -> (apps (Con "theOtherQ") [lam $ \x -> fst (vp x eos)],nowSpan) -- FIXME: get the time from the right place
 
 exactlyQuant' :: Nat -> (CN'', [Gender]) -> Role -> Dynamic NP'
 exactlyQuant' n' (cn',gender) role = do

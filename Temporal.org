@@ -1,4 +1,7 @@
 
+
+
+** Basic idea
 - Add a time parameter to verbs.
 
 (leave t0 smith)
