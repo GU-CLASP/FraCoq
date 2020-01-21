@@ -28,16 +28,18 @@ apply mary_PN_Female.
 destruct mkPN. exact c. Qed.
 
 
-Theorem T117: Problem117aTrue. cbv.
-
-exists x.
-
-elim H. intros. apply H. exact H1. Qed. 
+Theorem T117: Problem117aTrue.
+(* Temporal error: does not work due to the change of meaning for possessives for Fracas 278.
+   (For 278 we need a global fixed thing; for 117 we need local quantification)
+   Perhaps we could have both meanings?
+*)
+Abort All.
 
 Theorem T118a: Problem118aTrue.
 cbv.
 firstorder.
-Qed.
+(* Temporal Error: see 117 *)
+Abort All.
 
 Transparent PN2object.
 Theorem T119a: Problem119aTrue.
@@ -47,15 +49,8 @@ Abort All.
 
 Theorem T119a: Problem119aFalse.
 cbv.
-intros [P1 P2].
-intros [ws H].
-apply P1 with MARY.
-assumption.
-exists ws.
-split.
-split.
+(* Temporal Error: see 117 *)
 Abort All.
-Opaque PN2object.
 
 Theorem T120a: Problem120aTrue.
 cbv.
@@ -64,8 +59,8 @@ Qed.
 
 Theorem T121a: Problem121aTrue.
 cbv.
-firstorder.
-Qed.
+(* Temporal error: the group reading shoud commute with interpretation of past tense --- but does not *)
+Abort All.
 
 Theorem T122a: Problem122aTrue.
 cbv.
