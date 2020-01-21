@@ -1,7 +1,15 @@
+** Basic Idea
 
 - Add a time parameter to verbs.
+- Quantify over time intervals
 
-(leave t0 smith)
+** Scoping of quantification on time intervals
+Note that we introduce the quantification at the level of the
+predicate, not at the level of the lexical item.
+
+This is necessary to have the "repeatability of accomplishments"
+properties (see below and examples in Fracas).
+
 
 ** Transitivity of "before"
 
