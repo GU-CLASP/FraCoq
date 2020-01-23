@@ -23,11 +23,8 @@ Variable monthPositive : OneMonth > 0.
 Parameter past : forall t, INDEFINITE_PAST <= t.
 Variable isPast : INDEFINITE_PAST < NOW.
 
-
-Parameter inStative : forall loc x, StativeInclusion (_BE_in loc x).
 Definition inParisStative := inStative (loc := (PN2object paris_PN)).
 Definition inBirminghamStative := inStative (loc := BIRMINGHAM).
-Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 
 Require Import Psatz.
 Parameter DiscoverCovariant_K : forall (p q : S), forall (t t':Time), forall s, (q -> p) -> discover_VS q s t t' -> discover_VS p s t t'.

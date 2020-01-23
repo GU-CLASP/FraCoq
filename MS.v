@@ -1339,3 +1339,8 @@ Definition UniqueEvent : (TProp) -> Prop
  := fun p => forall t0 t0' , p t0 t0 -> p t0' t0' -> t0 = t0'.
 Definition UniqueActivity : (TProp) -> Prop
  := fun p => forall t0 t0' t1 t1' , p t0 t1 -> p t0' t1' -> t0 = t0' /\ t1 = t1'.
+
+Parameter signUnique  : forall (x y : object), UniqueActivity (sign_V2 x y).
+Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
+Parameter inStative   : forall loc x, StativeInclusion (_BE_in loc x).
+
