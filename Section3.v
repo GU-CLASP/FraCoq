@@ -8,7 +8,7 @@ Problem114aTrue.
 cbv.
 intros.
 destruct_conjs.
-exists H0.
+exists H.
 firstorder.
 Qed. 
 
@@ -18,7 +18,7 @@ cbv.
 cbv.
 intros.
 destruct_conjs.
-exists x.
+exists H1.
 firstorder.
 Qed.
 
@@ -29,17 +29,17 @@ destruct mkPN. exact c. Qed.
 
 
 Theorem T117: Problem117aTrue.
-(* Temporal error: does not work due to the change of meaning for possessives for Fracas 278.
-   (For 278 we need a global fixed thing; for 117 we need local quantification)
-   Perhaps we could have both meanings?
-*)
-Abort All.
+cbv.
+intros.
+destruct_conjs.
+exists H.
+firstorder.
+Qed.
 
 Theorem T118a: Problem118aTrue.
 cbv.
 firstorder.
-(* Temporal Error: see 117 *)
-Abort All.
+Qed.
 
 Transparent PN2object.
 Theorem T119a: Problem119aTrue.
@@ -49,7 +49,12 @@ Abort All.
 
 Theorem T119a: Problem119aFalse.
 cbv.
-(* Temporal Error: see 117 *)
+intros.
+destruct_conjs.
+apply H7 with (x := MARY).
+assumption.
+exists H3.
+firstorder.
 Abort All.
 
 Theorem T120a: Problem120aTrue.
@@ -67,10 +72,11 @@ cbv.
 firstorder.
 Qed.
 
-Theorem T123a: Problem123aTrue. cbv. intros. firstorder.
+Theorem T123a: Problem123aTrue. cbv. intros.
+destruct_conjs.
+
 Qed. 
 
-Theorem T123b: Problem123bTrue.   cbv.  intros. destruct H. firstorder. Abort all.
 
 (*
 

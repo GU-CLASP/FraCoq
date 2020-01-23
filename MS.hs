@@ -1,3 +1,4 @@
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -1640,7 +1641,7 @@ _TRUE e = foldr (∨) FALSE (evalDynamic e)
 
 evalQuant :: [Predet] -> Quant -> Num -> CN' -> Role -> Dynamic NP'
 evalQuant _ (ObliviousQuant q) num cn role = q num cn role
-evalQuant [AllPredet] (PossQuant pron) num cn role = genNPAll pron num cn role -- see FraCas 134
+evalQuant [AllPredet] (PossQuant pron) num cn role = genNPQuant Forall pron num cn role -- see FraCas 134
 evalQuant [AllPredet] _ num cn role =  universal_Quant' id num cn role
 evalQuant [ExactlyPredet] _ (Cardinal num) cn role = exactlyQuant' num cn role
 evalQuant [AtLeastPredet] _ num cn role = boundQuant' Pos num cn role
@@ -1651,7 +1652,7 @@ evalQuant [] _ (MoreThan num) cn role = boundQuant' Pos (MoreThan num) cn role  
 evalQuant [] (BoundQuant p n) _n cn role = boundQuant' p (Cardinal n) cn role
 evalQuant [] (ObjectQuant x) _number _cn _role = return $ \vp -> vp x
 evalQuant [] (UniversalQuant pol) num cn role = universal_Quant' pol num cn role
-evalQuant [] (PossQuant pron) num cn role = genNPDef pron num cn role
+evalQuant [] (PossQuant pron) num cn role = genNPQuant Exists pron num cn role
 evalQuant [] IndefQuant Plural cn role@Subject = bothQuant cn role   -- Bare plural, FraCas 097 -- 101
 -- Note that the universal reading of a bare plural seem to happen only in subject position. See FraCas 040.
 evalQuant [] IndefQuant  num cn role = some_Quant' num cn role
@@ -1723,13 +1724,13 @@ genNPDef np _number (cn',gender) _role = do
   it <- getDefinite (theirCN,gender)
   return (\vp' -> vp' it)
 
-genNPAll :: NP -> Quant'
-genNPAll np _number (cn',_gender) _role = do
+genNPQuant :: (Var -> Type -> Exp -> Exp) -> NP -> Quant'
+genNPQuant quant np _number (cn',_gender) _role = do
   them <- interpNP np Other -- only the direct arguments need to be referred by "self"
   x <- getFresh
   return (\vp' -> them $ \y extraObjects -> 
              let (p,t) = vp' (Var x) extraObjects
-             in (Forall x (possess y (Var x) ∧ noExtraObjsCN'' cn' (Var x)) p,t))
+             in (quant x (possess y (Var x) ∧ noExtraObjsCN'' cn' (Var x)) p,t))
 
 possess :: Object -> Object -> Prop
 possess x y = noExtraObjs (mkRel2 "have_V2" y x) -- possesive is sometimes used in another sense, but it seems that Fracas expects this.
