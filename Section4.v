@@ -1,16 +1,29 @@
+
 Load Formulas.
 Require Import Omega.
+Require Import Coq.Program.Tactics.
 
 
 Theorem T142a: Problem142aTrue. cbv. intros. firstorder. Qed.
 
  Theorem T143a: Problem143aTrue. cbv. intros. firstorder. Abort all. (*unk*)
 
- Theorem T144a: Problem144aTrue. cbv. intros. firstorder. Qed.
 
- Theorem T144b: Problem144bTrue. cbv. intros. firstorder. Abort all. (**wrong reading**)
+Theorem T144a: Problem144aTrue.
+cbv.
+intros.
+destruct_conjs.
+exists H.
+split.
+assumption.
+(* Anaphora error: full VP (with adverb) is not accessible ?! *)
+Abort.
 
-Theorem T145a: Problem145aTrue. cbv. intros. firstorder. Abort all. (**wrong reading**)
+
+Theorem T145a: Problem145aTrue.
+cbv.
+intros.
+firstorder. Qed.
  
 Theorem T145b: Problem145bTrue. cbv. intros. destruct H. exact H0. Qed.
 

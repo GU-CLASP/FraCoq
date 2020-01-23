@@ -73,9 +73,10 @@ firstorder.
 Qed.
 
 Theorem T123a: Problem123aTrue. cbv. intros.
-destruct_conjs.
-
-Qed. 
+destruct H.
+destruct H.
+(* Temporal Error: bad interaction between addition of timing scopes and scope extension algorithm *)
+Abort All.
 
 
 (*
@@ -122,12 +123,13 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 (*-- 127: We need "they" to refer to any disjunction of NPs introduced so -- far.
 *)
 
- Theorem T128a: Problem128aTrue. cbv. intros. destruct H0. destruct H1. destruct H1. destruct H2. destruct H3. exists x1. firstorder. Qed.
+ Theorem T128a: Problem128aTrue. cbv. intros. destruct H0. destruct H1. destruct H1. destruct H2. destruct H3. destruct_conjs. exists x0. firstorder. Qed.
 
  Theorem T129a: Problem129aTrue. cbv. intros. firstorder. Qed.
 
 
- Theorem T130at: Problem130aTrue. cbv. intros. destruct H0. destruct H1. destruct H2. firstorder. Qed.
+ Theorem T130at: Problem130aTrue. cbv. intros. destruct H0. destruct H1.
+exists x0. firstorder. Qed.
 
 (*-- Analysis for 130:  FRACAS. Incompatible with 129. (It should be sufficent
 -- that one reading allows to conclude.)
@@ -193,12 +195,14 @@ Qed.
 -- c) Difficult to interpret: (advNP (detNP (anySg_Det)) (prepNP (lexemePrep "part_Prep") (detCN (detQuant (possPron (itRefl_Pron)) (numPl)) (useN (lexemeN "computer_N")))))
 *)
 
-Parameter reports_have_Single_Cover_Page_K : forall report cover1 cover2,
+Parameter reports_have_Single_Cover_Page_K :
+  forall t0 t1,
+  forall report cover1 cover2,
   report_N report ->
   cover_page_N cover1 ->
   cover_page_N cover2 ->
-  have_V2 cover1 report ->
-  have_V2 cover2 report ->
+  have_V2 cover1 report t0 t1 ->
+  have_V2 cover2 report t0 t1 ->
   (cover1 = cover2).
 (* A true fact *)
 Check reports_have_Single_Cover_Page_K.
