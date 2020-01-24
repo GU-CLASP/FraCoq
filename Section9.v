@@ -139,11 +139,9 @@ destruct_conjs.
 (* Temporal Error: tense incorrect in premise, for unknown reason*)
 Abort All.
 
-Theorem FraCaS346: Problem346aTrue.
+Theorem FraCaS346: Problem346bTrue.
 cbv.
 intros clause isClause.
 intros theContract isContract.
-firstorder.
-
-(* FIXME: ellipsis *)
-Abort All.
+intuition.
+Qed.

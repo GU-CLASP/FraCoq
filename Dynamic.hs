@@ -192,6 +192,7 @@ type VPEnv = [VP]
 
 data Env = Env {vpEnv :: VPEnv
                ,vp2Env :: V2
+               ,v2vEnv :: V2V
                ,apEnv :: AP
                ,cn2Env :: CN2
                ,objEnv :: ObjEnv
@@ -253,6 +254,7 @@ getNP' q Env{objEnv=os,..} = case filter (q . fst) os of
 getNP :: ObjQuery -> Dynamic [NP]
 getNP q = gets (getNP' q)
 
+
 getDefinite :: CN' -> Dynamic Object
 getDefinite cn' = do
   things <- gets envDefinites
@@ -293,6 +295,9 @@ pushVP vp Env{..} = Env{vpEnv=vp:vpEnv,..}
 
 pushV2 :: V2 -> Env -> Env
 pushV2 vp2 Env{..} = Env{vp2Env=vp2,..}
+
+pushV2V :: V2V -> Env -> Env
+pushV2V v2v Env{..} = Env{v2vEnv=v2v,..}
 
 pushAP :: AP -> Env -> Env
 pushAP a Env{..} = Env{apEnv=a,..}
@@ -388,8 +393,12 @@ assumedCN = mkCN "assumedCN" [Male,Female,Neutral]
 assumedNum :: Num
 assumedNum = Singular
 
+mkV2V :: String -> V2V
+mkV2V v2v = return $ \x vp y extraObjs -> appArgs True v2v [x,lam (\z -> fst (vp z extraObjs {extraTime = extraTime extraObjs})),y] extraObjs
+
 assumed :: Env
 assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
+              ,v2vEnv = mkV2V "assumedV2v"
                , vpEnv = []
                -- ,apEnv = (pureIntersectiveAP (mkPred "assumedAP"))
                -- ,cn2Env = pureCN2 (mkPred "assumedCN2") Neutral Singular

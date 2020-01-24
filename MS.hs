@@ -83,7 +83,12 @@ lexemeVS :: String -> VS
 lexemeVS vs = return $ \s x extraObjs -> mkRel2 vs (fst (s emptyObjs {extraTime = extraTime extraObjs})) x extraObjs
 
 lexemeV2V :: String -> V2V
-lexemeV2V v2v = return $ \x vp y extraObjs -> appArgs True v2v [x,lam (\z -> fst (vp z extraObjs {extraTime = extraTime extraObjs})),y] extraObjs
+lexemeV2V "elliptic_V2V" = do
+  v <- gets v2vEnv
+  v
+lexemeV2V v = do
+  modify (pushV2V (lexemeV2V v))
+  mkV2V v
 
 pnTable :: [(String,([Gender],Num))]
 pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following; then female in 311
@@ -236,6 +241,7 @@ lexemeN :: String -> N
 lexemeN "one_N" = one_N
 lexemeN x@"car_N" = genderedN x [Neutral]
 lexemeN x@"chairman_N" = genderedN x [Male]
+lexemeN x@"clause_N" = genderedN x [Neutral]
 lexemeN x@"committee_N" = genderedN x [Neutral]
 lexemeN x@"company_N" = genderedN x [Neutral]
 lexemeN x@"customer_N" = genderedN x [Male,Female]
