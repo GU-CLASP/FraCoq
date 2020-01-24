@@ -83,7 +83,7 @@ lexemeVS :: String -> VS
 lexemeVS vs = return $ \s x extraObjs -> mkRel2 vs (fst (s emptyObjs {extraTime = extraTime extraObjs})) x extraObjs
 
 lexemeV2V :: String -> V2V
-lexemeV2V v2v = return $ \x vp y -> appArgs True v2v [x,lam (\z -> noExtraObjs (vp z)),y]
+lexemeV2V v2v = return $ \x vp y extraObjs -> appArgs True v2v [x,lam (\z -> fst (vp z extraObjs {extraTime = extraTime extraObjs})),y] extraObjs
 
 pnTable :: [(String,([Gender],Num))]
 pnTable = [("smith_PN" , ([Male,Female],Singular)) -- smith is female in 123 but male in 182 and following; then female in 311
@@ -902,7 +902,7 @@ conjVPS2 conj _t1 pol1 vp1 _t2 pol2 vp2 = do
 -- VV
 
 timingVVs :: [String]
-timingVVs = ["start_VV", "finish_VV", "use_VV"]
+timingVVs = ["start_VV", "finish_VV", "use_VV", "manage_VV"]
 
 lexemeVV :: String -> VV
 lexemeVV "do_VV" = return $ \vp x -> vp x -- "do" has a special meaning (ie. none); this is important to be able to lookup events.

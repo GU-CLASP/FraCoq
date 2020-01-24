@@ -2,8 +2,6 @@
 Load Formulas.
 
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
-Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p. (* Actually a factive pressuposition *)
-(* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
 
 Section Temps.
 Variable y1993before1996 : Date_19931231 < Date_19960101.

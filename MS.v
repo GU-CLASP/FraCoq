@@ -568,10 +568,6 @@ Definition impressed_by_A2 : A2 :=
 
 
 Definition VVT := (Time -> Time -> VP) -> object -> TProp.
-Definition use_VVTiming : VVT := fun tvp => fun x => fun t0 t1 => tvp t0 t1 x.
-(* "use_VV" as in the idiom "used to be"; see FraCas 029. We take t0,t1 as the bounds because "used to" is already a past and an activity. *)
-Definition finish_VVTiming : VVT := fun tvp => fun x => fun t0 t1 => exists t0', exists t1', t0 <= t1' <= t1 /\ tvp t0' t1' x.
-Definition start_VVTiming  : VVT := fun tvp => fun x => fun t0 t1 => exists t1', tvp t0 t1' x. (* FIXME, maybe *)
 
 Parameter can8know_VV : VV .
 Parameter can_VV : VV .
@@ -589,6 +585,14 @@ Parameter inhabitant_N2 : N2 .
 Parameter nobel_prize_N2 : N2 .
 Parameter resident_in_N2 : N2 .
 Parameter resident_on_N2 : N2 .
+
+Definition use_VVTiming : VVT := fun tvp => fun x => fun t0 t1 => tvp t0 t1 x.
+(* "use_VV" as in the idiom "used to be"; see FraCas 029. We take t0,t1 as the bounds because "used to" is already a past and an activity. *)
+Definition finish_VVTiming : VVT := fun tvp => fun x => fun t0 t1 => exists t0', exists t1', t0 <= t1' <= t1 /\ tvp t0' t1' x.
+
+Definition start_VVTiming  : VVT := fun tvp => fun x => fun t0 t1 => exists t1', tvp t0 t1' x. (* FIXME, maybe *)
+Definition manage_VVTiming  : VVT := fun tvp => fun x => fun t0 t1 => manage_VV (tvp t0 t1)  x t0 t1.
+Definition try_VVTiming  : VVT := fun tvp => fun x => fun t0 t1 => try_VV (tvp t0 t1)  x t0 t1.
 
 Parameter N_10 : Numeral .
 Parameter N_100 : Numeral .
@@ -1346,4 +1350,7 @@ Definition UniqueActivity : (TProp) -> Prop
 Parameter signUnique  : forall (x y : object), UniqueActivity (sign_V2 x y).
 Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 Parameter inStative   : forall loc x, StativeInclusion (_BE_in loc x).
+
+Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p. (* Actually a factive pressuposition *)
+(* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
 
