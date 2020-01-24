@@ -1226,7 +1226,7 @@ Parameter exactEqual : forall x y (p : object -> Prop), p x -> p y -> CARD (fun 
 Definition person_Nat : object -> N :=
   fun location person => person_N person /\ _BE_at location person NOW NOW.
 
-(* Parameter slow_and_fast_disjoint_K : forall cn o, getSubsectiveA slow_A cn o /\ getSubsectiveA fast_A cn o -> False. *)
+Parameter slow_and_fast_disjoint_K : forall cn o, getSubsectiveA slow_A cn o /\ getSubsectiveA fast_A cn o -> False.
 Definition opposite_adjectives : SubsectiveA -> SubsectiveA -> Prop
   := fun a1 a2 =>
   forall cn o,  let (mSmall,threshSmall) := a1 in
@@ -1306,6 +1306,8 @@ Definition Time_1100 : Time := Time_0900 + TwoHours.
 Parameter Time_1715 : Time.
 Parameter Date_0713 : Time.
 Definition Date_0714 : Time := Date_0713 + ONEDAY.
+Parameter Date_19900101 : Time.
+Parameter Date_19901231 : Time.
 Parameter Date_19910101 : Time.
 Parameter Date_19911231 : Time.
 Parameter Date_19920101 : Time.
@@ -1325,6 +1327,7 @@ Definition Date_19950507 : Time := Date_19950505 + OneDay+ OneDay.
 Definition Date_19950515 : Time := Date_19950507+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay+ OneDay.
 Parameter Date_19960101 : Time.
 Parameter Date_19961231 : Time.
+Parameter Date_19880101 : Time.
 Parameter present8attending_AwithTime : Time -> CN -> object -> Prop.
 
 Parameter SPEAKER : object.

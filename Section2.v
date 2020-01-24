@@ -109,14 +109,15 @@ Transparent PN2object.
 Transparent PN2Class.
 Theorem T099a: Problem099aTrue. cbv.
 intros theSystem isSystem.
-intros thePerf isPerf.
 intros theDemo isDemo.
 intros [P1 P2].
 lapply (P1 SMITH).
 intros.
 firstorder.
-exact SMITH_PERSON.
+exists x1.
 firstorder.
+exact SMITH_PERSON.
+intuition.
 Qed.
 
 Theorem T100a: Problem100aTrue. cbv.

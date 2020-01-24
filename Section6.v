@@ -1,5 +1,6 @@
 Load Formulas.
 
+Require Import Coq.Program.Tactics.
 Require Import Psatz.
 
 Parameter ineqAdd : forall {a b c d}, (a <= b) -> (c <= d) -> (a + c <= b + d).
@@ -159,16 +160,17 @@ intros n [P1a P1b].
 firstorder.
 Abort All.
 
-Theorem T232a: Problem232aTrue. cbv.
-intros n [P1a [[orders P1c] [P1d P1e]]].
-exists orders.
-split.
-firstorder.
-split.
-firstorder.
-lia.
-Qed.
-
+Theorem T232a: Problem232aTrue.
+cbv.
+intros.
+destruct_conjs.
+repeat eexists.
+Focus 3.
+exact H10.
+assumption.
+assumption.
+(* Temporal error: we cannot a-priori assume that the periods that ITEL and APCOM were winning things are the same. *)
+Abort All.
 
 Theorem T233a: Problem233aTrue. cbv.
 intros n P1.
@@ -181,14 +183,10 @@ firstorder.
 Abort All.
 
 Theorem T235a: Problem235aTrue. cbv.
-intros n [P1a [[orders P1c] [P1d P1e]]].
-exists orders.
-split.
-firstorder.
-split.
-firstorder.
-lia.
-Qed.
+intros.
+destruct_conjs.
+(* Temporal error: same as 232*)
+Abort All.
 
 Theorem T236a: Problem236bTrue. cbv.
 intros contract isContract P1.
@@ -197,45 +195,25 @@ Qed.
 
 Theorem T237a: Problem237bTrue. cbv.
 intros contract isContract [P1a [order P1b]].
-exists order.
-split.
-firstorder.
-split.
-firstorder.
-lia.
-Qed.
+(* Temporal error: same as 232*)
+Abort All.
+
 
 Theorem T238a: Problem238aTrue. cbv.
-intros n [P1a [[order [isOrder [won P1]]] [order' [isOrder' [won' P2]]]]].
-exists order.
-split.
-firstorder.
-split.
-firstorder.
-lia.
-Qed.
+(* Temporal error: same as 232*)
+Abort All.
 
 Theorem T239a: Problem239aTrue. cbv.
-intros n [P1a P1b].
-firstorder.
-Qed.
+(* Temporal error: same as 232*)
+Abort All.
 
 Theorem T240a: Problem240aTrue. cbv.
-intros n [P1a [order P1b]].
-exists order.
-split.
-firstorder.
+(* Temporal error: same as 232*)
 Abort All.
 
 Theorem T241a: Problem241aTrue. cbv.
-intros n [P1a [[order [isOrder [won P1]]] [order' [isOrder' [lost P2]]]]].
-exists order.
-split.
-firstorder.
-split.
-firstorder.
-lia.
-Qed.
+(* Temporal error: same as 232*)
+Abort All.
 
 Theorem T242a: Problem242aTrue. cbv.
 assert (H' := fast_and_slow_opposite_K).
@@ -249,14 +227,8 @@ Abort All. (* Error: "MIPS" is interpreted as any CN; this is completely wrong. 
 
 
 Theorem T243a: Problem243aTrue. cbv.
-intros n [P1a [[order [isOrder [won P1]]] [order' [isOrder' [lost P2]]]]].
-exists order.
-split.
-firstorder.
-split.
-firstorder.
-lia.
-Qed.
+(* Temporal error: same as 232*)
+Abort All.
 
 Theorem T246a: Problem246aTrue. cbv.
 destruct fast_A as [fast] eqn:fst.

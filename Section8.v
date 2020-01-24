@@ -26,6 +26,7 @@ Variable y1991before1993 : Date_19911231 < Date_19930101.
 Variable y1991before1992 : Date_19911231 < Date_19920101.
 Variable y1993 : Date_19930101 < Date_19931231.
 Variable y1992 : Date_19920101 < Date_19921231.
+Variable y1991 : Date_19910101 < Date_19920101.
 Variable future : NOW <= INDEFINITE_FUTURE.
 Variable y1992before1993March : Date_19921231 <  Date_19930301.
 Variable y1993March : Date_19930301 < Date_19930331.
@@ -68,13 +69,33 @@ destruct from_Prep as [from fromVerid fromCov].
 Abort All.
 
 
-Variable year90_included_in_88_to_92_K : forall (p:object -> Prop) (x:object), from_1988_to_1992_Adv p x -> (let (a, _) := in_1990_Adv in a) p x.
+Variable y1988before1992 : Date_19880101 < Date_19920101.
+Variable y1990 : Date_19900101 < Date_19901231.
+Variable y1990_1991 : Date_19901231 < Date_19910101.
+Variable y1988_1990 : Date_19880101 <= Date_19900101.
+Require Import Psatz.
+
+Parameter ownStative   : forall x y, StativeInclusion (have_V2 x y).
+
+Transparent PN2object.
 
 Theorem FraCaS330: Problem330aTrue. cbv.
 destruct itel_PN.
 destruct mtalk_PN.
 destruct apcom_PN as [apcom corpN' apcomIsCorp].
-apply year90_included_in_88_to_92_K.
+intros.
+destruct_conjs.
+
+repeat eexists.
+reflexivity.
+reflexivity.
+lia.
+specialize ownStative with (x := apcom) (y := x) as A.
+cbv in A.
+eapply A.
+exact H.
+lia.
+lia.
 Qed.
 
 Theorem FraCaS331: Problem331aTrue. cbv.

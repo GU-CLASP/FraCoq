@@ -467,6 +467,7 @@ verbAspect "expand_V" = Activity
 verbAspect "make8do_V2" = Activity
 verbAspect "swim_V" = Activity
 verbAspect "write_V2" = Activity
+verbAspect "own_V2" = Activity -- Actually stative; makes no difference here. FraCas 330
 verbAspect "_BE_in" = Activity
 verbAspect "live_Vin" = Activity
 verbAspect "run_V2" = Activity
