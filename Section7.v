@@ -321,10 +321,15 @@ Theorem  problem275atrue : Problem275aTrue.
 cbv.
 intros.
 destruct_conjs.
-assumption.
-Qed.
+exists H0.
+intuition.
+exists H5.
+intuition.
+intuition.
+Abort All.
 (* 275 "before" uses a conjuction, perhaps it should be changed to implication?
 However if we do that then 261 is no longer provable. TODO: check this again. (Also not exactly)
+Just happens to work because of the existential quantificatoin for "His temper"
 *)
 
 (* 276 undef *)
@@ -345,14 +350,14 @@ Abort All.
 
 Theorem  problem278atrue : Problem278aFalse.
 cbv.
-intros novel isSmithsNovel P1 H.
-destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
-destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
+intros.
+destruct_conjs.
+(* We could make it so that we can use :
 specialize writeUnique with (x := novel)(y := SMITH) as A.
-unfold UniqueActivity in A.
-specialize (A _ _ _ _ P1 H) as B.
-lia.
-Qed.
+
+If we knew that the "first novel" is unique.  However we have no implementation for ordinals.
+*)
+Abort All.
 
 Theorem  problem279 : Problem279aFalse.
 cbv.
@@ -531,8 +536,7 @@ Abort All.
 
 Theorem problem294 : Problem294aTrue.
 cbv.
-intros business isBusiness.
-intro P1.
+intros.
 (* inconsistent syntax for "in two years" compared to 285. *)
 (* incomprehensible problem *)
 Abort All.
@@ -572,14 +576,18 @@ intro.
 destruct_conjs.
 assert (0 < 2) as B.
 lia.
+
 specialize (CARD_exists' H2 B) as A.
 destruct_conjs.
 repeat eexists.
-Focus 4.
+
+
+Focus 5.
 exact H14.
 lia.
+reflexivity.
 exact H15.
-assumption.
+exact H16.
 Qed.
 
 
@@ -625,25 +633,31 @@ Qed.
 
 Theorem problem301 : Problem301aTrue.
 cbv.
-intros business isBusiness.
-intro P1.
-destruct P1 as [t1 [c1 [t2 [c2 [t3 [t4 [c3 [c4 P1]]]]]]]].
+intros.
+destruct_conjs.
 repeat eexists.
-Focus 5.
-exact P1.
+Focus 6.
+
+exact H9.
+
 Focus 2.
 reflexivity.
 Focus 2.
 reflexivity.
 lia.
 lia.
+assumption.
 Qed.
 
 Theorem problem302 : Problem302aTrue.
 cbv.
 intros.
-assumption.
-Qed.
+destruct_conjs.
+repeat eexists.
+Focus 4.
+exact H9.
+(* FIXME *)
+Abort All.
 
 Theorem problem303 : Problem303aTrue.
 cbv.
@@ -682,11 +696,10 @@ cbv.
 intro P1.
 destruct P1 as [g [c1[f [c2 [b [c [c3 [c4 [report [isReport P1]]]]]]]]]].
 repeat eexists.
-Focus 3.
+Focus 4.
 exact P1.
-lia.
-assumption.
-Qed.
+(* FIXME *)
+Abort All.
 
 
 Opaque PN2object.
@@ -815,25 +828,6 @@ Abort All.
 
 Theorem problem319 : Problem319aTrue.
 cbv.
-intros previousOffice isOffice.
-intros currentOffice isOffice'.
-intros.
-destruct_conjs.
-cut (H8 >= H14).
-intro overlap.
-specialize (pay_interest_combined H28 H26 overlap) as [combinedInterest [isInterest3 A]].
-assumption.
-assumption.
-repeat eexists.
-Focus 6.
-exact A.
-Focus 2.
-reflexivity.
-Focus 2.
-reflexivity.
-lia.
-Focus 2.
-assumption.
 (* P1  means that we have payment 8 years in the past with H as reference *)
 (* P2  means that we have payment 10 years in the future with H as reference *)
 (* What we need is a bound on H8 (end of interval for P1), but instead
@@ -851,8 +845,6 @@ Opaque PN2object.
 Theorem  problem320btrue : Problem320aTrue.
 cbv.
 intros theCase isCase.
-intros memoir hisMemoir.
-intros job1 job2.
 intros [t1 [t2 P1]].
 destruct P1 as [gotJob knowStuff].
 specialize (know_implicature knowStuff) as P1.

@@ -393,6 +393,7 @@ lexemeAdv :: String -> Adv
 timePoint :: t -> (t, t)
 timePoint x = (x,x)
 
+lexemeAdv "at_four_oclock_Adv" = return $ usingTime (ExactTime (timePoint (Con "Time_1600")))
 lexemeAdv "at_a_quarter_past_five_Adv" = return $ usingTime (ExactTime (timePoint (Con "Time_1715")))
 lexemeAdv "in_july_1994_Adv" = return $ usingTime (ExactTime (Con "Date_19940701", Con "Date_19940731")) 
 lexemeAdv "on_july_4th_1994_Adv" = return $ usingTime (ExactTime (timePoint (Con "Date_19940704")))
@@ -976,7 +977,7 @@ adVVP adv vp = do
   return (\x -> adv' (vp' x))
 
 advVP :: VP -> Adv -> VP
-advVP = advVPPush False -- FIXME! (Should be True but gives infinitely many interpretations for Fracas 267)
+advVP = advVPPush True
 
 advVPPush :: Bool -> VP -> Adv -> VP
 advVPPush doPush vp adv = do

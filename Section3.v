@@ -242,10 +242,26 @@ Instead, the "forall should be taken with it."
  Theorem T139a: Problem139aTrue.
 cbv. destruct large_A as [large]. intros. destruct H. destruct H. destruct H0. firstorder. Qed. 
 
- Theorem T140a: Problem140aTrue. cbv.  intros.  firstorder. generalize H. apply sayCovariant_K. firstorder. Qed. 
+Opaque PN2object.
+
+Theorem T140a: Problem140aTrue.
+cbv.
+intros.
+destruct_conjs.
+exists H.
+split.
+assumption.
+generalize H1.
+apply sayCovariant_K.
+firstorder.
+Qed. 
 
 
  Theorem T141a: Problem141aTrue. cbv. 
+intros. firstorder. 
+ Abort all. (*unk*)
+
+ Theorem T141af: Problem141aFalse. cbv. 
 intros. firstorder. 
  Abort all. (*unk*)
 

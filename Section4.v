@@ -6,36 +6,36 @@ Require Import Coq.Program.Tactics.
 
 Theorem T142a: Problem142aTrue. cbv. intros. firstorder. Qed.
 
- Theorem T143a: Problem143aTrue. cbv. intros. firstorder. Abort all. (*unk*)
+Theorem T143a: Problem143aTrue. cbv. intros. firstorder. Abort all. (*unk*)
 
 
 Theorem T144a: Problem144aTrue.
 cbv.
-intros.
-destruct_conjs.
-exists H.
-split.
-assumption.
-(* Anaphora error: full VP (with adverb) is not accessible ?! *)
-Abort.
-
+firstorder.
+Qed.
 
 Theorem T145a: Problem145aTrue.
 cbv.
 intros.
 firstorder. Qed.
  
-Theorem T145b: Problem145bTrue. cbv. intros. destruct H. exact H0. Qed.
 
 Theorem T146a: Problem146aTrue. cbv. intros. destruct H. exact H0. Qed.
 
+Section Temps.
+Variable isPast : INDEFINITE_PAST < NOW.
 
 
-Theorem T147a:  Problem147aFalse. cbv. intro.  destruct H.  destruct on_monday_Adv as [on_mon on_mon_ver]. firstorder. Qed.
+Theorem T147a:  Problem147aFalse.
+cbv.
+exists INDEFINITE_PAST.
+split.
+exact isPast.
+intro.  destruct on_monday_Adv as [on_mon on_mon_ver].
+firstorder. Qed.
 
-Theorem T147b: Problem147bFalse. cbv. intro. destruct H.  destruct on_monday_Adv as [on_mon on_mon_ver]. firstorder. Qed.
 
-Theorem T148a: Problem148aTrue. cbv. intro. exact H. Qed.
+Theorem T148a: Problem148aTrue. cbv. intro. firstorder. Qed.
 
 Theorem T149a: Problem149aTrue. cbv. firstorder. Qed.
 
@@ -123,7 +123,10 @@ Qed.
 
 Theorem T168a: Problem168aTrue. cbv. intros. destruct H. exact H0. Qed.
 
-Theorem T169a: Problem169aTrue. cbv. intros. firstorder. Qed.
+
+Theorem T169a: Problem169aTrue.
+(* Temporal error: something is generating before_Subj; find it and fix it (start with Bank.hs) *)
+Abort All.
 
 Theorem T170a: Problem170aTrue. cbv. intros. Abort all.
 
@@ -135,11 +138,15 @@ Theorem T170a: Problem170aTrue. cbv. intros. Abort all.
 Theorem T173a: Problem173aTrue. cbv. intros.
 destruct john_PN.
 destruct bill_PN.
-destruct H. apply H.
-firstorder.
+destruct_conjs.
+repeat eexists.
+Focus 2.
+apply H4.
+split.
 exact MARY_PERSON.
-Qed.
 
+(* Temporal Error: mismatching tenses *)
+Abort All.
  
 Theorem T174a: Problem174aTrue. cbv. intros. firstorder. Abort all. (**unk**)
 
@@ -151,8 +158,20 @@ Theorem T175b: Problem175bTrue. cbv. intros. firstorder. Abort all. (**Wrong rea
 
 
 Theorem T176a: Problem176aTrue. cbv.
-apply sayCovariant_K.
-firstorder.
+intros.
+destruct_conjs.
+repeat eexists.
+Focus 3.
+eapply sayCovariant_K.
+Focus 2.
+apply H3.
+intros.
+destruct H4.
+destruct H5.
+exists x.
+exact H5.
+assumption.
+assumption.
 Qed.
 
 Theorem T177a: Problem177aTrue. cbv. intros.  firstorder.  Abort all.
@@ -178,8 +197,18 @@ Theorem T184a: Problem184aFalse. cbv. intros. destruct H. firstorder.  Abort all
 Theorem T185a: Problem185aTrue. cbv.
 intros [P1 P2].
 generalize P2.
-apply claimCovariant_K.
-firstorder.
+intros.
+destruct_conjs.
+repeat eexists.
+Focus 2.
+eapply claimCovariant_K.
+Focus 2.
+exact H0.
+intros.
+destruct_conjs.
+exists H5.
+intuition.
+assumption.
 Qed.
 
 Theorem T186c: Problem186cTrue. cbv. intros. destruct H. firstorder. Qed. (**reading c  works!**)
@@ -204,5 +233,14 @@ Theorem T194a: Problem194aTrue. cbv. firstorder. Abort All.
 Theorem T194a: Problem194aFalse. cbv. firstorder. Abort All.
 
 
-Theorem T196a: Problem196aTrue. cbv. intro. firstorder. Qed. 
+
+Theorem T196a:
+Problem196aTrue.
+cbv.
+intro.
+destruct_conjs.
+exists H7.
+intuition.
+(* Temporal Error: incorrect tense in the conjuncts/ellipsis *)
+Abort All. 
 

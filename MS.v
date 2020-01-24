@@ -1054,9 +1054,9 @@ Parameter write_to_V2 : V2 .
 
 
 Parameter wantCovariant_K : forall (t0 t1 :Time), forall p q:TVP, forall s, (q s t0 t1  -> p s t0 t1) -> want_VV (fun x => q x t0 t1) s t0 t1 -> want_VV (fun x => p x t0 t1) s t0 t1.
-(*Parameter sayCovariant_K : forall p q:S, forall s t, (p -> q) -> say_VS p s t -> say_VS q s t.
-Parameter claimCovariant_K : forall p q:S, forall s t, (p -> q) -> claim_VS p s t -> claim_VS q s t.
-*)
+Parameter sayCovariant_K : forall (t0 t1 : Time) , forall p q:S, forall s, (p -> q) -> say_VS p s t0 t1 -> say_VS q s t0 t1.
+Parameter claimCovariant_K : forall (t0 t1 : Time) , forall p q:S, forall s, (p -> q) -> claim_VS p s t0 t1 -> claim_VS q s t0 t1.
+
 Parameter  person_K: forall (x:object), chairman_N x -> person_N x. 
 Parameter  committee_member_person_K : forall x, committee_member_N x -> person_N x. 
 
@@ -1307,6 +1307,7 @@ Parameter Time_0800 : Time.
 Definition Time_0900 : Time := Time_0800 + OneHour.
 Definition Time_1000 := Time_0800 + TwoHours.
 Definition Time_1100 : Time := Time_0900 + TwoHours.
+Parameter Time_1600 : Time.
 Parameter Time_1715 : Time.
 Parameter Date_0713 : Time.
 Definition Date_0714 : Time := Date_0713 + ONEDAY.
