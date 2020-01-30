@@ -145,7 +145,7 @@ apply H4.
 split.
 exact MARY_PERSON.
 
-(* Temporal Error: mismatching tenses *)
+(* Temporal Error: mismatching tenses (ellipsis does not have the right tense; perhaps this should be fixed as all relative clauses should) *)
 Abort All.
  
 Theorem T174a: Problem174aTrue. cbv. intros. firstorder. Abort all. (**unk**)

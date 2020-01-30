@@ -169,7 +169,10 @@ Focus 3.
 exact H10.
 assumption.
 assumption.
-(* Temporal error: we cannot a-priori assume that the periods that ITEL and APCOM were winning things are the same. *)
+(* Temporal error: we cannot a-priori assume that the periods that
+ITEL and APCOM were winning things are the same. This is because the
+cardinalities do not actually expose the proposition. This is probably fixable
+by using the fact that cardinalities > 0 implies existence *)
 Abort All.
 
 Theorem T233a: Problem233aTrue. cbv.
