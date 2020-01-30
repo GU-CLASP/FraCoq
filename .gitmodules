@@ -2,5 +2,5 @@
 	path = FraCaS-treebank
 	url = https://github.com/heatherleaf/FraCaS-treebank
 [submodule "paper2018/PaperTools"]
-	path = paper2018/PaperTools
+	path = PaperTools
 	url = git@github.com:jyp/PaperTools.git
