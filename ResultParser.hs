@@ -87,7 +87,9 @@ doIt args = do
   mapM_ print (parseWords Nothing ws)
   mapM_ print consolidated
   mapM_ (showScores consolidated) (zip3 [1..] sectionStarts (tail sectionStarts))
-  (showScores' consolidated) (0,\x -> x < 251 || x >= 326)
+  (showScores' consolidated) (0,const True {- excludeTemporal -})
+
+excludeTemporal = \x -> x < 251 || x >= 326
 
 main :: IO ()
 main = do

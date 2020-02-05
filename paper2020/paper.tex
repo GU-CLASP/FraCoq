@@ -1,6 +1,7 @@
 \documentclass[a4paper,11pt]{article}
 \usepackage[hyperref]{naaclhlt2019}
 \usepackage{natbib}
+\usepackage{tabularx}
 
 
 \aclfinalcopy % Uncomment this line for the final submission
@@ -21,7 +22,7 @@
 
 \usepackage[verbose]{newunicodechar}
 
-\title{Bayesian Inference Semantics: A Modelling System and  A Test Suite}
+\title{FraCaS: Temporal Analysis}
 \author{Jean-Philippe Bernardy \qquad Stergios Chatzikyriakidis \\
   University of Gothenburg\\
   {\tt firstname.lastname@@gu.se} \\}
@@ -149,10 +150,10 @@ Time adverbs, such as "Since", "always", "never", "in two years", "by
 11 am", etc. introduce *local* quantification over a timespan.
 
 time interval:
-⟦``in 1992, s''⟧(_) = ∃t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
+⟦``in 1992, s''⟧(...) = ∃t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
 
 Universal:
-⟦``always s''⟧(_) = ∀t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
+⟦``always s''⟧(...) = ∀t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
 
 relative time:
 ⟦``in two years, s''⟧(t0,tx) = ∃t2.  ⟦s⟧(t0+2years,t2)
@@ -161,13 +162,50 @@ relative time:
 
 ``start to'', ``finish'', etc.
 
-Lexical semantics transform the interval (see start_VVTiming in Coq code)
+example:
+
+Definition finishVV : VVT := fun tvp => fun x => fun t0 t1 =>
+exists t0', exists t1', t0 <= t1' <= t1 /\ tvp t0' t1' x.
 
 
 \section{Results and evaluation}
-JP
+\providecommand\ncases[1]{{\ensuremath{^{#1}}}}
+\begin{table}[hbt]
+  \centering
+  \small
+\begin{tabularx}{\columnwidth}{Xr@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r}
+Section      & {\kern -2em} \#FraCaS
+                          & This        & FC2         & FC & MINE & Nut  & LP  \\ \hline
+Quantifiers  & 75         & .91        & .96         & .96    & .77  & .53  & .93  \\
+             &            & \ncases{74}& \ncases{74} &        &      &      &     \ncases{44} \\
+Plurals      & 33         & .64        & .82         & .76    & .67  & .52  & .73 \\
+             &            &            &             &     &   &   & \ncases{24} \\
+Anaphora     & 28         & .79        & .86         &   -    & -    & -    &  -       \\
+Ellipsis     & 52         & .81        & .87         &   -    & -    & -    &  -       \\
+Adjectives   & 22         & .95        & .95         & .95    & .68  & .32  & .73 \\
+             &            &  \ncases{20}&  \ncases{20}&     &   &   &  \ncases{12} \\
+Comparatives & 31         & .64        & .87         & .56    & .48  & .45  &  -       \\
+Temporal     & 75         &  -         &  -          &   -    &   -  &  -   &  -       \\
+Verbs        & 8          & .71        & .75         &   -    & -    & -    &  -       \\
+Attitudes    & 13         & .85        & .92         & .85    & .77  & .46  & .92  \\ 
+             &            &            &             &        &      &      & \ncases {9}  \\ \hline
+Total        & 337        & .78        & .89         & .83    & .69  & .50  & .85  \\
+             &            & \ncases{329}& \ncases{259}& \ncases{174}  & \ncases{174}& \ncases{174}& \ncases{89}
+  \end{tabularx}
+  \caption{Accuracy of our system compared to others.
+    ``Ours" refers to the approach presented in this paper. When a
+    system does not handle the nominal number of test cases (shown in
+    the second column), the actual number of test cases attempted is
+    shown below the accuracy figure, in smaller font.  ``FraCoq''
+    refers to the work of \citet{bernardy:2017}. ``MINE" refers
+    to the approach of \citet{Mineshima:2015}, ``NUT" to the CCG
+    system that utilizes the first-order automated theorem prover
+    \textit{nutcracker} \cite{bos:2008}, and ``Langpro"
+    to the system presented by \citet{Abzianidze:2015}. A dash
+    indicates that no attempt was made for the section. }
+  \label{tab:results}
+\end{table}
 \paragraph{interaction with negation and group readings}
-
 \section{Conclusions and Future Work}
 Stergios
 \section*{Acknowledgements}
