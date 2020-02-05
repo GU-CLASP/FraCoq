@@ -42,14 +42,132 @@ If needed
 Stergios
 
 \section{Our Compositional Semantics}
-JP
 
-\subsection{Out treatment of time}
-JP
-\subsection{...}
-If needed
+- See our pervious papers, (adjectives, adverbs, nouns, verbs, anaphora, etc.)
+
+- Here we simply ignore these aspects and it is safe for the reader to
+assume a montegovian semantics and assume that anaphoroi are resolved
+as they should be.
+
+\section{Our Treatment of time}
+
+Our basic approach is to extend predicates with two time parameters,
+one corresponding with the starting time of the action and one with
+its stopping time.
+
+walk(john,t0,t1)
+
+\paragraph{time context}
+
+The compositional semantics carry a current time reference (itself an
+interval). This current interval propagates through the compositional
+interpraetation. By default every interpretation passes the temporal
+context to its components --- but some may act on it.
+
+\paragraph{tenses and temporal adverbs}
+
+Tenses are represented syntactically (in GF!) as an attribute of the
+clause. In our representation we deal only with present and past
+tenses --- we find that FraCas does not exercise (if a variant of the
+past is used, the additional information is also carried by adverbs,
+in a more specific way.)
+
+If the temporal context was modified by an adverb (or an averbial
+clause, such as ``before James swam''), then the tense is ignored.
+%
+Otherwise, if the tense is the present, then we use a simple
+$(now,now)$ interval, with $now$ being a constant.
+%
+If the tense is the past, then we locally quantify over a time
+interval $(t_0,t_1)$, such that $t_1 < now$.
+
+\paragraph{time references and aspectual classes}
+
+A common theme in the testsuite is reference to previous occurences of an event
+
+P1	Smith left.
+P2	Jones left.
+P3	Smith left before Jones left.
+Q 	Did Jones leave after Smith left?
+
+We have to arrange that the two occurences of ``Jones left'', in P1
+and P3 refer to the same time intervals.
+
+For this purpose we postulate the unicity of action for certain timed propositions:
+
+P-unicity : P t1 t2 → P t3 t4 → (t1 = t3) ∧ (t2 = t4)
+
+P-unicity holds only if P is an \emph{achievement} or an \emph{actitivty}.
+
+(The difference between actitivty and achievement is that for the
+latter time intervals can be assumed to be of nil duration. However
+this appears to play little role, if any, in our analysis.)
+
+A contrario, if P is a \emph{stative}, then we get a time-interval subsumption property:
+
+P-subsumption : [t3,t4] ⊆ [t1,t2] -> P t1 t2 -> P t3 t4
+
+This principle is used for example below:
+
+P1	Smith arrived in Paris on the 5th of May, 1995.
+P2	Today is the 15th of May, 1995.
+P3	She is still in Paris.
+Q 	Was Smith in Paris on the 7th of May, 1995? 
+
+
+\paragraph{(un)repeatable achievements}
+Using unicity of action, we can refute 279:
+
+279:
+P1	Smith wrote a novel in 1991.
+Q 	Did Smith write it in 1992?
+H 	Smith wrote it in 1992.
+
+∃x. novel(x)
+∀t<NOW.  ∧ write(smith,x,t,t) [the scope for the existential is extended according to our previous analysis of anaphora]
+
+However, the testsuite instructs that we should not be able to refute
+280, with the justification that ``wrote a novel'' is a repeatable
+accomplishment:
+
+280:
+P1	Smith wrote a novel in 1991.
+Q 	Did Smith write a novel in 1992?
+H 	Smith wrote a novel in 1992.
+
+∀t<NOW. ∃x. novel(x) ∧ write(smith,x,t,t)
+
+Our analysis does not need to separate these as special cases. Indeed,
+even if $write(smith,x)$ is an activity and thus subject to unicity of
+action, in (280), $x$ is quantified existentially; we have two
+different actions: $write(smith,x) t1 t2$ and $write(smith,y) t3 t4$,
+and thus we can't deduce equality of the interval $t1,t2$ and $t3,t4$;
+in turn the hypothesis can't be refuted.
+
+\paragraph{interval adverbs, point adverbs, universal adverbs}
+Time adverbs, such as "Since", "always", "never", "in two years", "by
+11 am", etc. introduce *local* quantification over a timespan.
+
+time interval:
+⟦``in 1992, s''⟧(_) = ∃t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
+
+Universal:
+⟦``always s''⟧(_) = ∀t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
+
+relative time:
+⟦``in two years, s''⟧(t0,tx) = ∃t2.  ⟦s⟧(t0+2years,t2)
+
+\paragraph{action-modification verbs}
+
+``start to'', ``finish'', etc.
+
+Lexical semantics transform the interval (see start_VVTiming in Coq code)
+
+
 \section{Results and evaluation}
 JP
+\paragraph{interaction with negation and group readings}
+
 \section{Conclusions and Future Work}
 Stergios
 \section*{Acknowledgements}

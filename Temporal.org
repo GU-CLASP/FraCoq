@@ -36,6 +36,28 @@ H    ∃t5, t6. s(t3) ∧ a(t4) ∧ t5 < t6
 Not possible, because we cannot identify t2 and t3. Informally, "jones
 left" may refer to two different events (times).
 
+Can be solved by unicity of action, see "referencing previous times" below
+
+** BAD IDEA: Transitivity of "before"
+
+Consider Fracas 261:
+
+P1	Smith left before Jones left.
+P2	Jones left before Anderson left.
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+H  	Smith left before Anderson left. 
+
+
+First idea:
+
+P1   ∃t1, t2. s(t1) ∧ j(t2) ∧ t1 < t2
+P2   ∃t3, t4. j(t3) ∧ a(t4) ∧ t3 < t4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+H    ∃t5, t6. s(t3) ∧ a(t4) ∧ t5 < t6
+
+Not possible, because we cannot identify t2 and t3. Informally, "jones
+left" may refer to two different events (times).
+
 
 We can try to use some dynamic semantics to do the identification. We could have:
 
