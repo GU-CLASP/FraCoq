@@ -54,45 +54,102 @@ as they should be.
 
 Our basic approach is to extend predicates with two time parameters,
 one corresponding with the starting time of the action and one with
-its stopping time.
+its stopping time. For example, if John walked between $t_0$ and
+$t_1$, we would have: $walk(john,t0,t1)$. From now on we will call an
+interval of time points $[t_0,t_1]$ a timespan. Every timespan
+$[t_0,t_1]$ has the property $t_0 ≤ t_1$ (it starts no later than it
+stops).
 
-walk(john,t0,t1)
+\paragraph{temporal context}
 
-\paragraph{time context}
+We adjust the montegovian semantics so that every category takes a
+timespan as an additional parameter. This timespan serves as a time
+reference for semantics, and we call it a \emph{temporal context}. This current interval propagates through the compositional
+interpretation down to atoms. By default, every interpretation passes
+the temporal context down to its components without changing
+it. However some key elements will act on it on nontrivial ways, which
+we proceed to detail below.
 
-The compositional semantics carry a current time reference (itself an
-interval). This current interval propagates through the compositional
-interpraetation. By default every interpretation passes the temporal
-context to its components --- but some may act on it.
+\paragraph{tenses}
 
-\paragraph{tenses and temporal adverbs}
+The prime non-trivial manipulation of timespans are tenses. In our
+syntax, inherited from GF, tenses are represented syntactically as an
+attribute of the clause. TODO{show example}
 
-Tenses are represented syntactically (in GF!) as an attribute of the
-clause. In our representation we deal only with present and past
-tenses --- we find that FraCas does not exercise (if a variant of the
-past is used, the additional information is also carried by adverbs,
-in a more specific way.)
+In our representation we deal only with present and simple past
+tenses.  Indeed we find that FraCas does not exercise additional
+specific tenses (if a more complicated tense is used, the additional
+information is also carried by adverbs or adverbial phrases, in a more
+specific way.)
 
-If the temporal context was modified by an adverb (or an averbial
-clause, such as ``before James swam''), then the tense is ignored.
-%
-Otherwise, if the tense is the present, then we use a simple
-$(now,now)$ interval, with $now$ being a constant.
-%
-If the tense is the past, then we locally quantify over a time
-interval $(t_0,t_1)$, such that $t_1 < now$.
+TODO: optional time context.
+
+The procedure to handle tense annotations is as follows:
+\begin{itemize}
+\item If the temporal context was modified by an adverb (or an
+  averbial clause, such as ``before James swam''), then the tense does
+  not create a new interval, but it may constrain it. Typically, a
+  past tense adds the constraint that the temporal context ends before
+  the constant $now$, which is a constant representing the current
+  time.
+\item Otherwise, if the tense is the present, then the temporal
+  context becomes the simple $(now,now)$ interval.
+\item
+  If the tense is the past, then we locally quantify over a time
+  interval $[t_0,t_1]$, such that $t_1 < now$.
+\end{itemize}
+
+\paragraph{temporal adverbs}
+
+The other single most important source of interesting timespans are
+adverbs. Most of the temporal adverbs fall in either of the following
+categories:
+
+\begin{enumerate}
+\item[exact interval adverbs] For such adverbs, an exact interval is
+  provided. Typical such adverbs specify in fact a single point in
+  time (so the start and the end of the interval coincide).
+
+  ⟦``at 5 pm, s''⟧(...) = ⟦s⟧(5pm,5pm)
+
+\item[existential interval] The majority of temporal adverbs
+  existentially quantify over a timespan. Examples include ``since
+  1991'', ``in 1996'', ``for two years'', etc. The common theme is to
+  introduce the interval and then restrict its bounds or its duration
+  in someway. Sometimes the restriction is an equality (``for exactly
+  two hours'').
+
+  ⟦``in 1992, s''⟧(...) = ∃t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
+
+\item[universal interval] A few adverbs introduce intervals via a
+  universal quantification (sometimes with a constraint). Examples
+  include: ``always'', ``never''.
+
+  If there is no explicit time context, then ``always'' has no
+  constraint on the interval, otherwise the quantified interval must
+  be included in it:
+  ⟦``always s''⟧(t0,t1) = ∀t0',t1'. [t0',t1'] ⊆ [t0,t1], ⟦s⟧(t0',t1')
+
+  % A particularly interesting case found in FraCas is ``every month'':
+
+  % ⟦``every month s''⟧(t0,t1) = ∀t. [t,t+1month] ⊆ [t0,t1], ⟦s⟧(t,t+1month)
+\end{enumerate}
+
 
 \paragraph{time references and aspectual classes}
 
-A common theme in the testsuite is reference to previous occurences of an event
+A common theme in the testsuite is to refer to previous occurences of
+an event:
 
-P1	Smith left.
-P2	Jones left.
-P3	Smith left before Jones left.
-Q 	Did Jones leave after Smith left?
+(262)
+P1	Smith left after Jones left.
+P2	Jones left after Anderson left.
+Q 	Did Smith leave after Anderson left?
+H 	Smith left after Anderson left. 
 
-We have to arrange that the two occurences of ``Jones left'', in P1
-and P3 refer to the same time intervals.
+To be able to conclude as the testsuite expects, we have to make sure
+that the two occurences of ``Jones left'', in P1 and P3 refer to the
+same time intervals.
 
 For this purpose we postulate the unicity of action for certain timed propositions:
 
@@ -115,17 +172,34 @@ P2	Today is the 15th of May, 1995.
 P3	She is still in Paris.
 Q 	Was Smith in Paris on the 7th of May, 1995? 
 
+Unicity of action appears to be a non-logical principle. Indeed, it is
+quite possible that ``Jones left'' several times. However, it seems
+that this principle is never contradicted by the testsuite. As such,
+even though unicity of action is only a pragmatic rule, it can be
+taken as a valid \emph{by default}: it is only when we have a
+sufficiently constrained situation that one should reject it. Consider
+the following discourse:
+
+(1) Smith left at 1pm.
+(2) Smith went to its appointment with the lawyer.
+(3) Smith came back at 2pm
+(4) Smith left at 4pm.
+
+One would normally not say that there is contradiction. However if (1)
+and (4) are presented in isolation, a contradiction can be flagged.
 
 \paragraph{(un)repeatable achievements}
-Using unicity of action, we can refute 279:
+The principle of using unicity of action interacts well with the usual interpretation of quantifiers (and anaphora).
+Indeed, using it, we can refute (279):
 
 279:
 P1	Smith wrote a novel in 1991.
 Q 	Did Smith write it in 1992?
-H 	Smith wrote it in 1992.
 
-∃x. novel(x)
-∀t<NOW.  ∧ write(smith,x,t,t) [the scope for the existential is extended according to our previous analysis of anaphora]
+Indeed, following our account, the above inference problem is be
+interperted as ∃x. novel(x) ∀t<NOW.  ∧ write(smith,x,t,t) [the scope
+for the existential is extended according to our previous analysis of
+anaphora]
 
 However, the testsuite instructs that we should not be able to refute
 280, with the justification that ``wrote a novel'' is a repeatable
@@ -145,18 +219,6 @@ different actions: $write(smith,x) t1 t2$ and $write(smith,y) t3 t4$,
 and thus we can't deduce equality of the interval $t1,t2$ and $t3,t4$;
 in turn the hypothesis can't be refuted.
 
-\paragraph{interval adverbs, point adverbs, universal adverbs}
-Time adverbs, such as "Since", "always", "never", "in two years", "by
-11 am", etc. introduce *local* quantification over a timespan.
-
-time interval:
-⟦``in 1992, s''⟧(...) = ∃t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
-
-Universal:
-⟦``always s''⟧(...) = ∀t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
-
-relative time:
-⟦``in two years, s''⟧(t0,tx) = ∃t2.  ⟦s⟧(t0+2years,t2)
 
 \paragraph{action-modification verbs}
 
@@ -173,7 +235,7 @@ exists t0', exists t1', t0 <= t1' <= t1 /\ tvp t0' t1' x.
 \begin{table}[hbt]
   \centering
   \small
-\begin{tabularx}{\columnwidth}{Xr@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r}
+\begin{tabularx}{\columnwidth}{Xr@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r}
 Section      & {\kern -2em} \#FraCaS
                           & This        & FC2         & FC & MINE & Nut  & LP  \\ \hline
 Quantifiers  & 75         & .91        & .96         & .96    & .77  & .53  & .93  \\
@@ -183,10 +245,10 @@ Plurals      & 33         & .64        & .82         & .76    & .67  & .52  & .7
 Anaphora     & 28         & .79        & .86         &   -    & -    & -    &  -       \\
 Ellipsis     & 52         & .81        & .87         &   -    & -    & -    &  -       \\
 Adjectives   & 22         & .95        & .95         & .95    & .68  & .32  & .73 \\
-             &            &  \ncases{20}&  \ncases{20}&     &   &   &  \ncases{12} \\
+             &            & \ncases{20}&  \ncases{20}&     &   &   &  \ncases{12} \\
 Comparatives & 31         & .64        & .87         & .56    & .48  & .45  &  -       \\
-Temporal     & 75         &  -         &  -          &   -    &   -  &  -   &  -       \\
-Verbs        & 8          & .71        & .75         &   -    & -    & -    &  -       \\
+Temporal     & 75         & .71        &  -          &   -    &   -  &  -   &  -       \\
+Verbs        & 8          & .75        & .75         &   -    & -    & -    &  -       \\
 Attitudes    & 13         & .85        & .92         & .85    & .77  & .46  & .92  \\ 
              &            &            &             &        &      &      & \ncases {9}  \\ \hline
 Total        & 337        & .78        & .89         & .83    & .69  & .50  & .85  \\
