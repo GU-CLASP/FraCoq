@@ -111,3 +111,6 @@ Qed.
 Theorem FraCaS333: Problem333aTrue. cbv.
 (* FIXME: no notion of group*)
 Abort All.
+
+End Temps.
+

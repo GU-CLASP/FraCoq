@@ -14,24 +14,26 @@ cbv.
 firstorder.
 Qed.
 
+Section Temps.
+Variable isPast : INDEFINITE_PAST < NOW.
+Variable itsLate : Time_1600 < NOW. (* Otherwise there is tense incoherency in 145*)
+
 Theorem T145a: Problem145aTrue.
 cbv.
 intros.
-firstorder. Qed.
+firstorder.
+Qed.
  
 
 Theorem T146a: Problem146aTrue. cbv. intros. destruct H. exact H0. Qed.
 
-Section Temps.
-Variable isPast : INDEFINITE_PAST < NOW.
 
 
 Theorem T147a:  Problem147aFalse.
 cbv.
-exists INDEFINITE_PAST.
-split.
-exact isPast.
-intro.  destruct on_monday_Adv as [on_mon on_mon_ver].
+intros.
+destruct_conjs.
+destruct on_monday_Adv as [on_mon on_mon_ver].
 firstorder. Qed.
 
 
@@ -243,4 +245,6 @@ exists H7.
 intuition.
 (* Temporal Error: incorrect tense in the conjuncts/ellipsis *)
 Abort All. 
+
+End Temps.
 

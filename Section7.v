@@ -1,4 +1,3 @@
-
 Load Formulas.
 
 Parameter itIsTheCaseThatIdiom : forall p x, case_N x -> that_Subj p (IMPERSONAL = x) = p.
@@ -32,6 +31,10 @@ Parameter pay_interest_combined: forall x i1 i2 t1 t2 t2' t3, pay_V2 i1 x t1 t2 
 mortgage_interest_N i1 ->
 mortgage_interest_N i2 ->
 exists i3, mortgage_interest_N i3 /\ pay_V2 i3 x t1 t3.
+
+Require Import Coq.Program.Tactics.
+
+
 
 Theorem  problem251aTrue : Problem251aTrue.
 intro.
@@ -159,29 +162,43 @@ lia.
 Qed.
 
 
+
 Transparent PN2object.
 Theorem  problem261atrue : Problem261aTrue.
 cbv.
-intros t1 t1Past t2 t2Past.
-intro P1.
-destruct P1 as [t3 [c2 [t5 [c5 [t4 [c3 [c4 Q]]]]]]].
-split.
+intros.
+destruct_conjs.
+repeat eexists.
+Focus 4.
+exact H5.
+Focus 4.
+exact H12.
+assumption.
+assumption.
+specialize leaveUnique with (x := jones) as A.
+cbv in A.
+specialize (A _ _ H6 H11).
 lia.
-intuition.
 Qed.
 
-Require Import Coq.Program.Tactics.
 
 Transparent PN2object.
 Theorem  problem262atrue : Problem262aTrue.
 cbv.
 intros.
+
 destruct_conjs.
-split.
+exists H.
+repeat eexists.
+assumption.
+Focus 3.
+exact H5.
 lia.
-split.
-intuition.
-intuition.
+specialize leaveUnique with (x := jones) as A.
+cbv in A.
+specialize (A _ _ H6 H11).
+lia.
+assumption.
 Qed.
 
 Theorem problem263 : Problem263aTrue.
@@ -213,68 +230,92 @@ Theorem  problem264atrue : Problem264aTrue.
 cbv.
 intros.
 destruct_conjs.
-repeat split.
+repeat eexists.
+Focus 4.
+exact H7.
+Focus 4.
+exact H6.
 lia.
-tauto.
-tauto.
+lia.
+lia.
 Qed.
 
 Theorem  problem265atrue : Problem265aTrue.
 cbv.
 intros.
 destruct_conjs.
-repeat split.
+repeat eexists.
+Focus 4.
+exact H7.
+Focus 4.
+exact H6.
 lia.
-tauto.
-tauto.
+lia.
+lia.
 Qed.
 
 Theorem  problem266atrue : Problem266aTrue.
 cbv.
 intros.
-split.
+destruct_conjs.
+repeat eexists.
+Focus 4.
+exact H7.
+Focus 4.
+exact H6.
 lia.
-split.
-tauto.
-tauto.
+
+lia.
+lia.
 Qed.
 
 Transparent PN2object.
 Theorem  problem267atrue : Problem267aTrue.
 cbv.
 intros.
-destruct H2 as [a [b [H3]]].
-split.
+destruct_conjs.
+repeat eexists.
+Focus 4.
+exact H8.
+Focus 4.
+exact H7.
 lia.
-intuition.
+lia.
+lia.
 Qed.
 
 Theorem  problem268atrue : Problem268aTrue.
 cbv.
 intros.
-destruct H2 as [a [b [H3]]].
-split.
+destruct_conjs.
+repeat eexists.
+Focus 4.
+exact H8.
+Focus 4.
+exact H7.
 lia.
-intuition.
+lia.
+lia.
 Qed.
 
 
 Theorem  problem269atrue : Problem269aTrue.
 cbv.
-intros t1 p1 t2 p2 t3 p3 t4 p4 [P1 P2].
-split.
-(* no link between t1 and t4 *)
+intros.
 Abort All.
 
 Theorem  problem270atrue : Problem270aTrue.
 cbv.
 intros.
-destruct H2 as [A [B [C [D E]]]].
-split.
-assumption.
-split.
-assumption.
-assumption.
+destruct_conjs.
+repeat eexists.
+Focus 4.
+exact H8.
+Focus 4.
+exact H7.
+lia.
+lia.
+lia.
 Qed.
 
 Theorem  problem271atrue : Problem271aTrue.
@@ -595,10 +636,10 @@ Opaque PN2object.
 Theorem problem298 : Problem298aTrue.
 cbv.
 intro P1.
-destruct P1 as [t1 [c1 [t2 [c2 [t3 [t4 [c3 [c4 P1]]]]]]]].
+destruct_conjs.
 repeat eexists.
 Focus 5.
-exact P1.
+exact H6.
 Focus 3.
 reflexivity.
 Focus 2.
@@ -625,9 +666,22 @@ destruct B as [C D].
 lia.
 Qed.
 
+Parameter liveInStative : forall (loc x : object), StativeInclusion (live_Vin loc x).
+
 Theorem problem300 : Problem300aTrue.
 cbv.
-firstorder.
+intros.
+destruct_conjs.
+exists H3.
+split.
+lia.
+exists H3.
+split.
+reflexivity.
+eapply liveInStative.
+exact H7.
+lia.
+lia.
 Qed.
 
 
@@ -637,9 +691,7 @@ intros.
 destruct_conjs.
 repeat eexists.
 Focus 6.
-
 exact H9.
-
 Focus 2.
 reflexivity.
 Focus 2.
@@ -726,6 +778,9 @@ intros theStation isStation theHouse isHouse.
 intro Ps.
 destruct Ps as [t0 [c0 [c1 [ P1 [taxi P2]]]]].
 specialize taxiIdiom with (dst := theStation) (taxi := taxi) (x := SMITH) (t0 := t0) (t1 := t0) as A.
+exists Time_1715.
+split.
+lia.
 exists t0.
 split.
 lia.
@@ -795,9 +850,6 @@ Qed.
 
 Theorem problem315 : Problem315aTrue.
 cbv.
-intros arrivalTime arrPast.
-intros dayBefore [arrTime' [arrive isDay]].
-intros [arr P2].
 (* "the day before" is not interpreted correctly (we do not know that dayBefore is the day before...) *)
 (* However, arrtime is inconsistent with arrtime''. arrtime'' is not a correct thing to get. *)
 Abort All.
@@ -851,7 +903,7 @@ specialize (know_implicature knowStuff) as P1.
 rewrite -> itIsTheCaseThatIdiom.
 split.
 intro H.
-specialize P1  with (f := NOW) (g := NOW) as P1'.
+specialize P1  with (d := NOW) (e := NOW) as P1'.
 cut (NOW <= NOW).
 intro PP.
 specialize (P1' PP) as P1'.
@@ -919,3 +971,5 @@ cbv.
 (* Reading A does not give existence for P2 *)
 (* Reading B lifts existence at toplevel *)
 Abort All.
+End Temps.
+

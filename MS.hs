@@ -479,8 +479,8 @@ withAtLeastDuration delta = do -- with duration meaning, as in FraCas 278
   return (\s extraObjs ->
            let (p,actualSpan) = s extraObjs {extraTime = tSpan}
            in (quantTime Exists t1 true $
-               quantTime Exists t2 ((Con "IS_INTERVAL" `apps` [intervalStart (actualSpan),intervalStart (extraTime extraObjs)])
-                                ∧
+               quantTime Exists t2 ((Con "IS_INTERVAL" `apps` [intervalStart (actualSpan),intervalStart (extraTime extraObjs)]) ∧
+                                    -- (Con "IS_INTERVAL" `apps` [intervalEnd (actualSpan),Con "NOW"]) ∧
                                 -- it may finish later, see Fracas 304
                                 -- we constraint the returned time, so that we have a stronger interpretation of achievements (see Fracas 306)
                                  (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2])) $
@@ -498,6 +498,9 @@ withExactDuration delta = do -- as in FraCas 278
 
 intervalStart UnspecifiedTime = Con "NOW"
 intervalStart (ExactTime (a,b)) = a
+
+intervalEnd UnspecifiedTime = Con "NOW"
+intervalEnd (ExactTime (a,b)) = a
 
 inInterval :: Temporal -> Temporal -> Exp
 UnspecifiedTime `inInterval` _ = true
@@ -1071,15 +1074,7 @@ predVP np vp = withClause $ do
   tense <- asks envTense
   p'' <- case tense of
     t | t `elem` [Past, PresentPerfect, PastPerfect] -> do
-      ts <- referenceTimesFor p' -- (1)
-      -- fixme: this should happen at a lower level (lexical
-      -- item). But we do not have dynamic access to arguments at that
-      -- level at the moment so this will do temporarily.
-      -- Why? Because events could refer to occurences inside a quantifier:
-      -- Example "every boy climbed and fell after they climbed." (ATOM)
-      case ts of
-         [] -> -- not a reference to a previous event.
-           do -- Allocate own time.
+              -- Allocate own time.
               t1 <- getFresh
               t2 <- getFresh
               return $ \e@ExtraArgs{..} ->
@@ -1092,9 +1087,7 @@ predVP np vp = withClause $ do
                       -- be able to override it, to search for it when we reach
                       -- point (1) at a later occurence of the same event.
                     _ -> p' e -- (a) We have a specified time already, e.g coming from an adverbial phrase. Change nothing
-         (t:_) -> return (usingTime (ForceTime t) p')  -- (2)
     _ -> return p' -- no specific time info, leave as such. This is important because the time may come from an adverbial phrase.
-  modify (pushFact $ noExtraObjs p'')
   modify (pushS (predVP np vp))
   return $ usingCompClass cn p''
 
@@ -1392,8 +1385,9 @@ relativeAmountQuant pol f cn s = do
         x <- getFresh
         return (\vp' extraObjs ->
                   let (p,t) = (vp' (Var x) extraObjs)
-                  in (noExtraObjs s' ∧ -- "APCOM won exactly θ orders"
-                                  Quant (f (Nat (Var threshold))) pol x (cn' (Var x) emptyObjs) p,t)) -- Itel won at least θ+1 orders
+                      eos = emptyObjs {extraTime = extraTime extraObjs}
+                  in (fst (s' eos) ∧  -- "APCOM won exactly θ orders"
+                      Quant (f (Nat (Var threshold))) pol x (cn' (Var x) emptyObjs) p,t)) -- Itel won at least θ+1 orders
       -- quantifier that implements "there exists (f threshold)"
   return $ MkNP [] Plural (ObliviousQuant q) cn' gender
 

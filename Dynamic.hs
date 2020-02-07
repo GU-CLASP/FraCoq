@@ -202,7 +202,6 @@ data Env = Env {vpEnv :: VPEnv
                ,envDefinites :: [(Exp,Object)] -- map from CN to pure objects
                ,envMissing :: [(Exp,Var)] -- definites that we could not find. A map from CN to missing variables
                ,envPluralizingQuantifier :: Bool
-               ,envFacts :: [Prop]
                ,freshVars :: [String]
                }
          -- deriving Show
@@ -409,7 +408,6 @@ assumed = Env {vp2Env = return $ \x y -> (mkRel2 "assumedV2" x y)
                ,envDefinites = []
                ,envMissing = []
                ,envPluralizingQuantifier = False
-               ,envFacts = []
                ,freshVars = allVars}
 
 assumedReadEnv :: ReadEnv
@@ -533,26 +531,6 @@ forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
 useTime :: TimeSpan -> Cl' -> S'
 useTime t s ExtraArgs{..} = s ExtraArgs{extraTime = ForceTime t,..}
 
--- | Look in envFacts for the time at which s' happened.
--- That is: Find the times t when Prop(t) happened, looking up true facts in environment.
-referenceTimesFor :: Cl' -> Dynamic [TimeSpan]
-referenceTimesFor s' = do
-  tMeta0 <- getFresh
-  tMeta1 <- getFresh
-  facts <- gets envFacts
-  let e = forceTime (Var tMeta0, Var tMeta1) s'
-  return $ map mkSpan $ catMaybes $ map (solveThe [tMeta0,tMeta1] e) facts
-  where mkSpan [t0,t1] = (t0,t1)
-
-referenceTimeFor :: Cl' -> Dynamic TimeSpan
-referenceTimeFor s = do
-  ts <- referenceTimesFor s
-  case ts of
-    [] -> do
-      facts <- gets envFacts
-      error ("referenceTimesFor: no time for " ++ show (forceTime (Var "τ₀", Var "τ₁") s) ++ "\n facts:\n" ++ intercalate "\n" (map show facts))
-    (t:_) -> return t
-
 -- | S' shall use the given time constraint
 usingTime :: Temporal -> S' -> S'
 usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..} 
@@ -570,10 +548,6 @@ tempToArgs = pairToList . temporalToLogic
 pairToList :: (t, t) -> [t]
 pairToList (x,y) = [x,y]
 
-pushFact :: Prop -> Env -> Env
-pushFact (Quant _amount _pol _var _dom body) = pushFact body -- HACK to access atom
-pushFact (p :∧ q)  = {-pushFact p . -} pushFact q  -- HACK to access atom (ATOM)
-pushFact p = \Env{..} -> Env{envFacts=p:envFacts,..}
 
 withTense :: Tense -> Dynamic a -> Dynamic a
 withTense t = local $ \ReadEnv{..} -> ReadEnv {envTense=t,..}

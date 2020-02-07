@@ -1351,6 +1351,7 @@ Definition UniqueActivity : (TProp) -> Prop
 Parameter signUnique  : forall (x y : object), UniqueActivity (sign_V2 x y).
 Parameter writeUnique : forall (x y : object), UniqueActivity (write_V2 x y).
 Parameter inStative   : forall loc x, StativeInclusion (_BE_in loc x).
+Parameter leaveUnique  : forall (x : object), UniqueEvent (leave_V x).
 
 Parameter know_implicature : forall p x t0 t1, know_VS p x t0 t1 -> p. (* Actually a factive pressuposition *)
 (* If the speaker asserts that x knows p, then p holds from the speaker's perspective.*)
