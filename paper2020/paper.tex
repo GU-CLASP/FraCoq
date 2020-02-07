@@ -63,12 +63,17 @@ stops).
 \paragraph{temporal context}
 
 We adjust the montegovian semantics so that every category takes a
-timespan as an additional parameter. This timespan serves as a time
-reference for semantics, and we call it a \emph{temporal context}. This current interval propagates through the compositional
-interpretation down to atoms. By default, every interpretation passes
-the temporal context down to its components without changing
-it. However some key elements will act on it on nontrivial ways, which
-we proceed to detail below.
+\emph{optional} timespan as an additional parameter. This timespan
+serves as a time reference for semantics, and we call it a
+\emph{temporal context}. This context propagates through the
+compositional interpretation down to atoms. By default, every
+interpretation passes the temporal context down to its components
+without changing it. However some key elements will act on it on
+nontrivial ways, which we proceed to detail below.
+
+The timespan in the context is optional because, in certain
+situations, the semantics is different depending on whether a timespan
+has been specified externally or not, as we explain below.
 
 \paragraph{tenses}
 
@@ -76,13 +81,11 @@ The prime non-trivial manipulation of timespans are tenses. In our
 syntax, inherited from GF, tenses are represented syntactically as an
 attribute of the clause. TODO{show example}
 
-In our representation we deal only with present and simple past
+In our semantics we deal only with present and simple past
 tenses.  Indeed we find that FraCas does not exercise additional
 specific tenses (if a more complicated tense is used, the additional
 information is also carried by adverbs or adverbial phrases, in a more
 specific way.)
-
-TODO: optional time context.
 
 The procedure to handle tense annotations is as follows:
 \begin{itemize}
@@ -90,7 +93,7 @@ The procedure to handle tense annotations is as follows:
   averbial clause, such as ``before James swam''), then the tense does
   not create a new interval, but it may constrain it. Typically, a
   past tense adds the constraint that the temporal context ends before
-  the constant $now$, which is a constant representing the current
+  the timepoint $now$, which is a logical constant representing the current
   time.
 \item Otherwise, if the tense is the present, then the temporal
   context becomes the simple $(now,now)$ interval.
@@ -106,13 +109,13 @@ adverbs. Most of the temporal adverbs fall in either of the following
 categories:
 
 \begin{enumerate}
-\item[exact interval adverbs] For such adverbs, an exact interval is
+\item[exact adverbs] For such adverbs, an exact interval is
   provided. Typical such adverbs specify in fact a single point in
   time (so the start and the end of the interval coincide).
 
   ⟦``at 5 pm, s''⟧(...) = ⟦s⟧(5pm,5pm)
 
-\item[existential interval] The majority of temporal adverbs
+\item[existentially quantifying] The majority of temporal adverbs
   existentially quantify over a timespan. Examples include ``since
   1991'', ``in 1996'', ``for two years'', etc. The common theme is to
   introduce the interval and then restrict its bounds or its duration
@@ -121,7 +124,7 @@ categories:
 
   ⟦``in 1992, s''⟧(...) = ∃t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
 
-\item[universal interval] A few adverbs introduce intervals via a
+\item[universally quantifying] A few adverbs introduce intervals via a
   universal quantification (sometimes with a constraint). Examples
   include: ``always'', ``never''.
 
@@ -138,20 +141,21 @@ categories:
 
 \paragraph{time references and aspectual classes}
 
-A common theme in the testsuite is to refer to previous occurences of
-an event:
+A common theme in the testsuite is the reference to previous
+occurences of an event:
 
 (262)
 P1	Smith left after Jones left.
 P2	Jones left after Anderson left.
 Q 	Did Smith leave after Anderson left?
-H 	Smith left after Anderson left. 
+H 	Smith left after Anderson left.
 
 To be able to conclude as the testsuite expects, we have to make sure
-that the two occurences of ``Jones left'', in P1 and P3 refer to the
+that the two occurences of ``Jones left'' (in P1 and P3) refer to the
 same time intervals.
 
-For this purpose we postulate the unicity of action for certain timed propositions:
+For this purpose we postulate the unicity of action for certain timed
+propositions:
 
 P-unicity : P t1 t2 → P t3 t4 → (t1 = t3) ∧ (t2 = t4)
 
@@ -196,12 +200,21 @@ Indeed, using it, we can refute (279):
 P1	Smith wrote a novel in 1991.
 Q 	Did Smith write it in 1992?
 
-Indeed, following our account, the above inference problem is be
-interperted as ∃x. novel(x) ∀t<NOW.  ∧ write(smith,x,t,t) [the scope
+Indeed, following our account, the above (contradictory) inference problem is to be
+interperted as
+∃x. novel(x) ∧
+∃t1,t2. [t1,t2] ⊆ 1991 ∧ write(smith,x,t1,t2) ∧
+∃t3,t4. [t3,t4] ⊆ 1992 ∧ write(smith,x,t3,t4)
+⟶ ⊥
+
+Thanks to unicity of action we find [t1,t2] = [t3,t4], and due to 1991
+and 1992 being disjoint we obtain contradiction.
+
+[the scope
 for the existential is extended according to our previous analysis of
 anaphora]
 
-However, the testsuite instructs that we should not be able to refute
+However, the testsuite instructs that we should \emph{not} be able to refute
 280, with the justification that ``wrote a novel'' is a repeatable
 accomplishment:
 
@@ -210,24 +223,31 @@ P1	Smith wrote a novel in 1991.
 Q 	Did Smith write a novel in 1992?
 H 	Smith wrote a novel in 1992.
 
-∀t<NOW. ∃x. novel(x) ∧ write(smith,x,t,t)
+Here our interpretation is:
 
-Our analysis does not need to separate these as special cases. Indeed,
-even if $write(smith,x)$ is an activity and thus subject to unicity of
-action, in (280), $x$ is quantified existentially; we have two
-different actions: $write(smith,x) t1 t2$ and $write(smith,y) t3 t4$,
-and thus we can't deduce equality of the interval $t1,t2$ and $t3,t4$;
-in turn the hypothesis can't be refuted.
+∃x. novel(x) ∧
+∃t1,t2. [t1,t2] ⊆ 1991 ∧ write(smith,x,t1,t2) ∧
+∃y. novel(y) ∧
+∃t3,t4. [t3,t4] ⊆ 1992 ∧ write(smith,x,t3,t4)
+⟶ ⊥
+
+Our analysis does not need to treat this last case specially. Indeed,
+even if $write(smith,x,.,.)$ is an activity and thus subject to
+unicity of action, in (280), $x$ is quantified existentially; we have
+two \emph{different} actions: $write(smith,x,t1,t2)$ and
+$write(smith,y,t3,t4)$, and thus we can't deduce equality of the
+interval $t1,t2$ and $t3,t4$; in turn the hypothesis can't be refuted.
 
 
 \paragraph{action-modification verbs}
 
-``start to'', ``finish'', etc.
+The final class of lexeme carrying a temporal-dependent semantics are
+verbs taking a proposition as argument, like ``finish'', ``start'',
+etc. These verbs modify the temporal in non-trivial ways. Consider for
+example ``finish to ...''. The timespan of the argument of finish
+should end within the timespan of the finishing action:
 
-example:
-
-Definition finishVV : VVT := fun tvp => fun x => fun t0 t1 =>
-exists t0', exists t1', t0 <= t1' <= t1 /\ tvp t0' t1' x.
+⟦finish to s⟧(t0,t1) = ∃(t0',t1'). t1' ∈ [t0,t1] ∧ s(t0',t1')
 
 
 \section{Results and evaluation}
