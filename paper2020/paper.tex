@@ -15,8 +15,8 @@
 \newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
 
 \newlist{subex}{enumerate}{3}
-\setlist[subex,1]{parsep=0pt,itemsep=1pt,label=\textbf{P\arabic*}}
-\newcommand\hyp{\item[\textbf{H}]}
+\setlist[subex,1]{parsep=0pt,itemsep=1pt,font=\bfseries,label=P\arabic*}
+\newcommand\hyp{\item[H]}
 \newcommand\fracasex[2]{\begin{lingex}\item[(#1)] \begin{subex} #2 \end{subex} \end{lingex} }
 \newcommand\jp[1]{\todo[backgroundcolor=blue!10]{JP: #1}}
 
@@ -158,12 +158,12 @@ The other single most important source of interesting timespans are
 adverbs. Most of the temporal adverbs fall in either of the following
 categories:
 
-\begin{enumerate}
+\begin{enumerate}[align=left,font=\itshape]
 \item[exact adverbs] For such adverbs, an exact interval is
   provided. Typical such adverbs specify in fact a single point in
   time (so the start and the end of the interval coincide).
 
-  \[⟦\text{at 5 pm, \(s\)}⟧(...) = ⟦s⟧(5pm,5pm)\]
+  \[⟦\text{at 5 pm, \(s\)}⟧(\anyspan) = ⟦s⟧(5pm,5pm)\]
 
 \item[existentially quantifying] The majority of temporal adverbs
   existentially quantify over a timespan. Examples include ``since
@@ -172,8 +172,9 @@ categories:
   in someway. Sometimes the restriction is an equality (``for exactly
   two hours'').
 
-  \[⟦\text{in 1992, \(s\)}⟧(...) = ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)\]
-
+  \begin{multline*}
+  ⟦\text{in 1992, \(s\)}⟧(\anyspan) = \\ ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)
+\end{multline*}
 \item[universally quantifying] A few adverbs introduce intervals via a
   universal quantification (sometimes with a constraint). Examples
   include: ``always'', ``never''.
@@ -181,10 +182,11 @@ categories:
   If there is no explicit time context, then ``always'' has no
   constraint on the interval, otherwise the quantified interval must
   be included in it:
-  \[⟦\text{always \(s\)}⟧(t_0,t_1) = ∀t_0',t_1'. [t_0',t_1'] ⊆ [t_0,t_1], ⟦s⟧(t_0',t_1')\]
+  \begin{multline*}
+  ⟦\text{always \(s\)}⟧(t_0,t_1) = \\ ∀t_0',t_1'. [t_0',t_1'] ⊆ [t_0,t_1], ⟦s⟧(t_0',t_1')
+\end{multline*}
 
-  % A particularly interesting case found in FraCas is ``every month'':
-
+% A particularly interesting case found in FraCas is ``every month'':
   % ⟦``every month s''⟧(t_0,t_1) = ∀t. [t,t+1month] ⊆ [t_0,t_1], ⟦s⟧(t,t+1month)
 \end{enumerate}
 
@@ -217,8 +219,9 @@ this appears to play little role, if any, in our analysis.)
 
 A contrario, if P is a \emph{stative}, then we get a time-interval subsumption property:
 
-\[\constant {subsumption}_P : [t_3,t_4] ⊆ [t_1,t_2] → P t_1 t_2 → P t_3 t_4\]
-
+\begin{multline*}
+\constant {subsumption}_P : \\[t_3,t_4] ⊆ [t_1,t_2] → P t_1 t_2 → P t_3 t_4
+\end{multline*}
 This principle is used for example below:
 
 \fracasex{314}
@@ -307,8 +310,9 @@ etc. These verbs modify the temporal in non-trivial ways. Consider for
 example ``finish to ...''. The timespan of the argument of finish
 should end within the timespan of the finishing action:
 
-\[⟦\text{finish to \(s\)}⟧(t_0,t_1) = ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')\]
-
+\begin{multline*}
+⟦\text{finish to \(s\)}⟧(t_0,t_1) = \\ ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')
+\end{multline*}
 \section{Results and evaluation}
 \providecommand\ncases[1]{{\ensuremath{^{#1}}}}
 \begin{table}[hbt]
