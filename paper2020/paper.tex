@@ -1,8 +1,26 @@
+\newif\ifanon\anontrue
+
 \documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+
 \usepackage[hyperref]{naaclhlt2019}
 \usepackage{natbib}
 \usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{todonotes}
+\usepackage{enumitem}
+\newlist{lingex}{enumerate}{3}
+\setlist[lingex,1]{parsep=0pt,itemsep=1pt,label=(\arabic*),resume=lingexcount}
+\newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
 
+\newlist{subex}{enumerate}{3}
+\setlist[subex,1]{parsep=0pt,itemsep=1pt,label=\textbf{P\arabic*}}
+\newcommand\hyp{\item[\textbf{H}]}
+\newcommand\fracasex[2]{\begin{lingex}\item[(#1)] \begin{subex} #2 \end{subex} \end{lingex} }
+\newcommand\jp[1]{\todo[backgroundcolor=blue!10]{JP: #1}}
+
+\newcommand\constant[1]{\mathsf{#1}}
 
 \aclfinalcopy % Uncomment this line for the final submission
 %\def\aclpaperid{***} %  Enter the acl Paper ID here
@@ -21,6 +39,7 @@
 %\bibliography{../bbcl_lccm2018/bbcl_lccm2018.bib,iwcs2019}
 
 \usepackage[verbose]{newunicodechar}
+\input{../PaperTools/latex/newunicodedefs}
 
 \title{FraCaS: Temporal Analysis}
 \author{Jean-Philippe Bernardy \qquad Stergios Chatzikyriakidis \\
@@ -68,7 +87,7 @@ predicates; in types, they are functions from entities to propositions
 additional time parameters, one corresponding with the starting time
 of the action and one corresponding to its stopping time. For example,
 if John walked between $t_0$ and $t_1$, we would have:
-$walk(john,t0,t1)$. From now on we will call an interval of time
+$walk(john,t_0,t_1)$. From now on we will call an interval of time
 points $[t_0,t_1]$ a timespan. Every timespan $[t_0,t_1]$ has the
 property $t_0 ≤ t_1$ (it starts no later than it stops). We are thus
 using a simple newtonian model of time, corresponding to layman
@@ -92,9 +111,13 @@ temporal context down to its components without changing it. However
 some key elements will act on it on nontrivial ways, which we proceed
 to detail below.
 
-The timespan in the context is optional because, in certain
-situations, the semantics is different depending on whether a timespan
-has been specified externally or not, as we explain below.
+\newcommand\nospan{\ensuremath{─}}
+\newcommand\anyspan{\ensuremath{\_}}
+The timespan in the context is
+optional because, in certain situations, the semantics is different
+depending on whether a timespan has been specified externally or not,
+as we explain below. A non-present timespan will be represented as
+\nospan{}. If a semantic function does not depend on a timespan, we will write \anyspan{} instead
 
 \paragraph{tenses}
 
@@ -106,10 +129,10 @@ Example:
 
 A scandinavian won the nobel prize.
 
-useCl past pPos (predVP (detCN (detQuant indefArt numSg) (useN (lexemeN "scandinavian_N"))) (complSlash (slashV2a (lexemeV2 "win_V2")) (detCN (detQuant indefArt numSg) (useN (lexemeN "nobel_prize_N")))))
+useCl past pPos (predVP (detCN (detQuant indefArt numSg) scandinavian\_CN) (complSlash (slashV2a win\_V2) (detCN (detQuant indefArt numSg) nobel\_prize\_CN)))
 
 In our semantics we deal only with present and simple past
-tenses.  Indeed we find that FraCas does not exercise additional
+tenses. \jp{Is this enough for theory?} Indeed we find that FraCas does not exercise additional
 specific tenses (if a more complicated tense is used, the additional
 information is also carried by adverbs or adverbial phrases, in a more
 specific way.)
@@ -140,7 +163,7 @@ categories:
   provided. Typical such adverbs specify in fact a single point in
   time (so the start and the end of the interval coincide).
 
-  ⟦``at 5 pm, s''⟧(...) = ⟦s⟧(5pm,5pm)
+  \[⟦\text{at 5 pm, \(s\)}⟧(...) = ⟦s⟧(5pm,5pm)\]
 
 \item[existentially quantifying] The majority of temporal adverbs
   existentially quantify over a timespan. Examples include ``since
@@ -149,7 +172,7 @@ categories:
   in someway. Sometimes the restriction is an equality (``for exactly
   two hours'').
 
-  ⟦``in 1992, s''⟧(...) = ∃t1,t2.  [t1,t2] ⊆ 1992, ⟦s⟧(t1,t2)
+  \[⟦\text{in 1992, \(s\)}⟧(...) = ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)\]
 
 \item[universally quantifying] A few adverbs introduce intervals via a
   universal quantification (sometimes with a constraint). Examples
@@ -158,11 +181,11 @@ categories:
   If there is no explicit time context, then ``always'' has no
   constraint on the interval, otherwise the quantified interval must
   be included in it:
-  ⟦``always s''⟧(t0,t1) = ∀t0',t1'. [t0',t1'] ⊆ [t0,t1], ⟦s⟧(t0',t1')
+  \[⟦\text{always \(s\)}⟧(t_0,t_1) = ∀t_0',t_1'. [t_0',t_1'] ⊆ [t_0,t_1], ⟦s⟧(t_0',t_1')\]
 
   % A particularly interesting case found in FraCas is ``every month'':
 
-  % ⟦``every month s''⟧(t0,t1) = ∀t. [t,t+1month] ⊆ [t0,t1], ⟦s⟧(t,t+1month)
+  % ⟦``every month s''⟧(t_0,t_1) = ∀t. [t,t+1month] ⊆ [t_0,t_1], ⟦s⟧(t,t+1month)
 \end{enumerate}
 
 
@@ -171,11 +194,11 @@ categories:
 A common theme in the testsuite is the reference to previous
 occurences of an event:
 
-(262)
-P1	Smith left after Jones left.
-P2	Jones left after Anderson left.
-Q 	Did Smith leave after Anderson left?
-H 	Smith left after Anderson left.
+\fracasex{262}{
+\item	Smith left after Jones left.
+\item	Jones left after Anderson left.
+\hyp 	Did Smith leave after Anderson left?
+}
 
 To be able to conclude as the testsuite expects, we have to make sure
 that the two occurences of ``Jones left'' (in P1 and P3) refer to the
@@ -184,7 +207,7 @@ same time intervals.
 For this purpose we postulate the unicity of action for certain timed
 propositions:
 
-P-unicity : P t1 t2 → P t3 t4 → (t1 = t3) ∧ (t2 = t4)
+\[\constant{unicity}_P : P t_1 t_2 → P t_3 t_4 → (t_1 = t_3) ∧ (t_2 = t_4)\]
 
 P-unicity holds only if P is an \emph{achievement} or an \emph{actitivty}.
 
@@ -194,14 +217,16 @@ this appears to play little role, if any, in our analysis.)
 
 A contrario, if P is a \emph{stative}, then we get a time-interval subsumption property:
 
-P-subsumption : [t3,t4] ⊆ [t1,t2] -> P t1 t2 -> P t3 t4
+\[\constant {subsumption}_P : [t_3,t_4] ⊆ [t_1,t_2] → P t_1 t_2 → P t_3 t_4\]
 
 This principle is used for example below:
 
-P1	Smith arrived in Paris on the 5th of May, 1995.
-P2	Today is the 15th of May, 1995.
-P3	She is still in Paris.
-Q 	Was Smith in Paris on the 7th of May, 1995? 
+\fracasex{314}
+{\item	Smith arrived in Paris on the 5th of May, 1995.
+\item	Today is the 15th of May, 1995.
+\item	She is still in Paris.
+\hyp 	Was Smith in Paris on the 7th of May, 1995? 
+}
 
 Unicity of action appears to be a non-logical principle. Indeed, it is
 quite possible that ``Jones left'' several times. However, it seems
@@ -211,11 +236,12 @@ taken as a valid \emph{by default}: it is only when we have a
 sufficiently constrained situation that one should reject it. Consider
 the following discourse:
 
-(1) Smith left at 1pm.
-(2) Smith went to its appointment with the lawyer.
-(3) Smith came back at 2pm
-(4) Smith left at 4pm.
-
+\begin{enumerate}[parsep=0pt,itemsep=1pt,label=(\arabic*)]
+\item Smith left at 1pm.
+\item Smith went to its appointment with the lawyer.
+\item Smith came back at 2pm
+\item Smith left at 4pm.
+\end{enumerate}
 One would normally not say that there is contradiction. However if (1)
 and (4) are presented in isolation, a contradiction can be flagged.
 
@@ -223,47 +249,54 @@ and (4) are presented in isolation, a contradiction can be flagged.
 The principle of using unicity of action interacts well with the usual interpretation of quantifiers (and anaphora).
 Indeed, using it, we can refute (279):
 
-279:
-P1	Smith wrote a novel in 1991.
-Q 	Did Smith write it in 1992?
-
+\fracasex{279}{
+\item	Smith wrote a novel in 1991.
+\hyp 	Did Smith write it in 1992?
+}
 Indeed, following our account, the above (contradictory) inference problem is to be
 interperted as
-∃x. novel(x) ∧
-∃t1,t2. [t1,t2] ⊆ 1991 ∧ write(smith,x,t1,t2) ∧
-∃t3,t4. [t3,t4] ⊆ 1992 ∧ write(smith,x,t3,t4)
-⟶ ⊥
 
-Thanks to unicity of action we find [t1,t2] = [t3,t4], and due to 1991
-and 1992 being disjoint we obtain contradiction.
+\[\begin{array}{l}
+∃x. novel(x) ∧ \\
+∃t_1,t_2. [t_1,t_2] ⊆ 1991 ∧ write(smith,x,t_1,t_2) ∧ \\
+∃t_3,t_4. [t_3,t_4] ⊆ 1992 ∧ write(smith,x,t_3,t_4) \\
+⟶ ⊥ \\
+\end{array}
+\]
+
+Thanks to unicity of action we find \([t_1,t_2] = [t_3,t_4]\), and due
+to the years 1991 and 1992 being disjoint we obtain contradiction.
 
 [the scope
 for the existential is extended according to our previous analysis of
 anaphora]
 
 However, the testsuite instructs that we should \emph{not} be able to refute
-280, with the justification that ``wrote a novel'' is a repeatable
+(280), with the justification that ``wrote a novel'' is a repeatable
 accomplishment:
 
-280:
-P1	Smith wrote a novel in 1991.
-Q 	Did Smith write a novel in 1992?
-H 	Smith wrote a novel in 1992.
 
+\fracasex{280}{
+\item	Smith wrote a novel in 1991.
+\item 	Did Smith write a novel in 1992?
+\hyp 	Smith wrote a novel in 1992.
+}
 Here our interpretation is:
 
-∃x. novel(x) ∧
-∃t1,t2. [t1,t2] ⊆ 1991 ∧ write(smith,x,t1,t2) ∧
-∃y. novel(y) ∧
-∃t3,t4. [t3,t4] ⊆ 1992 ∧ write(smith,x,t3,t4)
-⟶ ⊥
-
+\[\begin{array}{l}
+∃x. novel(x) ∧ \\
+∃t_1,t_2. [t_1,t_2] ⊆ 1991 ∧ write(smith,x,t_1,t_2) ∧ \\
+∃y. novel(y) ∧ \\
+∃t_3,t_4. [t_3,t_4] ⊆ 1992 ∧ write(smith,x,t_3,t_4) \\
+⟶ ⊥ \\
+\end{array}
+\]
 Our analysis does not need to treat this last case specially. Indeed,
 even if $write(smith,x,.,.)$ is an activity and thus subject to
 unicity of action, in (280), $x$ is quantified existentially; we have
-two \emph{different} actions: $write(smith,x,t1,t2)$ and
-$write(smith,y,t3,t4)$, and thus we can't deduce equality of the
-interval $t1,t2$ and $t3,t4$; in turn the hypothesis can't be refuted.
+two \emph{different} actions: $write(smith,x,t_1,t_2)$ and
+$write(smith,y,t_3,t_4)$, and thus we can't deduce equality of the
+interval $t_1,t_2$ and $t_3,t_4$; in turn the hypothesis can't be refuted.
 
 
 \paragraph{action-modification verbs}
@@ -274,8 +307,7 @@ etc. These verbs modify the temporal in non-trivial ways. Consider for
 example ``finish to ...''. The timespan of the argument of finish
 should end within the timespan of the finishing action:
 
-⟦finish to s⟧(t0,t1) = ∃(t0',t1'). t1' ∈ [t0,t1] ∧ s(t0',t1')
-
+\[⟦\text{finish to \(s\)}⟧(t_0,t_1) = ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')\]
 
 \section{Results and evaluation}
 \providecommand\ncases[1]{{\ensuremath{^{#1}}}}
