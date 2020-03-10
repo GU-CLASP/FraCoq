@@ -41,35 +41,56 @@ If needed
 If needed
 \paragraph{Temporal Semantics}
 Stergios
-
+ 
 \section{Our Compositional Semantics}
 
-- See our pervious papers, (adjectives, adverbs, nouns, verbs, anaphora, etc.)
+We are relying on a largely standard montegovian semantics. In brief,
+sentences are interpreted as propositions, verbs and noun-phrases as
+predicates.  We use type-raising for noun-phrases to support
+quantifiers.
 
-- Here we simply ignore these aspects and it is safe for the reader to
-assume a montegovian semantics and assume that anaphoroi are resolved
-as they should be.
+We support additionally various constructinos and phenomena present in
+the testsuite, including adjectives, adverbs, nouns, verbs, anaphora,
+etc. We direct the reader to our previous work for details \ifanon
+(citations anonymized) \else \citet{} \fi, but the particular
+treatment of such phenomena is largely independent from our treatment
+of time.
+%
+Here we simply ignore these aspects beyond the fact that they
+are handled correctly in most of the case of the FraCaS testsuite.  In
+particular, non-temporal anaphoroi are resolved as they should be.
 
 \section{Our Treatment of time}
 
-Our basic approach is to extend predicates with two time parameters,
-one corresponding with the starting time of the action and one with
-its stopping time. For example, if John walked between $t_0$ and
-$t_1$, we would have: $walk(john,t0,t1)$. From now on we will call an
-interval of time points $[t_0,t_1]$ a timespan. Every timespan
-$[t_0,t_1]$ has the property $t_0 ≤ t_1$ (it starts no later than it
-stops).
+In montegovian semantics, (intransitive) verbs are one-place
+predicates; in types, they are functions from entities to propositions
+($e \to t$).  Our basic approach is to generalise verb to take two
+additional time parameters, one corresponding with the starting time
+of the action and one corresponding to its stopping time. For example,
+if John walked between $t_0$ and $t_1$, we would have:
+$walk(john,t0,t1)$. From now on we will call an interval of time
+points $[t_0,t_1]$ a timespan. Every timespan $[t_0,t_1]$ has the
+property $t_0 ≤ t_1$ (it starts no later than it stops). We are thus
+using a simple newtonian model of time, corresponding to layman
+intuition.
+
+In principle, common nouns and adjectives should undergo the same
+procedure. For simplicity we will however only consider verbs from now
+on. (In fact in our implementation we chose not to modify nouns nor
+adjectives to limit the increase in complexity of the formulas.)
 
 \paragraph{temporal context}
 
-We adjust the montegovian semantics so that every category takes a
+We adjust the montegovian semantics so that the interpretation of
+every category (propositions, verb phrases, etc.) takes an
 \emph{optional} timespan as an additional parameter. This timespan
 serves as a time reference for semantics, and we call it a
 \emph{temporal context}. This context propagates through the
-compositional interpretation down to atoms. By default, every
-interpretation passes the temporal context down to its components
-without changing it. However some key elements will act on it on
-nontrivial ways, which we proceed to detail below.
+compositional interpretation down to lexical items with atomic
+representation (verbs). By default, every interpretation passes the
+temporal context down to its components without changing it. However
+some key elements will act on it on nontrivial ways, which we proceed
+to detail below.
 
 The timespan in the context is optional because, in certain
 situations, the semantics is different depending on whether a timespan
@@ -77,9 +98,15 @@ has been specified externally or not, as we explain below.
 
 \paragraph{tenses}
 
-The prime non-trivial manipulation of timespans are tenses. In our
-syntax, inherited from GF, tenses are represented syntactically as an
-attribute of the clause. TODO{show example}
+The principal non-trivial manipulation of timespans are tense
+markers. In our syntax, inherited from GF, tenses are represented
+syntactically as an attribute of the clause.
+
+Example:
+
+A scandinavian won the nobel prize.
+
+useCl past pPos (predVP (detCN (detQuant indefArt numSg) (useN (lexemeN "scandinavian_N"))) (complSlash (slashV2a (lexemeV2 "win_V2")) (detCN (detQuant indefArt numSg) (useN (lexemeN "nobel_prize_N")))))
 
 In our semantics we deal only with present and simple past
 tenses.  Indeed we find that FraCas does not exercise additional
