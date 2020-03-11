@@ -175,9 +175,16 @@ categories:
   \begin{multline*}
   ⟦\text{in 1992, \(s\)}⟧(\anyspan) = \\ ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)
 \end{multline*}
+In the FraCaS test suite, we normally do not find several
+time-modifying adverbs modifying a single verb. Indeed, sentences such
+as ``in 1992, in 1991 john wrote a novel'' are infelicitous. This
+justifies ignoring the input timespan in the above interpretation --
+we're in particular not interested in modeling felicity with our
+semantics, only giving an accurate semantics when the input is
+felicitous.
 \item[universally quantifying] A few adverbs introduce intervals via a
   universal quantification (sometimes with a constraint). Examples
-  include: ``always'', ``never''.
+  include ``always'' and ``never''.
 
   If there is no explicit time context, then ``always'' has no
   constraint on the interval, otherwise the quantified interval must
@@ -185,9 +192,13 @@ categories:
   \begin{multline*}
   ⟦\text{always \(s\)}⟧(t_0,t_1) = \\ ∀t_0',t_1'. [t_0',t_1'] ⊆ [t_0,t_1], ⟦s⟧(t_0',t_1')
 \end{multline*}
+Note that, here, we do use the input interval, allowing to interpret
+phrases such as ``In 1994, Itel was always on time.''.
 
-% A particularly interesting case found in FraCas is ``every month'':
-  % ⟦``every month s''⟧(t_0,t_1) = ∀t. [t,t+1month] ⊆ [t_0,t_1], ⟦s⟧(t,t+1month)
+% A specifically interesting case found in FraCas is the adverbial phrase ``every month'', which we modeled
+% \begin{equation}
+%   ⟦\text{every month s}⟧(t_0,t_1) = ∀t. [t,t+1month] ⊆ [t_0,t_1], ⟦s⟧(t,t+1month)
+% \end{equation}
 \end{enumerate}
 
 
@@ -202,40 +213,27 @@ occurences of an event:
 \hyp 	Did Smith leave after Anderson left?
 }
 
-To be able to conclude as the testsuite expects, we have to make sure
-that the two occurences of ``Jones left'' (in P1 and P3) refer to the
+To be able to conclude that there is entailment, as the testsuite expects, we have to make sure
+that the two occurences of ``Jones left'' (in \textbf{P1} and \textbf{P2}) refer to the
 same time intervals.
 
-For this purpose we postulate the unicity of action for certain timed
+For this purpose we postulate \emph{unicity of action} for certain time-dependent
 propositions:
 
-\[\constant{unicity}_P : P t_1 t_2 → P t_3 t_4 → (t_1 = t_3) ∧ (t_2 = t_4)\]
+\[\constant{unicity}_P : P (t_1,t_2) → P (t_3,t_4) → (t_1 = t_3) ∧ (t_2 = t_4)\]
 
-P-unicity holds only if P is an \emph{achievement} or an \emph{actitivty}.
+Unicity of action holds only if the aspectual class of the proposition
+$P$ is \emph{achievement} or \emph{actitivty}.\todo{reference in literature}
 
 (The difference between actitivty and achievement is that for the
 latter time intervals can be assumed to be of nil duration. However
 this appears to play little role, if any, in our analysis.)
 
-A contrario, if P is a \emph{stative}, then we get a time-interval subsumption property:
-
-\begin{multline*}
-\constant {subsumption}_P :\\ [t_3,t_4] ⊆ [t_1,t_2] → P t_1 t_2 → P t_3 t_4
-\end{multline*}
-This principle is used for example below:
-
-\fracasex{314}
-{\item	Smith arrived in Paris on the 5th of May, 1995.
-\item	Today is the 15th of May, 1995.
-\item	She is still in Paris.
-\hyp 	Was Smith in Paris on the 7th of May, 1995? 
-}
-
 Unicity of action appears to be a non-logical principle. Indeed, it is
 quite possible that ``Jones left'' several times. However, it seems
 that this principle is never contradicted by the testsuite. As such,
 even though unicity of action is only a pragmatic rule, it can be
-taken as a valid \emph{by default}: it is only when we have a
+taken as a valid one \emph{by default}: it is only when we have a
 sufficiently constrained situation that one should reject it. Consider
 the following discourse:
 
@@ -248,9 +246,29 @@ the following discourse:
 One would normally not say that there is contradiction. However if (1)
 and (4) are presented in isolation, a contradiction can be flagged.
 
+\paragraph{Statives}
+\textit{A contrario}, if \(P\) is \emph{stative}, then we get a time-interval subsumption property:
+
+\begin{multline*}
+\constant {subsumption}_P :\\ [t_3,t_4] ⊆ [t_1,t_2] → P (t_1,t_2) → P (t_3,t_4)
+\end{multline*}
+This principle is used to reason about problem (314), below:
+
+\fracasex{314}
+{\item	Smith arrived in Paris on the 5th of May, 1995.
+\item	Today is the 15th of May, 1995.
+\item	She is still in Paris.
+\hyp 	Was Smith in Paris on the 7th of May, 1995? 
+}
+
+Indeed, from \textbf{P3} we get that Smith was in paris between May
+5th and May 15th. Because being in Paris is stative, we also get that
+Smith was in Paris in any subinterval.
+
+
 \paragraph{(un)repeatable achievements}
 The principle of using unicity of action interacts well with the usual interpretation of quantifiers (and anaphora).
-Indeed, using it, we can refute (279):
+Indeed, using it, we can refute problem (279), as expected in the testsuite:
 
 \fracasex{279}{
 \item	Smith wrote a novel in 1991.
@@ -266,18 +284,16 @@ interperted as
 ⟶ ⊥ \\
 \end{array}
 \]
+Note here that the scope for the existential is extended beyond the
+scope of \textbf{P1}. This extension can work according to
+\citet{unger:2011}, and our implemented analysis of anaphora\ifanon (citation anonymized) \else\citep{bernardy_computational_2018,bernardy_wide_2019}\fi.
 
-Thanks to unicity of action we find \([t_1,t_2] = [t_3,t_4]\), and due
+Thanks to the unicity of action of $write(smith,x,...)$ we find \([t_1,t_2] = [t_3,t_4]\), and due
 to the years 1991 and 1992 being disjoint we obtain contradiction.
 
-[the scope
-for the existential is extended according to our previous analysis of
-anaphora]
-
 However, the testsuite instructs that we should \emph{not} be able to refute
-(280), with the justification that ``wrote a novel'' is a repeatable
+problem (280), with the justification that ``wrote a novel'' is a repeatable
 accomplishment:
-
 
 \fracasex{280}{
 \item	Smith wrote a novel in 1991.
@@ -290,7 +306,7 @@ Here our interpretation is:
 ∃x. novel(x) ∧ \\
 ∃t_1,t_2. [t_1,t_2] ⊆ 1991 ∧ write(smith,x,t_1,t_2) ∧ \\
 ∃y. novel(y) ∧ \\
-∃t_3,t_4. [t_3,t_4] ⊆ 1992 ∧ write(smith,x,t_3,t_4) \\
+∃t_3,t_4. [t_3,t_4] ⊆ 1992 ∧ write(smith,y,t_3,t_4) \\
 ⟶ ⊥ \\
 \end{array}
 \]
@@ -298,21 +314,23 @@ Our analysis does not need to treat this last case specially. Indeed,
 even if $write(smith,x,.,.)$ is an activity and thus subject to
 unicity of action, in (280), $x$ is quantified existentially; we have
 two \emph{different} actions: $write(smith,x,t_1,t_2)$ and
-$write(smith,y,t_3,t_4)$, and thus we can't deduce equality of the
-interval $t_1,t_2$ and $t_3,t_4$; in turn the hypothesis can't be refuted.
-
+$write(smith,y,t_3,t_4)$, and thus we cannot deduce equality of the
+intervals $t_1,t_2$ and $t_3,t_4$. In turn, the hypothesis cannot be refuted.
 
 \paragraph{action-modification verbs}
 
-The final class of lexeme carrying a temporal-dependent semantics are
+The final class of lexemes carrying a temporal-dependent semantics are
 verbs taking a proposition as argument, like ``finish'', ``start'',
-etc. These verbs modify the temporal in non-trivial ways. Consider for
-example ``finish to ...''. The timespan of the argument of finish
-should end within the timespan of the finishing action:
+etc. These verbs modify the temporal context in non-trivial
+ways. Consider for example ``finish to ...''. The timespan of the
+argument of ``finish'' should end within the timespan of the finishing
+action:
 
 \begin{multline*}
 ⟦\text{finish to \(s\)}⟧(t_0,t_1) = \\ ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')
 \end{multline*}
+
+
 \section{Results and evaluation}
 \providecommand\ncases[1]{{\ensuremath{^{#1}}}}
 \begin{table}[hbt]
@@ -360,7 +378,7 @@ Swedish Research Council, which funds the Centre for Linguistic Theory and
 Studies in Probability (CLASP) in the Department of Philosophy, Linguistics,
 and Theory of Science at the University of Gothenburg. We are grateful to
 our colleagues in CLASP for helpful discussion of some of the ideas presented
-here. We also thank three anonymous reviewers for their useful comments on an
+here. We also thank anonymous reviewers for their useful comments on an
 earlier draft of the paper.
 
 \bibliographystyle{acl_natbib}
