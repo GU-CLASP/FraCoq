@@ -6,6 +6,7 @@
 \usepackage[hyperref]{naaclhlt2019}
 \usepackage{natbib}
 \usepackage{tabularx}
+\usepackage{times}
 \usepackage{amsmath}
 \usepackage{stmaryrd}
 \usepackage{todonotes}
@@ -63,15 +64,15 @@ Stergios
  
 \section{Our Compositional Semantics}
 
-We are relying on a largely standard montegovian semantics. In brief,
-sentences are interpreted as propositions, verbs and noun-phrases as
-predicates.  We use type-raising for noun-phrases to support
-quantifiers.
+Our interpretation is cast withing the framework of a largely standard
+montegovian semantics \cite{todo}. In brief, sentences are interpreted as
+propositions, verbs and noun-phrases as predicates.  We use
+type-raising of noun-phrases, to support quantifiers \cite{PTQ}.
 
 We support additionally various constructinos and phenomena present in
 the testsuite, including adjectives, adverbs, nouns, verbs, anaphora,
 etc. We direct the reader to our previous work for details \ifanon
-(citations anonymized) \else \citet{} \fi, but the particular
+(citations anonymized) \else \citet{bernardy_type_2017,bernardy_wide_2019} \fi, but the particular
 treatment of such phenomena is largely independent from our treatment
 of time.
 %
@@ -83,15 +84,16 @@ particular, non-temporal anaphoroi are resolved as they should be.
 
 In montegovian semantics, (intransitive) verbs are one-place
 predicates; in types, they are functions from entities to propositions
-($e \to t$).  Our basic approach is to generalise verb to take two
+($e \to t$).  Our basic approach is to generalise the interpretation of 
+verbs, so that it takes two
 additional time parameters, one corresponding with the starting time
-of the action and one corresponding to its stopping time. For example,
+of the action and one corresponding to its stopping time ($(time × time × e) \to t$). For example,
 if John walked between $t_0$ and $t_1$, we would have:
 $walk(john,t_0,t_1)$. From now on we will call an interval of time
 points $[t_0,t_1]$ a timespan. Every timespan $[t_0,t_1]$ has the
-property $t_0 ≤ t_1$ (it starts no later than it stops). We are thus
-using a simple newtonian model of time, corresponding to layman
-intuition.
+property $t_0 ≤ t_1$ (it starts no later than it stops). (We are thus
+using a simple newtonian model of time, corresponding to a layman
+intuition.)
 
 In principle, common nouns and adjectives should undergo the same
 procedure. For simplicity we will however only consider verbs from now
@@ -101,55 +103,62 @@ adjectives to limit the increase in complexity of the formulas.)
 \paragraph{temporal context}
 
 We adjust the montegovian semantics so that the interpretation of
-every category (propositions, verb phrases, etc.) takes an
-\emph{optional} timespan as an additional parameter. This timespan
-serves as a time reference for semantics, and we call it a
-\emph{temporal context}. This context propagates through the
-compositional interpretation down to lexical items with atomic
-representation (verbs). By default, every interpretation passes the
-temporal context down to its components without changing it. However
-some key elements will act on it on nontrivial ways, which we proceed
-to detail below.
+every category (propositions, verb phrases, etc.) takes a
+\emph{temporal context} as an additional parameter, serves as a time
+reference for the interpretation of all time-dependent semantics
+within the phrase.  This context propagates through the compositional
+interpretation down to lexical items with atomic representation
+(verbs). By default, every interpretation passes the temporal context
+down to its components without changing it. However some key elements
+will act on it on nontrivial ways, which we proceed to detail below.
 
+This temporal context is an \emph{optional} timespan. That is, it can
+be an timespan or an explicitly unspecified context.
 \newcommand\nospan{\ensuremath{─}}
-\newcommand\anyspan{\ensuremath{\_}}
-The timespan in the context is
+\newcommand\anyspan{\ensuremath{\_}} The timespan in the context is
 optional because, in certain situations, the semantics is different
 depending on whether a timespan has been specified externally or not,
 as we explain below. A non-present timespan will be represented as
-\nospan{}. If a semantic function does not depend on a timespan, we will write \anyspan{} instead
+\nospan{}. If a semantic function does not depend on the temporal
+context at all, we will write \anyspan{} instead.
 
 \paragraph{tenses}
 
-The principal non-trivial manipulation of timespans are tense
+\newcommand\varid[1]{\mathnormal{#1}}
+%
+The principal non-trivial manipulator of timespans are tense
 markers. In our syntax, inherited from GF, tenses are represented
-syntactically as an attribute of the clause.
+syntactically as an attribute of the clause. An illustration of a
+past-tense clause and its interpretation follows. Notice in particular
+the $past$ argument to $useCl$.
 
-Example:
-
-A scandinavian won the nobel prize.
-
-useCl past pPos (predVP (detCN (detQuant indefArt numSg) scandinavian\_CN) (complSlash (slashV2a win\_V2) (detCN (detQuant indefArt numSg) nobel\_prize\_CN)))
-
+\onelingex{A scandinavian won the nobel prize.\label{ex:onelingex}
+\\
+{\small\begin{multline*}
+\varid{useCl}\, \varid{past}\, \varid{pPos}\\ (\varid{predVP}\, (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{scandinavian\_CN})\\ (\varid{complSlash}\, (\varid{slashV2a}\, \varid{win\_V2})\\ (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{nobel\_prize\_CN})))
+\end{multline*}
+}}
 In our semantics we deal only with present and simple past
-tenses. \jp{Is this enough for theory?} Indeed we find that FraCas does not exercise additional
-specific tenses (if a more complicated tense is used, the additional
-information is also carried by adverbs or adverbial phrases, in a more
-specific way.)
+tenses. \jp{Is this enough for theory?} Indeed we find that FraCas
+does not exercise additional specific tenses (if a more complicated
+tense is used, the additional information is also carried by adverbs
+or adverbial phrases, in a more specific way.)
 
 The procedure to handle tense annotations is as follows:
 \begin{itemize}
-\item If the temporal context was modified by an adverb (or an
+\item If the tense is the past, and the temporal context is
+  unspecified, then we locally quantify over a time interval
+  $[t_0,t_1]$, such that $t_1 < now$, where $now$ is a logical
+  constant representing the current timepoint. The temporal context
+  then becomes this interval.
+\item If the tense is the present and the temporal context is
+  unspecified, then the temporal context becomes the simple
+  $(now,now)$ interval.
+\item If the temporal context is specified (for example due to the presence of an adverb or an
   averbial clause, such as ``before James swam''), then the tense does
   not create a new interval, but it may constrain it. Typically, a
   past tense adds the constraint that the temporal context ends before
-  the timepoint $now$, which is a logical constant representing the current
-  time.
-\item Otherwise, if the tense is the present, then the temporal
-  context becomes the simple $(now,now)$ interval.
-\item
-  If the tense is the past, then we locally quantify over a time
-  interval $[t_0,t_1]$, such that $t_1 < now$.
+  the timepoint $now$.
 \end{itemize}
 
 \paragraph{temporal adverbs}
@@ -159,7 +168,7 @@ adverbs. Most of the temporal adverbs fall in either of the following
 categories:
 
 \begin{enumerate}[align=left,font=\itshape]
-\item[exact adverbs] For such adverbs, an exact interval is
+\item[exact] For such adverbs, an exact interval is
   provided. Typical such adverbs specify in fact a single point in
   time (so the start and the end of the interval coincide).
 
@@ -169,8 +178,8 @@ categories:
   existentially quantify over a timespan. Examples include ``since
   1991'', ``in 1996'', ``for two years'', etc. The common theme is to
   introduce the interval and then restrict its bounds or its duration
-  in someway. Sometimes the restriction is an equality (``for exactly
-  two hours'').
+  in some way. Sometimes the restriction is an equality, as in ``for
+  exactly two hours''.
 
   \begin{multline*}
   ⟦\text{in 1992, \(s\)}⟧(\anyspan) = \\ ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)
@@ -192,8 +201,8 @@ felicitous.
   \begin{multline*}
   ⟦\text{always \(s\)}⟧(t_0,t_1) = \\ ∀t_0',t_1'. [t_0',t_1'] ⊆ [t_0,t_1], ⟦s⟧(t_0',t_1')
 \end{multline*}
-Note that, here, we do use the input interval, allowing to interpret
-phrases such as ``In 1994, Itel was always on time.''.
+Note that here we \emph{do} use the input interval, resulting in a correct interpretation for
+phrases such as ``In 1994, Itel was always on time.'' .
 
 % A specifically interesting case found in FraCas is the adverbial phrase ``every month'', which we modeled
 % \begin{equation}
@@ -236,15 +245,15 @@ even though unicity of action is only a pragmatic rule, it can be
 taken as a valid one \emph{by default}: it is only when we have a
 sufficiently constrained situation that one should reject it. Consider
 the following discourse:
-
 \begin{enumerate}[parsep=0pt,itemsep=1pt,label=(\arabic*)]
 \item Smith left at 1pm.
 \item Smith went to its appointment with the lawyer.
-\item Smith came back at 2pm
 \item Smith left at 4pm.
 \end{enumerate}
-One would normally not say that there is contradiction. However if (1)
-and (4) are presented in isolation, a contradiction can be flagged.
+One would normally not say that there is contradiction. However if the
+middle sentence were not present, a contradiction should be
+flagged. We leave such discourse analysis as future work, and simply
+apply unicity of action everywhere.
 
 \paragraph{Statives}
 \textit{A contrario}, if \(P\) is \emph{stative}, then we get a time-interval subsumption property:
@@ -258,17 +267,19 @@ This principle is used to reason about problem (314), below:
 {\item	Smith arrived in Paris on the 5th of May, 1995.
 \item	Today is the 15th of May, 1995.
 \item	She is still in Paris.
-\hyp 	Was Smith in Paris on the 7th of May, 1995? 
+\hyp 	Was Smith in Paris on the 7th of May, 1995?
 }
 
 Indeed, from \textbf{P3} we get that Smith was in paris between May
 5th and May 15th. Because being in Paris is stative, we also get that
-Smith was in Paris in any subinterval.
+Smith was in Paris in any subinterval. Contrary to unicity of action,
+subsumption is always valid.
 
 
 \paragraph{(un)repeatable achievements}
-The principle of using unicity of action interacts well with the usual interpretation of quantifiers (and anaphora).
-Indeed, using it, we can refute problem (279), as expected in the testsuite:
+The principle of using unicity of action interacts well with the usual
+interpretation of quantifiers (and anaphora).  Indeed, using it, we
+can refute problem (279), as expected by the testsuite:
 
 \fracasex{279}{
 \item	Smith wrote a novel in 1991.
@@ -288,8 +299,9 @@ Note here that the scope for the existential is extended beyond the
 scope of \textbf{P1}. This extension can work according to
 \citet{unger:2011}, and our implemented analysis of anaphora\ifanon (citation anonymized) \else\citep{bernardy_computational_2018,bernardy_wide_2019}\fi.
 
-Thanks to the unicity of action of $write(smith,x,...)$ we find \([t_1,t_2] = [t_3,t_4]\), and due
-to the years 1991 and 1992 being disjoint we obtain contradiction.
+Thanks to the unicity of action of $write(smith,x,...)$ we find
+\([t_1,t_2] = [t_3,t_4]\), and due to the years 1991 and 1992 being
+disjoint we obtain contradiction.
 
 However, the testsuite instructs that we should \emph{not} be able to refute
 problem (280), with the justification that ``wrote a novel'' is a repeatable
@@ -314,7 +326,7 @@ Our analysis does not need to treat this last case specially. Indeed,
 even if $write(smith,x,.,.)$ is an activity and thus subject to
 unicity of action, in (280), $x$ is quantified existentially; we have
 two \emph{different} actions: $write(smith,x,t_1,t_2)$ and
-$write(smith,y,t_3,t_4)$, and thus we cannot deduce equality of the
+$write(smith,y,t_3,t_4)$, because $x \neq y$, and thus we cannot deduce equality of the
 intervals $t_1,t_2$ and $t_3,t_4$. In turn, the hypothesis cannot be refuted.
 
 \paragraph{action-modification verbs}
@@ -373,6 +385,9 @@ Total        & 337        & .78        & .89         & .83    & .69  & .50  & .8
 Stergios
 \section*{Acknowledgements}
 
+\ifanon
+Anonymized
+\else
 The research reported in this paper was supported by grant 2014-39 from the
 Swedish Research Council, which funds the Centre for Linguistic Theory and
 Studies in Probability (CLASP) in the Department of Philosophy, Linguistics,
@@ -380,7 +395,7 @@ and Theory of Science at the University of Gothenburg. We are grateful to
 our colleagues in CLASP for helpful discussion of some of the ideas presented
 here. We also thank anonymous reviewers for their useful comments on an
 earlier draft of the paper.
-
+\fi
 \bibliographystyle{acl_natbib}
 
 \end{document}
