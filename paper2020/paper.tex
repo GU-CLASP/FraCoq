@@ -381,6 +381,32 @@ Total        & 337        & .78        & .89         & .83    & .69  & .50  & .8
   \label{tab:results}
 \end{table}
 \paragraph{interaction with negation and group readings}
+One reason explaining the lower performance of our systems on some
+sections of the testsuite is that our interpretation of time interacts
+imperfectly with negation and group readings.
+
+The issue is that the quantification introduced by the temporal marker
+is outside the negation. For example, the premiss of (038) is
+interpreted as ``there exists a time in the past when every delegate
+did not finish the report'' --- which is incorrect in this context.
+\fracasex{038}{
+\item	No delegate finished the report.
+\hyp 	Some delegate finished the report on time.
+}
+%
+We stress that such interaction between quantifiers and negation
+already occurs without temporal analysis: one must make a difference
+between narrow scoping and wide scoping \cite{todo}. Unfortunately,
+the montegovian system over which we base our implementaiton does not
+support this phenomena. (Indeed the test suite does not appear to
+handle this case). We propose that the situation becomes
+quantitatively more difficult to handle with the added complication of
+time-quantification, but not fundamentally different.
+%
+A similar issue occurs with group readings, which are interpreted as
+conjunctions. Here, the problem is to solve the order of scoping
+between this conjunction and time-interval quantifiers.
+
 \section{Conclusions and Future Work}
 Stergios
 \section*{Acknowledgements}
