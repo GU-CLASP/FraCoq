@@ -54,6 +54,13 @@
 
 \section{Introduction}
 Stergios
+
+We do not care about classifying sentences as felicitous/infelicitous
+or grammatical/ungrammatical, rather we assume that the sentence is
+correct and care about giving it an appropriate interpretation as a
+logical formula.  Indeed, our evaluation uses entailment properties
+only.
+
 \section{Background}
 \paragraph{GF}
 If needed
@@ -61,7 +68,13 @@ If needed
 If needed
 \paragraph{Temporal Semantics}
 Stergios
- 
+
+We use notions of ``stative'', ``achievement'', ``activity''. Our
+definition do not seem to match perfectly the definitions found in the
+literature; however we think they are good definitions, given that
+they generally afford the correct inferences for the testsuite. (We
+assume the testsuite is correct.)
+
 \section{Our Compositional Semantics}
 
 Our interpretation is cast withing the framework of a largely standard
@@ -235,7 +248,7 @@ Unicity of action holds only if the aspectual class of the proposition
 $P$ is \emph{achievement} or \emph{actitivty}.\todo{reference in literature}
 
 (The difference between actitivty and achievement is that for the
-latter time intervals can be assumed to be of nil duration. However
+latter time intervals can be assumed to be of nil\footnote{TODO: needs qualification} duration. However
 this appears to play little role, if any, in our analysis.)
 
 Unicity of action appears to be a non-logical principle. Indeed, it is
@@ -271,7 +284,7 @@ This principle is used to reason about problem (314), below:
 }
 
 Indeed, from \textbf{P3} we get that Smith was in paris between May
-5th and May 15th. Because being in Paris is stative, we also get that
+5th and May 15th. Because "being in Paris" is stative, we also get that
 Smith was in Paris in any subinterval. Contrary to unicity of action,
 subsumption is always valid.
 
