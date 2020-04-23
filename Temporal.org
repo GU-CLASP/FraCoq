@@ -1,3 +1,11 @@
+** Background
+
+http://www.sfu.ca/person/dearmond/322/322.event.class.htm
+
+- Task driven; don't aim to cover 100% of everything.
+  - John runs a marathon /= john runs
+- 
+
 ** Basic Idea
 
 - Add a time parameter to verbs.
