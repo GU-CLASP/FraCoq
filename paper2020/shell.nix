@@ -20,6 +20,7 @@ in stdenv.mkDerivation {
                        inherit (texlive)
                        biblatex
                        boondox
+                       cleveref
                        cmll
                        collection-fontsrecommended
                        comment
