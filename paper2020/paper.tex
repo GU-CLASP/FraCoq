@@ -66,10 +66,52 @@ The paper is structured as follows: in chapter 2, we give a brief background of 
 %only.
 
 \section{Background}
+
 \paragraph{GF}
-If needed
+We work on a syntactic representation of the FraCaS test suite in GF
+abstract syntax~\citep{Ljunglof:2012}. Thus, we skip the
+parsing phase and avoid any syntactic ambiguity.
+
+For the purpose of this paper, the important point is that GF the
+syntax aims at a balance of sufficient abstraction to provide a
+semantically-relevant structure, but at the same time it embeds
+sufficiently many syntactic features to be able to reconstruct
+unambiguously natural-language text. Example \label{ex:onelingex}
+shows an example abstract syntax tree and its realisation in English.
+
 \paragraph{Coq}
 If needed
+
+\paragraph{Montegovian semantics}
+\todo{integrate to background}
+
+Our interpretation is cast withing the framework of a largely standard
+montegovian semantics \cite{todo}. In brief, sentences are interpreted as
+propositions, verbs and noun-phrases as predicates.  We use
+type-raising of noun-phrases, to support quantifiers~\cite{PTQ}.
+
+We support additionally the basic constructions and phenomena present
+in the testsuite, including adjectives, adverbs, nouns, verbs,
+anaphora, etc. We direct the reader to our previous work for details
+\ifanon (citations anonymized) \else
+\citet{bernardy_type_2017} \fi, but the particular
+treatment of such phenomena is essentially independent from our
+treatment of time:
+in this paper we simply ignore these aspects beyond the fact that they
+are handled correctly in most of the cases of the FraCaS testsuite.
+
+\paragraph{Dynamic semantics}
+We additionally assume support for (non-temporal) anaphora, using a
+monadic-based dynamic semantics \cite{TODO}.  Our particular
+implementation is not perfect \ifanon (citations anonymized) \else
+\citet{ bernardy_wide_2019} \fi but non-temporal anaphoroi in the
+testsuite are generally resolved as they should be.
+
+As for other basic phenomena, there is not much interaction between
+our treatment of time and non-temporal anaphora. One critical
+exception is discussed in \cref{sec:repeatable-achievements}.
+
+
 \paragraph{Temporal Semantics}
 Stergios
 
@@ -79,23 +121,6 @@ literature; In general, we use the term achievement to include accomplishment as
 they generally afford the correct inferences for the testsuite. (We
 assume the testsuite is correct.)
 
-\section{Our Compositional Semantics}
-
-Our interpretation is cast withing the framework of a largely standard
-montegovian semantics \cite{todo}. In brief, sentences are interpreted as
-propositions, verbs and noun-phrases as predicates.  We use
-type-raising of noun-phrases, to support quantifiers \cite{PTQ}.
-
-We support additionally various constructinos and phenomena present in
-the testsuite, including adjectives, adverbs, nouns, verbs, anaphora,
-etc. We direct the reader to our previous work for details \ifanon
-(citations anonymized) \else \citet{bernardy_type_2017,bernardy_wide_2019} \fi, but the particular
-treatment of such phenomena is largely independent from our treatment
-of time.
-%
-Here we simply ignore these aspects beyond the fact that they
-are handled correctly in most of the case of the FraCaS testsuite.  In
-particular, non-temporal anaphoroi are resolved as they should be.
 
 \section{Our Treatment of time}
 
@@ -294,6 +319,7 @@ subsumption is always valid.
 
 
 \paragraph{(un)repeatable achievements}
+\label{sec:repeatable-achievements}
 The principle of using unicity of action interacts well with the usual
 interpretation of quantifiers (and anaphora).  Indeed, using it, we
 can refute problem (279), as expected by the testsuite:
@@ -361,6 +387,7 @@ action:
 
 
 \section{Results and evaluation}
+\todo{How this system is new; comparison with other systems; first system that does the whole fracas}
 \providecommand\ncases[1]{{\ensuremath{^{#1}}}}
 \begin{table}[hbt]
   \centering
