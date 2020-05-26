@@ -55,7 +55,7 @@
 
 \section{Introduction}
 Stergios
-The semantics of tense and aspect has been a long standing issue in the study of formal semantics since the early days of Montague Grammar and a number of different ideas have been put forth on the table to deal with them throughout the years \citet{dowty:2012,prior:2003,steedman:2000,higginbotham:2009,fernando:2015}. The semantics of tense and aspect has been also central in the study of Natural Language Inference (NLI). The various datasets for NLI that have been proposed by the years contain examples that have some implicit or explicit reliance to inferences related to tense and aspect. One of the early datasets used to test logical approaches, the FraCaS test suite \citet{cooper:1996} contains a whole section of the dataset only for temporal and aspectual inference. This part of the FraCaS has been notoriously difficult to tackle. In fact, all the computational systems ran on the FraCaS so far skip this section, and usually also the anaphora and ellipsis sections.The exception with respect to the ellipsis and anaphora sections is the system presented by \citet{bernardy_type_2017,bernardy_wide_2019} where a whole run of the FraCaS excluding the temporal section has been attempted. In this paper, we take up the challenge of providing a computationally viable account of tense and aspect to deal with the notorious section 8 of the FraCaS test suite. This account is not meant to be a theoretically full account of tense and aspect, but an account that is driven by the need to cover the test suite in a way that is general enough to capture the test suite examples. The account is evaluated on the entailment properties of various temporal and aspectual examples, as given by the test suite. As such, we are not getting into the discussion of how tense and aspect might affect grammaticality or infelicitousness of various sentences. We take the sentences of the FraCaS to be syntactically correct and the entailment patterns they are annotated with valid. 
+The semantics of tense and aspect has been a long standing issue in the study of formal semantics since the early days of Montague Grammar and a number of different ideas have been put forth on the table to deal with them throughout the years \citet{dowty:2012,prior:2003,steedman:2000,higginbotham:2009,fernando:2015}. The semantics of tense and aspect has been also central in the study of Natural Language Inference (NLI). The various datasets for NLI that have been proposed by the years contain examples that have some implicit or explicit reliance to inferences related to tense and aspect. One of the early datasets used to test logical approaches, the FraCaS test suite \citet{cooper:1996} contains a whole section of the dataset only for temporal and aspectual inference (section 7). This part of the FraCaS has been notoriously difficult to tackle. In fact, all the computational systems ran on the FraCaS so far skip this section, and usually also the anaphora and ellipsis sections.The exception with respect to the ellipsis and anaphora sections is the system presented by \citet{bernardy_type_2017,bernardy_wide_2019} where a whole run of the FraCaS excluding the temporal section has been attempted. In this paper, we take up the challenge of providing a computationally viable account of tense and aspect to deal with the notorious section 8 of the FraCaS test suite. This account is not meant to be a theoretically full account of tense and aspect, but an account that is driven by the need to cover the test suite in a way that is general enough to capture the test suite examples. The account is evaluated on the entailment properties of various temporal and aspectual examples, as given by the test suite. As such, we are not getting into the discussion of how tense and aspect might affect grammaticality or infelicitousness of various sentences. We take the sentences of the FraCaS to be syntactically correct and the entailment patterns they are annotated with valid. 
 
 The paper is structured as follows: in chapter 2, we give a brief background of the system we are going to be using, saying a few words about its main individual components: the Grammatical Framework that is used as the syntactic parser, the Coq proof assistant which does all the reasoning and some brief remarks on temporal semantics \textbf{(JP: Anything to say on Dynamic Semantics?)}. In section 3, we discuss the main aspects of the compositional semantics of our system \textbf{This could go in the background actually}, and in section 4, we give our main treatment of time, using various examples from the FraCaS in exemplifying its effectiveness. In section 5, we have a brief look at how our system performs with respect to the temporal section of the FraCaS, but we also ran the system across the whole of the FraCaS, this being the first time that a complete run through the whole suite has been made. In section 6, we conclude and discuss avenues for future work. 
 
@@ -296,7 +296,7 @@ sufficiently constrained situation that one should reject it. Consider
 the following discourse:
 \begin{enumerate}[parsep=0pt,itemsep=1pt,label=(\arabic*)]
 \item Smith left at 1pm.
-\item Smith went to its appointment with the lawyer.
+\item Smith went to his appointment with the lawyer.
 \item Smith left at 4pm.
 \end{enumerate}
 One would normally not say that there is contradiction. However if the
@@ -316,7 +316,7 @@ This principle is used to reason about problem (314), below:
 {\item	Smith arrived in Paris on the 5th of May, 1995.
 \item	Today is the 15th of May, 1995.
 \item	She is still in Paris.
-\hyp 	Was Smith in Paris on the 7th of May, 1995?
+\hyp 	Smith was in Paris on the 7th of May, 1995.
 }
 
 Indeed, from \textbf{P3} we get that Smith was in paris between May
@@ -333,7 +333,7 @@ can refute problem (279), as expected by the testsuite:
 
 \fracasex{279}{
 \item	Smith wrote a novel in 1991.
-\hyp 	Did Smith write it in 1992?
+\hyp 	 Smith wrote it in 1992.
 }
 Indeed, following our account, the above (contradictory) inference problem is to be
 interperted as
@@ -361,7 +361,7 @@ accomplishment:
 \item	Smith wrote a novel in 1991.
 \item 	Did Smith write a novel in 1992?
 \hyp 	Smith wrote a novel in 1992.
-}
+}\todo{something wrong with P2 here, is there a premise there at all?}
 Here our interpretation is:
 
 \[\begin{array}{l}
@@ -492,5 +492,6 @@ earlier draft of the paper.
 \bibliographystyle{acl_natbib}
 
 % \bibliography{../PaperTools/bibtex/jp}
-
+% Things we cannot handle (I think): John was writing a book in 1991 -> John wrote a book in 1991 (I think we predict entailment here). This is because there is no distinction with progressive and non progressive aspect. We did not do it, I guess because it was needed, but just for future reference. There are similar examples playing around with LEXICAL aspect (aspect grammatically encoded) that we could look at in future work
+% Accomplishments usually involve a culmination point in the action which is necessary for the event to be completed. This is not necessary for activities. John stopped writing a book not-> John wrote a book (but does imply that John was writing a book), but, John stopped running -> John run and John was runnning 
 \end{document}
