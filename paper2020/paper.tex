@@ -89,11 +89,11 @@ as a theorem proving task. Coq supports, as already mentioned,
  dependent typing, but also subtyping, which are instrumental in
 expressing NL semantics.
 
-\paragraph{Montegovian semantics}
+\paragraph{Montagovian semantics}
 \todo{integrate to background}
 
 Our interpretation is cast withing the framework of a largely standard
-montegovian semantics \cite{todo}. In brief, sentences are interpreted as
+montagovian semantics \cite{todo}. In brief, sentences are interpreted as
 propositions, verbs and noun-phrases as predicates.  We use
 type-raising of noun-phrases, to support quantifiers~\cite{PTQ}.
 
@@ -131,7 +131,7 @@ assume the testsuite is correct.)
 
 \section{Our Treatment of time}
 
-In montegovian semantics, (intransitive) verbs are one-place
+In montagovian semantics, (intransitive) verbs are one-place
 predicates; in types, they are functions from entities to propositions
 ($e \to t$).  Our basic approach is to generalise the interpretation of 
 verbs, so that it takes two
@@ -151,7 +151,7 @@ adjectives to limit the increase in complexity of the formulas.)
 
 \paragraph{temporal context}
 
-We adjust the montegovian semantics so that the interpretation of
+We adjust the montagovian semantics so that the interpretation of
 every category (propositions, verb phrases, etc.) takes a
 \emph{temporal context} as an additional parameter, serves as a time
 reference for the interpretation of all time-dependent semantics
@@ -464,7 +464,7 @@ did not finish the report'' --- which is incorrect in this context.
 We stress that such interaction between quantifiers and negation
 already occurs without temporal analysis: one must make a difference
 between narrow scoping and wide scoping \cite{todo}. Unfortunately,
-the montegovian system over which we base our implementaiton does not
+the montagovian system over which we base our implementaiton does not
 support this phenomena. (Indeed the test suite does not appear to
 handle this case). We propose that the situation becomes
 quantitatively more difficult to handle with the added complication of
