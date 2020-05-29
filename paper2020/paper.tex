@@ -90,12 +90,11 @@ as a theorem proving task. Coq supports, as already mentioned,
 expressing NL semantics.
 
 \paragraph{Montagovian semantics}
-\todo{integrate to background}
 
 Our interpretation is cast within the framework of a largely standard
-montagovian semantics \cite{todo}. In brief, sentences are interpreted as
+montagovian semantics. In brief, sentences are interpreted as
 propositions, verbs and noun-phrases as predicates.  We use
-type-raising of noun-phrases, to support quantifiers~\cite{PTQ}.
+type-raising of noun-phrases, to support quantifiers~\citep{montague_proper_1974}.
 
 We support additionally the basic constructions and phenomena present
 in the testsuite, including adjectives, adverbs, nouns, verbs,
@@ -109,9 +108,9 @@ are handled correctly in most of the cases of the FraCaS testsuite.
 
 \paragraph{Dynamic semantics}
 We additionally assume support for (non-temporal) anaphora, using a
-monadic-based dynamic semantics \cite{TODO}.  Our particular
+monadic-based dynamic semantics \cite{unger_dynamic_2011,charlow_monadic_2015,charlow_monadic_2017}.  Our particular
 implementation is not perfect \ifanon (citations anonymized) \else
-\citet{ bernardy_wide_2019} \fi but non-temporal anaphoroi in the
+\citet{bernardy_wide_2019} \fi but non-temporal anaphoroi in the
 testsuite are generally resolved as they should be.
 
 As for other basic phenomena, there is not much interaction between
@@ -359,9 +358,8 @@ accomplishment:
 
 \fracasex{280}{
 \item	Smith wrote a novel in 1991.
-\item 	Did Smith write a novel in 1992?
 \hyp 	Smith wrote a novel in 1992.
-}\todo{something wrong with P2 here, is there a premise there at all?}
+}
 Here our interpretation is:
 
 \[\begin{array}{l}
@@ -464,9 +462,10 @@ did not finish the report'' --- which is incorrect in this context.
 We stress that such interaction between quantifiers and negation
 already occurs without temporal analysis: one must make a difference
 between narrow scoping and wide scoping \cite{todo}. Unfortunately,
-the montagovian system over which we base our implementaiton does not
-support this phenomena. (Indeed the test suite does not appear to
-handle this case). \todo{You mean the system? It seems unclear what you are talking and in what way a test suite is not handling an example. It does not exist or?} We propose that the situation becomes
+the montagovian system over which we base our implementation does not
+support this phenomena. (In fact the FraCaS test suite does not appear to
+test if the difference between narrow and wide scoping is handled properly.)
+We propose that the situation becomes
 quantitatively more difficult to handle with the added complication of
 time-quantification, but not fundamentally different.
 %
