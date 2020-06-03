@@ -70,14 +70,8 @@ destruct_conjs.
 repeat eexists.
 Focus 5.
 eapply weakenWinFrom.
-exact H3.
-exact H0.
-assumption.
-assumption.
-assumption.
-Qed.
-(* Error: no support for progressive *)
-
+(* Progressive is distinct *)
+Abort All.
 
 Variable y1988before1992 : Date_19880101 < Date_19920101.
 Variable y1990 : Date_19900101 < Date_19901231.

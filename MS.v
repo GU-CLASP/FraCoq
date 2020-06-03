@@ -622,6 +622,7 @@ Definition N_twenty : Numeral := 20.
 Definition N_two : Numeral := 2.
 (* Parameter digits2num : Digits -> Numeral . *)
 (* Parameter num : Sub1000000 -> Numeral . *)
+Parameter PROG_beat_V : V .
 Parameter beat_V : V .
 Parameter come_in_V : V .
 Parameter continue_V : V .
@@ -629,6 +630,7 @@ Parameter crash_V : V .
 Parameter elliptic_V : V .
 Parameter exist_V : V .
 Parameter expand_V : V .
+Parameter PROG_gamble_V : V .
 Parameter gamble_V : V .
 Parameter go8travel_V : V .
 Parameter go8walk_V : V .
@@ -640,6 +642,7 @@ Parameter meet_V : V .
 Parameter start_V : V .
 Parameter stop_V : V .
 Parameter swim_V : V .
+Parameter PROG_travel_V : V .
 Parameter travel_V : V .
 Parameter work_V : V .
 
@@ -997,6 +1000,7 @@ Parameter attend_V2 : V2 .
 Parameter become_V2 : V2 .
 Parameter blame1_V2 : V2 .
 Parameter blame2_V2 : V2 .
+Parameter PROG_build_V2 : V2 .
 Parameter build_V2 : V2 .
 Parameter buy_V2 : V2 .
 Parameter catch_V2 : V2 .
@@ -1025,6 +1029,7 @@ Parameter make8do_V2 : V2 .
 Parameter need_V2 : V2 .
 Parameter open_V2 : V2 .
 Definition own_V2 := have_V2 . (* This is because posessives are implemented with "have", and they sometimes imply ownership. See 134.*)
+Parameter PROG_pay_V2 : V2 .
 Parameter pay_V2 : V2 .
 Parameter publish_V2 : V2 .
 Parameter read_V2 : V2 .
@@ -1032,6 +1037,7 @@ Parameter read_out_V2 : V2 .
 Parameter remove_V2 : V2 .
 Parameter represent_V2 : V2 .
 Parameter revise_V2 : V2 .
+Parameter PROG_run_V2 : V2 .
 Parameter run_V2 : V2 .
 Parameter sell_V2 : V2 .
 Parameter send_V2 : V2 .
@@ -1045,9 +1051,12 @@ Parameter update_V2 : V2 .
 Parameter use_V2 : V2 .
 Parameter vote_for_V2 : V2 .
 Parameter win_V2 : V2 .
+Parameter PROG_win_V2from : object -> V2 .
 Parameter win_V2from : object -> V2 .
 Parameter work_in_V2 : V2 .
 Parameter write_V2 : V2 .
+Parameter PROG_write_V2 : V2 .
+Parameter Write_V2 : V2 .
 Parameter write_to_V2 : V2 .
 
 (** Knowledge **)
@@ -1125,11 +1134,15 @@ Definition cover_page_Npossess
 Parameter go8travel_Vtoby8means : object -> object -> object -> Prop. 
 Parameter go8travel_Vby8means : object -> object -> TProp. 
 Parameter go8travel_Vtoby8meansto : object -> object ->  object -> object -> TProp.
+Parameter PROG_go8travel_Vby8meansto :  object ->  object -> object -> TProp.
 Parameter go8travel_Vby8meansto :  object ->  object -> object -> TProp.
 Parameter go8travel_Vto :  object -> object -> TProp.
+Parameter PROG_travel_Von : object -> object -> TProp.
 Parameter travel_Von : object -> object -> TProp.
 Definition pay_V2on : object -> object -> object -> TProp
   := fun onWhat what who => pay_V2 what who.
+Definition PROG_pay_V2on : object -> object -> object -> TProp
+  := fun onWhat what who => PROG_pay_V2 what who.
  (* Only used in 319; simplistic def here *)
 Parameter knowVQ : VS.
 Parameter WHY: Prop -> Prop.
@@ -1166,6 +1179,7 @@ Definition blame2_V2on : object -> V2
 Parameter client_Nat : object -> N.
 Definition stock_market_trader_N := stockmarket_trader_N. (* spelling *)
 Parameter swim_Vto : object -> V.
+Parameter PROG_run_V2in : object -> V2.
 Parameter run_V2in : object -> V2.
 Parameter chain_Npart : object -> N.
 Definition own_V2in : object -> V2
@@ -1190,7 +1204,7 @@ Definition EXACT := fun n : Z => fun cn=> fun vp=>  (CARD (fun x => cn x /\ vp x
 Definition  report_Nfromon := fun source location report => report_N report /\ send_V2 report source NOW NOW /\ _BE_on location report NOW NOW.
 Definition  award_and_be_awarded_V2 : V2 := fun x => fun y => award_V3 y x y .
 
-Definition going_to_VV : VV := fun v object _start _stop => v object. (* FIXME: Not setting tense; this is very wrong *)
+Definition PROG_going_to_VV : VV := fun v object _start _stop => v object. (* FIXME: Not setting tense; this is very wrong *)
 Definition do_VV : VV := fun v x _start _stop => v x.
 Definition NOT:= not.
 

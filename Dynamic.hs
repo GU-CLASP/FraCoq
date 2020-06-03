@@ -111,6 +111,7 @@ instance Monoid Temporal where
   mempty = UnspecifiedTime
 
 data ExtraArgs = ExtraArgs { extraPreps :: [(Var,Object)] -- prepositions
+                           , extraProgressive :: Bool
                            , extraAdvs :: (Object -> Prop) -> Object -> Prop -- adverbs
                            , extraCompClass :: Optional CN''
                            , extraTime :: Temporal
@@ -450,7 +451,7 @@ type Pron = NP
 -- Extra objects and S'
 
 emptyObjs :: ExtraArgs
-emptyObjs = ExtraArgs {extraPreps = [], extraAdvs = id, extraTime = mempty, extraCompClass = mempty}
+emptyObjs = ExtraArgs {extraProgressive = False, extraPreps = [], extraAdvs = id, extraTime = mempty, extraCompClass = mempty}
 
 noExtraObjs :: S' -> Prop
 noExtraObjs f = fst $ f emptyObjs
@@ -480,7 +481,7 @@ verbAspect "live_Vin" = Activity
 verbAspect "run_V2" = Activity
 verbAspect "use_VVTiming" = Activity
 verbAspect "discover_V2" = Activity -- treated as such in FraCas 291
-verbAspect "_BE_" = Activity -- mostly used for "it is now date"
+verbAspect "_BE_" = Activity -- mostly used for "it is now <DATE>"
 verbAspect "finish_VVTiming" = Activity -- Because we can finish "within" an interval, see Coq code.
 verbAspect _ = Achievement
 
@@ -496,7 +497,8 @@ appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'
             ExactTime (_,t0) -> ExactTime (t0,t0)
             ForceTime tspan -> ForceTime tspan
             UnspecifiedTime -> UnspecifiedTime
-        nmPrep = nm ++ concatMap fst prepositions
+        nmPrep = prog ++ nm ++ concatMap fst prepositions
+        prog = if extraProgressive then "PROG_" else ""
         indirectObjects = init objs
         subject = last objs
         cleanedPrepositions = sortBy (compare `on` fst) $ nubBy ((==) `on` fst) extraPreps
@@ -507,11 +509,14 @@ appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'
 
 appAdjArgs :: String -> [Object] -> S''
 appAdjArgs nm [cn,obj] (ExtraArgs{..}) = (extraAdvs  (\x -> apps prep'd [cn,x]) obj)
-  where prep'd = Con "appA" `app` (Con (nm ++ concatMap fst prepositions) `apps` ((map snd prepositions)))
+  where prep'd = Con "appA" `app` (Con (nm ++ concatMap fst prepositions) `apps` map snd prepositions)
         prepositions = nubBy ((==) `on` fst) extraPreps
 
 modifyingPrep :: String -> Object -> S' -> S'
 modifyingPrep aname x s (ExtraArgs{..}) = s (ExtraArgs {extraPreps = extraPreps++[(aname,x)],..})
+
+progressively :: S' -> S'
+progressively s (ExtraArgs{..}) = s (ExtraArgs {extraProgressive = True,..})
 
 usingCompClass :: CN'' -> S' -> S'
 usingCompClass cn s ExtraArgs {..} = s ExtraArgs {extraCompClass = Explicit cn,..}

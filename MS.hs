@@ -935,7 +935,9 @@ complVQ :: VQ -> QS -> VP
 complVQ = id
 
 progrVPa :: VP -> VP
-progrVPa = id -- ignoring tense
+progrVPa vp = do
+  vp' <- vp
+  return (\x -> progressively (vp' x))
 
 complVV :: VV -> VP -> VP
 complVV vv vp = vv <*> vp

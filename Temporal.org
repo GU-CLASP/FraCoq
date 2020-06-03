@@ -212,3 +212,11 @@ semantics).
 For statives, StativeInclusion applies instead.
 ** _VS lexical class
 The time info propagates into the embedded close of know_VS, etc. (see FraCas 322)
+** Progressive
+
+For the moment, verbs in the progressive form are treated as independent:
+
+John was writing a book -> ∃t1, t2. t1<= t2, t2 <= now, PROG_write(John,book,t1,t2)
+John wrote a book -> ∃t1, t2. t1<= t2, t2 <= now, write(John,book,t1,t2)
+
+What we need is the implication write(x,y,t1,t2) -> PROG_write(x,y,t1,t2) --- but it's not tested by FraCaS
