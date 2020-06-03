@@ -54,10 +54,55 @@
 \maketitle
 
 \section{Introduction}
-Stergios
-The semantics of tense and aspect has been a long standing issue in the study of formal semantics since the early days of Montague Grammar and a number of different ideas have been put forth on the table to deal with them throughout the years \citet{dowty:2012,prior:2003,steedman:2000,higginbotham:2009,fernando:2015}. The semantics of tense and aspect has been also central in the study of Natural Language Inference (NLI). The various datasets for NLI that have been proposed by the years contain examples that have some implicit or explicit reliance to inferences related to tense and aspect. One of the early datasets used to test logical approaches, the FraCaS test suite \citet{cooper:1996} contains a whole section of the dataset only for temporal and aspectual inference (section 7). This part of the FraCaS has been notoriously difficult to tackle. In fact, all the computational systems ran on the FraCaS so far skip this section, and usually also the anaphora and ellipsis sections.The exception with respect to the ellipsis and anaphora sections is the system presented by \citet{bernardy_type_2017,bernardy_wide_2019} where a whole run of the FraCaS excluding the temporal section has been attempted. In this paper, we take up the challenge of providing a computationally viable account of tense and aspect to deal with the notorious section 8 of the FraCaS test suite. This account is not meant to be a theoretically full account of tense and aspect, but an account that is driven by the need to cover the test suite in a way that is general enough to capture the test suite examples. The account is evaluated on the entailment properties of various temporal and aspectual examples, as given by the test suite. As such, we are not getting into the discussion of how tense and aspect might affect grammaticality or infelicitousness of various sentences. We take the sentences of the FraCaS to be syntactically correct and the entailment patterns they are annotated with valid. 
+\label{sec:introduction}
 
-The paper is structured as follows: in chapter 2, we give a brief background of the system we are going to be using, saying a few words about its main individual components: the Grammatical Framework that is used as the syntactic parser, the Coq proof assistant which does all the reasoning and some brief remarks on temporal semantics \textbf{(JP: Anything to say on Dynamic Semantics?)}. In section 3, we discuss the main aspects of the compositional semantics of our system \textbf{This could go in the background actually}, and in section 4, we give our main treatment of time, using various examples from the FraCaS in exemplifying its effectiveness. In section 5, we have a brief look at how our system performs with respect to the temporal section of the FraCaS, but we also ran the system across the whole of the FraCaS, this being the first time that a complete run through the whole suite has been made. In section 6, we conclude and discuss avenues for future work. 
+The semantics of tense and aspect has been a long standing issue in
+the study of formal semantics since the early days of Montague Grammar
+and a number of different ideas have been put forth on the table to
+deal with them throughout the
+years~\citep{dowty:2012,prior:2003,steedman:2000,higginbotham:2009,fernando:2015}. The
+semantics of tense and aspect has been also central in the study of
+Natural Language Inference (NLI)\todo{citation?}. The various datasets
+for NLI that have been proposed by the years contain examples that
+have some implicit or explicit reliance on inferences related to tense
+and aspect. One of the early datasets used to test logical approaches,
+the FraCaS test suite~\citep{cooper:1996} contains a whole section
+dedicated to temporal and aspectual inference (section 7). This part
+of the FraCaS test suite has been notoriously difficult to tackle. In
+fact, all the computational systems ran on the FraCaS test suite so
+far skip this section. Additionally, they also skip the anaphora
+and ellipsis sections, with the exception of the system presented by
+\citet{bernardy_type_2017,bernardy_wide_2019}, which offers a complete whole run of the
+FraCaS test suite, excluding the temporal section. In this
+paper, we take up the challenge of providing a computationally viable
+account of tense and aspect to deal with the notorious section 8\todo{or 7? 8 was not discussed previously} of
+the FraCaS test suite. Our account is not meant to be a theoretically
+full account of tense and aspect, but rather an account that is driven by the
+need to cover the test suite in a way that is general enough to
+capture the test suite examples. The account is evaluated on the
+entailment properties of various temporal and aspectual examples, as
+given by the test suite. As such, we are not getting into the
+discussion of how tense and aspect might affect grammaticality or
+infelicitousness of various sentences. We take the sentences of the
+FraCaS suite to be syntactically correct and the entailment patterns they
+are annotated with valid.
+
+The paper is structured as follows: in \cref{sec:background}, we give
+a brief summary of the frameworks whose various subsystems rely on. In
+particular, the Grammatical Framework is used to construct the
+syntactic parser; the Coq proof assistant checks all the reasoning; a
+monad-based dynamic semantics deals with references (anaphora).  We
+also provide some brief remarks on temporal semantics. In section 3,
+we discuss the main aspects of the compositional semantics of our
+system \textbf{This could go in the background actually}, and in
+section 4, we give our main treatment of time, using various examples
+from the FraCaS suite in exemplifying its effectiveness. In section 5,
+we take a brief look at how our system performs with respect to the
+FraCaS suite. We ran the system across the whole suite, this being the
+first time that a complete run through the whole suite has been made,
+but we look in particular at the performance on the temporal
+section. In section 6, we conclude and discuss avenues for future
+work.
 
 
 %We do not care about classifying sentences as felicitous/infelicitous
@@ -67,6 +112,7 @@ The paper is structured as follows: in chapter 2, we give a brief background of 
 %only.
 
 \section{Background}
+\label{sec:background}
 
 \paragraph{GF}
 We work on a syntactic representation of the FraCaS test suite in GF
