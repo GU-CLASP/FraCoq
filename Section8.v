@@ -58,15 +58,25 @@ assumption.
 assumption.
 Qed.
 
+
 Theorem FraCaS329: Problem329aTrue. cbv.
-destruct itel_PN.
-destruct mtalk_PN.
-destruct in_1993_Adv as [in93].
-destruct apcom_PN as [apcom corpN' apcomIsCorp].
 destruct from_Prep as [from fromVerid fromCov].
-(* Progressive prevents getting to the conclusion. *)
-(* UNK *)
-Abort All.
+(* destruct in_1993_Adv as [in93 [in93Verid in93Covariant]]. *)
+destruct itel_PN as [itel corpN itelIsCorp].
+destruct apcom_PN as [apcom corpN' apcomIsCorp].
+intros theContract isContract.
+intro P.
+destruct_conjs.
+repeat eexists.
+Focus 5.
+eapply weakenWinFrom.
+exact H3.
+exact H0.
+assumption.
+assumption.
+assumption.
+Qed.
+(* Error: no support for progressive *)
 
 
 Variable y1988before1992 : Date_19880101 < Date_19920101.
