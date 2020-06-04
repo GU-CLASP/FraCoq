@@ -125,7 +125,7 @@ For the purpose of this paper, the important point is that GF the
 syntax aims at a balance of sufficient abstraction to provide a
 semantically-relevant structure, but at the same time it embeds
 sufficiently many syntactic features to be able to reconstruct
-unambiguously natural-language text. \cref{ex:onelingex}
+unambiguously natural-language text. \cref{ex:nobel}
 shows an example abstract syntax tree and its realisation in English.
 
 \paragraph{Coq}
@@ -170,7 +170,8 @@ exception is discussed in \cref{sec:repeatable-achievements}.
 
 
 \paragraph{Temporal Semantics}
-\todo{More general notion of temporal semantics? Should this be moved somewhere else?}
+\jp{More general intro to temporal semantics? Should this be moved
+  somewhere else?}
 
 We use notions of ``stative'', ``achievement'', ``activity''. Our
 definition do not seem to match perfectly the definitions found in the
@@ -189,13 +190,13 @@ predicates; in types, they are functions from entities to propositions
 ($e \to t$).  Our basic approach is to generalise the interpretation of 
 verbs, so that it takes two
 additional time parameters, one corresponding with the starting time
-of the action and one corresponding to its stopping time ($(time × time × e) \to t$). For example,
+of the action and one corresponding to its stopping time ($(e × time × time) \to t$). For example,
 if John walked between $t_0$ and $t_1$, we would have:
 $walk(john,t_0,t_1)$. From now on we will call an interval of time
 points $[t_0,t_1]$ a timespan. Every timespan $[t_0,t_1]$ has the
 property $t_0 ≤ t_1$ (it starts no later than it stops). (We are thus
 using a simple newtonian model of time, corresponding to a layman
-intuition.)
+intuition of a linear constant flow of time.)
 
 In principle, common nouns and adjectives should undergo the same
 procedure. For simplicity we will however only consider verbs from now
@@ -206,7 +207,7 @@ adjectives to limit the increase in complexity of the formulas.)
 
 We adjust the montagovian semantics so that the interpretation of
 every category (propositions, verb phrases, etc.) takes a
-\emph{temporal context} as an additional parameter, serves as a time
+\emph{temporal context} as an additional parameter, which serves as a time
 reference for the interpretation of all time-dependent semantics
 within the phrase.  This context propagates through the compositional
 interpretation down to lexical items with atomic representation
@@ -216,8 +217,8 @@ will act on it on nontrivial ways, which we proceed to detail below.
 
 This temporal context is an \emph{optional} timespan. That is, it can
 be an timespan or an explicitly unspecified context.
-\newcommand\nospan{\ensuremath{─}}
-\newcommand\anyspan{\ensuremath{\_}} The timespan in the context is
+\newcommand\nospan{\ensuremath{-}}
+\newcommand\anyspan{\ensuremath{\_}}\todo{better notation} The timespan in the context is
 optional because, in certain situations, the semantics is different
 depending on whether a timespan has been specified externally or not,
 as we explain below. A non-present timespan will be represented as
@@ -234,7 +235,7 @@ syntactically as an attribute of the clause. An illustration of a
 past-tense clause and its interpretation follows. Notice in particular
 the $past$ argument to $useCl$.
 
-\onelingex{A scandinavian won the nobel prize.\label{ex:onelingex}
+\onelingex{A scandinavian won the nobel prize.\label{ex:nobel}
 \\
 {\small\begin{multline*}
 \varid{useCl}\, \varid{past}\, \varid{pPos}\\ (\varid{predVP}\, (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{scandinavian\_CN})\\ (\varid{complSlash}\, (\varid{slashV2a}\, \varid{win\_V2})\\ (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{nobel\_prize\_CN})))
