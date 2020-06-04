@@ -115,25 +115,29 @@ work.
 \label{sec:background}
 
 \paragraph{GF}
-We work on a syntactic representation of the FraCaS test suite in GF
-abstract syntax~\citep{Ljunglof:2012}. Thus, we skip the
-parsing phase and avoid any syntactic ambiguity.
+The grammatical framework (GF, \citet{Ranta:GF}) is a powerful parser
+generator for natural languages, based on type-theoretical abstract grammars.
+This work relies a syntactic representation of the FraCaS test suite in GF
+abstract syntax~\citep{Ljunglof:2012}. Thus, we skip the parsing phase
+and avoid any syntactic ambiguity.
 
 For the purpose of this paper, the important point is that GF the
 syntax aims at a balance of sufficient abstraction to provide a
 semantically-relevant structure, but at the same time it embeds
 sufficiently many syntactic features to be able to reconstruct
-unambiguously natural-language text. Example \label{ex:onelingex}
+unambiguously natural-language text. \cref{ex:onelingex}
 shows an example abstract syntax tree and its realisation in English.
 
 \paragraph{Coq}
- Coq is an interactive theorem prover (proof assistant). It is based on the
-calculus of coinductive constructions (CiC), i.e.  a lambda calculus
-with dependent types and coinduction (we do not use any coinduction in this paper).  Coq is a very powerful reasoning engine
-that makes it fit for implementing natural language semantics in it but also, on a more practical side, for the the task of NLI, when the latter is formalized
-as a theorem proving task. Coq supports, as already mentioned,
- dependent typing, but also subtyping, which are instrumental in
-expressing NL semantics.
+Coq is an interactive theorem prover (proof assistant). It is based on
+the calculus of coinductive constructions~\citep{werner_une_1994} We
+do not use any coinduction (or even induction) in this paper, relying
+on the pure lambda-calculus inner core of Coq.  Coq is a very
+powerful reasoning engine that makes it fit for implementing natural
+language semantics in it but also, on a more practical side, for the
+the task of NLI, when the latter is formalized as a theorem proving
+task. Coq supports, as already mentioned, dependent typing, but also
+subtyping, which are instrumental in expressing NL semantics.
 
 \paragraph{Montagovian semantics}
 
@@ -154,10 +158,11 @@ are handled correctly in most of the cases of the FraCaS testsuite.
 
 \paragraph{Dynamic semantics}
 We additionally assume support for (non-temporal) anaphora, using a
-monadic-based dynamic semantics \cite{unger_dynamic_2011,charlow_monadic_2015,charlow_monadic_2017}.  Our particular
-implementation is not perfect \ifanon (citations anonymized) \else
-\citet{bernardy_wide_2019} \fi but non-temporal anaphoroi in the
-testsuite are generally resolved as they should be.
+monadic-based dynamic semantics
+\cite{unger_dynamic_2011,charlow_monadic_2015,charlow_monadic_2017}.
+Our particular implementation is not perfect \ifanon (citations
+anonymized) \else \citet{bernardy_wide_2019} \fi but non-temporal
+anaphoroi in the testsuite are generally resolved as they should be.
 
 As for other basic phenomena, there is not much interaction between
 our treatment of time and non-temporal anaphora. One critical
@@ -165,13 +170,16 @@ exception is discussed in \cref{sec:repeatable-achievements}.
 
 
 \paragraph{Temporal Semantics}
-Stergios
+\todo{More general notion of temporal semantics? Should this be moved somewhere else?}
 
 We use notions of ``stative'', ``achievement'', ``activity''. Our
 definition do not seem to match perfectly the definitions found in the
-literature; In general, we use the term achievement to include accomplishment as well. Insofar as the test suite is concerned, we find that these two categories can be collapsed into a single one.  As such,  we think it is  a good classification, given that
-they generally afford the correct inferences for the testsuite. (We
-assume the testsuite is correct.)
+literature; In general, we use the term achievement to include
+accomplishment as well. Insofar as the test suite is concerned, we
+find that these two categories can be collapsed into a single one.  As
+such, we think it is a good classification, given that they generally
+afford the correct inferences for the testsuite. (We assume the
+testsuite is correct.)
 
 
 \section{Our Treatment of time}
