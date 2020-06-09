@@ -62,7 +62,7 @@ and a number of different ideas have been put forth on the table to
 deal with them throughout the
 years~\citep{dowty:2012,prior:2003,steedman:2000,higginbotham:2009,fernando:2015}. The
 semantics of tense and aspect has been also considered in the study of
-Natural Language Inference (NLI)\todo{citation?}. The various datasets
+Natural Language Inference (NLI). The various datasets
 for NLI that have been proposed by the years contain examples that
 have some implicit or explicit reliance on inferences related to tense
 and aspect. One of the early datasets used to test logical approaches,
@@ -72,10 +72,10 @@ of the FraCaS test suite has been notoriously difficult to tackle. In
 fact, all the computational systems ran on the FraCaS test suite so
 far skip this section. Additionally, they also skip the anaphora
 and ellipsis sections, with the exception of the system presented by
-\citet{bernardy_type_2017,bernardy_wide_2019}, which offers a complete whole run of the
+\citet{bernardy_type-theoretical_2017,bernardy_wide-coverage_2019}, which offers a complete whole run of the
 FraCaS test suite, excluding the temporal section. In this
 paper, we take up the challenge of providing a computationally viable
-account of tense and aspect to deal with the notorious section 7\todo{or 7? 8 was not discussed previously} of
+account of tense and aspect to deal with the notorious section 7 of
 the FraCaS test suite. Our account is not meant to be a theoretically
 full account of tense and aspect, but rather an account that is driven by the
 need to cover the test suite in a way that is general enough to
@@ -113,7 +113,7 @@ work.
 \label{sec:background}
 
 \paragraph{GF}
-The grammatical framework (GF, \citet{Ranta:GF}) is a powerful parser
+The grammatical framework (GF, \citet{ranta_grammatical_2004}) is a powerful parser
 generator for natural languages, based on type-theoretical abstract grammars.
 This work relies a syntactic representation of the FraCaS test suite in GF
 abstract syntax~\citep{Ljunglof:2012}. Thus, we skip the parsing phase
@@ -148,7 +148,7 @@ We support additionally the basic constructions and phenomena present
 in the testsuite, including adjectives, adverbs, nouns, verbs,
 anaphora, etc. We direct the reader to our previous work for details
 \ifanon (citations anonymized) \else
-\citet{bernardy_type_2017} \fi, but the particular
+\citet{bernardy_type-theoretical_2017} \fi, but the particular
 treatment of such phenomena is essentially independent from our
 treatment of time:
 in this paper we simply ignore these aspects beyond the fact that they
@@ -157,9 +157,9 @@ are handled correctly in most of the cases of the FraCaS testsuite.
 \paragraph{Dynamic semantics}
 We additionally assume support for (non-temporal) anaphora, using a
 monadic-based dynamic semantics
-\cite{unger_dynamic_2011,charlow_monadic_2015,charlow_monadic_2017}.
+\cite{unger_dynamic_2011,charlow_monadic_2015,charlow_modular_2017}.
 Our particular implementation is not perfect \ifanon (citations
-anonymized) \else \citet{bernardy_wide_2019} \fi but non-temporal
+anonymized) \else \citet{bernardy_wide-coverage_2019} \fi but non-temporal
 anaphoroi in the testsuite are generally resolved as they should be.
 
 As for other basic phenomena, there is not much interaction between
@@ -223,7 +223,7 @@ will act on it on nontrivial ways, which we proceed to detail below.
 This temporal context is an \emph{optional} timespan. That is, it can
 be an timespan or an explicitly unspecified context.
 \newcommand\nospan{\ensuremath{-}}
-\newcommand\anyspan{\ensuremath{\_}}\todo{better notation} The timespan in the context is
+\newcommand\anyspan{\ensuremath{\mathbf{?}}}\todo{better notation} The timespan in the context is
 optional because, in certain situations, the semantics is different
 depending on whether a timespan has been specified externally or not,
 as we explain below. A non-present timespan will be represented as
@@ -531,7 +531,7 @@ Total        & 337        & .78        & .89         & .83    & .69  & .50  & .8
     system does not handle the nominal number of test cases (shown in
     the second column), the actual number of test cases attempted is
     shown below the accuracy figure, in smaller font.  ``FraCoq''
-    refers to the work of \citet{bernardy:2017}. ``MINE" refers
+    refers to the work of \citet{bernardy_type-theoretical_2017}. ``MINE" refers
     to the approach of \citet{Mineshima:2015}, ``NUT" to the CCG
     system that utilizes the first-order automated theorem prover
     \textit{nutcracker} \cite{bos:2008}, and ``Langpro"
@@ -555,7 +555,7 @@ did not finish the report'' --- which is incorrect in this context.
 %
 We stress that such interaction between quantifiers and negation
 already occurs without temporal analysis: one must make a difference
-between narrow scoping and wide scoping \cite{todo}. Unfortunately,
+between narrow scoping and wide scoping \cite{todo}\todo{Stergios?}. Unfortunately,
 the montagovian system over which we base our implementation does not
 support this phenomena. (In fact the FraCaS test suite does not appear to
 test if the difference between narrow and wide scoping is handled properly.)
