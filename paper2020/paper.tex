@@ -168,17 +168,22 @@ exception is discussed in \cref{sec:repeatable-achievements}.
 
 
 \paragraph{Temporal Semantics}
-\jp{More general intro to temporal semantics? Should this be moved
-  somewhere else?}
 
-We use notions of ``stative'', ``achievement'', ``activity''. Our
-definition do not seem to match perfectly the definitions found in the
-literature; In general, we use the term achievement to include
-accomplishment as well. Insofar as the test suite is concerned, we
-find that these two categories can be collapsed into a single one.  As
-such, we think it is a good classification, given that they generally
-afford the correct inferences for the testsuite. (We assume the
-testsuite is correct.)
+In this paper we borrow several notions from classical temporal
+semantics such as ``stative'', ``achievement'', ``activity'', etc.,
+even though our definitions do not perfectly match the classical
+ones. We explain our precise meaning forthese terms in the body of the
+paper. Nevertheless, we refer the reader to \citet{steedman:2000} for
+an extensive review of temporal semantics.
+
+For the \textit{cognoscenti}, we can already point out some
+differences in terminology: we use the term activity as a general term
+which encompasses the three classical notions of activites,
+achievements and accomplishments. Indeed, insofar as the test suite is
+concerned, we find that these three categories can be collapsed into a
+single one.  As such, we think it is a good classification, given that
+they generally afford the correct inferences for the testsuite. (In
+this paper, we always assume that the FraCaS testsuite is correct.)
 
 
 \section{Our Treatment of time}
@@ -240,13 +245,15 @@ the $past$ argument to $useCl$.
 \varid{useCl}\, \varid{past}\, \varid{pPos}\\ (\varid{predVP}\, (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{scandinavian\_CN})\\ (\varid{complSlash}\, (\varid{slashV2a}\, \varid{win\_V2})\\ (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{nobel\_prize\_CN})))
 \end{multline*}
 }}
-In our semantics we deal only with present and simple past
-tenses. \jp{Is this enough for theory?} Indeed we find that FraCas
+In our semantics we deal only with present and past
+tenses (simple and continuous). Indeed we find that FraCas
 does not exercise additional specific tenses (if a more complicated
 tense is used, the additional information is also carried by adverbs
-or adverbial phrases, in a more specific way.) It is not difficult to see how other tenses can be captured under the same general framework. 
+or adverbial phrases, in a more specific way.) It is not difficult to see how other tenses can be captured under the same general framework.
 
-The procedure to handle tense annotations is as follows:
+Even though we will discuss a refinement to handle the past continuous
+at the end of this section, the procedure to handle tense annotations
+is as follows:
 \begin{itemize}
 \item If the tense is the past, and the temporal context is
   unspecified, then we locally quantify over a time interval
@@ -334,11 +341,15 @@ propositions:
 \[\constant{unicity}_P : P (t_1,t_2) → P (t_3,t_4) → (t_1 = t_3) ∧ (t_2 = t_4)\]
 
 Unicity of action holds only if the aspectual class of the proposition
-$P$ is \emph{achievement} or \emph{actitivty}.\todo{reference in literature}
+$P$ is \emph{actitivty}~\citep{steedman:2000} (which, for our
+purposes, includes \emph{achievements} and \emph{accomplishments}).
 
-(The difference between actitivty and achievement is that for the
-latter time intervals can be assumed to be of nil duration. In reality, this is an oversimplification as achievements are usually of short duration. but not nil. However, 
-this appears to play little role, if any, in our analysis, and given the task-driven nature of it as well.)
+(The difference between actitivty and accomplishments on the one and
+achievement on the other hand is that for the latter, time intervals
+can be assumed to be of nil duration. In reality, this is an
+oversimplification as achievements are usually of short duration, but
+not nil. However, this appears to play little role, if any, in our
+analysis, and given the its task-driven nature as well.)
 
 Unicity of action appears to be a non-logical principle. Indeed, it is
 quite possible that ``Jones left'' several times. However, it seems
@@ -425,11 +436,12 @@ Here our interpretation is:
 \end{array}
 \]
 Our analysis does not need to treat this last case specially. Indeed,
-even if $write(smith,x,.,.)$ is an activity \todo{This should be an accomplishment and thus, achievement in our classification} and thus subject to
+even if $write(smith,x,.,.)$ is an activity and thus subject to
 unicity of action, in (280), $x$ is quantified existentially; we have
 two \emph{different} actions: $write(smith,x,t_1,t_2)$ and
-$write(smith,y,t_3,t_4)$, because $x \neq y$, and thus we cannot deduce equality of the
-intervals $t_1,t_2$ and $t_3,t_4$. In turn, the hypothesis cannot be refuted.
+$write(smith,y,t_3,t_4)$, because $x \neq y$, and thus we cannot
+deduce equality of the intervals $t_1,t_2$ and $t_3,t_4$. In turn, the
+hypothesis cannot be refuted.
 
 \paragraph{action-modification verbs}
 
@@ -467,7 +479,7 @@ Consequently we get the entailment from ``John wrote a book'' to
 Finally we note that not all verbs are subject to the
 stative/achievement distinction induced by the progressive. For
 example, the phrases ``John ran'' and ``John is running'' appear to be
-logically equivalent, for our purposes\todo{For the FraCaS suite?}.
+logically equivalent, for entailment purposes.
 
 \section{Results and evaluation}
 \label{sec:results}
