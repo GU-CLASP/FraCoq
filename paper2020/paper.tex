@@ -493,28 +493,47 @@ problem (279) is worked out fully.
 
 Input from \citet{Ljunglof:2012}:
 
-
+{\small
 \begin{verbatim}
-s_279_1_p :: Phr
-s_279_1_p=((sentence) ((useCl) ((past)) ((pPos)) ((predVP) ((usePN) ((lexemePN "smith_PN"))) ((advVP) ((complSlash) ((slashV2a) ((lexemeV2 "write_V2"))) ((detCN) ((detQuant) ((indefArt)) ((numSg))) ((useN) ((lexemeN "novel_N"))))) ((lexemeAdv "in_1991_Adv"))))))
-s_279_3_h :: Phr
-s_279_3_h=((sentence) ((useCl) ((past)) ((pPos)) ((predVP) ((usePN) ((lexemePN "smith_PN"))) ((advVP) ((complSlash) ((slashV2a) ((lexemeV2 "write_V2"))) ((usePron) ((it_Pron)))) ((lexemeAdv "in_1992_Adv"))))))
+s_279_1_p=
+ sentence (useCl past pPos
+  (predVP (usePN (lexemePN "smith_PN"))
+          (advVP (complSlash (slashV2a (lexemeV2 "write_V2")))
+                     (detCN (detQuant indefArt numSg) (useN (lexemeN "novel_N"))))
+                     ((lexemeAdv "in_1991_Adv")))))
+s_279_3_h=sentence (useCl past pPos (predVP (usePN (lexemePN "smith_PN")) (advVP (complSlash (slashV2a (lexemeV2 "write_V2")) (usePron it_Pron)) ((lexemeAdv "in_1992_Adv")))))
 \end{verbatim}
 Interpretation by our dynamic and temporal semantics:
 
 \begin{verbatim}
-Definition Problem279aFalse:= (FORALL (fun a=>novel_N a) (fun a=>(exists (b: Time), ((exists (c: Time), (IS_INTERVAL Date_19910101 b /\ IS_INTERVAL c Date_19911231 /\ IS_INTERVAL b c /\ appTime b c (write_V2 a) (PN2object smith_PN))))) -> Not (exists (f: Time), ((exists (g: Time), (IS_INTERVAL Date_19920101 f /\ IS_INTERVAL g Date_19921231 /\ IS_INTERVAL f g /\ appTime f g (write_V2 a) (PN2object smith_PN))))))).
+FORALL (fun a=>novel_N a)
+(fun a=>(exists (b: Time),
+((exists (c: Time),
+(IS_INTERVAL Date_19910101 b /\
+ IS_INTERVAL c Date_19911231 /\
+ IS_INTERVAL b c /\
+ appTime b c (write_V2 a) (PN2object smith_PN))))) ->
+Not (exists (f: Time),
+((exists (g: Time),
+ (IS_INTERVAL Date_19920101 f /\
+  IS_INTERVAL g Date_19921231 /\
+  IS_INTERVAL f g /\
+  appTime f g (write_V2 a) (PN2object smith_PN)))))).
 \end{verbatim}
 Unfolding definitions by Coq:
 
 \begin{verbatim}
-  forall x : object,
-  novel_N x ->
-  (exists b c : Z,
-     Date_19910101 <= b /\ c <= Date_19911231 /\ b <= c /\ write_V2 x SMITH b c) ->
-  (exists f g : Z,
-     Date_19920101 <= f /\ g <= Date_19921231 /\ f <= g /\ write_V2 x SMITH f g) ->
-  False
+forall x : object,
+novel_N x ->
+(exists b c : Z,
+   Date_19910101 <= b /\
+   c <= Date_19911231 /\
+   b <= c /\ write_V2 x SMITH b c) ->
+(exists f g : Z,
+   Date_19920101 <= f /\
+   g <= Date_19921231 /\
+   f <= g /\ write_V2 x SMITH f g) ->
+False
 \end{verbatim}
 Proof:
 
@@ -530,7 +549,7 @@ specialize (A _ _ _ _ P1 H) as B.
 lia.
 Qed.
 \end{verbatim}
-
+}
 
 \section{Results and evaluation}
 \label{sec:results}
