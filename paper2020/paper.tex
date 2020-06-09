@@ -187,7 +187,6 @@ this paper, we always assume that the FraCaS testsuite is correct.)
 
 
 \section{Our Treatment of time}
-\todo{JP: add a completely worked out example}
 \label{sec:our-semantics}
 
 In montagovian semantics, (intransitive) verbs are one-place
@@ -406,14 +405,14 @@ Indeed, following our account, the above (contradictory) inference problem is to
 interperted as
 
 \[\begin{array}{l}
-∃x. novel(x) ∧ \\
+∀x. novel(x) ∧ \\
 ∃t_1,t_2. [t_1,t_2] ⊆ 1991 ∧ write(smith,x,t_1,t_2) ∧ \\
 ∃t_3,t_4. [t_3,t_4] ⊆ 1992 ∧ write(smith,x,t_3,t_4) \\
 ⟶ ⊥ \\
 \end{array}
 \]
 Note here that the scope for the existential is extended beyond the
-scope of \textbf{P1}. This extension can work according to
+scope of \textbf{P1}, and its polarity switched (to universal). This extension can work according to
 \citet{unger_dynamic_2011}, and our implemented analysis of
 anaphora\ifanon (citation anonymized)
 \else\citep{bernardy_computational_2018,bernardy_wide-coverage_2019}\fi.
@@ -433,10 +432,10 @@ accomplishment:
 Here our interpretation is:
 
 \[\begin{array}{l}
-∃x. novel(x) ∧ \\
-∃t_1,t_2. [t_1,t_2] ⊆ 1991 ∧ write(smith,x,t_1,t_2) ∧ \\
-∃y. novel(y) ∧ \\
-∃t_3,t_4. [t_3,t_4] ⊆ 1992 ∧ write(smith,y,t_3,t_4) \\
+(∃x. novel(x) ∧ \\
+∃t_1,t_2. [t_1,t_2] ⊆ 1991 ∧ write(smith,x,t_1,t_2)) ∧ \\
+(∃y. novel(y) ∧ \\
+∃t_3,t_4. [t_3,t_4] ⊆ 1992 ∧ write(smith,y,t_3,t_4)) \\
 ⟶ ⊥ \\
 \end{array}
 \]
@@ -485,6 +484,53 @@ Finally we note that not all verbs are subject to the
 stative/achievement distinction induced by the progressive. For
 example, the phrases ``John ran'' and ``John is running'' appear to be
 logically equivalent, for entailment purposes.
+
+
+\section{Worked out example}
+To give a sense of the additional details necessary to deal with the
+precision demanded by a proof-assistant such as Coq we show how
+problem (279) is worked out fully.
+
+Input from \citet{Ljunglof:2012}:
+
+
+\begin{verbatim}
+s_279_1_p :: Phr
+s_279_1_p=((sentence) ((useCl) ((past)) ((pPos)) ((predVP) ((usePN) ((lexemePN "smith_PN"))) ((advVP) ((complSlash) ((slashV2a) ((lexemeV2 "write_V2"))) ((detCN) ((detQuant) ((indefArt)) ((numSg))) ((useN) ((lexemeN "novel_N"))))) ((lexemeAdv "in_1991_Adv"))))))
+s_279_3_h :: Phr
+s_279_3_h=((sentence) ((useCl) ((past)) ((pPos)) ((predVP) ((usePN) ((lexemePN "smith_PN"))) ((advVP) ((complSlash) ((slashV2a) ((lexemeV2 "write_V2"))) ((usePron) ((it_Pron)))) ((lexemeAdv "in_1992_Adv"))))))
+\end{verbatim}
+Interpretation by our dynamic and temporal semantics:
+
+\begin{verbatim}
+Definition Problem279aFalse:= (FORALL (fun a=>novel_N a) (fun a=>(exists (b: Time), ((exists (c: Time), (IS_INTERVAL Date_19910101 b /\ IS_INTERVAL c Date_19911231 /\ IS_INTERVAL b c /\ appTime b c (write_V2 a) (PN2object smith_PN))))) -> Not (exists (f: Time), ((exists (g: Time), (IS_INTERVAL Date_19920101 f /\ IS_INTERVAL g Date_19921231 /\ IS_INTERVAL f g /\ appTime f g (write_V2 a) (PN2object smith_PN))))))).
+\end{verbatim}
+Unfolding definitions by Coq:
+
+\begin{verbatim}
+  forall x : object,
+  novel_N x ->
+  (exists b c : Z,
+     Date_19910101 <= b /\ c <= Date_19911231 /\ b <= c /\ write_V2 x SMITH b c) ->
+  (exists f g : Z,
+     Date_19920101 <= f /\ g <= Date_19921231 /\ f <= g /\ write_V2 x SMITH f g) ->
+  False
+\end{verbatim}
+Proof:
+
+\begin{verbatim}
+Theorem  problem279 : Problem279aFalse.
+cbv.
+intros novel isSmithsNovel P1 H.
+destruct P1 as [t0 [t1 [ct1 [ct2 [ct3 P1]]]]].
+destruct H as [u0 [u1 [cu1 [cu2 [cu3 H]]]]].
+specialize writeUnique with (x := novel)(y := SMITH) as A.
+unfold UniqueActivity in A.
+specialize (A _ _ _ _ P1 H) as B.
+lia.
+Qed.
+\end{verbatim}
+
 
 \section{Results and evaluation}
 \label{sec:results}
