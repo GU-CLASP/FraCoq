@@ -449,17 +449,18 @@ action:
 
 We treat verbs in the progressive form as different semantically. For
 example, ``John was writing a book'' is encoded as
-$∃t1, t2. t1≤ t2, t2 ≤ now, PROG\_write(John,book,t1,t2)$, while
-``John wrote a book'' is encoded as
-$∃t1, t2. t1≤ t2, t2 ≤ now, write(John,book,t1,t2)$. This is
+$∃(t_1, t_2). t_1≤ t_2, t_2 ≤ now, PROG\_write(John,book,t_1,t_2)$,
+while ``John wrote a book'' is encoded as
+$∃(t_1, t_2). t_1≤ t_2, t_2 ≤ now, write(John,book,t_1,t_2)$. This is
 necessary, because $PROG\_write$ is subject to
-$\constant{subsumption}$: if John is writing in interval $[t1,t2]$
+$\constant{subsumption}$: if John is writing in interval $[t_1,t_2]$
 then he is writing in any subinterval. However, the same cannot be
 said of $write$: the end-points of the interval indicates the time
-needed to complete the achievement. (For example, John wrote a book in
-1993 does not entail John wrote a book in March 1993.) Thus, $write$
-is on the contrary subject to $\constant{unicity}$. Finally, we also
-have $write(x,y,t1,t2) → PROG\_write(x,y,t1,t2)$. That is, the
+needed to complete the achievement. (For example, ``John wrote a book
+in 1993'' neither entails ``John wrote a book in January 1993'' nor
+``John wrote a book in December 1993''.) That is, $write$ is on the
+contrary subject to $\constant{unicity}$. Finally, we also have
+$write(x,y,t_1,t_2) → PROG\_write(x,y,t_1,t_2)$. That is, the
 achievement variant implies the stative variant, in the same interval.
 Consequently we get the entailment from ``John wrote a book'' to
 ``John was writing a book''.
