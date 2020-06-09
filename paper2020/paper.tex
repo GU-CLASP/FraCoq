@@ -529,9 +529,29 @@ conjunctions. Here, the problem is to solve the order of scoping
 between this conjunction and time-interval quantifiers.
 
 \section{Conclusions and Future Work}
-We have presented a first attempt for a computational approach dealing with the temporal section of the FraCaS test suite. This is the first time a system is ran against this section, at the same time, this concludes our work in handling the whole of the FraCaS test suite using a combination of a number of well-studied tools: type theory, parsing using the Grammatical Framework (GF), Monadic Dynamic Semantics and proof assistant technology (Coq). It achieves an accuracy of 0.71 on the Temporal Section and 0.78 overall. One of the things to be looked at is fixing the issues associated with parts of the test suite that ``broke'' so to say when the temporal analysis was introduced. Some of these have been already mentioned: interaction of the temporal variables with group readings and negation. 
+We have presented a first attempt for a computational approach dealing
+with the temporal section of the FraCaS test suite. This is the first
+time a system is ran against this section, at the same time, this
+concludes our work in handling the whole of the FraCaS test suite
+using a combination of a number of well-studied tools: type theory,
+parsing using the Grammatical Framework (GF), Monadic Dynamic
+Semantics and proof assistant technology (Coq). It achieves an
+accuracy of 0.71 on the Temporal Section and 0.78 overall. One of the
+things to be looked at is fixing the issues associated with parts of
+the test suite that ``broke'' so to say when the temporal analysis was
+introduced. Some of these have been already mentioned: interaction of
+the temporal variables with group readings and negation.
 
-Another issue to be looking at is the codification of lexical aspect. In what we have been doing so far, we did not distinguish between the present continuous and the present or the simple past and the past continuous and their interaction with non-lexical aspect.  The main reason for this  is that in the test suite, even though there are examples of inferences based on the either lexical or non-lexical aspect, no example where an interaction between the two exists. For example, one such case is the one shown below and exemplifies the difference between activities and accomplishments with respect to the different inferences they give when used  in the past continuous:
+Another issue to be looking at is the codification of lexical
+aspect. In what we have been doing so far, we did not distinguish
+between the present continuous and the present or the simple past and
+the past continuous and their interaction with non-lexical aspect.
+The main reason for this is that in the test suite, even though there
+are examples of inferences based on the either lexical or non-lexical
+aspect, no example where an interaction between the two exists. For
+example, one such case is the one shown below and exemplifies the
+difference between activities and accomplishments with respect to the
+different inferences they give when used in the past continuous:
 
 \fracasex{extra1}{
 	\item	John was writing a book. 
@@ -549,7 +569,7 @@ Another issue to be looking at is the codification of lexical aspect. In what we
 }
 
 \fracasex{extra2}{
-	\item	John ran. 
+	\item	John ran.
 	\hyp 	John was running (YES?).
 }
 
@@ -571,6 +591,19 @@ earlier draft of the paper.
 \bibliographystyle{acl_natbib}
 
 % \bibliography{../PaperTools/bibtex/jp}
-% Things we cannot handle (I think): John was writing a book in 1991 -> John wrote a book in 1991 (I think we predict entailment here). This is because there is no distinction with progressive and non progressive aspect. We did not do it, I guess because it was needed, but just for future reference. There are similar examples playing around with LEXICAL aspect (aspect grammatically encoded) that we could look at in future work
-% Accomplishments usually involve a culmination point in the action which is necessary for the event to be completed. This is not necessary for activities. John stopped writing a book not-> John wrote a book (but does imply that John was writing a book), but, John stopped running -> John run and John was runnning 
+
+% Things we cannot handle (I think): John was writing a book in 1991
+% -> John wrote a book in 1991 (I think we predict entailment
+% here). This is because there is no distinction with progressive and
+% non progressive aspect. We did not do it, I guess because it was
+% needed, but just for future reference. There are similar examples
+% playing around with LEXICAL aspect (aspect grammatically encoded)
+% that we could look at in future work
+
+% Accomplishments usually involve a culmination point in the action
+% which is necessary for the event to be completed. This is not
+% necessary for activities. John stopped writing a book not-> John
+% wrote a book (but does imply that John was writing a book), but,
+% John stopped running -> John run and John was runnning
+
 \end{document}
