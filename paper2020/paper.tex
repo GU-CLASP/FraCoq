@@ -92,16 +92,14 @@ a brief summary of the frameworks whose various subsystems rely on. In
 particular, the Grammatical Framework is used to construct the
 syntactic parser; the Coq proof assistant checks all the reasoning; a
 monad-based dynamic semantics deals with references (anaphora).  We
-also provide some brief remarks on temporal semantics. In section 3,
-we discuss the main aspects of the compositional semantics of our
-system \textbf{This could go in the background actually}, and in
-section 4, we give our main treatment of time, using various examples
-from the FraCaS suite in exemplifying its effectiveness. In section 5,
+also provide some brief remarks on temporal semantics. In \cref{sec:our-semantics},
+we discuss the main aspects of the compositional semantics of our, using various examples
+from the FraCaS suite in exemplifying its effectiveness. In \cref{sec:results},
 we take a brief look at how our system performs with respect to the
 FraCaS suite. We ran the system across the whole suite, this being the
 first time that a complete run through the whole suite has been made,
 but we look in particular at the performance on the temporal
-section. In section 6, we conclude and discuss avenues for future
+section. In \cref{sec:conclusions}, we conclude and discuss avenues for future
 work.
 
 
@@ -184,6 +182,7 @@ testsuite is correct.)
 
 
 \section{Our Treatment of time}
+\label{sec:our-semantics}
 
 In montagovian semantics, (intransitive) verbs are one-place
 predicates; in types, they are functions from entities to propositions
@@ -471,6 +470,7 @@ example, the phrases ``John ran'' and ``John is running'' appear to be
 logically equivalent, for our purposes\todo{For the FraCaS suite?}.
 
 \section{Results and evaluation}
+\label{sec:results}
 Our target is the FraCaS testsuite, which aims at covering a wide
 range of common natural-language phenomena. The testsuite is structured in 9 sections:
 
@@ -553,6 +553,7 @@ conjunctions. Here, the problem is to solve the order of scoping
 between this conjunction and time-interval quantifiers.
 
 \section{Conclusions and Future Work}
+\label{sec:conclusion}
 We have presented a first attempt for a computational approach dealing
 with the temporal section of the FraCaS test suite. This is the first
 time a system is ran against this section, at the same time, this
