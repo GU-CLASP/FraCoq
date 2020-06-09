@@ -449,17 +449,17 @@ action:
 
 We treat verbs in the progressive form as different semantically. For
 example, ``John was writing a book'' is encoded as
-$∃t1, t2. t1<= t2, t2 <= now, PROG_write(John,book,t1,t2)$, while
+$∃t1, t2. t1≤ t2, t2 ≤ now, PROG\_write(John,book,t1,t2)$, while
 ``John wrote a book'' is encoded as
-$∃t1, t2. t1<= t2, t2 <= now, write(John,book,t1,t2)$. This is
-necessary, because $PROG_write$ is subject to
+$∃t1, t2. t1≤ t2, t2 ≤ now, write(John,book,t1,t2)$. This is
+necessary, because $PROG\_write$ is subject to
 $\constant{subsumption}$: if John is writing in interval $[t1,t2]$
 then he is writing in any subinterval. However, the same cannot be
 said of $write$: the end-points of the interval indicates the time
 needed to complete the achievement. (For example, John wrote a book in
 1993 does not entail John wrote a book in March 1993.) Thus, $write$
 is on the contrary subject to $\constant{unicity}$. Finally, we also
-have $write(x,y,t1,t2) -> PROG_write(x,y,t1,t2)$. That is, the
+have $write(x,y,t1,t2) → PROG\_write(x,y,t1,t2)$. That is, the
 achievement variant implies the stative variant, in the same interval.
 Consequently we get the entailment from ``John wrote a book'' to
 ``John was writing a book''.
@@ -616,7 +616,7 @@ earlier draft of the paper.
 % \bibliography{../PaperTools/bibtex/jp}
 
 % Things we cannot handle (I think): John was writing a book in 1991
-% -> John wrote a book in 1991 (I think we predict entailment
+% → John wrote a book in 1991 (I think we predict entailment
 % here). This is because there is no distinction with progressive and
 % non progressive aspect. We did not do it, I guess because it was
 % needed, but just for future reference. There are similar examples
@@ -625,8 +625,8 @@ earlier draft of the paper.
 
 % Accomplishments usually involve a culmination point in the action
 % which is necessary for the event to be completed. This is not
-% necessary for activities. John stopped writing a book not-> John
+% necessary for activities. John stopped writing a book not→ John
 % wrote a book (but does imply that John was writing a book), but,
-% John stopped running -> John run and John was runnning
+% John stopped running → John run and John was runnning
 
 \end{document}
