@@ -314,7 +314,7 @@ phrases such as ``In 1994, Itel was always on time.'' .
 \end{enumerate}
 
 
-\paragraph{time references and aspectual classes}
+\paragraph{Time references and aspectual classes}
 
 A common theme in the testsuite is the reference to previous
 occurences of an event:
@@ -445,6 +445,29 @@ action:
 ⟦\text{finish to \(s\)}⟧(t_0,t_1) = \\ ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')
 \end{multline*}
 
+\paragraph{Progressive aspect}
+
+We treat verbs in the progressive form as different semantically. For
+example, ``John was writing a book'' is encoded as
+$∃t1, t2. t1<= t2, t2 <= now, PROG_write(John,book,t1,t2)$, while
+``John wrote a book'' is encoded as
+$∃t1, t2. t1<= t2, t2 <= now, write(John,book,t1,t2)$. This is
+necessary, because $PROG_write$ is subject to
+$\constant{subsumption}$: if John is writing in interval $[t1,t2]$
+then he is writing in any subinterval. However, the same cannot be
+said of $write$: the end-points of the interval indicates the time
+needed to complete the achievement. (For example, John wrote a book in
+1993 does not entail John wrote a book in March 1993.) Thus, $write$
+is on the contrary subject to $\constant{unicity}$. Finally, we also
+have $write(x,y,t1,t2) -> PROG_write(x,y,t1,t2)$. That is, the
+achievement variant implies the stative variant, in the same interval.
+Consequently we get the entailment from ``John wrote a book'' to
+``John was writing a book''.
+
+Finally we note that not all verbs are subject to the
+stative/achievement distinction induced by the progressive. For
+example, the phrases ``John ran'' and ``John is running'' appear to be
+logically equivalent, for our purposes\todo{For the FraCaS suite?}.
 
 \section{Results and evaluation}
 Our target is the FraCaS testsuite, which aims at covering a wide
@@ -543,7 +566,7 @@ introduced. Some of these have been already mentioned: interaction of
 the temporal variables with group readings and negation.
 
 Another issue to be looking at is the codification of lexical
-aspect. In what we have been doing so far, we did not distinguish
+aspect.\todo{update} In what we have been doing so far, we did not distinguish
 between the present continuous and the present or the simple past and
 the past continuous and their interaction with non-lexical aspect.
 The main reason for this is that in the test suite, even though there
