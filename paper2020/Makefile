@@ -10,7 +10,7 @@ else
 endif
 
 paper.pdf: paper.tex ../PaperTools/bibtex/jp.bib
-	nix-shell --pure --run "latexmk paper -pdf"
+	nix-shell --run "latexmk paper -pdf"
 
 # %.tex: %.lhs  Suite.tex
 # 	nix-shell --pure --run "lhs2TeX -o $@ $<"
