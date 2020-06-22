@@ -137,7 +137,7 @@ the task of NLI, when the latter is formalized as a theorem proving
 task. Coq supports, as already mentioned, dependent typing, but also
 subtyping, which are instrumental in expressing NL semantics.
 
-\paragraph{Montagovian semantics}
+\paragraph{Montagovian Semantics}
 
 Our interpretation is cast within the framework of a largely standard
 montagovian semantics. In brief, sentences are interpreted as
@@ -154,7 +154,7 @@ treatment of time:
 in this paper we simply ignore these aspects beyond the fact that they
 are handled correctly in most of the cases of the FraCaS testsuite.
 
-\paragraph{Dynamic semantics}
+\paragraph{Dynamic Semantics}
 We additionally assume support for (non-temporal) anaphora, using a
 monadic-based dynamic semantics
 \cite{unger_dynamic_2011,charlow_monadic_2015,charlow_modular_2017}.
@@ -186,7 +186,7 @@ they generally afford the correct inferences for the testsuite. (In
 this paper, we always assume that the FraCaS testsuite is correct.)
 
 
-\section{Our Treatment of time}
+\section{Our Treatment of Time}
 \label{sec:our-semantics}
 
 In montagovian semantics, (intransitive) verbs are one-place
@@ -207,7 +207,7 @@ procedure. For simplicity we will however only consider verbs from now
 on. (In fact in our implementation we chose not to modify nouns nor
 adjectives to limit the increase in complexity of the formulas.)
 
-\paragraph{temporal context}
+\paragraph{Temporal Context}
 
 We adjust the montagovian semantics so that the interpretation of
 every category (propositions, verb phrases, etc.) takes a
@@ -229,7 +229,7 @@ as we explain below. A non-present timespan will be represented as
 \nospan{}. If a semantic function does not depend on the temporal
 context at all, we will write \anyspan{} instead.
 
-\paragraph{tenses}
+\paragraph{Tenses}
 
 \newcommand\varid[1]{\mathnormal{#1}}
 %
@@ -270,7 +270,7 @@ is as follows:
   the timepoint $now$.
 \end{itemize}
 
-\paragraph{temporal adverbs}
+\paragraph{Temporal Adverbs}
 
 The other single most important source of interesting timespans are
 adverbs. Most of the temporal adverbs fall in either of the following
@@ -391,7 +391,7 @@ Smith was in Paris in any subinterval. Contrary to unicity of action,
 subsumption is always valid.
 
 
-\paragraph{(un)repeatable achievements}
+\paragraph{(Un)repeatable Achievements}
 \label{sec:repeatable-achievements}
 The principle of using unicity of action interacts well with the usual
 interpretation of quantifiers (and anaphora).  Indeed, using it, we
@@ -449,7 +449,7 @@ $write(smith,y,t_3,t_4)$, because $x \neq y$, and thus we cannot
 deduce equality of the intervals $t_1,t_2$ and $t_3,t_4$. In turn, the
 hypothesis cannot be refuted.
 
-\paragraph{action-modification verbs}
+\paragraph{Action-modification Verbs}
 
 The final class of lexemes carrying a temporal-dependent semantics are
 verbs taking a proposition as argument, like ``finish'', ``start'',
@@ -462,7 +462,7 @@ action:
 ⟦\text{finish to \(s\)}⟧(t_0,t_1) = \\ ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')
 \end{multline*}
 
-\paragraph{Progressive aspect}
+\paragraph{Progressive Aspect}
 
 We treat verbs in the progressive form as different semantically. For
 example, ``John was writing a book'' is encoded as
@@ -600,7 +600,7 @@ embeds a decision procedure for linear arithmetic
 problems. Fortunately, \texttt{lia} can take care of all the problems
 which arise in the FraCaS testsuite.
 
-\section{Results and evaluation}
+\section{Results and Evaluation}
 \label{sec:results}
 Our target is the FraCaS testsuite, which aims at covering a wide
 range of common natural-language phenomena. The testsuite is structured in 9 sections:
