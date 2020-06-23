@@ -539,7 +539,7 @@ problem (279) is worked out in full details.
 We start with input trees in GF format, given by
 \citet{Ljunglof:2012}. They can be rendered as follows:
 
-{\small
+\begin{small}
 \begin{verbatim}
 s_279_1_p=
 sentence 
@@ -563,6 +563,7 @@ sentence
       (usePron it_Pron))
      (lexemeAdv "in_1992_Adv"))))
 \end{verbatim}
+\end{small}
 
   Of particular note is the use of the pronoun ``it'', and the fact
   that adverbials expressions such that ``in 1992'' are lexicalized.
@@ -571,6 +572,7 @@ sentence
 
 Our dynamic and temporal semantics gives the following interpretation
 for \verb!s_279_1_p! implies \verb!s_279_3_h!.
+{\small
 \begin{verbatim}
 FORALL (fun a=>novel_N a)
 (fun a=>(exists (b: Time),
@@ -588,6 +590,7 @@ Not (exists (f: Time),
   appTime f g (write_V2 a) 
     (PN2object smith_PN)))))).
 \end{verbatim}
+}
 In the above, one should remark the top-level quantification over the
 novel (as explained in \cref{sec:our-semantics}), the quantification
 over time intervals as individual timepoints, and the use of custom
@@ -598,6 +601,7 @@ addition to \verb!FORALL!.)
 
 Unfolding the definitions for these operators yield the following
 proposition:
+{\small
 \begin{verbatim}
 forall x : object,
 novel_N x ->
@@ -611,13 +615,14 @@ novel_N x ->
    f <= g /\ write_V2 x SMITH f g) ->
 False
 \end{verbatim}
-This is very close to our idealised representation of the problem
+}This is very close to our idealised representation of the problem
 \cref{eq:smith-novel-1}. One difference is the use of abstract Coq
 integers for timepoints. Using a discrete time allows us to use
 predifined Coq tactics. The discrete nature of integers does not
 interfere with the reasoning.
 
 Finally, we can show a Coq proof for the above proposition:
+{\small
 \begin{verbatim}
 Theorem  problem279 : Problem279aFalse.
 cbv.
@@ -646,8 +651,8 @@ which arise in the FraCaS testsuite.
 \section{Results and Evaluation}
 \label{sec:results}
 Our target is the FraCaS testsuite, which aims at covering a wide
-range of common natural-language phenomena. The testsuite is structured in 9 sections:
-
+range of common natural-language phenomena. 
+%
 The suite is structured according to the semantic phenomena involved
 in the inference process for each example, and contains nine sections:
 Quantifiers, Plurals, Anaphora, Ellipsis, Adjectives, Comparatives,
