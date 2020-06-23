@@ -542,7 +542,7 @@ We start with input trees in GF format, given by
 \begin{small}
 \begin{verbatim}
 s_279_1_p=
-sentence 
+sentence
 (useCl past pPos
  (predVP
    (usePN (lexemePN "smith_PN"))
@@ -703,7 +703,7 @@ Total        & 337        & .78        & .89         & .83    & .69  & .50  & .8
   \label{tab:results}
 \end{table}
 \paragraph{interaction with negation and group readings}
-One reason explaining the lower performance of our systems on some
+One reason explaining the lower performance of our system on some
 sections of the testsuite is that our interpretation of time interacts
 imperfectly with negation and group readings.
 
@@ -727,28 +727,33 @@ quantitatively more difficult to handle with the added complication of
 time-quantification, but not fundamentally different.
 %
 A similar issue occurs with group readings, which are interpreted as
-conjunctions. Here, the problem is to solve the order of scoping
-between this conjunction and time-interval quantifiers.
+conjunctions. Here, the problem is an improper resolution of scoping
+order, between this conjunction and time-interval quantifiers.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
-\todo{summary of advances}
 
 We have presented a first attempt for a computational approach dealing
-with the temporal section of the FraCaS test suite. This is the first
-time a system is ran against this section, at the same time, this
-concludes our work in handling the whole of the FraCaS test suite
-using a combination of a number of well-studied tools: type theory,
-parsing using the Grammatical Framework (GF), Monadic Dynamic
+with the temporal section of the FraCaS test suite. To do this, we
+have provided a new, simplified taxonomy of aspectual classes for verb
+phrases, guided by the applicability of the unicity of action and
+temporal subsumption properties.
+
+This paper concludes our work in handling the whole of the FraCaS test
+suite using a combination of a number of well-studied tools: type
+theory, parsing using the Grammatical Framework (GF), Monadic Dynamic
 Semantics and proof assistant technology (Coq). It achieves an
-accuracy of 0.71 on the Temporal Section and 0.78 overall. One of the
+accuracy of 0.71 on the Temporal Section and 0.78 overall.  One of the
 things to be looked at is fixing the issues associated with parts of
-the test suite that ``broke'' so to say when the temporal analysis was
+the test suite that ``broke'' when the temporal analysis was
 introduced. Some of these have been already mentioned: interaction of
 the temporal variables with group readings and negation.
 
-
-Another thing we would be willing to try is an extension of the FraCaS test suite that will include more fine-grained examples of lexical and grammatical aspect and  the interaction between those two, for example cases where one needs to actually distinguish between achievements and accomplishments on the basis of their inferential properties: 
+Another thing we are willing to try is an extension of the FraCaS
+test suite that will include more fine-grained examples of lexical and
+grammatical aspect and the interaction between those two, for example
+cases where one needs to actually distinguish between achievements and
+accomplishments on the basis of their inferential properties:
 
 \fracasex{extra1}{
 	\item	John found his keys.  
@@ -760,10 +765,15 @@ Another thing we would be willing to try is an extension of the FraCaS test suit
 	\hyp 	John was writing a book  (YES).
 }
 
-In the first of the two examples involving an achievement verb, the inference is UNK, since there is no guarantee that the action is non-instanteous. To the contrary, for accomplishment verbs, the inference follows. 
+In the first of the two examples involving an achievement verb, the
+inference is UNK, since there is no guarantee that the action is
+non-instanteous. To the contrary, for accomplishment verbs, the
+inference follows.
 
 
-Further cases to be included in an extended FraCaS future suite involve examples where the interaction between different tenses needs to be captured:
+Further cases to be included in an extended FraCaS future suite
+involve examples where the interaction between different tenses needs
+to be captured:
 %Another issue to be looking at is the codification of lexical
 %aspect.\todo{update} In what we have been doing so far, we did not distinguish
 %between the present continuous and the present or the simple past and
