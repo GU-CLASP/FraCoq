@@ -215,7 +215,7 @@ In montagovian semantics, (intransitive) verbs are one-place
 predicates; in types, they are functions from entities to propositions
 ($e \to t$).  Our basic approach is to generalise the interpretation of 
 verbs, so that it takes two
-additional time parameters, one corresponding with the starting time
+additional time parameters, one corresponding to the starting time
 of the action and one corresponding to its stopping time ($(e × time × time) \to t$). For example,
 if John walked between $t_0$ and $t_1$, we would have:
 $walk(john,t_0,t_1)$. From now on we will call an interval of time
@@ -226,8 +226,12 @@ intuition of a linear constant flow of time.)
 
 In principle, common nouns and adjectives should undergo the same
 procedure. For simplicity we will however only consider verbs from now
-on. (In fact in our implementation we chose not to modify nouns nor
-adjectives to limit the increase in complexity of the formulas.)
+on. (In fact, even in our implementation we chose not to extend nouns
+nor adjectives with timespan parameters. This choice limits the
+increase in complexity of the formulas compared to non-temporal
+semantics, at the expense of inaccuracy for a couple of problems in
+the FraCaS test suite: problems 271 and 272 use a an adjective as a
+copula which is subject to temporal reasoning.)
 
 \paragraph{Temporal Context}
 
@@ -242,7 +246,7 @@ down to its components without changing it. However some key elements
 will act on it on nontrivial ways, which we proceed to detail below.
 
 This temporal context is an \emph{optional} timespan. That is, it can
-be an timespan or an explicitly unspecified context.
+be a timespan or an explicitly unspecified context.
 \newcommand\nospan{\ensuremath{-}}
 \newcommand\anyspan{\ensuremath{\mathbf{?}}}\todo{better notation} The timespan in the context is
 optional because, in certain situations, the semantics is different
@@ -255,11 +259,12 @@ context at all, we will write \anyspan{} instead.
 
 \newcommand\varid[1]{\mathnormal{#1}}
 %
-The principal non-trivial manipulator of timespans are tense
+The principal non-trivial manipulators of timespans are tense
 markers. In our syntax, inherited from GF, tenses are represented
-syntactically as an attribute of the clause. An illustration of a
-past-tense clause and its interpretation follows. Notice in particular
-the $past$ argument to $useCl$.
+syntactically as an attribute of clauses. An illustration of a
+past-tense clause and its interpretation follows in
+\cref{ex:nobel}. Notice in particular the $\varid{past}$ argument to
+the $\varid{useCl}$ constructor.
 
 \onelingex{A scandinavian won the nobel prize.\label{ex:nobel}
 \\
@@ -267,13 +272,16 @@ the $past$ argument to $useCl$.
 \varid{useCl}\, \varid{past}\, \varid{pPos}\\ (\varid{predVP}\, (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{scandinavian\_CN})\\ (\varid{complSlash}\, (\varid{slashV2a}\, \varid{win\_V2})\\ (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{nobel\_prize\_CN})))
 \end{multline*}
 }}
-In our semantics we deal only with present and past
-tenses (simple and continuous). Indeed we find that FraCas
-does not exercise additional specific tenses (if a more complicated
-tense is used, the additional information is also carried by adverbs
-or adverbial phrases, in a more specific way.) It is not difficult to see how other tenses can be captured under the same general framework.
+%
+In our semantics we deal only with present and past tenses (simple and
+continuous). Indeed we find that FraCas does not exercise additional
+specific tenses. (When a more complicated tense is used, the
+additional information is also carried by adverbs or adverbial
+phrases, in a more specific way). While we believe that many other
+tenses can be captured under the same general framework, we leave a
+detailed study to further work.
 
-Even though we will discuss a refinement to handle the past continuous
+Even though we discuss a refinement to handle the past continuous
 at the end of this section, the procedure to handle tense annotations
 is as follows:
 \begin{itemize}
@@ -300,7 +308,7 @@ categories:
 
 \begin{enumerate}[align=left,font=\itshape]
 \item[exact] For such adverbs, an exact interval is
-  provided. Typical such adverbs specify in fact a single point in
+  provided. In fact, such adverbs typically specify a single point in
   time (so the start and the end of the interval coincide).
 
   \[⟦\text{at 5 pm, \(s\)}⟧(\anyspan) = ⟦s⟧(5pm,5pm)\]
@@ -316,10 +324,10 @@ categories:
   ⟦\text{in 1992, \(s\)}⟧(\anyspan) = \\ ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)
 \end{multline*}
 In the FraCaS test suite, we normally do not find several
-time-modifying adverbs modifying a single verb. Indeed, sentences such
+time-modifying adverbs modifying a single verb phrase. Indeed, sentences such
 as ``in 1992, in 1991 john wrote a novel'' are infelicitous. This
 justifies ignoring the input timespan in the above interpretation --
-we're in particular not interested in modeling felicity with our
+we are in particular not interested in modeling felicity with our
 semantics, only giving an accurate semantics when the input is
 felicitous.
 \item[universally quantifying] A few adverbs introduce intervals via a
@@ -356,25 +364,26 @@ occurences of an event:
 To be able to conclude that there is entailment, as the testsuite expects, we have to make sure
 that the two occurences of ``Jones left'' (in \textbf{P1} and \textbf{P2}) refer to the
 same time intervals.
-
+%
 For this purpose we postulate \emph{unicity of action} for certain time-dependent
 propositions:
 
-\begin{multline*}
+\begin{multline}
   \constant{unicity}_P : P (t_1,t_2) → P (t_3,t_4) → \\ (t_1 = t_3) ∧ (t_2 = t_4)
   \label{eq:unicity}
-\end{multline*}
+\end{multline}
 
 Unicity of action holds only if the aspectual class of the proposition
 $P$ is \emph{actitivty}~\citep{steedman:2000} (which, for our
 purposes, includes \emph{achievements} and \emph{accomplishments}).
 
-(The difference between actitivty and accomplishments on the one and
+(The difference between actitivty and accomplishments on the one hand and
 achievement on the other hand is that for the latter, time intervals
 can be assumed to be of nil duration. In reality, this is an
 oversimplification as achievements are usually of short duration, but
-not nil. However, this appears to play little role, if any, in our
-analysis, and given the its task-driven nature as well.)
+not nil. However, this plays little role in our
+analysis. As far as we can tell the FraCaS test suite does exercise temporal semantics to
+such a level of precision.)
 
 Unicity of action appears to be a non-logical principle. Indeed, it is
 quite possible that ``Jones left'' several times. However, it seems
@@ -391,7 +400,8 @@ the following discourse:
 One would normally not say that there is contradiction. However if the
 middle sentence were not present, a contradiction should be
 flagged. We leave such discourse analysis as future work, and simply
-apply unicity of action everywhere.
+apply unicity of action everywhere: it is valid uniformly in the
+FraCaS test suite for activity aspect classes.
 
 \paragraph{Statives}
 \textit{A contrario}, if \(P\) is \emph{stative}, then we get a time-interval subsumption property:
@@ -409,10 +419,18 @@ This principle is used to reason about problem (314), below:
 }
 
 Indeed, from \textbf{P3} we get that Smith was in paris between May
-5th and May 15th. Because "being in Paris" is stative, we also get that
+5th and May 15th. Because ``being in Paris'' is stative, we also get that
 Smith was in Paris in any subinterval. Contrary to unicity of action,
 subsumption is always valid.
 
+\paragraph{Class-modifying adverbs}
+It should be noted that some adverbs can locally disable the
+application of $\constant {subsumption}$. For example, problem 299
+features the sentence ``Smith lived in Birmingham for exactly a
+year''.  Even though ``live'' is normally stative, one can no longer
+apply subsumption in the context of ``exactly a year'' --- this can be
+done by propagating another context flag in the montegovian semantics
+(in addition to the temporal context).
 
 \paragraph{(Un)repeatable Achievements}
 \label{sec:repeatable-achievements}
@@ -487,23 +505,25 @@ action:
 
 \paragraph{Progressive Aspect}
 
-We treat verbs in the progressive form as different semantically. For
-example, ``John was writing a book'' is encoded as
+We treat verbs in the progressive form as different semantically from
+the non-progressive form. For example, ``John was writing a book'' is
+encoded as
 $∃(t_1, t_2). t_1≤ t_2, t_2 ≤ now, PROG\_write(John,book,t_1,t_2)$,
 while ``John wrote a book'' is encoded as
 $∃(t_1, t_2). t_1≤ t_2, t_2 ≤ now, write(John,book,t_1,t_2)$. This is
 necessary, because $PROG\_write$ is subject to
-$\constant{subsumption}$: if John is writing in interval $[t_1,t_2]$
-then he is writing in any subinterval. However, the same cannot be
-said of $write$: the end-points of the interval indicates the time
-needed to complete the achievement. (For example, ``John wrote a book
-in 1993'' neither entails ``John wrote a book in January 1993'' nor
-``John wrote a book in December 1993''.) That is, $write$ is on the
-contrary subject to $\constant{unicity}$. Finally, we also have
-$write(x,y,t_1,t_2) → PROG\_write(x,y,t_1,t_2)$. That is, the
-achievement variant implies the stative variant, in the same interval.
-Consequently we get the entailment from ``John wrote a book'' to
-``John was writing a book''.
+$\constant{subsumption}$: if John is writing in the interval
+$[t_1,t_2]$ then he is writing in any subinterval of
+$[t_1,t_2]$. However, the same cannot be said of $write$: the
+end-points of the interval indicate the time needed to complete the
+achievement. (For example, ``John wrote a book in 1993'' neither
+entails ``John wrote a book in January 1993'' nor ``John wrote a book
+in December 1993''.) In fact, \emph{write}, in the non-progressive
+from, is on the contrary subject to $\constant{unicity}$. Finally, we
+also have $write(x,y,t_1,t_2) → PROG\_write(x,y,t_1,t_2)$. That is,
+the achievement (or \emph{activity} in our terminology) variant implies the stative variant, in the
+same interval.  Consequently we get the entailment from ``John wrote a
+book'' to ``John was writing a book''.
 
 Finally we note that not all verbs are subject to the
 stative/achievement distinction induced by the progressive. For
@@ -707,6 +727,8 @@ between this conjunction and time-interval quantifiers.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
+\todo{summary of advances}
+
 We have presented a first attempt for a computational approach dealing
 with the temporal section of the FraCaS test suite. This is the first
 time a system is ran against this section, at the same time, this
