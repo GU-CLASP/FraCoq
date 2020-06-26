@@ -53,6 +53,16 @@
 \begin{document}
 \maketitle
 
+\begin{abstract}
+  In this paper, we propose an implementation of temporal semantics
+  which is suitable for inference problems. This implementation
+  translates syntax trees to logical formulas, suitable for
+  consumption by the Coq proof assistant. We support several phenomena
+  including: temporal references, temporal adverbs, aspectual classes
+  and progressives.  We apply these semantics to temporal problems of
+  the FraCaS testsuite and obtain an accuracy of 71 percent.
+\end{abstract}
+
 \section{Introduction}
 \label{sec:introduction}
 
@@ -136,13 +146,13 @@ natural-language text. That is, the parse trees generally satisfy the
 homomorphism requirement of \citet{montague_english_1970,montague_proper_1974}, and
 we can focus on the translation of syntactic trees to logical forms.
 Example \ref{ex:nobel} shows an example abstract syntax tree and its
-realisation in English.
+realization in English.
 
 
 \paragraph{Coq}
 Coq is an interactive theorem prover (proof assistant). It is based on
-the calculus of coinductive constructions~\citep{werner_une_1994} We
-do not use any coinduction (or even induction) in this paper, relying
+the calculus of co-inductive constructions~\citep{werner_une_1994} We
+do not use any co-induction (or even induction) in this paper, relying
 on the pure lambda-calculus inner core of Coq.  Coq is a very powerful
 reasoning engine that makes it fit for implementing natural language
 semantics.  Coq supports, as already mentioned, dependent typing, but
@@ -221,7 +231,7 @@ if John walked between $t_0$ and $t_1$, we would have:
 $walk(john,t_0,t_1)$. From now on we will call an interval of time
 points $[t_0,t_1]$ a timespan. Every timespan $[t_0,t_1]$ has the
 property $t_0 ≤ t_1$ (it starts no later than it stops). (We are thus
-using a simple newtonian model of time, corresponding to a layman
+using a simple Newtonian model of time, corresponding to a layman
 intuition of a linear constant flow of time.)
 
 In principle, common nouns and adjectives should undergo the same
@@ -294,7 +304,7 @@ is as follows:
   unspecified, then the temporal context becomes the simple
   $(now,now)$ interval.
 \item If the temporal context is specified (for example due to the presence of an adverb or an
-  averbial clause, such as ``before James swam''), then the tense does
+  adverbial clause, such as ``before James swam''), then the tense does
   not create a new interval, but it may constrain it. Typically, a
   past tense adds the constraint that the temporal context ends before
   the timepoint $now$.
@@ -353,7 +363,7 @@ phrases such as ``In 1994, Itel was always on time.'' .
 \paragraph{Time references and aspectual classes}
 
 A common theme in the testsuite is the reference to previous
-occurences of an event:
+occurrences of an event:
 
 \fracasex{262}{
 \item	Smith left after Jones left.
@@ -362,7 +372,7 @@ occurences of an event:
 }
 
 To be able to conclude that there is entailment, as the testsuite expects, we have to make sure
-that the two occurences of ``Jones left'' (in \textbf{P1} and \textbf{P2}) refer to the
+that the two occurrences of ``Jones left'' (in \textbf{P1} and \textbf{P2}) refer to the
 same time intervals.
 %
 For this purpose we postulate \emph{unicity of action} for certain time-dependent
@@ -374,10 +384,10 @@ propositions:
 \end{multline}
 
 Unicity of action holds only if the aspectual class of the proposition
-$P$ is \emph{actitivty}~\citep{steedman_productions_2000} (which, for our
+$P$ is \emph{activity}~\citep{steedman_productions_2000} (which, for our
 purposes, includes \emph{achievements} and \emph{accomplishments}).
 
-(The difference between actitivty and accomplishments on the one hand and
+(The difference between activity and accomplishments on the one hand and
 achievement on the other hand is that for the latter, time intervals
 can be assumed to be of nil duration. In reality, this is an
 oversimplification as achievements are usually of short duration, but
@@ -418,9 +428,9 @@ This principle is used to reason about problem (314), below:
 \hyp 	Smith was in Paris on the 7th of May, 1995.
 }
 
-Indeed, from \textbf{P3} we get that Smith was in paris between May
+Indeed, from \textbf{P3} we get that Smith was in Paris between May
 5th and May 15th. Because ``being in Paris'' is stative, we also get that
-Smith was in Paris in any subinterval. Contrary to unicity of action,
+Smith was in Paris in any sub-interval. Contrary to unicity of action,
 subsumption is always valid.
 
 \paragraph{Class-modifying adverbs}
@@ -429,7 +439,7 @@ application of $\constant {subsumption}$. For example, problem 299
 features the sentence ``Smith lived in Birmingham for exactly a
 year''.  Even though ``live'' is normally stative, one can no longer
 apply subsumption in the context of ``exactly a year'' --- this can be
-done by propagating another context flag in the montegovian semantics
+done by propagating another context flag in the montagovian semantics
 (in addition to the temporal context).
 
 \paragraph{(Un)repeatable Achievements}
@@ -443,7 +453,7 @@ can refute problem (279), as expected by the testsuite:
 \hyp 	 Smith wrote it in 1992.
 }
 Indeed, following our account, the above (contradictory) inference problem is to be
-interperted as
+interpreted as
 
 \begin{equation}
   \label{eq:smith-novel-1}
@@ -513,7 +523,7 @@ while ``John wrote a book'' is encoded as
 $∃(t_1, t_2). t_1≤ t_2, t_2 ≤ now, write(John,book,t_1,t_2)$. This is
 necessary, because $PROG\_write$ is subject to
 $\constant{subsumption}$: if John is writing in the interval
-$[t_1,t_2]$ then he is writing in any subinterval of
+$[t_1,t_2]$ then he is writing in any sub-interval of
 $[t_1,t_2]$. However, the same cannot be said of $write$: the
 end-points of the interval indicate the time needed to complete the
 achievement. (For example, ``John wrote a book in 1993'' neither
@@ -596,7 +606,7 @@ novel (as explained in \cref{sec:our-semantics}), the quantification
 over time intervals as individual timepoints, and the use of custom
 operators for several constructions (\verb!FORALL!, \verb!Not!, \verb!IS_INTERVAL!,
 \verb!appTime!). This use of custom operators is useful for several
-generalisations (for example, we have quantifiers such as \verb!MOST! in
+generalizations (for example, we have quantifiers such as \verb!MOST! in
 addition to \verb!FORALL!.)
 
 Unfolding the definitions for these operators yield the following
@@ -615,10 +625,10 @@ novel_N x ->
    f <= g /\ write_V2 x SMITH f g) ->
 False
 \end{verbatim}
-}This is very close to our idealised representation of the problem
+}This is very close to our idealized representation of the problem
 \cref{eq:smith-novel-1}. One difference is the use of abstract Coq
 integers for timepoints. Using a discrete time allows us to use
-predifined Coq tactics. The discrete nature of integers does not
+predefined Coq tactics. The discrete nature of integers does not
 interfere with the reasoning.
 
 Finally, we can show a Coq proof for the above proposition:
@@ -767,7 +777,7 @@ accomplishments on the basis of their inferential properties:
 
 In the first of the two examples involving an achievement verb, the
 inference is UNK, since there is no guarantee that the action is
-non-instanteous. To the contrary, for accomplishment verbs, the
+non-instantaneous. To the contrary, for accomplishment verbs, the
 inference follows.
 
 
@@ -793,7 +803,7 @@ to be captured:
 
 
 
-\section*{Acknowledgements}
+\section*{Acknowledgments}
 
 \ifanon
 Anonymized
@@ -825,3 +835,13 @@ earlier draft of the paper.
 % John stopped running → John run and John was runnning
 
 \end{document}
+
+% LocalWords:  dowty steedman higginbotham fernando NLI FraCaS GF une
+% LocalWords:  aspectual dataset anaphora bernardy grammaticality NL
+% LocalWords:  infelicitousness ranta Ljunglof montague english TODO
+% LocalWords:  prover chatzikyriakidis Coq's anonymized monadic unger
+% LocalWords:  charlow anaphoroi stative activites timespan timespans
+% LocalWords:  useCl scandinavian nobel FraCas timepoint Itel unicity
+% LocalWords:  Statives contrario th Un lexemes PROG lexicalized lia
+% LocalWords:  postfix timepoints FORALL appTime writeUnique FC CCG
+% LocalWords:  FraCoq Mineshima Langpro abzianidze premiss UNK Centre
