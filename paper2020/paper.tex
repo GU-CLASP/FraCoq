@@ -135,7 +135,7 @@ sufficiently many syntactic features to be able to reconstruct
 natural-language text. That is, the parse trees generally satisfy the
 homomorphism requirement of \citet{montague_english_1970,montague_proper_1974}, and
 we can focus on the translation of syntactic trees to logical forms.
-\cref{ex:nobel} shows an example abstract syntax tree and its
+Example \ref{ex:nobel} shows an example abstract syntax tree and its
 realisation in English.
 
 
@@ -248,7 +248,7 @@ will act on it on nontrivial ways, which we proceed to detail below.
 This temporal context is an \emph{optional} timespan. That is, it can
 be a timespan or an explicitly unspecified context.
 \newcommand\nospan{\ensuremath{-}}
-\newcommand\anyspan{\ensuremath{\mathbf{?}}}\todo{better notation} The timespan in the context is
+\newcommand\anyspan{\ensuremath{\mathbf{*}}} The timespan in the context is
 optional because, in certain situations, the semantics is different
 depending on whether a timespan has been specified externally or not,
 as we explain below. A non-present timespan will be represented as
@@ -263,7 +263,7 @@ The principal non-trivial manipulators of timespans are tense
 markers. In our syntax, inherited from GF, tenses are represented
 syntactically as an attribute of clauses. An illustration of a
 past-tense clause and its interpretation follows in
-\cref{ex:nobel}. Notice in particular the $\varid{past}$ argument to
+Example \ref{ex:nobel}. Notice in particular the $\varid{past}$ argument to
 the $\varid{useCl}$ constructor.
 
 \onelingex{A scandinavian won the nobel prize.\label{ex:nobel}
