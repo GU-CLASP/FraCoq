@@ -54,15 +54,13 @@ example, in the "Worked out example" in Section 4, the paper goes from
 the input trees in GF format straight to the what "the dynamic and
 temporal semantics gives".  How exactly does one go from the GF to the
 more standard first-order logical representation.  Where exactly is
-the dynamic semantics!
-
-  called?  How are the paper's points on temporal semantics
-  incorporated?  Do they come in the course of the GF --> first-order
-  logic translation, or do they come afterwards?  I feel that this
-  explanatory gap weakens the paper.  Overall, it seems that the paper
-  is a move in the right direction, but since its target is the rather
-  limited set of examples in the FraCaS testsuite, the results are
-  similarly limited.
+the dynamic semantics called?  How are the paper's points on temporal
+semantics incorporated?  Do they come in the course of the GF -->
+first-order logic translation, or do they come afterwards?  I feel
+that this explanatory gap weakens the paper.  Overall, it seems that
+the paper is a move in the right direction, but since its target is
+the rather limited set of examples in the FraCaS testsuite, the
+results are similarly limited.
 
 Here are some smaller points:
 
@@ -189,53 +187,53 @@ get "This paper concludes our work in handling the whole of the FraCaS
 test suite using a combination of a number of well-studied tools...."
 
 This work is hence a useful completion of the prior work, showing the
- viability of and methods for handling all of FraCaS in a modern
- logic-based natural language understanding system. There would be
- some utility in a broader community being exposed to these
- methods. However, unfortunately, the paper doesn't make it very clear
- what the specific contributions of the paper are in a broader sense
- that extends outside of this system. That is, there is a rich
- literature on the treatment of tense and aspect in linguistic
- semantics, in particular for similar Montagovian semantics
- approaches. I'm probably not up on the latest, but the classic work
- is that of Dowty, in both research papers and the Dowty, Wall, and
- Peters textbook. And there are other sources like the papers of
- Toshiyuki Ogihara (2007, etc.). Does the approach here improve on
- theirs or is it just an implementation of similar ideas? The examples
- shown make it look kind of similar to me, and there's no explicit
- comparative discussion. The conclusion of this paper explicitly
- suggest that this paper has provided "a new, simplified taxonomy of
- aspectual classes for verb phrases", but if this merely means—as I
- presume—the fact that this paper feels it can collapse together
- activities, accomplishments, and achievements, then this is surely
- just a contingent fact about the limitations of the FraCaS test set,
- meaning that finer-grained aspectual distinctions are not needed to
- handle it, rather than a repudiation of the general utility of these
- aspectual categories? There is also NLP work with detailed discussion
- of temporal semantics. One place in which it (not surprisingly!)
- turns up is work on NL interfaces to databases. E.g., a detailed
- formal semantics-style proposal in Androutsopoulos, Ritchie, and
- Thanisch "Time, Tense and Aspect in Natural Language Database
- Interfaces". Again, this work isn't cited and there is no comparison
- as to whether the approach here is better in any way. Another thing
- that I consider is a bibliographic hole is that the paper makes a big
- thing out of saying that no previous paper has dealt with section 7
- of FraCaS—"This part of the FraCaS test suite has been notoriously
- difficult to tackle". Now, I will admit that a lot of recent papers
- that use FraCaS don't attempt this section. But is its difficulty
- "notorious"? What's the evidence for that? And, actually, the
- MacCartney and Manning papers which accompanied the production of the
- XML version of the FraCaS dataset—which all 21st Century papers
- testing on FraCaS use, including this paper—DID attempt all sections
- of the dataset. Now, there are some big asterisks accompanying that
- statement: they only attempted about half of section 7, since they
- only dealt with one premise problems, and the natural logic methods
- used arguably only sort of guessed at section 7 problems since they
- couldn't really do temporal semantics, but, nevertheless, they have a
- result on section 7, and other systems compared in this paper for
- other sections commonly a!  lso don't attempt all of the
- questions. It seems pretty weird not to know of this result and to
- include it as the only prior system attempting (some of) section 7.
+viability of and methods for handling all of FraCaS in a modern
+logic-based natural language understanding system. There would be some
+utility in a broader community being exposed to these
+methods. However, unfortunately, the paper doesn't make it very clear
+what the specific contributions of the paper are in a broader sense
+that extends outside of this system. That is, there is a rich
+literature on the treatment of tense and aspect in linguistic
+semantics, in particular for similar Montagovian semantics
+approaches. I'm probably not up on the latest, but the classic work is
+that of Dowty, in both research papers and the Dowty, Wall, and Peters
+textbook. And there are other sources like the papers of Toshiyuki
+Ogihara (2007, etc.). Does the approach here improve on theirs or is
+it just an implementation of similar ideas? The examples shown make it
+look kind of similar to me, and there's no explicit comparative
+discussion. The conclusion of this paper explicitly suggest that this
+paper has provided "a new, simplified taxonomy of aspectual classes
+for verb phrases", but if this merely means—as I presume—the fact that
+this paper feels it can collapse together activities, accomplishments,
+and achievements, then this is surely just a contingent fact about the
+limitations of the FraCaS test set, meaning that finer-grained
+aspectual distinctions are not needed to handle it, rather than a
+repudiation of the general utility of these aspectual categories?
+There is also NLP work with detailed discussion of temporal
+semantics. One place in which it (not surprisingly!)  turns up is work
+on NL interfaces to databases. E.g., a detailed formal semantics-style
+proposal in Androutsopoulos, Ritchie, and Thanisch "Time, Tense and
+Aspect in Natural Language Database Interfaces". Again, this work
+isn't cited and there is no comparison as to whether the approach here
+is better in any way. Another thing that I consider is a bibliographic
+hole is that the paper makes a big thing out of saying that no
+previous paper has dealt with section 7 of FraCaS—"This part of the
+FraCaS test suite has been notoriously difficult to tackle". Now, I
+will admit that a lot of recent papers that use FraCaS don't attempt
+this section. But is its difficulty "notorious"? What's the evidence
+for that? And, actually, the MacCartney and Manning papers which
+accompanied the production of the XML version of the FraCaS
+dataset—which all 21st Century papers testing on FraCaS use, including
+this paper—DID attempt all sections of the dataset. Now, there are
+some big asterisks accompanying that statement: they only attempted
+about half of section 7, since they only dealt with one premise
+problems, and the natural logic methods used arguably only sort of
+guessed at section 7 problems since they couldn't really do temporal
+semantics, but, nevertheless, they have a result on section 7, and
+other systems compared in this paper for other sections commonly a!
+lso don't attempt all of the questions. It seems pretty weird not to
+know of this result and to include it as the only prior system
+attempting (some of) section 7.
 
 One of the difficulties in seeing the contribution is that the paper
 uses a syntactic parse representation of FraCaS ("Thanks to this, we
