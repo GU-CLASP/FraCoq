@@ -93,13 +93,13 @@ TODO
 > How does MOST work in the system?  Maybe FraCaS doesn't have generic
 > sentences, but this is what one would really want.
 
-???
+TODO: it's a standard treatment, see other papers.
 
 > Right before Section 4, "John ran" should presumably be "John runs".
 > But note that there is a difference between "John smokes" and "John is
 > smoking".
 
-TODO
+TODO; there are lots of finer points about pragmatics, etc.
 
 > This kind of thing again points to the need to do more in
 > this area.  And so I'm wondering whether anything in existing
@@ -230,7 +230,7 @@ TODO
 > Ogihara (2007, etc.). Does the approach here improve on theirs or is
 > it just an implementation of similar ideas?
 
-TODO
+TODO: Stergios
 
 > The examples shown make it
 > look kind of similar to me, and there's no explicit comparative
@@ -244,6 +244,8 @@ TODO
 > repudiation of the general utility of these aspectual categories?
 
 TODO: clarify this
+  - For achievements/activities: we have an improvement.
+  - For achievements/accomplishments: limitation of the testsuite
 
 > There is also NLP work with detailed discussion of temporal
 > semantics. One place in which it (not surprisingly!)  turns up is work
@@ -251,7 +253,7 @@ TODO: clarify this
 > proposal in Androutsopoulos, Ritchie, and Thanisch "Time, Tense and
 > Aspect in Natural Language Database Interfaces".
 
-TODO
+TODO: Stergios
 
 > Again, this work
 > isn't cited and there is no comparison as to whether the approach here
@@ -263,14 +265,14 @@ TODO
 > this section. But is its difficulty "notorious"? What's the evidence
 > for that?
 
-TODO
+DONE
 
-> And, actually, the MacCartney and Manning papers which
-> accompanied the production of the XML version of the FraCaS
-> dataset—which all 21st Century papers testing on FraCaS use, including
-> this paper—DID attempt all sections of the dataset.
+> And, actually, the MacCartney and Manning papers which accompanied
+> the production of the XML version of the FraCaS dataset—which all
+> 21st Century papers testing on FraCaS use, including this paper—DID
+> attempt all sections of the dataset.
 
-TODO
+TODO: Stergios: cite the MacCartney and Manning papers
 
 > Now, there are some big asterisks accompanying that statement: they
 > only attempted about half of section 7, since they only dealt with
@@ -282,8 +284,6 @@ TODO
 > pretty weird not to know of this result and to include it as the
 > only prior system attempting (some of) section 7.
 
-TODO
-
 > One of the
 > difficulties in seeing the contribution is that the paper uses a
 > syntactic parse representation of FraCaS ("Thanks to this, we skip
@@ -292,7 +292,13 @@ TODO
 > NLU paper—it seems to skip practical language understanding
 > challenges like parsing the sentences—or as a linguistic semantics
 > paper—where it doesn't do justice to comparing how this work is the
-> same as or differs from other semantic accounts of tense.  There are
+> same as or differs from other semantic accounts of tense.
+
+
+TODO: this is comparable to other natual language semantics account of tense (they all assume a pre-existing syntax)
+
+
+> There are
 > some useful, good observations, such as the discussion of unicity of
 > action. This concept is something beyond straight logic that
 > repeatedly comes up in NLI datasets.  The paper is not terribly
@@ -300,8 +306,13 @@ TODO
 > paragraph—over a full column of text—and that is the introduction
 > apart from a second "table of contents paragraph. This huge
 > paragraph ends with sentences mentioning minor assumptions and
-> framing, which is surely not what you want your only contentful
-> introduction paragraph to end with. In more minor ways, too, it's
+> framing,
+> which is surely not what you want your only contentful
+> introduction paragraph to end with.
+
+TODO
+
+> In more minor ways, too, it's
 > just not that carefully written. On p.2 the paper says "Coq
 > supports, as already mentioned dependent typing, but also
 > subtyping."
