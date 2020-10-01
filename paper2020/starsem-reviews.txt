@@ -295,7 +295,7 @@ TODO: Stergios: cite the MacCartney and Manning papers
 > same as or differs from other semantic accounts of tense.
 
 
-TODO: this is comparable to other natual language semantics account of tense (they all assume a pre-existing syntax)
+DONE (JP) clarified GF paragraph.
 
 
 > There are

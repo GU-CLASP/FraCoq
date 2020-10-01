@@ -11,7 +11,7 @@
 \usepackage{stmaryrd}
 \usepackage{todonotes}
 \usepackage{enumitem}
-\usepackage{cleveref}
+\usepackage[capitalize]{cleveref}
 \newlist{lingex}{enumerate}{3}
 \setlist[lingex,1]{parsep=0pt,itemsep=1pt,label=(\arabic*),resume=lingexcount}
 \newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
@@ -89,7 +89,7 @@ skip this section.
 In fact, they also often skip the anaphora and ellipsis sections, the
 exception being the system presented by
 \citet{bernardy_type-theoretical_2017,bernardy_wide-coverage_2019},
-which include support for anaphora and ellipsis but still omit the
+which includes support for anaphora and ellipsis but still omit the
 temporal section.
 %
 In this paper, we take up the challenge of providing a
@@ -132,19 +132,24 @@ work.
 \label{sec:background}
 
 \paragraph{GF}
-The grammatical framework (GF, \citet{ranta_grammatical_2004}) is a powerful parser
-generator for natural languages, based on type-theoretical abstract grammars.
-The present work leverages a syntactic representation of the FraCaS test suite in GF
-abstract syntax~\citep{Ljunglof:2012}. Thanks to this, we skip the parsing phase
-and avoid any syntactic ambiguity.
+The grammatical framework (GF, \citet{ranta_grammatical_2004}) is a
+powerful parser generator for natural languages, based on
+type-theoretical abstract grammars.  The present work leverages a
+syntactic representation of the FraCaS test suite in GF abstract
+syntax~\citep{Ljunglof:2012}. Thanks to this, we skip the parsing
+phase and avoid any syntactic ambiguity.
 
-For the purpose of this paper, the important point is that the GF
-syntax aims at a balance of sufficient abstraction to provide a
+For the purpose of this paper, the important feature of GF
+syntax is that it aims at a balance of sufficient abstraction to provide a
 semantically-relevant structure, but at the same time it embeds
 sufficiently many syntactic features to be able to reconstruct
 natural-language text. That is, the parse trees generally satisfy the
 homomorphism requirement of \citet{montague_english_1970,montague_proper_1974}, and
 we can focus on the translation of syntactic trees to logical forms.
+%
+Consequently, the system presented
+here does not aim at textual natural language understanding, but rather
+provides a testable, systematic formal semantics of temporal phenomena.
 Example \ref{ex:nobel} shows an example abstract syntax tree and its
 realization in English.
 
