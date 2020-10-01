@@ -127,12 +127,36 @@ particular in the performance on the temporal section. In
 \cref{sec:conclusions}, we conclude and discuss avenues for future
 work.
 
+\paragraph{Temporal Semantics}
+\todo{Fold this in some other section}
+In this paper we borrow several notions from classical temporal
+semantics such as ``stative'', ``achievement'', ``activity'', etc.,
+even though our definitions do not perfectly match the classical
+ones. We explain our precise meaning for these terms in the body of the
+paper. Nevertheless, we refer the reader to \citet{steedman:2000} for
+an extensive review of formal temporal semantics.
 
-\section{Background}
+For the \textit{cognoscenti}, we can already point out some
+differences in terminology: we use the term activity as a general term
+which encompasses the three classical notions of activites,
+achievements and accomplishments. Indeed, insofar as the test suite is
+concerned, we find that these three categories can be collapsed into a
+single one (they are subject to \cref{eq:unicity}).  As such, we think
+it is a good classification, given that it generally affords the
+correct inferences for the testsuite. (In this paper, we always assume
+that the problems in the FraCaS testsuite are correctly annotated.)
+
+\section{Temporal-Semantics in a Logic-based NLI System}
 \label{sec:background}
 
+Our temporal analysis places itself in the context of a complete NLI
+system -- which is why we can test it on the FraCaS suite. In this
+section we give a brief overview of the phases of the system,
+referring the reader to published work for details.
+
 \paragraph{GF}
-The grammatical framework (GF, \citet{ranta_grammatical_2004}) is a
+The first phase of the system, parsing, is taken care of by the 
+Grammatical Framework (GF, \citet{ranta_grammatical_2004}), which is a
 powerful parser generator for natural languages, based on
 type-theoretical abstract grammars.  The present work leverages a
 syntactic representation of the FraCaS test suite in GF abstract
@@ -153,9 +177,46 @@ provides a testable, systematic formal semantics of temporal phenomena.
 Example \ref{ex:nobel} shows an example abstract syntax tree and its
 realization in English.
 
+\paragraph{Dynamic Semantics}
+Parse trees are then processed by a dynamic semantic component.
+Its role is essentially to support  (non-temporal) anaphora, using a
+monadic-based dynamic semantics, generally following the state of the
+art in this matter
+\citep{unger_dynamic_2011,charlow_monadic_2015,charlow_modular_2017}.
+Our particular implementation does not handle every case \ifanon
+(citations anonymized) \else \citet{bernardy_computational_2020,bernardy_wide-coverage_2019} \fi
+but non-temporal anaphoroi in the testsuite are generally resolved as
+they should be: on the whole accuracy is not affected significantly by
+issues in this subsystem.
 
-\paragraph{Coq}
-Coq is an interactive theorem prover (proof assistant). It is based on
+As it is the case for other basic phenomena, there is not much
+interaction between our treatment of time and non-temporal
+anaphora. One critical exception is discussed in
+\cref{sec:repeatable-achievements}.
+
+
+\paragraph{Montagovian Semantics}
+Non-withstanding special support for anaphora, the core of the translation of syntax trees
+to logical form follows a largely standard
+montagovian semantics. In brief, sentences are interpreted as
+propositions, verbs and noun-phrases as predicates.  We use
+type-raising of noun-phrases, to support
+quantifiers~\citep{montague_proper_1974}.
+
+We support additionally the basic constructions and phenomena present
+in the testsuite, including adjectives, adverbs, nouns, verbs,
+anaphora, etc. The method is outlined by
+\citet{montague_english_1970,montague_proper_1973}, but we direct the
+reader to our previous work for details \ifanon (citations anonymized)
+\else \citet{bernardy_type-theoretical_2017,bernardy_wide-coverage_2019} \fi, but the particular
+treatment of such phenomena is essentially independent from our
+treatment of time: in this paper we simply ignore these aspects beyond
+the fact that they are handled correctly in most of the cases of the
+FraCaS testsuite.
+
+\paragraph{Inference using Coq}
+Logical forms are then fed to the Coq
+Coq interactive theorem prover (proof assistant). Coq is based on
 the calculus of co-inductive constructions~\citep{werner_une_1994} We
 do not use any co-induction (or even induction) in this paper, relying
 on the pure lambda-calculus inner core of Coq.  Coq is a very powerful
@@ -168,60 +229,6 @@ is formalized as a theorem proving task: its many tactics mean that
 many tasks in theorem proving are trivialized. In particular, all
 problems of time-intervals inclusion, which occur in every temporal
 problems, are solved with Coq's linear arithmetic tactic.
-
-\paragraph{Montagovian Semantics}
-
-Our interpretation is cast within the framework of a largely standard
-montagovian semantics. In brief, sentences are interpreted as
-propositions, verbs and noun-phrases as predicates.  We use
-type-raising of noun-phrases, to support quantifiers~\citep{montague_proper_1974}.
-
-We support additionally the basic constructions and phenomena present
-in the testsuite, including adjectives, adverbs, nouns, verbs,
-anaphora, etc. We direct the reader to our previous work for details
-\ifanon (citations anonymized) \else
-\citet{bernardy_type-theoretical_2017} \fi, but the particular
-treatment of such phenomena is essentially independent from our
-treatment of time:
-in this paper we simply ignore these aspects beyond the fact that they
-are handled correctly in most of the cases of the FraCaS testsuite.
-
-\paragraph{Dynamic Semantics}
-We additionally assume support for (non-temporal) anaphora, using a
-monadic-based dynamic semantics, generally following the state of the
-art in this matter
-\citep{unger_dynamic_2011,charlow_monadic_2015,charlow_modular_2017}.
-Our particular implementation does not handle every case \ifanon
-(citations anonymized) \else \citet{bernardy_wide-coverage_2019} \fi
-but non-temporal anaphoroi in the testsuite are generally resolved as
-they should be: on the whole accuracy is not affected significantly by
-issues in this subsystem.
-
-As it is the case for other basic phenomena, there is not much
-interaction between our treatment of time and non-temporal
-anaphora. One critical exception is discussed in
-\cref{sec:repeatable-achievements}.
-
-
-\paragraph{Temporal Semantics}
-
-In this paper we borrow several notions from classical temporal
-semantics such as ``stative'', ``achievement'', ``activity'', etc.,
-even though our definitions do not perfectly match the classical
-ones. We explain our precise meaning for these terms in the body of the
-paper. Nevertheless, we refer the reader to \citet{steedman:2000} for
-an extensive review of formal temporal semantics.
-
-For the \textit{cognoscenti}, we can already point out some
-differences in terminology: we use the term activity as a general term
-which encompasses the three classical notions of activites,
-achievements and accomplishments. Indeed, insofar as the test suite is
-concerned, we find that these three categories can be collapsed into a
-single one (they are subject to \cref{eq:unicity}).  As such, we think
-it is a good classification, given that it generally affords the
-correct inferences for the testsuite. (In this paper, we always assume
-that the problems in the FraCaS testsuite are correctly annotated.)
-
 
 \section{Our Treatment of Time}
 \label{sec:our-semantics}
@@ -254,7 +261,7 @@ We adjust the montagovian semantics so that the interpretation of
 every category (propositions, verb phrases, etc.) takes a
 \emph{temporal context} as an additional parameter, which serves as a time
 reference for the interpretation of all time-dependent semantics
-within the phrase.  This context propagates through the compositional
+within the phrase. (While some categories do not need this temporal context, we pass it everywhere for consistency.)  This context propagates through the compositional
 interpretation down to lexical items with atomic representation
 (verbs). By default, every interpretation passes the temporal context
 down to its components without changing it. However some key elements
@@ -333,7 +340,8 @@ categories:
   1991'', ``in 1996'', ``for two years'', etc. The common theme is to
   introduce the interval and then restrict its bounds or its duration
   in some way. Sometimes the restriction is an equality, as in ``for
-  exactly two hours''.
+  exactly two hours''. In the following example we show the inclusion
+  constraint, for ``in 1992''.
 
   \begin{multline*}
   ⟦\text{in 1992, \(s\)}⟧(\anyspan) = \\ ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)
@@ -450,7 +458,7 @@ done by propagating another context flag in the montagovian semantics
 \paragraph{(Un)repeatable Achievements}
 \label{sec:repeatable-achievements}
 The principle of using unicity of action interacts well with the usual
-interpretation of quantifiers (and anaphora).  Indeed, using it, we
+interpretation of existential quantifiers (and anaphora).  Indeed, using it, we
 can refute problem (279), as expected by the testsuite:
 
 \fracasex{279}{
@@ -542,7 +550,7 @@ book'' to ``John was writing a book''.
 
 Finally we note that not all verbs are subject to the
 stative/achievement distinction induced by the progressive. For
-example, the phrases ``John ran'' and ``John is running'' appear to be
+example, the phrases ``John ran'' and ``John was running'' appear to be
 logically equivalent, for entailment purposes.
 
 
@@ -612,7 +620,8 @@ over time intervals as individual timepoints, and the use of custom
 operators for several constructions (\verb!FORALL!, \verb!Not!, \verb!IS_INTERVAL!,
 \verb!appTime!). This use of custom operators is useful for several
 generalizations (for example, we have quantifiers such as \verb!MOST! in
-addition to \verb!FORALL!.)
+addition to \verb!FORALL! --- see \ifanon (citation anonymized)
+\else \citet{bernardy_type-theoretical_2017} \fi)
 
 Unfolding the definitions for these operators yield the following
 proposition:

@@ -55,13 +55,14 @@
 > temporal semantics gives".  How exactly does one go from the GF to the
 > more standard first-order logical representation.
 
-TODO
+DONE:
+ We refer to known work here. Unfortunately we don't have space to repeat the whole thing.
 
 > Where exactly is
 > the dynamic semantics called?  How are the paper's points on temporal
 > semantics incorporated?
 
-TODO
+DONE: repurposed sec. 2 to clarify this.
 
 > Do they come in the course of the GF -->
 > first-order logic translation, or do they come afterwards?  I feel
@@ -78,28 +79,28 @@ TODO
 > would think that it is just for the sentences, verbs, verb phrases,
 > adverbs, prepositional phrases.
 
-TODO
+DONE: clarified
 
 > 
 > What is the difference between a temporal context and a timespan?
 
-TODO
+DONE: this is *already* explained in full detail. Did you RTFA?
 
 > In the representation of "for exactly two hours", I don't see anything
 > about two hours.
 
-TODO
+DONE: The example is "in 1992". Did you RTFA??
 
 > How does MOST work in the system?  Maybe FraCaS doesn't have generic
 > sentences, but this is what one would really want.
 
-TODO: it's a standard treatment, see other papers.
+DONE: We only detail interaction with existentials. (Did you RTFA???)
 
 > Right before Section 4, "John ran" should presumably be "John runs".
 > But note that there is a difference between "John smokes" and "John is
 > smoking".
 
-TODO; there are lots of finer points about pragmatics, etc.
+DONE: THE PREVIOUS SENTENCE says that there are differences in general. DID YOU RTFA?????
 
 > This kind of thing again points to the need to do more in
 > this area.  And so I'm wondering whether anything in existing
@@ -317,7 +318,7 @@ TODO
 > supports, as already mentioned dependent typing, but also
 > subtyping."
 
-TODO
+TODO (?)
 
 > But dependent typing hadn't been already mentioned, and
 > AFAICS is never mentioned again in the paper, and I'm still none the
