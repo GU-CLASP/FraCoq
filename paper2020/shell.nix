@@ -1,6 +1,6 @@
 # Non-reproducible "current" version:
 # with (import <nixpkgs> {});
-with import (fetchTarball https://github.com/NixOS/nixpkgs-channels/archive/nixos-18.03.tar.gz) {};
+with import (fetchTarball https://github.com/NixOS/nixpkgs-channels/archive/nixos-20.03.tar.gz) {};
 
 
 let orgEmacs = emacsWithPackages (with emacsPackagesNg; [org]);
@@ -9,10 +9,10 @@ in stdenv.mkDerivation {
   name = "docsEnv";
   shellHook = ''
         export LANG=en_US.UTF-8
-        eval $(egrep ^export ${ghc}/bin/ghc)
        '';
+        # eval $(egrep ^export ${ghc}/bin/ghc)
   buildInputs = [ # orgEmacs
-                  haskellPackages.lhs2tex
+                  # haskellPackages.lhs2tex
                   # ghc
                   biber
                   zip
