@@ -127,24 +127,6 @@ particular in the performance on the temporal section. In
 \cref{sec:conclusions}, we conclude and discuss avenues for future
 work.
 
-\paragraph{Temporal Semantics}
-\todo{Fold this in some other section}
-In this paper we borrow several notions from classical temporal
-semantics such as ``stative'', ``achievement'', ``activity'', etc.,
-even though our definitions do not perfectly match the classical
-ones. We explain our precise meaning for these terms in the body of the
-paper. Nevertheless, we refer the reader to \citet{steedman:2000} for
-an extensive review of formal temporal semantics.
-
-For the \textit{cognoscenti}, we can already point out some
-differences in terminology: we use the term activity as a general term
-which encompasses the three classical notions of activites,
-achievements and accomplishments. Indeed, insofar as the test suite is
-concerned, we find that these three categories can be collapsed into a
-single one (they are subject to \cref{eq:unicity}).  As such, we think
-it is a good classification, given that it generally affords the
-correct inferences for the testsuite. (In this paper, we always assume
-that the problems in the FraCaS testsuite are correctly annotated.)
 
 \section{Temporal-Semantics in a Logic-based NLI System}
 \label{sec:background}
@@ -372,6 +354,23 @@ phrases such as ``In 1994, Itel was always on time.'' .
 % \end{equation}
 \end{enumerate}
 
+\paragraph{Aside: aspectual classes in the literature}
+In this paper we borrow several notions from classical temporal
+semantics such as ``stative'', ``achievement'', ``activity'', etc.,
+even though our definitions do not perfectly match the classical
+ones. We explain our precise meaning for these terms in the body of the
+paper. Nevertheless, we refer the reader to \citet{steedman:2000} for
+an extensive review of formal temporal semantics.
+
+For the \textit{cognoscenti}, we can already point out some
+differences in terminology: we use the term activity as a general term
+which encompasses the three classical notions of activites,
+achievements and accomplishments. Indeed, insofar as the test suite is
+concerned, we find that these three categories can be collapsed into a
+single one (they are subject to \cref{eq:unicity}).  As such, we think
+it is a good classification, given that it generally affords the
+correct inferences for the testsuite. (In this paper, we always assume
+that the problems in the FraCaS testsuite are correctly annotated.)
 
 \paragraph{Time references and aspectual classes}
 
@@ -408,6 +407,12 @@ not nil. However, this plays little role in our
 analysis. As far as we can tell the FraCaS test suite does exercise temporal semantics to
 such a level of precision.)
 
+Unicity of action plays the role of event coreference in
+(neo-)davidsonian account \todo{citation}. It is also a fine-grained
+principle, allowing coreference to take into account certain arguments
+when referencing. As we detail below, taking arguments into account
+yields is critical to handle repeatability of achievements.
+
 Unicity of action appears to be a non-logical principle. Indeed, it is
 quite possible that ``Jones left'' several times. However, it seems
 that this principle is never contradicted by the testsuite. As such,
@@ -425,6 +430,7 @@ middle sentence were not present, a contradiction should be
 flagged. We leave such discourse analysis as future work, and simply
 apply unicity of action everywhere: it is valid uniformly in the
 FraCaS test suite for activity aspect classes.
+
 
 \paragraph{Statives}
 \textit{A contrario}, if \(P\) is \emph{stative}, then we get a time-interval subsumption property:
@@ -483,9 +489,9 @@ scope of \textbf{P1}, and its polarity switched (to universal). This extension c
 anaphora\ifanon (citation anonymized)
 \else\citep{bernardy_computational_2018,bernardy_wide-coverage_2019}\fi.
 
-Thanks to the unicity of action of $write(smith,x,...)$ we find
-\([t_1,t_2] = [t_3,t_4]\), and due to the years 1991 and 1992 being
-disjoint we obtain contradiction.
+Thanks to the unicity of action of $write(smith,x,...)$ (the subject
+and direct object are fixed) we find \([t_1,t_2] = [t_3,t_4]\), and
+due to the years 1991 and 1992 being disjoint we obtain contradiction.
 
 However, the testsuite instructs that we should \emph{not} be able to refute
 problem (280), with the justification that ``wrote a novel'' is a repeatable
@@ -588,10 +594,13 @@ sentence
 \end{verbatim}
 \end{small}
 
-  Of particular note is the use of the pronoun ``it'', and the fact
-  that adverbials expressions such that ``in 1992'' are lexicalized.
-  We also follow the GF convention to postfix lexical items with the
-  name of their category.
+Of particular note is the use of the pronoun ``it'', and the fact that
+adverbials expressions such that ``in 1992'' are lexicalized.  We also
+follow the GF convention to postfix lexical items with the name of
+their category. Most of the other categories follow usual naming
+conventions. We remind the reader that ``slash'' categories are used
+to swap the order of arguments (compared to non-slashed categories of
+similar names).
 
 Our dynamic and temporal semantics gives the following interpretation
 for \verb!s_279_1_p! implies \verb!s_279_3_h!.
@@ -714,11 +723,11 @@ Total        & 337        & .78        & .89         & .83    & .69  & .50  & .8
              &            & \ncases{329}& \ncases{259}& \ncases{174}  & \ncases{174}& \ncases{174}& \ncases{89}
   \end{tabularx}
   \caption{Accuracy of our system compared to others.
-    ``Ours" refers to the approach presented in this paper. When a
+    ``This" refers to the approach presented in this paper. When a
     system does not handle the nominal number of test cases (shown in
     the second column), the actual number of test cases attempted is
-    shown below the accuracy figure, in smaller font.  ``FraCoq''
-    refers to the work of \citet{bernardy_type-theoretical_2017}. ``MINE" refers
+    shown below the accuracy figure, in smaller font.  ``FC''
+    refers to the work of \citet{bernardy_type-theoretical_2017}, and ``FC2'' its followup~\citep{bernardy_wide-coverage_2019}. ``MINE" refers
     to the approach of \citet{Mineshima:2015}, ``NUT" to the CCG
     system that utilizes the first-order automated theorem prover
     \textit{nutcracker} \cite{bos:2008}, and ``Langpro"
@@ -761,7 +770,10 @@ We have presented a first attempt for a computational approach dealing
 with the temporal section of the FraCaS test suite. To do this, we
 have provided a new, simplified taxonomy of aspectual classes for verb
 phrases, guided by the applicability of the unicity of action and
-temporal subsumption properties.
+temporal subsumption properties. While part of this simplification is
+accidental (conflation of activity and accomplishment), we find that
+other parts (the automatic distinction between repeatable and
+unrepeatable achievements) constitute theoretical improvements.
 
 This paper concludes our work in handling the whole of the FraCaS test
 suite using a combination of a number of well-studied tools: type

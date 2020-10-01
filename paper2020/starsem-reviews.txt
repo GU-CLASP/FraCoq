@@ -162,14 +162,16 @@ DONE: THE PREVIOUS SENTENCE says that there are differences in general. DID YOU 
 > be treated using an otherwise unmotivated “unicity postulate”, rather
 > than using the natural notion of event coreference.
 
-TODO: we can say that this is equivalent. (In fact it's more
+DONE: we can say that this is equivalent. (In fact it's more
 fine-grained, even superior, because we can take into account
 whichever arguments to the verb that we wish.)
 
 > (2) The treatment
 > interaction of tense and negation scope is deeply inappropriate,
 > leading to severy misinterpretation.
-> 
+
+TODO: Perhaps fix this for good so they STFU?
+
 > The paper may be interesting to *SEM audience as a snapshot of work in
 > progress on a relevant task. On the long run, I would encourage the
 > authors to substantially refine their analysis of this interesting
@@ -214,7 +216,7 @@ whichever arguments to the verb that we wish.)
 > get "This paper concludes our work in handling the whole of the FraCaS
 > test suite using a combination of a number of well-studied tools...."
 
-TODO
+TODO: Stergios
 
 > This work is hence a useful completion of the prior work, showing the
 > viability of and methods for handling all of FraCaS in a modern
@@ -244,7 +246,7 @@ TODO: Stergios
 > aspectual distinctions are not needed to handle it, rather than a
 > repudiation of the general utility of these aspectual categories?
 
-TODO: clarify this
+DONE: clarified in conclusion
   - For achievements/activities: we have an improvement.
   - For achievements/accomplishments: limitation of the testsuite
 
@@ -302,7 +304,9 @@ DONE (JP) clarified GF paragraph.
 > There are
 > some useful, good observations, such as the discussion of unicity of
 > action. This concept is something beyond straight logic that
-> repeatedly comes up in NLI datasets.  The paper is not terribly
+> repeatedly comes up in NLI datasets.
+
+> The paper is not terribly
 > well-written or structured. The introduction begins with a HUGE
 > paragraph—over a full column of text—and that is the introduction
 > apart from a second "table of contents paragraph. This huge
@@ -311,7 +315,7 @@ DONE (JP) clarified GF paragraph.
 > which is surely not what you want your only contentful
 > introduction paragraph to end with.
 
-TODO
+TODO: Stergios+JP
 
 > In more minor ways, too, it's
 > just not that carefully written. On p.2 the paper says "Coq
@@ -334,7 +338,7 @@ TODO (?)
 > the sentence with notation that is never explained—e.g., complSlash
 > and slashV—what do they refer to?
 
-TODO: explain what we're using (if briefly)
+DONE: explained what we're using (if briefly)
 
 > To the extent that I remember well
 > slashed categories from GPSG, etc., there are no gaps in this basic
@@ -349,7 +353,7 @@ TODO: explain what we're using (if briefly)
 > is treated as a linear arithmetic problem. Back at the minor level,
 > the Table 1 caption names for systems don't actually match the names
 
-TODO: fixit
+DONE: fixed
 
 > in the figure ("FraCoq" "Ours", "Langpro").  The final piece on
 > interaction of temporal quantifiers and noun phrase quantifiers is
