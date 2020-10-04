@@ -275,7 +275,7 @@ DONE
 > 21st Century papers testing on FraCaS use, including this paper—DID
 > attempt all sections of the dataset.
 
-TODO: Stergios: cite the MacCartney and Manning papers
+TODO: Stergios: cite the MacCartney and Manning papers. DONE
 
 > Now, there are some big asterisks accompanying that statement: they
 > only attempted about half of section 7, since they only dealt with
@@ -316,13 +316,15 @@ DONE (JP) clarified GF paragraph.
 > introduction paragraph to end with.
 
 TODO: Stergios+JP
+Fixed, some info on Manning introduced, toned down the arguments, split the paragraph into two 
 
 > In more minor ways, too, it's
 > just not that carefully written. On p.2 the paper says "Coq
 > supports, as already mentioned dependent typing, but also
 > subtyping."
 
-TODO (?)
+TODO (?) 
+Fixed
 
 > But dependent typing hadn't been already mentioned, and
 > AFAICS is never mentioned again in the paper, and I'm still none the
