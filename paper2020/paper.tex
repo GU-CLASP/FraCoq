@@ -82,7 +82,7 @@ and aspect. One of the early datasets used to test logical approaches,
 the FraCaS test suite~\citep{cooper:1996} contains a whole section
 dedicated to temporal and aspectual inference (section 7 of the dataset). This part
 of the FraCaS test suite has been difficult to tackle. That is,
-so far, no computational system has been capable to deal with it: when
+so far, no computational system has been capable to deal with it in its entirety: when
 authors report accuracy over the FraCaS test suite they
 skip this section.
 %
@@ -90,15 +90,16 @@ In fact, they also often skip the anaphora and ellipsis sections, the
 exception being the system presented by
 \citet{bernardy_type-theoretical_2017,bernardy_wide-coverage_2019},
 which includes support for anaphora and ellipsis but still omit the
-temporal section.
+temporal section.\footnote{\citet{maccartney:2007} have made a run against the whole test suite, but upon a closer look, this is not really the case, as they do not deal with multi-premise cases. For example, only 36/75 cases in the temporal section are treated. The general accuracy of the system is .59 and .61 for the temporal section. Our system, as shown \cref{tab:results}, presents considerable improvements and coverage over this system.}
 %
 In this paper, we take up the challenge of providing a
 computationally viable account of tense and aspect to deal with the
-notoriously difficult section 7 of the FraCaS test suite. Our account is not meant
+  section 7 of the FraCaS test suite. Our account is not meant
 to be a theoretically extensive account of tense and aspect, but rather an
 account that is driven by the need to cover the test suite in a way
 that is general enough to capture the test suite examples, \emph{while still covering the rest of the FraCaS test suite}.
 %
+
 The account is evaluated on the entailment properties of various
 temporal and aspectual examples, as given by the test suite. As such,
 we are not getting into the discussion of how tense and aspect might
@@ -203,8 +204,8 @@ the calculus of co-inductive constructions~\citep{werner_une_1994} We
 do not use any co-induction (or even induction) in this paper, relying
 on the pure lambda-calculus inner core of Coq.  Coq is a very powerful
 reasoning engine that makes it fit for implementing natural language
-semantics.  Coq supports, as already mentioned, dependent typing, but
-also subtyping. Both concepts are instrumental in expressing NL
+semantics.  Coq also supports  dependent typing and 
+ subtyping. Both concepts are instrumental in expressing NL
 semantics\citet{chatzikyriakidis_natural_2014}.  Besides, on a more
 practical side, it works well for the the task of NLI, when the latter
 is formalized as a theorem proving task: its many tactics mean that
@@ -691,9 +692,9 @@ in the inference process for each example, and contains nine sections:
 Quantifiers, Plurals, Anaphora, Ellipsis, Adjectives, Comparatives,
 Temporal, Verbs and Attitudes.  The system described here focuses on
 the Temporal section. However, it also supports the other eight
-sections.  To our knowledge this is the first system which attempt to
-target the temporal section. But in fact, our system is even provides
-support for all the other section. A couple of decades after its
+sections.  To our knowledge this is the first system which attempts to
+target the temporal section in full. But in fact, our system even provides
+support for all the other sections. Thus, a couple of decades after its
 formulation, we propose a first attempt at covering the whole suite.
 As such, there it is no other system to compare our system with, in
 all aspects.  We can however compare with systems which target parts
