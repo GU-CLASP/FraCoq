@@ -90,7 +90,7 @@ In fact, they also often skip the anaphora and ellipsis sections, the
 exception being the system presented by
 \citet{bernardy_type-theoretical_2017,bernardy_wide-coverage_2019},
 which includes support for anaphora and ellipsis but still omit the
-temporal section.\footnote{\citet{maccartney:2007} have made a run against the whole test suite, but upon a closer look, this is not really the case, as they do not deal with multi-premise cases. For example, only 36/75 cases in the temporal section are treated. The general accuracy of the system is .59 and .61 for the temporal section. Our system, as shown \cref{tab:results}, presents considerable improvements and coverage over this system.}
+temporal section.\jp{check todo in footnote}\footnote{One can consider that \citet{maccartney:2007} have made a run against the whole test suite. However, they do not deal with multi-premise cases. Consequently only 36/75 cases in the temporal section are treated{TODO: jp: treated or attempted? I suppose attempted (otherwise .61 accuracy makes no sense)}. The general accuracy of the system is .59, and .61 for the temporal section. Our system, as shown \cref{tab:results}, presents considerable improvements in coverage and accuracy over that of \citeauthor{maccartney:2007}.}
 %
 In this paper, we take up the challenge of providing a
 computationally viable account of tense and aspect to deal with the
@@ -776,10 +776,16 @@ accidental (conflation of activity and accomplishment), we find that
 other parts (the automatic distinction between repeatable and
 unrepeatable achievements) constitute theoretical improvements.
 
-This paper concludes our work in handling the whole of the FraCaS test
-suite using a combination of a number of well-studied tools: type
+\cite{bernardy_wide-coverage_2019} presented a
+logical system for handling 8 of the 9 sections of the FRACAS test
+suite, but excluded section 7, suggesting that it requires many
+examples that require ad hoc treatment. Here, we take up this
+challenge and show that a system similar to theirs can be extended to
+cover the remaining section of the test suite.
+%
+We use the same combination of a number of well-studied tools: type
 theory, parsing using the Grammatical Framework (GF), Monadic Dynamic
-Semantics and proof assistant technology (Coq). It achieves an
+Semantics and proof assistant technology (Coq). The system achieves an
 accuracy of 0.71 on the Temporal Section and 0.78 overall.  One of the
 things to be looked at is fixing the issues associated with parts of
 the test suite that ``broke'' when the temporal analysis was

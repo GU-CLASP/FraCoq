@@ -216,7 +216,7 @@ TODO: Perhaps fix this for good so they STFU?
 > get "This paper concludes our work in handling the whole of the FraCaS
 > test suite using a combination of a number of well-studied tools...."
 
-TODO: Stergios
+DONE
 
 > This work is hence a useful completion of the prior work, showing the
 > viability of and methods for handling all of FraCaS in a modern
@@ -233,7 +233,9 @@ TODO: Stergios
 > Ogihara (2007, etc.). Does the approach here improve on theirs or is
 > it just an implementation of similar ideas?
 
-TODO: Stergios
+TODO: Stergios:
+ - cite Toshiyuki Ogihara
+ - ??? give a sense that there is wider context
 
 > The examples shown make it
 > look kind of similar to me, and there's no explicit comparative
@@ -257,6 +259,7 @@ DONE: clarified in conclusion
 > Aspect in Natural Language Database Interfaces".
 
 TODO: Stergios
+  - Discuss
 
 > Again, this work
 > isn't cited and there is no comparison as to whether the approach here
@@ -275,7 +278,7 @@ DONE
 > 21st Century papers testing on FraCaS use, including this paper—DID
 > attempt all sections of the dataset.
 
-TODO: Stergios: cite the MacCartney and Manning papers. DONE
+DONE: Stergios: cite the MacCartney and Manning papers.
 
 > Now, there are some big asterisks accompanying that statement: they
 > only attempted about half of section 7, since they only dealt with
@@ -315,16 +318,14 @@ DONE (JP) clarified GF paragraph.
 > which is surely not what you want your only contentful
 > introduction paragraph to end with.
 
-TODO: Stergios+JP
-Fixed, some info on Manning introduced, toned down the arguments, split the paragraph into two 
+DONE Fixed, some info on Manning introduced, toned down the arguments, split the paragraph into two 
 
 > In more minor ways, too, it's
 > just not that carefully written. On p.2 the paper says "Coq
 > supports, as already mentioned dependent typing, but also
 > subtyping."
 
-TODO (?) 
-Fixed
+DONE Fixed
 
 > But dependent typing hadn't been already mentioned, and
 > AFAICS is never mentioned again in the paper, and I'm still none the
