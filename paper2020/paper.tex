@@ -485,7 +485,7 @@ interpreted as
 \end{array}
 \end{equation}
 Note here that the scope for the existential is extended beyond the
-scope of \textbf{P1}, and its polarity switched (to universal). This extension can work according to
+scope of \textbf{P1}, and its polarity switched (to universal). This extension can follow the account of
 \citet{unger_dynamic_2011}, and our implemented analysis of
 anaphora\ifanon (citation anonymized)
 \else\citep{bernardy_computational_2018,bernardy_wide-coverage_2019}\fi.
@@ -776,6 +776,13 @@ accidental (conflation of activity and accomplishment), we find that
 other parts (the automatic distinction between repeatable and
 unrepeatable achievements) constitute theoretical improvements.
 
+Outside of inference, formal interpretation of tense is found in
+natural-language interface to databases. Of note is the work of
+\citet{androutsopoulos1998time}, which handles many of the time-aware
+adverbial clauses that we address. However, we cover many more
+interaction logical aspects of inference, such as coreference via
+unity of action and interaction with quantifiers.
+
 \cite{bernardy_wide-coverage_2019} presented a
 logical system for handling 8 of the 9 sections of the FRACAS test
 suite, but excluded section 7, suggesting that it requires many
@@ -786,7 +793,8 @@ cover the remaining section of the test suite.
 We use the same combination of a number of well-studied tools: type
 theory, parsing using the Grammatical Framework (GF), Monadic Dynamic
 Semantics and proof assistant technology (Coq). The system achieves an
-accuracy of 0.71 on the Temporal Section and 0.78 overall.  One of the
+accuracy of 0.71 on the Temporal Section and 0.78 overall.
+One of the
 things to be looked at is fixing the issues associated with parts of
 the test suite that ``broke'' when the temporal analysis was
 introduced. Some of these have been already mentioned: interaction of

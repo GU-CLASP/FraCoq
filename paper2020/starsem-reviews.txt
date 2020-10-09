@@ -258,7 +258,7 @@ DONE: clarified in conclusion
 > proposal in Androutsopoulos, Ritchie, and Thanisch "Time, Tense and
 > Aspect in Natural Language Database Interfaces".
 
-TODO: JP
+DONE
 
 > Again, this work
 > isn't cited and there is no comparison as to whether the approach here
