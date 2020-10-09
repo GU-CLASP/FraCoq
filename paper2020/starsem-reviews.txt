@@ -216,7 +216,7 @@ TODO: Perhaps fix this for good so they STFU?
 > get "This paper concludes our work in handling the whole of the FraCaS
 > test suite using a combination of a number of well-studied tools...."
 
-DONE
+
 
 > This work is hence a useful completion of the prior work, showing the
 > viability of and methods for handling all of FraCaS in a modern
@@ -258,8 +258,7 @@ DONE: clarified in conclusion
 > proposal in Androutsopoulos, Ritchie, and Thanisch "Time, Tense and
 > Aspect in Natural Language Database Interfaces".
 
-TODO: Stergios
-  - Discuss
+TODO: JP
 
 > Again, this work
 > isn't cited and there is no comparison as to whether the approach here
