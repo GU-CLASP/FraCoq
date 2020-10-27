@@ -409,7 +409,7 @@ analysis. As far as we can tell the FraCaS test suite does exercise temporal sem
 such a level of precision.)
 
 Unicity of action plays the role of event coreference in
-(neo-)davidsonian account \todo{stergios: citation}. It is also a fine-grained
+(neo-)Davidsonian accounts \citep{parsons1990events}. It is also a fine-grained
 principle, allowing coreference to take into account certain arguments
 when referencing. As we detail below, taking arguments into account
 yields is critical to handle repeatability of achievements.
@@ -553,7 +553,9 @@ from, is on the contrary subject to $\constant{unicity}$. Finally, we
 also have $write(x,y,t_1,t_2) → PROG\_write(x,y,t_1,t_2)$. That is,
 the achievement (or \emph{activity} in our terminology) variant implies the stative variant, in the
 same interval.  Consequently we get the entailment from ``John wrote a
-book'' to ``John was writing a book''.
+book'' to ``John was writing a book''.\footnote{Note that this is a different interpretation of the usual accounts of the progressive in the literature which take a progressive sentence  to be  true at an interval $t_0$
+ iff there is an interval $t_1$ such that $t_0$ is a non final
+subinterval of $t_1$ and the progressiver sentence is true at $t_1$ \citep{ogihara2007tense}. In terms of implementation, the solution we provide here seems to be simpler.}
 
 Finally we note that not all verbs are subject to the
 stative/achievement distinction induced by the progressive. For
