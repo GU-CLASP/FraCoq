@@ -155,13 +155,12 @@ Parameter attendUnique : forall (x y : object), UniqueActivity (attend_V2 x y).
 
 Theorem T105a: Problem105aFalse. cbv.
 intros.
-(* Temporal Error: negation is not handled correctly *)
-Abort All.
+firstorder.
+Qed.
 
 Theorem T106a: Problem106aFalse. cbv.
 firstorder.
-(* Temporal Error: negation is not handled correctly *)
-Abort All.
+Qed.
 
 Theorem T107a: Problem107aTrue. cbv.
 intros theMeeting isMeeting.
