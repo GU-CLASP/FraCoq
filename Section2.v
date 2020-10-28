@@ -46,23 +46,6 @@ destruct H.
 split.
 Qed.
 
-cbv.
-intros contract isContract.
-intros.
-destruct_conjs.
-
-(* TODO Temporal Error: bad interaction between unicity of events and
-group readings of quantifiers; indeed; we cannt do:
-
-specialize signUnique with (x := contract) (y := ???) as A.
-
-because ??? is H2 in one case and H8 in another case. To sum up we
-have existential quantification, whereas we should have another kind
-of quantification.
-
-*) 
-Abort All.
-
 
 Theorem T086a: Problem086aFalse. cbv.
 intros contract isContract.
