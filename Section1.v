@@ -1,4 +1,6 @@
 Load Formulas.
+Require Import Coq.Program.Tactics.
+
 
 Theorem T001a: Problem001aTrue. cbv.
 intros.
@@ -135,46 +137,49 @@ Qed.
 Theorem T024a: Problem024aTrue. cbv.
 intros.
 firstorder.
-exists x0.
-split.
-assumption.
-split.
-split.
-generalize H1.
+generalize H0.
 apply le_mono_right.
 firstorder.
-firstorder.
-assumption.
 Qed. 
 
 Theorem T025a: Problem025aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
 destruct in_Prep as [inPrep inVerid inVeridCov].
-
-intros [t0 [c0[[Pcard Pexist] Pc]]].
-clear Pc.
-destruct Pexist as [delegate [isDelegate [newsPaper [isNewsPaper gotIn]]]].
-exists t0.
-split. assumption.
+intro.
+destruct_conjs.
 split.
 split.
-
-generalize Pcard.
+generalize H.
 apply le_mono_right.
-intros deleg' [isDeleg [paper [isNewsPaper' gotIn']]].
+intros deleg' [isDeleg [t0 [p0 [paper [isNewsPaper' gotIn']]]]].
 split.
 assumption.
-intros result [isresult [somewhere [triv isPublished]]].
+eexists.
+eexists.
+exact p0.
+intros.
 apply getInK with (newsPaper := paper).
-firstorder.
-exists delegate.
+apply gotIn'.
+assumption.
+eexists.
+split.
+Focus 2.
+eexists.
+split.
+Focus 2.
+intros result [isresult [somewhere [triv isPublished]]].
+apply getInK with (newsPaper := H5 ).
+apply H7.
 split.
 assumption.
-intros result [isresult [somewhere [triv isPublished]]].
-apply getInK with (newsPaper := newsPaper).
-firstorder.
-firstorder.
+eexists.
+split.
+split.
+exact isPublished.
+assumption.
+assumption.
+split.
 Qed.
 
 Theorem T026a: Problem026aTrue. cbv.
@@ -215,7 +220,6 @@ Theorem T028a: Problem028aFalse. cbv.
 firstorder.
 Abort All.
 
-Require Import Coq.Program.Tactics.
 
 
 Theorem T029a: Problem029aTrue. cbv.
@@ -224,9 +228,15 @@ intros.
 destruct_conjs.
 exists H. split. assumption.
 exists H1. split. assumption.
-exists H3. split. assumption.
-exists H5. split. assumption.
-intuition.
+split.
+exists H4. split. assumption.
+exists H7. split. assumption.
+assumption.
+split.
+exists H4. split. assumption.
+exists H7. split. assumption.
+assumption.
+assumption.
 Qed.
 
 
@@ -311,13 +321,25 @@ Theorem T037a: Problem037aFalse. cbv.
 (* firstorder. *)
 Abort All.
 
-
 Theorem T038a: Problem038aFalse. cbv.
-destruct on_time_Adv as [adv verid].
-intros.
+destruct on_time_Adv as [onTime [onTimeV onTimeC]].
+intro report.
+intro isReport.
+intro H1.
+intro H2.
+destruct H2 as [d [isD [t [tPast H]]]].
+assert (H' := onTimeV d (fun x => finish_V2 report x t t) H).
+cbv in H'.
+eapply H1.
+Focus 2.
+eexists.
+split.
+Focus 2.
+exact H'.
+assumption.
+assumption.
+Qed.
 
-(* Temporal Error: negation is not handled correctly *)
-Abort All.
 
 Theorem T039a: Problem039aTrue. cbv.
 destruct on_time_Adv as [adv verid].
@@ -335,15 +357,14 @@ destruct on_time_Adv as [adv verid].
 intros.
 destruct_conjs.
 repeat eexists.
-exact H1.
-generalize H2.
+generalize H0.
 apply le_mono_right.
 intros.
 destruct_conjs.
 repeat eexists.
 assumption.
 Focus 3.
-exact H12.
+exact H13.
 Abort All.
 
 Theorem T040a: Problem040aFalse. cbv.
@@ -357,14 +378,17 @@ destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
 intros.
 destruct_conjs.
-exists H.
-split. assumption.
+split. 
 split.
-split.
-generalize H1.
+generalize H.
 apply le_mono_right.
 intros.
 destruct_conjs.
+split.
+assumption.
+eexists.
+split.
+Focus 2.
 Abort All.
 
 Theorem T041a: Problem041aFalse. cbv.
@@ -478,27 +502,17 @@ Qed.
 
 Theorem T056a: Problem056aTrue. cbv.
 firstorder.
-exists x0.
-split. assumption.
-split.
-split.
-generalize H1.
+generalize H0.
 apply le_mono_right.
 firstorder.
-firstorder.
-tauto.
 Qed. (* See note in the xml *)
 
 Theorem T057a: Problem057aTrue. cbv.
 destruct major_A as [major] eqn:majorEq.
 destruct national_A as [national] eqn:nationalEq.
-intros.
-destruct_conjs.
-exists H.
-split.
-assumption.
 repeat split.
-generalize H1.
+destruct_conjs.
+generalize H.
 apply le_mono_right.
 firstorder.
 firstorder.
@@ -580,12 +594,19 @@ intro resident.
 intro isResidentIn.
 Abort All. (* Problem is broken *)
 
+
 Theorem T070a: Problem070aFalse. cbv.
 destruct on_time_Adv as [onTime].
 destruct scandinavian_A as [scandinavian].
 intros.
-(* Temporal Error: negation is not handled correctly *)
-Abort All.
+destruct_conjs.
+eapply H0.
+exact H4. (* is delegate *)
+repeat eexists.
+Focus 2.
+exact H6. (* finished on time *)
+assumption.
+Qed.
 
 Theorem T071a: Problem071aTrue. cbv.
 destruct on_time_Adv as [onTime].

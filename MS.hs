@@ -1072,26 +1072,25 @@ predVP np vp = withClause $ do
   MkNP pre n q cn gender <- np
   np' <- evalQuant pre q n (cn,gender) Subject
   vp' <- vp
-  let p' = np' vp'
   tense <- asks envTense
-  p'' <- case tense of
+  modifier <- case tense of
     t | t `elem` [Past, PresentPerfect, PastPerfect] -> do
               -- Allocate own time.
               t1 <- getFresh
               t2 <- getFresh
-              return $ \e@ExtraArgs{..} ->
+              return $ \prop e@ExtraArgs{..} ->
                   case extraTime of
                     UnspecifiedTime -> modP (quantTime Exists t2 (Con "PAST" `app` Var t2) .
                                              quantTime Exists t1 (Con "IS_INTERVAL" `apps` [Var t1,Var t2]))
-                                            (usingTime (ExactTime $ (Var t1,Var t2)) p' e)
+                                            (usingTime (ExactTime $ (Var t1,Var t2)) prop e)
                       -- (b) We do not have a specified time
                       -- Use own time. This time MUST be overridable by (2), otherwise we'll never
                       -- be able to override it, to search for it when we reach
                       -- point (1) at a later occurence of the same event.
-                    _ -> p' e -- (a) We have a specified time already, e.g coming from an adverbial phrase. Change nothing
-    _ -> return p' -- no specific time info, leave as such. This is important because the time may come from an adverbial phrase.
+                    _ -> prop e -- (a) We have a specified time already, e.g coming from an adverbial phrase. Change nothing
+    _ -> return id -- no specific time info, leave as such. This is important because the time may come from an adverbial phrase.
   modify (pushS (predVP np vp))
-  return $ usingCompClass cn p''
+  return $ usingCompClass cn ((np' (modifier . vp')))
 
 questCl :: Cl -> Cl
 questCl = id
