@@ -39,6 +39,15 @@ Require Import Psatz.
 Theorem T085a: Problem085aFalse.
 cbv.
 intros contract isContract.
+intros [[lawyer [isLawyer [lsigned P1]]] P2].
+rewrite -> P1.
+intros [l' [isLawyer' [lsigned' H]]].
+destruct H.
+split.
+Qed.
+
+cbv.
+intros contract isContract.
 intros.
 destruct_conjs.
 
