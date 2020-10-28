@@ -49,10 +49,13 @@ Qed.
 
 Theorem T086a: Problem086aFalse. cbv.
 intros contract isContract.
-intros.
+intros [[lawyer [isLawyer [lsigned P1]]] P2].
+rewrite -> P1.
+intro.
 destruct_conjs.
-(* TODO Temporal Error : check this one *) 
-Abort All.
+destruct H2. 
+split.
+Qed.
 
 Theorem T087a: Problem087aTrue. cbv.
 firstorder.
