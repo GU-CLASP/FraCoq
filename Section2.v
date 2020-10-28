@@ -59,7 +59,7 @@ Theorem T086a: Problem086aFalse. cbv.
 intros contract isContract.
 intros.
 destruct_conjs.
-(* Temporal TODO: check this one *) 
+(* TODO Temporal Error : check this one *) 
 Abort All.
 
 Theorem T087a: Problem087aTrue. cbv.

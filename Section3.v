@@ -75,6 +75,18 @@ Qed.
 
 Theorem T121a: Problem121aTrue.
 cbv.
+intros.
+destruct_conjs.
+(* TODO: Here we expect all things (report, proposal, invoice) to be delivered at the same time.  *)
+repeat eexists.
+Focus 3.
+
+exact H13.
+
+assumption.
+assumption.
+Focus 2.
+(*exact H9.*)
 (* Temporal error: the group reading shoud commute with interpretation of past tense --- but does not *)
 Abort All.
 
