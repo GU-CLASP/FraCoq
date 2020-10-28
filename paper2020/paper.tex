@@ -174,8 +174,8 @@ issues in this subsystem.
 
 As it is the case for other basic phenomena, there is not much
 interaction between our treatment of time and non-temporal
-anaphora. One critical exception is discussed in
-\cref{sec:repeatable-achievements}.
+anaphora. Critical exceptions are discussed in
+\cref{sec:repeatable-achievements} and \cref{sec:interaction-with-anaphora}.
 
 
 \paragraph{Montagovian Semantics}
@@ -738,18 +738,26 @@ Total        & 337        & .81        & .89         & .83    & .69  & .50  & .8
     indicates that no attempt was made for the section. }
   \label{tab:results}
 \end{table}
-\paragraph{interaction with group readings}
+\paragraph{interaction with anaphora}
+\label{sec:interaction-with-anaphora}
 One reason explaining the lower performance of our system on some
 sections of the testsuite is that our interpretation of time interacts
-imperfectly with group readings.
+imperfectly with anaphora and ellipsis. Consider the following example:
 
-We stress that group readings is already flawed in the system which we base our analysis on.
-The issue is related to the difference
-between narrow  and wide scope.\footnote{The literature on wide and narrow scope readings of quantifiers and quantifiers and negation is vast. We direct the reader to \cite{steedman:2012} for a comprehensive and thorough discussion of the relevant issues.} (In fact the FraCaS test suite does not appear to
-test if the difference between narrow and wide scoping is handled properly.)
-We propose that the situation becomes
-quantitatively more difficult to handle with the added complication of
-time-quantification, but not fundamentally different.
+\fracasex{232}
+{\item	ITEL won more orders than APCOM did.
+\item	APCOM won ten orders.
+\hyp 	ITEL won at least eleven orders.
+}
+
+In the first premiss, our system essentially resolves the ellipsis to
+get the following reading: ``ITEL won X orders and APCOM won Y orders
+and X > Y.''. One would need each of the verb phrases ``won X orders''
+and ``won Y orders'' to introduce their own timespans with existential
+quantifiers. However, the organisation of our system is such that the
+existentials are introduced before the ellipsis is
+expanded. Consequently we get a wrong interpretation and the inference
+cannot be made.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
@@ -785,7 +793,7 @@ One of the
 things to be looked at is fixing the issues associated with parts of
 the test suite that ``broke'' when the temporal analysis was
 introduced. Some of these have been already mentioned: interaction of
-the temporal variables with group readings and negation.
+the temporal variables with anaphora.
 
 Another thing we are willing to try is an extension of the FraCaS
 test suite that will include more fine-grained examples of lexical and
