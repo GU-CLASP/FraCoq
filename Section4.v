@@ -241,8 +241,8 @@ Problem196aTrue.
 cbv.
 intro.
 destruct_conjs.
-exists H7.
-intuition.
+repeat eexists.
+Focus 2.
 (* Temporal Error: incorrect tense in the conjuncts/ellipsis *)
 Abort All. 
 

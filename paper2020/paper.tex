@@ -709,20 +709,20 @@ of the FraCaS testsuite, as shown in \cref{tab:results}.
 \begin{tabularx}{\columnwidth}{Xr@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r}
 Section      & {\kern -2em} \#FraCaS
                           & This        & FC2         & FC & MINE & Nut  & LP  \\ \hline
-Quantifiers  & 75         & .91        & .96         & .96    & .77  & .53  & .93  \\
+Quantifiers  & 75         & .93        & .96         & .96    & .77  & .53  & .93  \\
              &            & \ncases{74}& \ncases{74} &        &      &      &     \ncases{44} \\
-Plurals      & 33         & .64        & .82         & .76    & .67  & .52  & .73 \\
+Plurals      & 33         & .76        & .82         & .76    & .67  & .52  & .73 \\
              &            &            &             &     &   &   & \ncases{24} \\
 Anaphora     & 28         & .79        & .86         &   -    & -    & -    &  -       \\
 Ellipsis     & 52         & .81        & .87         &   -    & -    & -    &  -       \\
 Adjectives   & 22         & .95        & .95         & .95    & .68  & .32  & .73 \\
              &            & \ncases{20}&  \ncases{20}&     &   &   &  \ncases{12} \\
-Comparatives & 31         & .64        & .87         & .56    & .48  & .45  &  -       \\
+Comparatives & 31         & .65        & .87         & .56    & .48  & .45  &  -       \\
 Temporal     & 75         & .71        &  -          &   -    &   -  &  -   &  -       \\
 Verbs        & 8          & .75        & .75         &   -    & -    & -    &  -       \\
 Attitudes    & 13         & .85        & .92         & .85    & .77  & .46  & .92  \\ 
              &            &            &             &        &      &      & \ncases {9}  \\ \hline
-Total        & 337        & .78        & .89         & .83    & .69  & .50  & .85  \\
+Total        & 337        & .80        & .89         & .83    & .69  & .50  & .85  \\
              &            & \ncases{329}& \ncases{259}& \ncases{174}  & \ncases{174}& \ncases{174}& \ncases{89}
   \end{tabularx}
   \caption{Accuracy of our system compared to others.
@@ -738,33 +738,18 @@ Total        & 337        & .78        & .89         & .83    & .69  & .50  & .8
     indicates that no attempt was made for the section. }
   \label{tab:results}
 \end{table}
-\paragraph{interaction with negation and group readings}
+\paragraph{interaction with group readings}
 One reason explaining the lower performance of our system on some
 sections of the testsuite is that our interpretation of time interacts
-imperfectly with negation and group readings.
+imperfectly with group readings.
 
-The issue is that the quantification introduced by the temporal marker
-is outside the negation. For example, the premiss of (038) is
-interpreted as ``there exists a time in the past when every delegate
-did not finish the report'' --- which is incorrect in this context.
-\fracasex{038}{
-\item	No delegate finished the report.
-\hyp 	Some delegate finished the report on time.
-}
-%
-We stress that such interaction between quantifiers and negation
-already occurs without any temporal analysis: one must make a difference
-between narrow  and wide scope.\footnote{The literature on wide and narrow scope readings of quantifiers and quantifiers and negation is vast. We direct the reader to \cite{steedman:2012} for a comprehensive and thorough discussion of the relevant issues.} Unfortunately,
-the Montagovian system over which we base our implementation does not
-support these phenomena. (In fact the FraCaS test suite does not appear to
+We stress that group readings is already flawed in the system which we base our analysis on.
+The issue is related to the difference
+between narrow  and wide scope.\footnote{The literature on wide and narrow scope readings of quantifiers and quantifiers and negation is vast. We direct the reader to \cite{steedman:2012} for a comprehensive and thorough discussion of the relevant issues.} (In fact the FraCaS test suite does not appear to
 test if the difference between narrow and wide scoping is handled properly.)
 We propose that the situation becomes
 quantitatively more difficult to handle with the added complication of
 time-quantification, but not fundamentally different.
-%
-A similar issue occurs with group readings, which are interpreted as
-conjunctions. Here, the problem is an improper resolution of scoping
-order, between this conjunction and time-interval quantifiers.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}

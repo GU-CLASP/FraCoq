@@ -1,5 +1,7 @@
 Load Formulas.
 
+Variable isPast : INDEFINITE_PAST < NOW.
+
 Require Import Coq.Program.Tactics.
 Require Import Omega.
 
@@ -8,7 +10,7 @@ Problem114aTrue.
 cbv.
 intros.
 destruct_conjs.
-exists H.
+exists H1.
 firstorder.
 Qed. 
 
@@ -32,8 +34,15 @@ Theorem T117: Problem117aTrue.
 cbv.
 intros.
 destruct_conjs.
-exists H.
-firstorder.
+assert (H' := H _ H0).
+destruct_conjs.
+repeat esplit.
+Focus 2.
+exact H3.
+Focus 3.
+exact H4.
+assumption.
+assumption.
 Qed.
 
 Theorem T118a: Problem118aTrue.
@@ -51,10 +60,12 @@ Theorem T119a: Problem119aFalse.
 cbv.
 intros.
 destruct_conjs.
-apply H7 with (x := MARY).
+apply H with (x := MARY).
 assumption.
-exists H3.
-firstorder.
+repeat eexists.
+Focus 4.
+exact H5. 
+assumption.
 Abort All.
 
 Theorem T120a: Problem120aTrue.
@@ -123,13 +134,32 @@ Theorem T126b: Problem126bTrue.  cbv. intros.  elim H. intros.  destruct H0. des
 (*-- 127: We need "they" to refer to any disjunction of NPs introduced so -- far.
 *)
 
- Theorem T128a: Problem128aTrue. cbv. intros. destruct H0. destruct H1. destruct H1. destruct H2. destruct H3. destruct_conjs. exists x0. firstorder. Qed.
+
+ Theorem T128a: Problem128aTrue.
+ cbv. intros.
+ destruct_conjs.
+ exists H3.
+ repeat split.
+assumption.
+ assumption.
+ repeat eexists.
+Focus 2. 
+exact H8.
+ assumption.
+ Qed.
 
  Theorem T129a: Problem129aTrue. cbv. intros. firstorder. Qed.
 
 
- Theorem T130at: Problem130aTrue. cbv. intros. destruct H0. destruct H1.
-exists x0. firstorder. Qed.
+ Theorem T130at: Problem130aTrue.
+ cbv. intros.
+ destruct H0. destruct H1.
+destruct_conjs.
+repeat eexists.
+Focus 2.
+exact H10.
+assumption.
+Qed.
 
 (*-- Analysis for 130:  FRACAS. Incompatible with 129. (It should be sufficent
 -- that one reading allows to conclude.)

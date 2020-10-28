@@ -54,9 +54,12 @@ of quantification.
 *) 
 Abort All.
 
+
 Theorem T086a: Problem086aFalse. cbv.
 intros contract isContract.
-(* Temporal Error: bad interaction between unicity of events and group readings of quantifiers *) 
+intros.
+destruct_conjs.
+(* Temporal TODO: check this one *) 
 Abort All.
 
 Theorem T087a: Problem087aTrue. cbv.
@@ -185,6 +188,7 @@ firstorder.
 (*  incorrect collective reading. *)
 Abort All.
 
+
 Theorem T112a: Problem112aTrue. cbv.
 intros.
 destruct_conjs.
@@ -195,9 +199,27 @@ assumption.
 assumption.
 assumption.
 Focus 2.
-(* Temporal Error: bad interaction between unicity of events and group readings of quantifiers *) 
-Abort All.
+exact H3.
+Focus 2.
+exact H4.
+assumption.
+assumption.
+Qed.
 
 Theorem T113a: Problem113aTrue. cbv.
-(* Temporal Error: bad interaction between unicity of events and group readings of quantifiers *) 
-Abort All.
+intros.
+destruct_conjs.
+split.
+repeat eexists.
+Focus 3.
+exact H9.
+assumption.
+assumption.
+assumption.
+repeat eexists.
+Focus 3.
+exact H4.
+assumption.
+assumption.
+assumption.
+Qed.
