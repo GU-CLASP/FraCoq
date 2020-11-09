@@ -533,27 +533,54 @@ the non-progressive form. For example, ``John was writing a book'' is
 encoded as
 $∃(t_1, t_2). t_1≤ t_2, t_2 ≤ now, PROG\_write(John,book,t_1,t_2)$,
 while ``John wrote a book'' is encoded as
-$∃(t_1, t_2). t_1≤ t_2, t_2 ≤ now, write(John,book,t_1,t_2)$. This is
-necessary, because $PROG\_write$ is subject to
-$\constant{subsumption}$: if John is writing in the interval
+$∃(t_1, t_2). t_1≤ t_2, t_2 ≤ now, write(John,book,t_1,t_2)$. This distinction is
+necessary because in our analysis the progressive form ($PROG\_write$) is subject to
+$\constant{subsumption}$. That is, if John is writing in the interval
 $[t_1,t_2]$ then he is writing in any sub-interval of
-$[t_1,t_2]$. However, the same cannot be said of $write$: the
+$[t_1,t_2]$. This interpretation corresponds to the idea the the action takes place continuously over the whole interval.
+However, the same cannot be said of the non-continuous form ($write$): the
 end-points of the interval indicate the time needed to complete the
 achievement. (For example, ``John wrote a book in 1993'' neither
 entails ``John wrote a book in January 1993'' nor ``John wrote a book
-in December 1993''.) In fact, \emph{write}, in the non-progressive
-from, is on the contrary subject to $\constant{unicity}$. Finally, we
+in December 1993''.) (In fact, \emph{write}, in the non-progressive
+from, is on the contrary subject to $\constant{unicity}$.) Finally, we
 also have $write(x,y,t_1,t_2) → PROG\_write(x,y,t_1,t_2)$. That is,
-the achievement (or \emph{activity} in our terminology) variant implies the stative variant, in the
+the achievement (or \emph{activity} in our terminology) variant implies the stative variant, for the
 same interval.  Consequently we get the entailment from ``John wrote a
-book'' to ``John was writing a book''.\footnote{Note that this is a different interpretation of the usual accounts of the progressive in the literature which take a progressive sentence  to be  true at an interval $t_0$
- iff there is an interval $t_1$ such that $t_0$ is a non final
-subinterval of $t_1$ and the progressive sentence is true at $t_1$ \citep{ogihara2007tense}. In terms of implementation, the solution we provide here seems to be simpler.}
+book in 1993'' to ``John was writing a book in 1993'', but not the other way around.
 
-Finally we note that not all verbs are subject to the
+We note however that this interpretation differs only slightly from
+the usual accounts of the progressive in the
+literature. \Citet{ogihara2007tense} summarizes the position of
+\citet{bennett1978toward} as follows: a progressive sentence is true
+at an interval $[t_0,t_1]$ iff there is an interval $[t'_0,t'_1]$ such
+that $[t_0,t_1]$ is a non-final subinterval of $[t'_0,t'_1]$ and the
+progressive sentence is true at $[t'_0,t'_1]$. This is very similar to
+our approach ($\constant{subsumption}$ for the progressive form only),
+but there is a difference regarding final intervals. Yet in our view
+this difference is hard to justify: we cannot see why ``John was
+writing a book in 1993'' entails that he was writing it January,
+February, etc. but not in December.
+
+\Citet{ogihara2007tense} argues that this simple account of the
+progressive fails to reject a sentence such as ``Lee is resembling
+Terri.'' while ``Lee is walking'' is acceptable. We argue instead that
+the latter should be rejected for pragmatic reasons. Indeed, when a
+predicate holds for a very long interval, one typically uses the
+simple present tense in English. Therefore the continuous form
+pragmatically implies that the predicate holds for a limited interval.
+But, without further context, the predicate ``resemble Terri'' does
+not vary over time (while ``walk'' generally does). Therefore the
+continuous form ``Lee is resembling Terri'' is confusing: one implies
+a limited interval, but the semantics of resembling normally yield an unlimited interval.
+%
+Because we do not account for pragmatics, we prefer to retain the
+simplest account based on $\constant{subsumption}$.
+
+Finally we stress that not all verbs are subject to the
 stative/achievement distinction induced by the progressive. For
-example, the phrases ``John ran'' and ``John was running'' appear to be
-logically equivalent, for entailment purposes.
+example, the phrases ``John ran'' and ``John was running'' appear to
+be logically equivalent, for entailment purposes.
 
 
 \section{Worked out example}
@@ -788,7 +815,7 @@ the test suite that ``broke'' when the temporal analysis was
 introduced. Some of these have been already mentioned: interaction of
 the temporal variables with anaphora.
 
-Another thing we are willing to try is an extension of the FraCaS
+Another thing that we are willing to try is an extension of the FraCaS
 test suite that will include more fine-grained examples of lexical and
 grammatical aspect, as well as the interaction between those two, for example
 cases where one needs to actually distinguish between achievements and
@@ -813,6 +840,7 @@ inference follows.
 Further cases to be included in an extended FraCaS future suite
 involve examples where the interaction between different tenses needs
 to be captured:
+
 %Another issue to be looking at is the codification of lexical
 %aspect.\todo{update} In what we have been doing so far, we did not distinguish
 %between the present continuous and the present or the simple past and
@@ -849,19 +877,7 @@ earlier draft of the paper.
 
 \bibliography{../PaperTools/bibtex/jp,paper2020,../paper2018/NLI}
 
-% Things we cannot handle (I think): John was writing a book in 1991
-% → John wrote a book in 1991 (I think we predict entailment
-% here). This is because there is no distinction with progressive and
-% non progressive aspect. We did not do it, I guess because it was
-% needed, but just for future reference. There are similar examples
-% playing around with LEXICAL aspect (aspect grammatically encoded)
-% that we could look at in future work
 
-% Accomplishments usually involve a culmination point in the action
-% which is necessary for the event to be completed. This is not
-% necessary for activities. John stopped writing a book not→ John
-% wrote a book (but does imply that John was writing a book), but,
-% John stopped running → John run and John was runnning
 
 \end{document}
 
