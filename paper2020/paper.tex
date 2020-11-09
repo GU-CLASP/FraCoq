@@ -1,17 +1,26 @@
 \newif\ifanon\anontrue
 
-\documentclass[a4paper,11pt]{article}
-\usepackage[utf8]{inputenc}
+\documentclass[a4paper,twoside]{article}
 
-\usepackage[hyperref]{naaclhlt2019}
+\usepackage{subcaption}
+% \usepackage{calc}
 \usepackage{natbib}
 \usepackage{tabularx}
 \usepackage{times}
+\usepackage{amssymb}
+\usepackage{amstext}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{stmaryrd}
 \usepackage{todonotes}
 \usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{url}
 \usepackage[capitalize]{cleveref}
+\usepackage[verbose]{newunicodechar}
+\input{../PaperTools/latex/newunicodedefs}
+\usepackage{SCITEPRESS}     % Please add other packages that you may need BEFORE the SCITEPRESS.sty package.
+
 \newlist{lingex}{enumerate}{3}
 \setlist[lingex,1]{parsep=0pt,itemsep=1pt,label=(\arabic*),resume=lingexcount}
 \newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
@@ -24,44 +33,28 @@
 
 \newcommand\constant[1]{\mathsf{#1}}
 
-\aclfinalcopy % Uncomment this line for the final submission
-%\def\aclpaperid{***} %  Enter the acl Paper ID here
 
-%\setlength\titlebox{5cm}
-% You can expand the titlebox if you need extra space
-% to show all the authors. Please do not make the titlebox
-% smaller than 5cm (the original size); we will check this
-% in the camera-ready version and ask you to change it back.
-
-%\newcommand\BibTeX{B{\sc ib}\TeX}
-
-
-%\usepackage[backend=bibtex,citestyle=authoryear,style=authoryear,natbib]{biblatex}
-% new style not compatible with biblatex
-%\bibliography{../bbcl_lccm2018/bbcl_lccm2018.bib,iwcs2019}
-
-\usepackage[verbose]{newunicodechar}
-\input{../PaperTools/latex/newunicodedefs}
-
-\title{FraCaS: Temporal Analysis}
-\author{Jean-Philippe Bernardy \qquad Stergios Chatzikyriakidis \\
-  University of Gothenburg\\
-  {\tt firstname.lastname@gu.se} \\}
-
-\date{}
 
 \begin{document}
-\maketitle
 
-\begin{abstract}
-  In this paper, we propose an implementation of temporal semantics
+\title{FraCaS: Temporal Analysis}
+\author{\authorname{Jean-Philippe Bernardy} \authorname{Stergios Chatzikyriakidis}
+  \affiliation{University of Gothenburg}
+  \email{firstname.lastname@gu.se}}
+
+
+\keywords{Temporal Semantics, Type-Theory}
+
+\abstract{In this paper, we propose an implementation of temporal semantics
   which is suitable for inference problems. This implementation
   translates syntax trees to logical formulas, suitable for
   consumption by the Coq proof assistant. We support several phenomena
   including: temporal references, temporal adverbs, aspectual classes
   and progressives.  We apply these semantics to temporal problems of
   the FraCaS testsuite and obtain an accuracy of 81 percent.
-\end{abstract}
+}
+
+\onecolumn \maketitle \normalsize \setcounter{footnote}{0} \vfill
 
 \section{Introduction}
 \label{sec:introduction}
@@ -852,7 +845,7 @@ our colleagues in CLASP for helpful discussion of some of the ideas presented
 here. We also thank anonymous reviewers for their useful comments on an
 earlier draft of the paper.
 \fi
-\bibliographystyle{acl_natbib}
+\bibliographystyle{apalike}
 
 \bibliography{../PaperTools/bibtex/jp,paper2020,../paper2018/NLI}
 

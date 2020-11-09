@@ -1,0 +1,49 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage[hyperref]{naaclhlt2019}
+\usepackage{natbib}
+\usepackage{tabularx}
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{todonotes}
+\usepackage{enumitem}
+\usepackage[capitalize]{cleveref}
+\newlist{lingex}{enumerate}{3}
+\setlist[lingex,1]{parsep=0pt,itemsep=1pt,label=(\arabic*),resume=lingexcount}
+\newcommand\onelingex[1]{\begin{lingex}\item #1 \end{lingex}}
+
+\newlist{subex}{enumerate}{3}
+\setlist[subex,1]{parsep=0pt,itemsep=1pt,font=\bfseries,label=P\arabic*}
+\newcommand\hyp{\item[H]}
+\newcommand\fracasex[2]{\begin{lingex}\item[(#1)] \begin{subex} #2 \end{subex} \end{lingex} }
+\newcommand\jp[1]{\todo[backgroundcolor=blue!10]{JP: #1}}
+
+\newcommand\constant[1]{\mathsf{#1}}
+
+\aclfinalcopy % Uncomment this line for the final submission
+%\def\aclpaperid{***} %  Enter the acl Paper ID here
+
+%\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
+%\newcommand\BibTeX{B{\sc ib}\TeX}
+
+
+%\usepackage[backend=bibtex,citestyle=authoryear,style=authoryear,natbib]{biblatex}
+% new style not compatible with biblatex
+%\bibliography{../bbcl_lccm2018/bbcl_lccm2018.bib,iwcs2019}
+
+\usepackage[verbose]{newunicodechar}
+\input{../PaperTools/latex/newunicodedefs}
+
+\title{FraCaS: Temporal Analysis}
+\author{Jean-Philippe Bernardy \qquad Stergios Chatzikyriakidis \\
+  University of Gothenburg\\
+  {\tt firstname.lastname@gu.se} \\}
+
+\date{}
