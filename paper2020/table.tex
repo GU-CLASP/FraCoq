@@ -42,8 +42,6 @@
 \item	Jones left after Anderson left.
 \hyp    Smith left after Anderson left.
 
-
-
 } \fracasex{264	}{\answer yes
 \item	Smith left.
 \item	Jones left.
@@ -77,8 +75,6 @@
 \item	Jones swam.
 \item	Smith swam before Jones swam.
 \hyp    Jones swam after Smith swam.
-
- However we do get 
 
 } \fracasex{270	}{\answer yes
 \item	Smith swam to the shore.
@@ -215,40 +211,51 @@ Note 	Sic: the original did have "delivered" in the question.
 } \fracasex{320	}{\answer yes
 \item	When Jones got his job at the CIA, he knew that he would never be allowed to write his memoirs.
 \hyp    It is the case that Jones is not and will never be allowed to write his memoirs.
-
+}
 
 \subsection{Incorrectly handled examples}
+
+We list below a number of selected examples from the temporal section
+of the FraCaS testsuite where our semantics fails to list the correct
+inference. We list the reason why it fails under the item \textbf{F}.
+
 {
 
 } \fracasex{259	}{\answer yes
 \item	The conference started on July 4th, 1994.
 \item	It lasted 2 days.
 \hyp    The conference was over on July 8th, 1994.
-
+\failsf Incorrect lexical semantics for ``last $n$ days''.
 } \fracasex{263	}{\answer unknown
 \item	Smith was present after Jones left.
 \item	Jones left after Anderson was present.
 \hyp    Smith was present after Anderson was present.
+\failsf Copula do not get timespans
 
 } \fracasex{278	}{\answer no
 \item	Smith wrote his first novel in 1991.
 \hyp    Smith wrote his first novel in 1992.
+\failsf Unicity of ordinals not implemented
 
 } \fracasex{285	}{\answer unknown
 \item	Smith wrote a report in two hours.
 \hyp    Smith spent two hours writing the report.
+\failsf Temporal semanticts of ``spend'' incorrect
 
 } \fracasex{286	}{\answer no
 \item	Smith wrote a report in two hours.
 \hyp    Smith spent more than two hours writing the report.
+\failsf Temporal semanticts of ``spend'' incorrect
 
 } \fracasex{294	}{\answer yes
 \item	Smith was running his own business in two years.
 \hyp    Smith ran his own business.
+\failsf Parsing error for ``in two years''
 
 } \fracasex{296	}{\answer unknown
 \item	In two years Smith owned a chain of businesses.
 \hyp    Smith owned a chain of business for more than two years.
+\failsf Parsing error for ``in two years''
 
 } \fracasex{302	}{\answer yes
 \item	Smith ran his own business for two years.
@@ -261,12 +268,13 @@ Note 	Sic: the original did have "delivered" in the question.
 } \fracasex{315	}{\answer yes
 \item	When Smith arrived in Katmandu she had been travelling for three days.
 \hyp    Smith had been travelling the day before she arrived in Katmandu.
-
+\failsf Incorrect idiomatic semantics for ``the day before''
 
 } \fracasex{316	}{\answer yes
 \item	Jones graduated in March and has been employed ever since.
 \item	Jones has been unemployed in the past.
 \hyp    Jones was unemployed at some time before he graduated.
+\failsf Incorrect idiomatic semantics
 
 
 } \fracasex{317	}{\answer yes
@@ -275,22 +283,26 @@ Note 	Sic: the original did have "delivered" in the question.
 \item	No representative took less than half a day to read the report.
 \item	There are sixteen representatives.
 \hyp    It took the representatives more than a week to read the report.
+\failsf Counting semantics not implemented
 
 
 } \fracasex{318	}{\answer no
 \item	While Jones was updating the program, Mary came in and told him about the board meeting.
 \item	She finished before he did.
 \hyp    Mary's story lasted as long as Jones's updating the program.
+\failsf Incorrect interaction with anaphora
 
 
 } \fracasex{321	}{\answer yes
 \item	Smith has been to Florence twice in the past.
 \item	Smith will go to Florence twice in the coming year.
 \hyp    Two years from now Smith will have been to Florence at least four times.
+\failsf Counting semantics not implemented
 
 } \fracasex{323	}{\answer yes
 \item	No one gambling seriously stops until he is broke.
 \item	No one can gamble when he is broke.
 
 \hyp    Everyone who starts gambling seriously stops the moment he is broke.
+\failsf Idiomatic semantics of ``the moment'' not supported
 }
