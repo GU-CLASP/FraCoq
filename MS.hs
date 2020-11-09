@@ -480,7 +480,7 @@ withAtLeastDuration delta = do -- with duration meaning, as in FraCas 278
            let (p,actualSpan) = s extraObjs {extraTime = tSpan}
            in (quantTime Exists t1 true $
                quantTime Exists t2 ((Con "IS_INTERVAL" `apps` [intervalStart (actualSpan),intervalStart (extraTime extraObjs)]) ∧
-                                    -- (Con "IS_INTERVAL" `apps` [intervalEnd (actualSpan),Con "NOW"]) ∧
+                                    (Con "IS_INTERVAL" `apps` [Var t2,intervalEnd (extraTime extraObjs)]) ∧
                                 -- it may finish later, see Fracas 304
                                 -- we constraint the returned time, so that we have a stronger interpretation of achievements (see Fracas 306)
                                  (Con "IS_INTERVAL" `apps` [Con "Plus" `apps` [Var t1, delta], Var t2])) $
@@ -1087,7 +1087,8 @@ predVP np vp = withClause $ do
                       -- Use own time. This time MUST be overridable by (2), otherwise we'll never
                       -- be able to override it, to search for it when we reach
                       -- point (1) at a later occurence of the same event.
-                    _ -> prop e -- (a) We have a specified time already, e.g coming from an adverbial phrase. Change nothing
+                    _ -> prop e -- ExactTime (t1,t2) -> first (∧ (Con "PAST" `app` t2)) (prop e) 
+                      -- (a) We have a specified time already, e.g coming from an adverbial phrase. Only fix it to the past.
     _ -> return id -- no specific time info, leave as such. This is important because the time may come from an adverbial phrase.
   modify (pushS (predVP np vp))
   return $ usingCompClass cn ((np' (modifier . vp')))

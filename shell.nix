@@ -1,5 +1,5 @@
 # { nixpkgs ? import <nixpkgs> {} }:
-let distro = fetchTarball https://github.com/NixOS/nixpkgs-channels/archive/nixos-20.03.tar.gz;
+let distro = fetchTarball https://github.com/NixOS/nixpkgs/archive/nixos-20.03.tar.gz;
              # fetchTarball "https://github.com/NixOS/nixpkgs/archive/4a2340ff6bd0474d9a3e933f28b8568c59019b82.tar.gz"; # GF working here
              # fetchTarball https://github.com/NixOS/nixpkgs-channels/archive/nixos-18.09.tar.gz  # CGI broken here (and GF strangely depends on it)
              # fetchTarball https://github.com/NixOS/nixpkgs-channels/archive/nixos-19.09.tar.gz  # GF still broken (in its Setup.hs)

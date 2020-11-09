@@ -94,14 +94,15 @@ onS' f s extra = first f (s extra)
   -- f (p eos)
 
 type TimeSpan = (Exp,Exp)
-data Temporal = ForceTime TimeSpan | ExactTime TimeSpan | UnspecifiedTime {-  TenseTime Temporal-} deriving Show
+data Temporal = -- ForceTime TimeSpan |
+                ExactTime TimeSpan | UnspecifiedTime {-  TenseTime Temporal-} deriving Show
 
 now :: Temporal
 now = ExactTime (Con "NOW", Con "NOW")
 
 instance Semigroup Temporal where
-  ForceTime t <> _ = ForceTime t
-  _ <> ForceTime t = ForceTime t
+  -- ForceTime t <> _ = ForceTime t
+  -- _ <> ForceTime t = ForceTime t
   UnspecifiedTime <> x = x
   x <> UnspecifiedTime = x
   -- TenseTime _ <> x = x -- time specification given by tense, this is overridden by specific times.
@@ -495,7 +496,7 @@ appArgs isTimed nm objs@(_:_) (ExtraArgs {..}) = (extraAdvs (app (pAdverbs time'
           Activity -> extraTime
           Achievement -> case extraTime of
             ExactTime (_,t0) -> ExactTime (t0,t0)
-            ForceTime tspan -> ForceTime tspan
+            -- ForceTime tspan -> ForceTime tspan
             UnspecifiedTime -> UnspecifiedTime
         nmPrep = prog ++ nm ++ concatMap fst prepositions
         prog = if extraProgressive then "PROG_" else ""
@@ -527,14 +528,14 @@ sentenceApplyAdv adv s' ExtraArgs{..} = s' ExtraArgs {extraAdvs = adv . extraAdv
 --------------------------
 -- Time
 
-forceTime :: TimeSpan -> Cl' -> Prop
-forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
+-- forceTime :: TimeSpan -> Cl' -> Prop
+-- forceTime tMeta cl = noExtraObjs (useTime tMeta cl)
 -- HACK: setting the time is at the "UseCl" level, which has to set a
 -- time. But we need to override it from the level above (S), so we
 -- use the "ForceTime" hack.
 
-useTime :: TimeSpan -> Cl' -> S'
-useTime t s ExtraArgs{..} = s ExtraArgs{extraTime = ForceTime t,..}
+-- useTime :: TimeSpan -> Cl' -> S'
+-- useTime t s ExtraArgs{..} = s ExtraArgs{extraTime = ForceTime t,..}
 
 -- | S' shall use the given time constraint
 usingTime :: Temporal -> S' -> S'
@@ -543,7 +544,7 @@ usingTime e s' ExtraArgs{..} = s' ExtraArgs{extraTime = e, ..}
 temporalToLogic :: Temporal -> TimeSpan
 temporalToLogic t = case t  of
   ExactTime e -> e
-  ForceTime e -> e
+  -- ForceTime e -> e
   -- TenseTime t' -> temporalToLogic t'
   UnspecifiedTime -> (Con "UnspecifiedTime",Con "UnspecifiedTime")
 

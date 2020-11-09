@@ -95,6 +95,7 @@ Abort All.
 
 Parameter makeALossStative : forall x, StativeInclusion (fun t0 t1 => exists loss, loss_N loss /\ make8do_V2 loss x t0 t1).
 
+
 Theorem  problem255 : Problem255aTrue.
 cbv.
 intros [P1 P2].
@@ -112,10 +113,15 @@ lia.
 lia.
 Qed.
 
+
 Theorem problem256 : Problem256aTrue.
 cbv.
-exact problem255.
-Qed.
+intros.
+destruct_conjs.
+repeat eexists.
+Focus 5.
+exact H3.
+Abort All.
 
 Theorem  problem257aTrue : Problem257aTrue.
 cbv.
@@ -631,19 +637,26 @@ exact H15.
 exact H16.
 Qed.
 
+Parameter liveInStative : forall (loc x : object), StativeInclusion (live_Vin loc x).
 
-Opaque PN2object.
+Transparent PN2object.
 Theorem problem298 : Problem298aTrue.
 cbv.
 intro P1.
 destruct_conjs.
 repeat eexists.
-Focus 5.
-exact H6.
-Focus 3.
-reflexivity.
+assert (live_Vin BIRMINGHAM SMITH H2 (H2 + (12 * (30 * ONEDAY)))) as Q.
+eapply liveInStative.
+Focus 9.
+exact H7.
+exact H7.
+lia.
+lia.
 Focus 2.
 reflexivity.
+Focus 3.
+exact H5.
+lia.
 lia.
 lia.
 Qed.
@@ -657,7 +670,7 @@ Transparent PN2object.
 Theorem problem299 : Problem299aFalse.
 cbv.
 intros P1 Q.
-destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 P1]]]]]]]].
+destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [c5 P1]]]]]]]]].
 destruct Q as [u1 [d1[u2[d2 [u3 [d3 [d4 Q]]]]]]].
 specialize liveInUnique with (x := BIRMINGHAM)(y := SMITH) as A.
 unfold UniqueActivity in A.
@@ -666,7 +679,6 @@ destruct B as [C D].
 lia.
 Qed.
 
-Parameter liveInStative : forall (loc x : object), StativeInclusion (live_Vin loc x).
 
 Theorem problem300 : Problem300aTrue.
 cbv.
@@ -679,11 +691,12 @@ exists H3.
 split.
 reflexivity.
 eapply liveInStative.
-exact H7.
+exact H8.
 lia.
 lia.
 Qed.
 
+Parameter ranThingStative : forall (obj x : object), StativeInclusion (run_V2 obj x).
 
 Theorem problem301 : Problem301aTrue.
 cbv.
@@ -692,13 +705,19 @@ destruct_conjs.
 repeat eexists.
 Focus 6.
 exact H9.
+Focus 6.
+eapply ranThingStative .
+exact H10.
 Focus 2.
+reflexivity.
 reflexivity.
 Focus 2.
 reflexivity.
+Focus 3.
+reflexivity.
 lia.
 lia.
-assumption.
+lia.
 Qed.
 
 Theorem problem302 : Problem302aTrue.
@@ -707,21 +726,24 @@ intros.
 destruct_conjs.
 repeat eexists.
 Focus 4.
-exact H9.
-(* FIXME *)
-Abort All.
+exact H10.
+lia.
+lia.
+assumption.
+Qed.
 
 Theorem problem303 : Problem303aTrue.
 cbv.
 intro P1.
-destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [report [isReport P1]]]]]]]]]].
+destruct P1 as [t1 [c1[t2[c2 [t3 [t4 [c3 [c4 [report [isReport [c5 P1]]]]]]]]]]].
 repeat eexists.
-Focus 6.
+Focus 7.
 exact P1.
-Focus 2.
+Focus 4.
 reflexivity.
 Focus 2.
 reflexivity.
+lia.
 lia.
 lia.
 assumption.
@@ -729,7 +751,7 @@ Qed.
 
 Theorem problem304t : Problem304aTrue.
 cbv.
-intros [t0 [c0 [ t1 [c1 [t2 [t3 [c2 [c3 P1]]]]]]]].
+intros [t0 [c0 [ t1 [c1 [t2 [t3 [c2 [c3 [c4 P1]]]]]]]]].
 destruct P1 as [report [isReport P1]].
 repeat eexists.
 Focus 4.
@@ -746,12 +768,14 @@ Abort All.
 Theorem  problem306atrue : Problem306aTrue.
 cbv.
 intro P1.
-destruct P1 as [g [c1[f [c2 [b [c [c3 [c4 [report [isReport P1]]]]]]]]]].
+destruct P1 as [g [c1[f [c2 [b [c [c3 [c4 [report [isReport [c5 P1]]]]]]]]]]].
 repeat eexists.
 Focus 4.
 exact P1.
-(* FIXME *)
-Abort All.
+lia.
+lia.
+assumption.
+Qed.
 
 
 Opaque PN2object.
