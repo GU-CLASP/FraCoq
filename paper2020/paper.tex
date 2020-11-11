@@ -849,8 +849,70 @@ to be captured:
 }
 
 
-\section{Examples}
-\input{table}
+\begin{figure*}
+\begin{subfigure}{0.5\textwidth}
+  
+\fracasex{252}{\answer yes
+\item	Since 1992 ITEL has been in Birmingham.
+\item	It is now 1996.
+\hyp    Itel was in Birmingham in 1993.
+} \fracasex{260	}{\answer yes
+\item	Yesterday APCOM signed the contract.
+\item	Today is Saturday, July 14th.
+\hyp    APCOM signed the contract Friday, 13th.
+
+} \fracasex{262	}{\answer yes
+\item	Smith left after Jones left.
+\item	Jones left after Anderson left.
+\hyp    Smith left after Anderson left.
+
+} \fracasex{312	}{\answer yes
+\item	ITEL always delivers reports late.
+\item	In 1993 ITEL delivered reports.
+\hyp    ITEL delivered reports late in 1993.
+
+} \fracasex{320	}{\answer yes
+\item	When Jones got his job at the CIA, he knew that he would never be allowed to write his memoirs.
+\hyp    It is the case that Jones is not and will never be allowed to write his memoirs.
+}
+
+  \caption{Selected correctly handled examples}
+  \label{fig:examples}
+\end{subfigure}
+\begin{subfigure}{0.5\textwidth}
+{
+} \fracasex{259	}{\answer yes
+\item	The conference started on July 4th, 1994.
+\item	It lasted 2 days.
+\hyp    The conference was over on July 8th, 1994.
+\failsf Incorrect lexical semantics for ``last $n$ days''.
+} \fracasex{294	}{\answer yes
+\item	Smith was running his own business in two years.
+\hyp    Smith ran his own business.
+\failsf Parsing error for ``in two years''
+} \fracasex{317	}{\answer yes
+\item	Every representative has read this report.
+\item	No two representatives have read it at the same time.
+\item	No representative took less than half a day to read the report.
+\item	There are sixteen representatives.
+\hyp    It took the representatives more than a week to read the report.
+\failsf Counting semantics not implemented
+% } \fracasex{318	}{\answer no
+% \item	While Jones was updating the program, Mary came in and told him about the board meeting.
+% \item	She finished before he did.
+% \hyp    Mary's story lasted as long as Jones's updating the program.
+% \failsf Incorrect interaction with anaphora
+}
+  \caption{Selected incorrectly handled examples.
+  We list below a number of selected examples from the temporal section
+of the FraCaS testsuite where our semantics fails to list the correct
+inference. We list the reason why it fails under the item \textbf{F}.
+}
+  \label{fig:examples}
+\end{subfigure}
+\end{figure*}
+% \section{Examples}
+% \input{table}
 
 \section*{Acknowledgments}
 
