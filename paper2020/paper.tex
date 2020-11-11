@@ -52,8 +52,9 @@
   translates syntax trees to logical formulas, suitable for
   consumption by the Coq proof assistant. We support several phenomena
   including: temporal references, temporal adverbs, aspectual classes
-  and progressives.  We apply these semantics to temporal problems of
-  the FraCaS testsuite and obtain an accuracy of 81 percent.
+  and progressives.  We apply these semantics to the complete FraCaS testsuite.
+  We obtain an accuracy of 81 percent overall and 73 percent for problems explicitly marked
+  as related to temporal reference.
 }
 
 \onecolumn \maketitle \normalsize \setcounter{footnote}{0} \vfill
@@ -153,7 +154,7 @@ Consequently, the system presented
 here does not aim at textual natural language understanding, but rather
 provides a testable, systematic formal semantics of temporal phenomena.
 Example \ref{ex:nobel} shows an example abstract syntax tree and its
-realization in English.
+realisation in English.
 
 \paragraph{Dynamic Semantics}
 Parse trees are then processed by a dynamic semantic component.
@@ -203,8 +204,8 @@ semantics.  Coq also supports  dependent typing and
  subtyping. Both concepts are instrumental in expressing NL
 semantics~\citep{chatzikyriakidis_natural_2014}.  Besides, on a more
 practical side, it works well for the the task of NLI, when the latter
-is formalized as a theorem proving task: its many tactics mean that
-many tasks in theorem proving are trivialized. In particular, all
+is formalised as a theorem proving task: its many tactics mean that
+many tasks in theorem proving are trivialised. In particular, all
 problems of time-intervals inclusion, which occur in every temporal
 problems, are solved with Coq's linear arithmetic tactic.
 
@@ -328,7 +329,7 @@ In the FraCaS test suite, we normally do not find several
 time-modifying adverbs modifying a single verb phrase. Indeed, sentences such
 as ``in 1992, in 1991 john wrote a novel'' are infelicitous. This
 justifies ignoring the input timespan in the above interpretation --
-we are in particular not interested in modeling felicity with our
+we are in particular not interested in modelling felicity with our
 semantics, only giving an accurate semantics when the input is
 felicitous.
 \item[universally quantifying] A few adverbs introduce intervals via a
@@ -553,7 +554,7 @@ book in 1993'' to ``John was writing a book in 1993'', but not the other way aro
 
 We note however that this interpretation differs only slightly from
 the usual accounts of the progressive in the
-literature. \Citet{ogihara2007tense} summarizes the position of
+literature. \Citet{ogihara2007tense} summarises the position of
 \citet{bennett1978toward} as follows: a progressive sentence is true
 at an interval $[t_0,t_1]$ iff there is an interval $[t'_0,t'_1]$ such
 that $[t_0,t_1]$ is a non-final subinterval of $[t'_0,t'_1]$ and the
@@ -577,7 +578,8 @@ continuous form ``Lee is resembling Terri'' is confusing: one implies
 a limited interval, but the semantics of resembling normally yield an unlimited interval.
 %
 Because we do not account for pragmatics, we prefer to retain the
-simplest account based on $\constant{subsumption}$.
+simplest account based on the subinterval property (which we call
+$\constant{subsumption}$ here).
 
 Finally we stress that not all verbs are subject to the
 stative/achievement distinction induced by the progressive. For
@@ -653,7 +655,7 @@ novel (as explained in \cref{sec:our-semantics}), the quantification
 over time intervals as individual timepoints, and the use of custom
 operators for several constructions (\verb!FORALL!, \verb!Not!, \verb!IS_INTERVAL!,
 \verb!appTime!). This use of custom operators is useful for several
-generalizations (for example, we have quantifiers such as \verb!MOST! in
+generalisations (for example, we have quantifiers such as \verb!MOST! in
 addition to \verb!FORALL! --- see \ifanon (citation anonymized)
 \else \citet{bernardy_type-theoretical_2017} \fi)
 
@@ -673,7 +675,7 @@ novel_N x ->
    f <= g /\ write_V2 x SMITH f g) ->
 False
 \end{verbatim}
-}This is very close to our idealized representation of the problem
+}This is very close to our idealised representation of the problem
 \cref{eq:smith-novel-1}. One difference is the use of abstract Coq
 integers for timepoints. Using a discrete time allows us to use
 predefined Coq tactics. The discrete nature of integers does not
@@ -818,7 +820,7 @@ Total        & 337        & .81        & .89         & .83    & .69  & .50  & .8
     shown below the accuracy figure, in smaller font.  ``FC''
     refers to the work of \citet{bernardy_type-theoretical_2017}, and ``FC2'' its followup~\citep{bernardy_wide-coverage_2019}. ``MINE" refers
     to the approach of \citet{Mineshima:2015}, ``NUT" to the CCG
-    system that utilizes the first-order automated theorem prover
+    system that utilises the first-order automated theorem prover
     \textit{nutcracker} \cite{bos:2008}, and ``Langpro"
     to the system presented by \citet{abzianidze_tableau_2015}. A dash
     indicates that no attempt was made for the section. }
@@ -871,7 +873,7 @@ unity of action and interaction with quantifiers.
 \cite{bernardy_wide-coverage_2019} presented a
 logical system for handling 8 of the 9 sections of the FRACAS test
 suite, but excluded section 7, suggesting that it requires many
-examples that need an ad hoc treatment. Here, we take up this
+examples that need an \textit{ad hoc} treatment. Here, we take up this
 challenge and show that a system similar to theirs can be extended to
 cover the remaining section of the test suite.
 %
@@ -918,7 +920,7 @@ to be captured:
 
 
 
-\section*{Acknowledgments}
+\section*{Acknowledgements}
 
 \ifanon
 Anonymized
@@ -938,12 +940,21 @@ earlier draft of the paper.
 
 \end{document}
 
+% Local Variables:
+% ispell-local-dictionary: "british"
+% End:
+
+
 % LocalWords:  dowty steedman higginbotham fernando NLI FraCaS GF une
 % LocalWords:  aspectual dataset anaphora bernardy grammaticality NL
 % LocalWords:  infelicitousness ranta Ljunglof montague english TODO
-% LocalWords:  prover chatzikyriakidis Coq's anonymized monadic unger
+% LocalWords:  prover chatzikyriakidis Coq's  monadic unger
 % LocalWords:  charlow anaphoroi stative activites timespan timespans
 % LocalWords:  useCl scandinavian nobel FraCas timepoint Itel unicity
 % LocalWords:  Statives contrario th Un lexemes PROG lexicalized lia
 % LocalWords:  postfix timepoints FORALL appTime writeUnique FC CCG
 % LocalWords:  FraCoq Mineshima Langpro abzianidze premiss UNK Centre
+% LocalWords:  Stergios testsuite datasets maccartney compositional
+% LocalWords:  Montagovian montagovian coreference neo Davidsonian
+% LocalWords:  ogihara bennett iff subinterval APCOM existentials hoc
+% LocalWords:  androutsopoulos
