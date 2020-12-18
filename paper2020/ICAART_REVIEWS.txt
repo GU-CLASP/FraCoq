@@ -1,0 +1,31 @@
+ICAART 2021 - Paper #244
+Paper Title: FraCaS: Temporal Analysis
+Reviewer #1
+General Assessment (Please assign scores using the following criteria (1=weakest; 6=strongest))
+Relevance (Paper fits one or more of the topic areas?): 1
+Originality (Newness of the ideas expressed): 3
+Technical Quality (Theoretical soundness/methodology): 3
+Significance (Is the problem worth the given attention?): 3
+Presentation (Structure/Length/English): 2
+Overall Rating (Weighted value of above items): 3
+Improvement Suggestions (for authors to consider in the camera-ready version. Additional detail in "Observations"
+)
+Abstract and Introduction are adequate? Too short
+Needs more experimental results? No
+Needs comparative evaluation? Yes
+Improve critical discussion ? (validation): Yes
+Figures are adequate ? (in number and quality): No
+Conclusions/Future Work are convincing? Yes
+References are up-to-date and appropriate? No
+Paper formatting needs adjustment? No
+Improve English? No
+Detailed comments to authors, including aspects that must be improved in the camera-ready version of the
+paper:
+In my opinion, the topic of the paper is not exactly coherent with the conference aims and scopes.
+The presented theoretical analyses are sound. However, the overall innovativeness of what was presented is low
+􀀀 it is just another take on the formal description of temporal dependencies. The advantages and
+disadvantages of the presented framework must be presented and a critical discussion should be revised.
+The comparative critical analysis is not there.
+
+
+ICAART 2021 - Paper #244Paper Title: FraCaS: Temporal AnalysisReviewer #2General Assessment (Please assign scores using the following criteria (1=weakest; 6=strongest))Relevance (Paper fits one or more of the topic areas?): 5Originality (Newness of the ideas expressed): 4Technical Quality (Theoretical soundness/methodology): 5Significance (Is the problem worth the given attention?): 4Presentation (Structure/Length/English): 4Overall Rating (Weighted value of above items): 4Improvement Suggestions (for authors to consider in the camera-ready version. Additional detail in "Observations")Abstract and Introduction are adequate? Too shortNeeds more experimental results? NoNeeds comparative evaluation? NoImprove critical discussion ? (validation): NoFigures are adequate ? (in number and quality): NoConclusions/Future Work are convincing? NoReferences are up-to-date and appropriate? YesPaper formatting needs adjustment? YesImprove English? NoDetailed comments to authors, including aspects that must be improved in the camera-ready version of thepaper:The paper presents an implementation of temporal semantics for inference problems. The system is tested onFraCaS test suite and can be handled by the Coq proof assistant. The authors show that the performance isbetter than in existing systems.Comments and suggestions:􀀀 the title of the paper is too general and could be specified􀀀 more keywords could be added􀀀 the abstract is too short􀀀 caption of Fig.1 is missing (p. 8)􀀀 future work is not quite clear
