@@ -1,4 +1,4 @@
-\newif\ifanon\anontrue
+\newif\ifanon\anonfalse
 
 \documentclass[a4paper]{article}
 
@@ -40,11 +40,16 @@
 \begin{document}
 
 \title{FraCaS: Temporal Analysis}
-\author{\ifanon Anonymous for review\else
-  \authorname{Jean-Philippe Bernardy} \authorname{Stergios Chatzikyriakidis}
-  \affiliation{University of Gothenburg}
-  \email{firstname.lastname@gu.se}\fi}
+% \author{\ifanon Anonymous for review\else
+%   \authorname{Jean-Philippe Bernardy} \authorname{Stergios Chatzikyriakidis}
+%   \affiliation{University of Gothenburg}
+%   \email{firstname.lastname@gu.se}\fi}
 
+\author{\ifanon Anonymous for review\else
+  {Jean-Philippe Bernardy}\footnote{University of Gothenburg} ~~ {Stergios Chatzikyriakidis}\footnote{University of Gothenburg}
+}
+
+\maketitle
 
 % \keywords{Temporal Semantics, Type-Theory}
 
@@ -58,7 +63,7 @@
   as related to temporal reference.
 }
 
-\onecolumn \maketitle \normalsize \setcounter{footnote}{0} \vfill
+% \onecolumn \maketitle \normalsize \setcounter{footnote}{0} \vfill
 
 \section{Introduction}
 \label{sec:introduction}
