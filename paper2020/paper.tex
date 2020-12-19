@@ -40,11 +40,13 @@
 \begin{document}
 
 \title{FraCaS: Temporal Analysis}
-\author{\authorname{Jean-Philippe Bernardy} \authorname{Stergios Chatzikyriakidis}
-  \affiliation{CLASP, Deparment of Philosophy, Linguistics and Theory of Science, University of Gothenburg}
-  \email{firstname.lastname@gu.se}}
+\author{\ifanon Anonymous for review\else
+  \authorname{Jean-Philippe Bernardy} \authorname{Stergios Chatzikyriakidis}
+  \affiliation{University of Gothenburg}
+  \email{firstname.lastname@gu.se}\fi}
 
-\keywords{Temporal Semantics, Type-Theory, Natural Language Inference, Formal Semantics, FraCaS Test Suite, Coq}
+
+\keywords{Temporal Semantics, Type-Theory}
 
 \abstract{In this paper, we propose an implementation of temporal semantics
   which is suitable for inference problems. This implementation
@@ -791,7 +793,7 @@ all aspects.  We can however compare with systems which target parts
 of the FraCaS testsuite, as shown in \cref{tab:results}.
 
 \providecommand\ncases[1]{{\ensuremath{^{#1}}}}
-\begin{table}[t]
+\begin{table}[hbt]
   \centering
   \small
 \begin{tabularx}{\columnwidth}{Xr@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r@{\,\,}r}
@@ -922,9 +924,9 @@ to be captured:
 
 \section*{Acknowledgements}
 
-%\ifanon
-%Anonymized
-%\else
+\ifanon
+Anonymized
+\else
 The research reported in this paper was supported by grant 2014-39 from the
 Swedish Research Council, which funds the Centre for Linguistic Theory and
 Studies in Probability (CLASP) in the Department of Philosophy, Linguistics,
@@ -932,7 +934,7 @@ and Theory of Science at the University of Gothenburg. We are grateful to
 our colleagues in CLASP for helpful discussion of some of the ideas presented
 here. We also thank anonymous reviewers for their useful comments on an
 earlier draft of the paper.
-%\fi
+\fi
 \bibliographystyle{apalike}
 
 \bibliography{../PaperTools/bibtex/jp,paper2020,../paper2018/NLI}
