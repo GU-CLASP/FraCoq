@@ -1,6 +1,25 @@
-\newif\ifanon\anonfalse
+\newif\ifanon\anontrue
 
-\documentclass[a4paper]{article}
+\documentclass[11pt,a4paper]{article}
+\usepackage[hyperref]{acl2021}
+\usepackage{times}
+\usepackage{latexsym}
+\renewcommand{\UrlFont}{\ttfamily\small}
+
+% This is not strictly necessary, and may be commented out,
+% but it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+
+%\aclfinalcopy % Uncomment this line for the final submission
+%\def\aclpaperid{***} %  Enter the acl Paper ID here
+
+%\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
 
 \usepackage{subcaption}
 % \usepackage{calc}
@@ -53,7 +72,8 @@
 
 % \keywords{Temporal Semantics, Type-Theory}
 
-\abstract{In this paper, we propose an implementation of temporal semantics
+\begin{abstract}
+In this paper, we propose an implementation of temporal semantics
   which is suitable for inference problems. This implementation
   translates syntax trees to logical formulas, suitable for
   consumption by the Coq proof assistant. We support several phenomena
@@ -61,7 +81,7 @@
   and progressives.  We apply these semantics to the complete FraCaS testsuite.
   We obtain an accuracy of 81 percent overall and 73 percent for problems explicitly marked
   as related to temporal reference.
-}
+\end{abstract}
 
 % \onecolumn \maketitle \normalsize \setcounter{footnote}{0} \vfill
 
@@ -274,7 +294,6 @@ Example \ref{ex:nobel}. Notice in particular the $\varid{past}$ argument to
 the $\varid{useCl}$ constructor.
 
 \onelingex{A scandinavian won the nobel prize.\label{ex:nobel}
-\\
 {\small\begin{multline*}
 \varid{useCl}\, \varid{past}\, \varid{pPos}\\ (\varid{predVP}\, (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{scandinavian\_CN})\\ (\varid{complSlash}\, (\varid{slashV2a}\, \varid{win\_V2})\\ (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{nobel\_prize\_CN})))
 \end{multline*}
@@ -327,7 +346,7 @@ categories:
   in some way. Sometimes the restriction is an equality, as in ``for
   exactly two hours''. In the following example we show the inclusion
   constraint, for ``in 1992''.
-
+%
   \begin{multline*}
   ⟦\text{in 1992, \(s\)}⟧(\anyspan) = \\ ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)
 \end{multline*}
@@ -392,7 +411,7 @@ same time intervals.
 %
 For this purpose we postulate \emph{unicity of action} for certain time-dependent
 propositions:
-
+%
 \begin{multline}
   \constant{unicity}_P : P (t_1,t_2) → P (t_3,t_4) → \\ (t_1 = t_3) ∧ (t_2 = t_4)
   \label{eq:unicity}
@@ -437,7 +456,6 @@ FraCaS test suite for activity aspect classes.
 
 \paragraph{Statives}
 \textit{A contrario}, if \(P\) is \emph{stative}, then we get a time-interval subsumption property:
-
 \begin{multline*}
 \constant {subsumption}_P :\\ [t_3,t_4] ⊆ [t_1,t_2] → P (t_1,t_2) → P (t_3,t_4)
 \end{multline*}
@@ -530,7 +548,6 @@ etc. These verbs modify the temporal context in non-trivial
 ways. Consider for example ``finish to ...''. The timespan of the
 argument of ``finish'' should end within the timespan of the finishing
 action:
-
 \begin{multline*}
 ⟦\text{finish to \(s\)}⟧(t_0,t_1) = \\ ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')
 \end{multline*}
@@ -714,70 +731,6 @@ embeds a decision procedure for linear arithmetic
 problems. Fortunately, \texttt{lia} can take care of all the problems
 which arise in the FraCaS testsuite.
 
-\begin{figure*}
-\begin{subfigure}{0.47\textwidth}
-
-\fracasex{252}{\answer yes
-\item	Since 1992 ITEL has been in Birmingham.
-\item	It is now 1996.
-\hyp    Itel was in Birmingham in 1993.
-} \fracasex{260	}{\answer yes
-\item	Yesterday APCOM signed the contract.
-\item	Today is Saturday, July 14th.
-\hyp    APCOM signed the contract Friday, 13th.
-
-} \fracasex{262	}{\answer yes
-\item	Smith left after Jones left.
-\item	Jones left after Anderson left.
-\hyp    Smith left after Anderson left.
-
-} \fracasex{312	}{\answer yes
-\item	ITEL always delivers reports late.
-\item	In 1993 ITEL delivered reports.
-\hyp    ITEL delivered reports late in 1993.
-
-} \fracasex{320	}{\answer yes
-\item	When Jones got his job at the CIA, he knew that he would never be allowed to write his memoirs.
-\hyp    It is the case that Jones is not and will never be allowed to write his memoirs.
-}
-
-  \caption{Selected correctly handled examples}
-  \label{fig:correct-examples}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.47\textwidth}
-{
-} \fracasex{259	}{\answer yes
-\item	The conference started on July 4th, 1994.
-\item	It lasted 2 days.
-\hyp    The conference was over on July 8th, 1994.
-\failsf Incorrect lexical semantics for ``last $n$ days''.
-} \fracasex{294	}{\answer yes
-\item	Smith was running his own business in two years.
-\hyp    Smith ran his own business.
-\failsf Parsing error for ``in two years''
-} \fracasex{317	}{\answer yes
-\item	Every representative has read this report.
-\item	No two representatives have read it at the same time.
-\item	No representative took less than half a day to read the report.
-\item	There are sixteen representatives.
-\hyp    It took the representatives more than a week to read the report.
-\failsf Counting semantics not implemented
-% } \fracasex{318	}{\answer no
-% \item	While Jones was updating the program, Mary came in and told him about the board meeting.
-% \item	She finished before he did.
-% \hyp    Mary's story lasted as long as Jones's updating the program.
-% \failsf Incorrect interaction with anaphora
-}
-  \caption{Selected incorrectly handled examples.
-  We list below a number of selected examples from the temporal section
-of the FraCaS testsuite where our semantics fails to list the correct
-inference. We list the reason why it fails under the item \textbf{F}.
-}
-  \label{fig:incorrect-examples}
-\end{subfigure}
-% \caption{Selected examples.}
-\end{figure*}
 
 \section{Results and Evaluation}
 \label{sec:results}
@@ -927,11 +880,10 @@ to be captured:
 
 
 
-\section*{Acknowledgements}
-
 \ifanon
-Anonymized
+
 \else
+\section*{Acknowledgements}
 The research reported in this paper was supported by grant 2014-39 from the
 Swedish Research Council, which funds the Centre for Linguistic Theory and
 Studies in Probability (CLASP) in the Department of Philosophy, Linguistics,
