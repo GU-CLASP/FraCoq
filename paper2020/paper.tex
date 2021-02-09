@@ -58,7 +58,7 @@
 
 \begin{document}
 
-\title{FraCaS: Temporal Analysis}
+\title{Applied Temporal Analysis: A Complete Run of the FraCaS Test Suite }
 % \author{\ifanon Anonymous for review\else
 %   \authorname{Jean-Philippe Bernardy} \authorname{Stergios Chatzikyriakidis}
 %   \affiliation{University of Gothenburg}
@@ -72,15 +72,12 @@
 
 % \keywords{Temporal Semantics, Type-Theory}
 
-\begin{abstract}
-In this paper, we propose an implementation of temporal semantics
-  which is suitable for inference problems. This implementation
+\begin{abstract}In this paper, we propose an implementation of temporal semantics that
   translates syntax trees to logical formulas, suitable for
-  consumption by the Coq proof assistant. We support several phenomena
-  including: temporal references, temporal adverbs, aspectual classes
-  and progressives.  We apply these semantics to the complete FraCaS testsuite.
-  We obtain an accuracy of 81 percent overall and 73 percent for problems explicitly marked
-  as related to temporal reference.
+ consumption by the Coq proof assistant. The analysis  supports a wide range of phenomena
+ including: temporal references, temporal adverbs, aspectual classes
+ and progressives.  The new semantics are built on top of a previous system handling all sections of the FraCaS test suite except the temporal reference section, and we  obtain an accuracy of 81 percent overall and 73 percent for the problems explicitly marked
+as related to temporal reference. To the best of our knowledge, this is the best performance of a logical system on the whole of the FraCaS. 
 \end{abstract}
 
 % \onecolumn \maketitle \normalsize \setcounter{footnote}{0} \vfill
@@ -220,7 +217,7 @@ the fact that they are handled correctly in most of the cases of the
 FraCaS testsuite.
 
 \paragraph{Inference using Coq}
-Logical forms are then fed to the Coq
+Logical forms are then fed to the 
 Coq interactive theorem prover (proof assistant). Coq is based on
 the calculus of co-inductive constructions~\citep{werner_une_1994} We
 do not use any co-induction (or even induction) in this paper, relying
@@ -419,7 +416,7 @@ propositions:
 
 Unicity of action holds only if the aspectual class of the proposition
 $P$ is \emph{activity}~\citep{steedman_productions_2000} (which, for our
-purposes, includes \emph{achievements} and \emph{accomplishments}).
+purposes, includes \emph{achievements} and \emph{accomplishments} as well).
 
 (The difference between activity and accomplishments on the one hand and
 achievement on the other hand is that for the latter, time intervals
@@ -786,9 +783,9 @@ Total        & 337        & .81        & .89         & .83    & .69  & .50  & .8
     indicates that no attempt was made for the section. }
   \label{tab:results}
 \end{table}
-Additionally, to provide the reader with a better sense of what the
-complete system is capable and not capable of, we list a number of
-correctly and incorrectly handled examples in \cref{fig:correct-examples} and \cref{fig:incorrect-examples}.
+%Additionally, to provide the reader with a better sense of what the
+%complete system is capable and not capable of, we list a number of
+%correctly and incorrectly handled examples in \cref{fig:correct-examples} and \cref{fig:incorrect-examples}.
 \paragraph{Interaction with anaphora}
 \label{sec:interaction-with-anaphora}
 One reason explaining the lower performance of our system on some
@@ -816,7 +813,7 @@ cannot be made.
 
 We have presented a first attempt for a computational approach dealing
 with the temporal section of the FraCaS test suite. To do this, we
-have provided a new, simplified taxonomy of aspectual classes for verb
+have provided a simplified taxonomy of aspectual classes for verb
 phrases, guided by the applicability of the unicity of action and
 temporal subsumption properties. While part of this simplification is
 accidental (conflation of activity and accomplishment), we find that
@@ -831,11 +828,12 @@ adverbial clauses that we address. However, we cover many more
 unity of action and interaction with quantifiers.
 
 \cite{bernardy_wide-coverage_2019} presented a
-logical system for handling 8 of the 9 sections of the FRACAS test
+logical system for handling 8 of the 9 sections of the FraCaS test
 suite, but excluded section 7, suggesting that it requires many
-examples that need an \textit{ad hoc} treatment. Here, we take up this
-challenge and show that a system similar to theirs can be extended to
-cover the remaining section of the test suite.
+examples that need an \textit{ad hoc} treatment. Here, we took up this
+challenge and have shown that a system similar to theirs can be extended to
+cover the remaining section of the test suite, without considerably decreasing the performance of the 
+rest of the sections. This is indeed a common problem with logical approaches, namely the fact that one can have theoretically motivated implementations of individual phenomena, e.g. anaphora, ellipsis, quantifiers, temporal reference etc., but when one tries to put all these together into a unified system, this proves to be a daunting task. We believe that this paper presents an exception, and provides a system that can deal with all these different semantic phenomena under a unified system with very good results. 
 %
 We use the same combination of a number of well-studied tools: type
 theory, parsing using the Grammatical Framework (GF), Monadic Dynamic
