@@ -176,7 +176,7 @@ we can focus on the translation of syntactic trees to logical forms.
 Consequently, the system presented
 here does not aim at textual natural language understanding, but rather
 provides a testable, systematic formal semantics of temporal phenomena.
-Example \ref{ex:nobel} shows an example abstract syntax tree and its
+Example \ref{ex:nobel} shows an abstract syntax tree and its
 realisation in English.
 
 \paragraph{Dynamic Semantics}
@@ -199,7 +199,7 @@ anaphora. Critical exceptions are discussed in
 
 \paragraph{Montagovian Semantics}
 Non-withstanding special support for anaphora, the core of the translation of syntax trees
-to logical form follows a largely standard
+to logical form follows a standard
 montagovian semantics. In brief, sentences are interpreted as
 propositions, verbs and noun-phrases as predicates.  We use
 type-raising of noun-phrases, to support
@@ -291,6 +291,7 @@ Example \ref{ex:nobel}. Notice in particular the $\varid{past}$ argument to
 the $\varid{useCl}$ constructor.
 
 \onelingex{A scandinavian won the nobel prize.\label{ex:nobel}
+  \vspace{-1.5ex}
 {\small\begin{multline*}
 \varid{useCl}\, \varid{past}\, \varid{pPos}\\ (\varid{predVP}\, (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{scandinavian\_CN})\\ (\varid{complSlash}\, (\varid{slashV2a}\, \varid{win\_V2})\\ (\varid{detCN}\, (\varid{detQuant}\, \varid{indefArt}\, \varid{numSg})\\ \varid{nobel\_prize\_CN})))
 \end{multline*}
@@ -344,6 +345,7 @@ categories:
   exactly two hours''. In the following example we show the inclusion
   constraint, for ``in 1992''.
 %
+  \vspace{-1.5ex}
   \begin{multline*}
   ⟦\text{in 1992, \(s\)}⟧(\anyspan) = \\ ∃t_1,t_2.  [t_1,t_2] ⊆ 1992, ⟦s⟧(t_1,t_2)
 \end{multline*}
@@ -361,6 +363,7 @@ felicitous.
   If there is no explicit time context, then ``always'' has no
   constraint on the interval, otherwise the quantified interval must
   be included in it:
+  \vspace{-1.5ex}
   \begin{multline*}
   ⟦\text{always \(s\)}⟧(t_0,t_1) = \\ ∀t_0',t_1'. [t_0',t_1'] ⊆ [t_0,t_1], ⟦s⟧(t_0',t_1')
 \end{multline*}
@@ -409,6 +412,7 @@ same time intervals.
 For this purpose we postulate \emph{unicity of action} for certain time-dependent
 propositions:
 %
+  \vspace{-1.5ex}
 \begin{multline}
   \constant{unicity}_P : P (t_1,t_2) → P (t_3,t_4) → \\ (t_1 = t_3) ∧ (t_2 = t_4)
   \label{eq:unicity}
@@ -453,6 +457,7 @@ FraCaS test suite for activity aspect classes.
 
 \paragraph{Statives}
 \textit{A contrario}, if \(P\) is \emph{stative}, then we get a time-interval subsumption property:
+\vspace{-1.5ex}
 \begin{multline*}
 \constant {subsumption}_P :\\ [t_3,t_4] ⊆ [t_1,t_2] → P (t_1,t_2) → P (t_3,t_4)
 \end{multline*}
@@ -492,6 +497,7 @@ can refute problem (279), as expected by the testsuite:
 Indeed, following our account, the above (contradictory) inference problem is to be
 interpreted as
 
+\vspace{-1.5ex}
 \begin{equation}
   \label{eq:smith-novel-1}
 \begin{array}{l}
@@ -520,7 +526,7 @@ accomplishment:
 \hyp 	Smith wrote a novel in 1992.
 }
 Here our interpretation is:
-
+\vspace{2ex}
 \[\begin{array}{l}
 (∃x. novel(x) ∧ \\
 ∃t_1,t_2. [t_1,t_2] ⊆ 1991 ∧ write(smith,x,t_1,t_2)) ∧ \\
@@ -545,6 +551,7 @@ etc. These verbs modify the temporal context in non-trivial
 ways. Consider for example ``finish to ...''. The timespan of the
 argument of ``finish'' should end within the timespan of the finishing
 action:
+\vspace{-1.5ex}
 \begin{multline*}
 ⟦\text{finish to \(s\)}⟧(t_0,t_1) = \\ ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')
 \end{multline*}
@@ -792,6 +799,7 @@ One reason explaining the lower performance of our system on some
 sections of the testsuite is that our interpretation of time interacts
 imperfectly with anaphora and ellipsis. Consider the following example:
 
+\vspace{-1.5ex}
 \fracasex{232}
 {\item	ITEL won more orders than APCOM did.
 \item	APCOM won ten orders.
@@ -867,14 +875,13 @@ inference is UNK, since there is no guarantee that the action is
 non-instantaneous. To the contrary, for accomplishment verbs, the
 inference follows.
 
-Further cases to be included in an extended FraCaS future suite
-involve examples where the interaction between different tenses needs
-to be captured:
-
-\fracasex{extra3}{
-	\item	When the phone rang, John had entered the house.  
-	\hyp 	John entered the house before the phone rang (YES).
-}
+% Further cases to be included in an extended FraCaS future suite
+% involve examples where the interaction between different tenses needs
+% to be captured:
+% \fracasex{extra3}{
+% 	\item	When the phone rang, John had entered the house.  
+% 	\hyp 	John entered the house before the phone rang (YES).
+% }
 
 
 
