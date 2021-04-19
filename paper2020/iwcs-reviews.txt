@@ -1,0 +1,217 @@
+============================================================================
+                            REVIEWER #1
+                            ============================================================================
+
+---------------------------------------------------------------------------
+Reviewer's Scores
+---------------------------------------------------------------------------
+Appropriateness (1-5): 5 Clarity (1-5): 3 Originality / Innovativeness
+(1-5): 3 Soundness / Correctness (1-5): 3 Meaningful Comparison (1-5):
+4 Thoroughness (1-5): 4 Impact of Ideas or Results (1-5): 3 Overall
+Recommendation (1-5): 2.5 Reviewer Confidence (1-5): 4
+
+Detailed Comments
+---------------------------------------------------------------------------
+The paper describes an approach to the construction of meaning
+representations and claims that it coves all the phenomena exhibited
+by the FraCaS dataset. This is an extremely strong claim -- as their
+table comparing the results of various systems on this dataset shows,
+very few systems come close to matching their results on the
+non-temporal sections of this testset, and none of the competitors
+listed in the table attempt this section.
+
+So this should make them world-beating and there should be no question
+ but that the paper should be accepted and probably considered for
+ best paper. The problem is that the work reported here uses a proof
+ *assistant* where the others use theorem *provers* (at least the ones
+ that I know anything about do). That's a HUGE difference, and it is
+ entirely disingenuous to compare results obtained using a proof
+ assistant (i.e. something which can support the construction of a
+ proof by a human) with ones obtained using a theorem prover
+ (something which can obtain proofs automatically). Furthermore, Coq
+ appears to rely heavily on things called "tactics" whose status is
+ unclear, but which look like they may be ad hoc cached inferences, in
+ which case it would be useful to know how many such tactics were
+ constructed in order to carry out the required proofs. I did have a
+ look at the Cog home page, and at the tutorial example that goes with
+ the online version to make sure that I'm not bei!  ng unfair, but it
+ really does look as though Coq supports a human user in obtaining
+ proofs rather than obtaining them for itself.
+
+The notation used in the paper is entirely impenetrable, and if the
+paper is accepted the authors must provide more help to the
+reader. I've ticked 4 under reviewer confidence, which ought to mean
+that " I tried to check the important points carefully", but while I
+am confident in my review, I haven't actually checked some of the
+important points carefully because I found the notation impossible to
+interpret -- I've worked with a wide range of grammatical formalisms,
+I'm familiar with a number of higher-order logics, but the
+representations in this paper are hard to read and inadequately
+described.
+
+(having slept on it and thought about it a bit more, I'm actually
+increasingly irritated by their lack of distinction between proof
+assistant and theorem prover. Many people have spent years trying to
+write theorem provers that can handle the Fracas tests, which are
+extremely challenging. If you're allowed to guide the inference engine
+through its search space the task become much easier. If I'm wrong
+about Coq then the authors should make it clear that their results are
+obtained by their system without human intervention, and without ad
+hoc rules. If I'm not then they *must* make this distinction much
+clearer than is currently the case)
+---------------------------------------------------------------------------
+
+
+
+============================================================================
+                            REVIEWER #2
+                            ============================================================================
+
+---------------------------------------------------------------------------
+Reviewer's Scores
+---------------------------------------------------------------------------
+Appropriateness (1-5): 5 Clarity (1-5): 4 Originality / Innovativeness
+(1-5): 3 Soundness / Correctness (1-5): 4 Meaningful Comparison (1-5):
+4 Thoroughness (1-5): 4 Impact of Ideas or Results (1-5): 4 Overall
+Recommendation (1-5): 3.5 Reviewer Confidence (1-5): 4
+
+Detailed Comments
+---------------------------------------------------------------------------
+This is an interesting paper that tackles an old problem: in
+particular Section 7 of the FraCaS test suite on temporal and
+aspectual inference (and beyond).
+
+GF is used for parsing, a monad-based dynamic semantics for the formal
+representation of the sentences, and the Coq proof assistant for
+reasoning.
+
+The presented system is the first one that covers the entire FraCaS
+test suite and discusses in detail how temporal information needs to
+be formally represented in order to pass the test examples.
+
+But I actually wonder why it is necessary to add temporal parameters
+also to those cases that do not show any temporal modification.
+
+Sometimes the paper should be more precise; for example, when the
+authors speak about the accuracy of the parser and the semantic
+representation (as a reader I am curious to hear where the real
+bottleneck is).
+
+I hope that this paper gets accepted since it illustrates nicely what
+is required to process temporal information (an aspect that is largely
+neglected by the "curve-fitters" in deep learning domain).
+
+Here are a few additional comments/questions:
+
+L031: "put forth on the table to deal", can you reword that; this
+sounds strange to me.
+
+L150: Please be more specific here and tell the reader how many cases
+are not handled.
+
+L175: Please be more specific here: what does "most cases" mean? 51%,
+75%, 99%?
+
+L194: Can you explain in more detail what Coq's arithmetic tactic is
+doing?
+
+L220: Can you show problem 272 or 272,since the reader does not want
+to go to the FraCaS test suite in order to figure out what the problem
+is.
+
+L223ff: How are time points and intervals actually recorded? Don't you
+need unix timestamps for reasoning?
+
+L352: Is this a lengthy way to say that it is sufficient to
+distinguish between events and states?
+
+L423: There is no proper name in this example that would allow us to
+interpret "Smith" as "she".
+
+L450-469: I would drop this discussion here, since in my view "a
+novel" introduces a new entity into the discourse and "it" links back
+to that entity.
+
+L474: The example here is much clearer: two new entities are
+introduced.
+
+L515: the the action --> the action
+
+L593: that adverbials expressions such that --> that adverbial
+expressions such as
+
+L600: something is wrong here with your font.
+
+L694: This is obviously a problem that is also reflected in your
+results for comparatives in Table 1. So way don't you fix that?
+---------------------------------------------------------------------------
+
+
+Questions for Authors
+---------------------------------------------------------------------------
+See above.
+---------------------------------------------------------------------------
+
+
+
+============================================================================
+                            REVIEWER #3
+                            ============================================================================
+
+---------------------------------------------------------------------------
+Reviewer's Scores
+---------------------------------------------------------------------------
+Appropriateness (1-5): 5 Clarity (1-5): 4 Originality / Innovativeness
+(1-5): 4 Soundness / Correctness (1-5): 5 Meaningful Comparison (1-5):
+4 Thoroughness (1-5): 4 Impact of Ideas or Results (1-5): 4 Overall
+Recommendation (1-5): 4 Reviewer Confidence (1-5): 4
+
+Detailed Comments
+---------------------------------------------------------------------------
+This paper incorporates an implementation of temporal analysis into an
+earlier system of wide-coverage semantics. It provides an integrated,
+fully symbolic treatment of the complete FraCas test set. I think this
+is work is important and think it merits inclusion in the IWCS
+program.
+
+The system uses the output of a GF analyser (using gold parses of the
+FraCas test set), combines these with montagovian meaning assignments,
+then produces input for the Coq prover. A number of temporal meaning
+postulates are added and motivated. Finally, the results of the
+automated theorem prover of Coq are presented and evaluated.
+
+The final system has very good performance over all categories of the
+FraCaS test set, including many of the harder categories which are
+often excluded by other systems (anaphora, ellipses, and temporal
+analysis). Compared to the earlier system without temporal reasoning,
+only the comparatives appear to be treated less well (the authors
+present some explanations for this, and it appears this might be
+improved in some future version).
+
+I would have liked to see the system evaluated on other datasets, to
+better evaluate to what extent the implementation is dependant on
+particularities of the FraCaS test set. There are several alternative
+datasets available for English (see, e.g. Vashishtha e.a., 2020), but
+I realise using these would require a high-performance GF parser (or
+many reliable manual annotators).
+
+I'm also not sure whether the comparisons with alternative systems are
+really fair: I believe MINE, NUT and LangPro are evaluated on a
+combined parsing/entailment tasks, whereas the authors use gold parses
+only. It would be useful to have a comparison either using gold parses
+for some of the other systems or using automatically generated GF
+parses for the current framework.
+
+To summarise: I would very much like to see a high-performance
+symbolic reasoning system such as this presented at IWCS. A possible
+criticism is that it only treats the well-known FraCas test set, using
+gold parses as given. However, the FraCas test set, by construction,
+consists of a rather varied set of sentences across many semantic
+phenomena, and achieving very good performance across all categories
+is an important benchmark.
+
+Minor comment:
+
+Lines 455-459. I am unsure why the quantification is universal here. I
+(dynamic) existential with wide scope over all three conjuncts would
+be preferred.
