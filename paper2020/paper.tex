@@ -180,13 +180,12 @@ Example \ref{ex:nobel} shows an abstract syntax tree and its
 realisation in English.
 
 \paragraph{Dynamic Semantics}
-Parse trees are then processed by a dynamic semantic component.
-Its role is essentially to support  (non-temporal) anaphora, using a
+Parse trees are then processed by a dynamic semantic component.  Its
+role is essentially to support (non-temporal) anaphora, using a
 monadic-based dynamic semantics, generally following the state of the
 art in this matter
 \citep{unger_dynamic_2011,charlow_monadic_2015,charlow_modular_2017}.
-Our particular implementation does not handle every case \ifanon
-(citations anonymized) \else \citet{bernardy_computational_2020,bernardy_wide-coverage_2019} \fi
+Our particular implementation has weaknesses in certain areas (including group readings and counting; see \citet{bernardy_computational_2020} for details)
 but non-temporal anaphoroi in the testsuite are generally resolved as
 they should be: on the whole accuracy is not affected significantly by
 issues in this subsystem.
@@ -213,8 +212,8 @@ reader to our previous work for details \ifanon (citations anonymized)
 \else \citet{bernardy_type-theoretical_2017,bernardy_wide-coverage_2019} \fi, but the particular
 treatment of such phenomena is essentially independent from our
 treatment of time: in this paper we simply ignore these aspects beyond
-the fact that they are handled correctly in most of the cases of the
-FraCaS testsuite.
+the fact that they are handled correctly in the
+FraCaS testsuite, except in a few pathological cases.
 
 \paragraph{Inference using Coq}
 Logical forms are then fed to the 
@@ -243,8 +242,8 @@ additional time parameters, one corresponding to the starting time
 of the action and one corresponding to its stopping time ($(e × time × time) \to t$). For example,
 if John walked between $t_0$ and $t_1$, we would have:
 $walk(john,t_0,t_1)$. From now on we will call an interval of time
-points $[t_0,t_1]$ a timespan. Every timespan $[t_0,t_1]$ has the
-property $t_0 ≤ t_1$ (it starts no later than it stops). (We are thus
+points $[t_0,t_1]$ a timespan, where $t_0$ and $t_1$ are elements of the $time$ type, which is represented in Coq as an abstract ordered ring. Every timespan $[t_0,t_1]$ has the
+property $t_0 ≤ t_1$: it starts no later than it stops. (We are thus
 using a simple Newtonian model of time, corresponding to a layman
 intuition of a linear constant flow of time.)
 
@@ -256,6 +255,13 @@ increase in complexity of the formulas compared to non-temporal
 semantics, at the expense of inaccuracy for a couple of problems in
 the FraCaS test suite: problems 271 and 272 use a an adjective as a
 copula which is subject to temporal reasoning.)
+
+\fracasex{271}{\answer unknown
+\item	Smith was present.
+\item	Jones was present.
+\item	Smith was present after Jones was present.
+\hyp 	Jones was present before Smith was present.
+}
 
 \paragraph{Temporal Context}
 
@@ -389,10 +395,10 @@ differences in terminology: we use the term activity as a general term
 which encompasses the three classical notions of activites,
 achievements and accomplishments. Indeed, insofar as the test suite is
 concerned, we find that these three categories can be collapsed into a
-single one (they are subject to \cref{eq:unicity}).  As such, we think
-it is a good classification, given that it generally affords the
-correct inferences for the testsuite. (In this paper, we always assume
-that the problems in the FraCaS testsuite are correctly annotated.)
+single one (they are subject to \cref{eq:unicity}).  That is, it is
+sufficient for the testsuite to distinguish between events and
+states. (In this paper, we always assume that the problems in the
+FraCaS testsuite are correctly annotated.)
 
 \paragraph{Time references and aspectual classes}
 
@@ -731,9 +737,10 @@ The intros and destruct tactics serve bookkeeping purposes. The
 critical part is the use of the \texttt{writeUnique} axiom, which
 witnesses the aspectual class of the predicate \texttt{write\_V2}.
 The proof is completed by the use of the \texttt{lia} tactic, which is
-embeds a decision procedure for linear arithmetic
-problems. Fortunately, \texttt{lia} can take care of all the problems
-which arise in the FraCaS testsuite.
+embeds a decision procedure for linear arithmetic problems\footnote{It
+  solves linear goals over rings by searching for linear refutations
+  and cutting planes}. Fortunately, \texttt{lia} can take care of all
+the problems which arise in the FraCaS testsuite.
 
 
 \section{Results and Evaluation}

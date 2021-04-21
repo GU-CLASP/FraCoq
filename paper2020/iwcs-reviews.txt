@@ -113,33 +113,33 @@ Stergios
 > are not handled.
 >
 
-JP
+DONE
 
 > L175: Please be more specific here: what does "most cases" mean? 51%,
 > 75%, 99%?
 
-JP
+DONE
 
 > L194: Can you explain in more detail what Coq's arithmetic tactic is
 > doing?
 
-JP
+DONE
 
 > L220: Can you show problem 272 or 272,since the reader does not want
 > to go to the FraCaS test suite in order to figure out what the problem
 > is.
 
-JP
+DONE
 
-> L223ff: How are time points and intervals actually recorded? Don't you
+> L223: How are time points and intervals actually recorded? Don't you
 > need unix timestamps for reasoning?
 
-JP
+DONE
 
 > L352: Is this a lengthy way to say that it is sufficient to
 > distinguish between events and states?
 
-JP
+DONE
 
 > L423: There is no proper name in this example that would allow us to
 > interpret "Smith" as "she".
