@@ -61,7 +61,7 @@
 > clearer than is currently the case)
 > ---------------------------------------------------------------------------
 
-TODO: as in the previous IWCS paper (JP)
+DONE (Last paragraph)
 
 
 > ============================================================================

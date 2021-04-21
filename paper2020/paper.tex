@@ -1,4 +1,4 @@
-\newif\ifanon\anontrue
+\newif\ifanon\anonfalse
 
 \documentclass[11pt,a4paper]{article}
 \usepackage[hyperref]{acl2021}
@@ -883,7 +883,25 @@ inference follows.
 % 	\hyp 	John entered the house before the phone rang (YES).
 % }
 
-
+Finally it would be desirable to improve automation of the system, and
+evaluate it on a larger test set. As it stands Coq fully \emph{checks}
+the proof of entailment for each (provable) problem. However, the
+construction of such proofs has demanded human intervention. It would
+be desirable to fully automate the proof construction step. For this
+to make sense however we need a much larger test suite, properly
+separated into a development and a (secret) test set. Otherwise, only
+the limited power of the logic prevents us (or any followup work) to
+fine-tune the rules of the system until one gets full coverage. This
+kind of observation holds in general of any rule-based system, and
+thus applies not only to the proof-construction phase, but also to the
+underlying dynamic semantics and parsing phase (which is limited only
+by the power of the language and frameworks used for its
+implementation). In sum, contrary to statistical approaches to
+language understanding, the value of the present work lies not in the
+bare accuracy numbers which we are able to achieve, but in the details
+of \emph{how} we do so: the of set of rules which we use, which is
+described in detail here and in the work which we base ourselves upon
+\citep{bernardy_computational_2020,bernardy_wide-coverage_2019}.
 
 \ifanon
 
