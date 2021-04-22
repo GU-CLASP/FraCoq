@@ -150,30 +150,30 @@ Stergios
 > novel" introduces a new entity into the discourse and "it" links back
 > to that entity.
 
-JP
+Clarified some.
 
 > L474: The example here is much clearer: two new entities are
 > introduced.
 
-OK
+Ok
 
 > L515: the the action --> the action
 
-JP
+Done
 
 > L593: that adverbials expressions such that --> that adverbial
 > expressions such as
 
-JP
+Done
 
 > L600: something is wrong here with your font.
 
-JP
+It's the style that is like that. Nothing to do unfortunately.
 
 > L694: This is obviously a problem that is also reflected in your
 > results for comparatives in Table 1. So why don't you fix that?
 
-JP
+Because there is a lot to do in life, and this requires a large effort.
 
 > ---------------------------------------------------------------------------
 > 
@@ -252,4 +252,4 @@ Stergios
 > (dynamic) existential with wide scope over all three conjuncts would
 > be preferred.
 
-JP
+Meh. I've added the reference to our jolli paper that explains it
