@@ -769,20 +769,20 @@ of the FraCaS testsuite, as shown in \cref{tab:results}.
 Section      & {\kern -2em} \#FraCaS
                           & This        & FC2         & FC & MINE & Nut  & LP  \\ \hline
 Quantifiers  & 75         & .93        & .96         & .96    & .77  & .53  & .93  \\
-             &            & \ncases{74}& \ncases{74} &        &      &      &     \ncases{44} \\
+             &            & \ncases{74}& \ncases{74} &        &      &      &     \\
 Plurals      & 33         & .79        & .82         & .76    & .67  & .52  & .73 \\
-             &            &            &             &     &   &   & \ncases{24} \\
+             &            &            &             &     &   &   & \\
 Anaphora     & 28         & .79        & .86         &   -    & -    & -    &  -       \\
 Ellipsis     & 52         & .81        & .87         &   -    & -    & -    &  -       \\
 Adjectives   & 22         & .95        & .95         & .95    & .68  & .32  & .73 \\
-             &            & \ncases{20}&  \ncases{20}&     &   &   &  \ncases{12} \\
+             &            & \ncases{20}&  \ncases{20}&     &   &   &   \\
 Comparatives & 31         & .65        & .87         & .56    & .48  & .45  &  -       \\
 Temporal     & 75         & .73        &  -          &   -    &   -  &  -   &  -       \\
 Verbs        & 8          & .75        & .75         &   -    & -    & -    &  -       \\
 Attitudes    & 13         & .85        & .92         & .85    & .77  & .46  & .92  \\ 
-             &            &            &             &        &      &      & \ncases {9}  \\ \hline
+             &            &            &             &        &      &      &  \\ \hline
 Total        & 337        & .81        & .89         & .83    & .69  & .50  & .85  \\
-             &            & \ncases{329}& \ncases{259}& \ncases{174}  & \ncases{174}& \ncases{174}& \ncases{89}
+             &            & \ncases{329}& \ncases{259}& \ncases{181}  & \ncases{181}& \ncases{181}& \ncases{142}
   \end{tabularx}
   \caption{Accuracy of our system compared to others.
     ``This" refers to the approach presented in this paper. When a
@@ -792,7 +792,7 @@ Total        & 337        & .81        & .89         & .83    & .69  & .50  & .8
     refers to the work of \citet{bernardy_type-theoretical_2017}, and ``FC2'' its followup~\citep{bernardy_wide-coverage_2019}. ``MINE" refers
     to the approach of \citet{Mineshima:2015}, ``NUT" to the CCG
     system that utilises the first-order automated theorem prover
-    \textit{nutcracker} \cite{bos:2008}, and ``Langpro"
+    \textit{nutcracker} \cite{bos:2008}, and ``LP"
     to the system presented by \citet{abzianidze_tableau_2015}. A dash
     indicates that no attempt was made for the section. }
   \label{tab:results}
