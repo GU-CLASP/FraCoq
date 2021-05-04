@@ -91,7 +91,7 @@ as related to temporal reference. To the best of our knowledge, this is the best
 
 The semantics of tense and aspect has been a long standing issue in
 the study of formal semantics since the early days of Montague Grammar
-and a number of different ideas have been put forth on the table to
+and a number of different ideas have been put forth to
 deal with them throughout the years. Recent proposals include the
 works of the following authors:
 \citet{dowty:2012,prior:2003,steedman_productions_2000,higginbotham:2009,fernando:2015}.
@@ -166,7 +166,7 @@ Grammatical Framework (GF, \citet{ranta_grammatical_2004}), which is a
 powerful parser generator for natural languages, based on
 type-theoretical abstract grammars.  The present work leverages a
 syntactic representation of the FraCaS test suite in GF abstract
-syntax~\citep{Ljunglof:2012}. Thanks to this, we skip the parsing
+syntax, in effect a GF FraCaS treebank~\citep{Ljunglof:2012}. Thanks to this, we skip the parsing
 phase and avoid any syntactic ambiguity.
 
 For the purpose of this paper, the important feature of GF
@@ -180,7 +180,7 @@ we can focus on the translation of syntactic trees to logical forms.
 Consequently, the system presented
 here does not aim at textual natural language understanding, but rather
 provides a testable, systematic formal semantics of temporal phenomena.
-Example \ref{ex:nobel} shows an abstract syntax tree and its
+Example \ref{ex:nobel} shows an example abstract syntax tree and its
 realisation in English.
 
 \paragraph{Dynamic Semantics}
@@ -471,7 +471,7 @@ FraCaS test suite for activity aspect classes.
 \begin{multline*}
 \constant {subsumption}_P :\\ [t_3,t_4] ⊆ [t_1,t_2] → P (t_1,t_2) → P (t_3,t_4)
 \end{multline*}
-This principle is used to reason about problem (314), below:
+This principle is used to reason about problem (314), below (note that ``Smith'' is used as a surname in the FraCaS and can take both feminine and masculine values):
 
 \fracasex{314}
 {\item	Smith arrived in Paris on the 5th of May, 1995.
@@ -536,7 +536,7 @@ accomplishment:
 \hyp 	Smith wrote a novel in 1992.
 }
 Here our interpretation is:
-\vspace{2ex}
+
 \[\begin{array}{l}
 (∃x. novel(x) ∧ \\
 ∃t_1,t_2. [t_1,t_2] ⊆ 1991 ∧ write(smith,x,t_1,t_2)) ∧ \\
@@ -561,7 +561,7 @@ etc. These verbs modify the temporal context in non-trivial
 ways. Consider for example ``finish to ...''. The timespan of the
 argument of ``finish'' should end within the timespan of the finishing
 action:
-\vspace{-1.5ex}
+
 \begin{multline*}
 ⟦\text{finish to \(s\)}⟧(t_0,t_1) = \\ ∃(t_0',t_1'). t_1' ∈ [t_0,t_1] ∧ ⟦s⟧(t_0',t_1')
 \end{multline*}
@@ -773,20 +773,20 @@ of the FraCaS testsuite, as shown in \cref{tab:results}.
 Section      & {\kern -2em} \#FraCaS
                           & This        & FC2         & FC & MINE & Nut  & LP  \\ \hline
 Quantifiers  & 75         & .93        & .96         & .96    & .77  & .53  & .93  \\
-             &            & \ncases{74}& \ncases{74} &        &      &      &     \\
+             &            & \ncases{74}& \ncases{74} &        &      &      &     \ncases{44} \\
 Plurals      & 33         & .79        & .82         & .76    & .67  & .52  & .73 \\
-             &            &            &             &     &   &   & \\
+             &            &            &             &     &   &   & \ncases{24} \\
 Anaphora     & 28         & .79        & .86         &   -    & -    & -    &  -       \\
 Ellipsis     & 52         & .81        & .87         &   -    & -    & -    &  -       \\
 Adjectives   & 22         & .95        & .95         & .95    & .68  & .32  & .73 \\
-             &            & \ncases{20}&  \ncases{20}&     &   &   &   \\
+             &            & \ncases{20}&  \ncases{20}&     &   &   &  \ncases{12} \\
 Comparatives & 31         & .65        & .87         & .56    & .48  & .45  &  -       \\
 Temporal     & 75         & .73        &  -          &   -    &   -  &  -   &  -       \\
 Verbs        & 8          & .75        & .75         &   -    & -    & -    &  -       \\
 Attitudes    & 13         & .85        & .92         & .85    & .77  & .46  & .92  \\ 
-             &            &            &             &        &      &      &  \\ \hline
+             &            &            &             &        &      &      & \ncases {9}  \\ \hline
 Total        & 337        & .81        & .89         & .83    & .69  & .50  & .85  \\
-             &            & \ncases{329}& \ncases{259}& \ncases{174}  & \ncases{181}& \ncases{181}& \ncases{142}
+             &            & \ncases{329}& \ncases{259}& \ncases{174}  & \ncases{174}& \ncases{174}& \ncases{89}
   \end{tabularx}
   \caption{Accuracy of our system compared to others.
     ``This" refers to the approach presented in this paper. When a
@@ -810,7 +810,6 @@ One reason explaining the lower performance of our system on some
 sections of the testsuite is that our interpretation of time interacts
 imperfectly with anaphora and ellipsis. Consider the following example:
 
-\vspace{-1.5ex}
 \fracasex{232}
 {\item	ITEL won more orders than APCOM did.
 \item	APCOM won ten orders.
@@ -862,7 +861,7 @@ exception, and provides a system that can deal with all these
 different semantic phenomena under a unified system with very good
 results.
 %
-We use the same combination of a number of well-studied tools: type
+We use the same combination of a number of well-studied tools as \citet{bernardy_wide-coverage_2019} : type
 theory, parsing using the Grammatical Framework (GF), Monadic Dynamic
 Semantics and proof assistant technology (Coq). The system achieves an
 accuracy of 0.73 on the Temporal Section and 0.81 overall. The whole
@@ -903,6 +902,15 @@ inference follows.
 % 	\item	When the phone rang, John had entered the house.  
 % 	\hyp 	John entered the house before the phone rang (YES).
 % }
+Further cases to be included in an extended FraCaS future suite
+involve examples where the interaction between different tenses needs
+to be captured:\footnote{While this work was completed, the work by \cite{vashishtha-etal-2020} was published. The authors present a five datasets to be used for the training of neural models' ability to capture temporal reasoning. It would be interesting to check the amount of data covered, most specifiaclly the level of fine-grainedness of temporal reasoning needed to capture those examples, as compared to what we have been discussing in this paper. We thank an anonymous reviewer for bringing this work to our attention.}
+
+\fracasex{extra3}{
+	\item	When the phone rang, John had entered the house.  
+	\hyp 	John entered the house before the phone rang (YES).
+}
+
 
 Finally it would be desirable to improve automation of the system, and
 evaluate it on a larger test set. As it stands Coq fully \emph{checks}
@@ -934,9 +942,10 @@ Studies in Probability (CLASP) in the Department of Philosophy, Linguistics,
 and Theory of Science at the University of Gothenburg. We are grateful to
 our colleagues in CLASP for helpful discussion of some of the ideas presented
 here. We also thank anonymous reviewers for their useful comments on an
-earlier draft of the paper.
-\fi
-\bibliographystyle{apalike}
+earlier draft of the paper.\fi
+
+\bibliographystyle{acl_natbib}
+
 
 \bibliography{../PaperTools/bibtex/jp,paper2020,../paper2018/NLI}
 
