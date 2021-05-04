@@ -846,21 +846,31 @@ adverbial clauses that we address. However, we cover many more
  logical aspects of inference, such as coreference via
 unity of action and interaction with quantifiers.
 
-\citet{bernardy_wide-coverage_2019} presented a
-logical system for handling 8 of the 9 sections of the FraCaS test
-suite, but excluded section 7, suggesting that it requires many
-examples that need an \textit{ad hoc} treatment. Here, we took up this
-challenge and have shown that a system similar to theirs can be extended to
-cover the remaining section of the test suite, without considerably decreasing the performance of the 
-rest of the sections. This is indeed a common problem with logical approaches, namely the fact that one can have theoretically motivated implementations of individual phenomena, e.g. anaphora, ellipsis, quantifiers, temporal reference etc., but when one tries to put all these together into a unified system, this proves to be a daunting task. We believe that this paper presents an exception, and provides a system that can deal with all these different semantic phenomena under a unified system with very good results. 
+\citet{bernardy_wide-coverage_2019} presented a logical system for
+handling 8 of the 9 sections of the FraCaS test suite, but excluded
+section 7, suggesting that it requires many examples that need an
+\textit{ad hoc} treatment. Here, we took up this challenge and have
+shown that a system similar to theirs can be extended to cover the
+remaining section of the test suite, without considerably decreasing
+the performance of the rest of the sections. This is indeed a common
+problem with logical approaches, namely the fact that one can have
+theoretically motivated implementations of individual phenomena,
+e.g. anaphora, ellipsis, quantifiers, temporal reference etc., but
+when one tries to put all these together into a unified system, this
+proves to be a daunting task. We believe that this paper presents an
+exception, and provides a system that can deal with all these
+different semantic phenomena under a unified system with very good
+results.
 %
 We use the same combination of a number of well-studied tools: type
 theory, parsing using the Grammatical Framework (GF), Monadic Dynamic
 Semantics and proof assistant technology (Coq). The system achieves an
-accuracy of 0.73 on the Temporal Section and 0.81 overall.
-One of the
-things to be looked at is fixing the issues associated with parts of
-the test suite that ``broke'' when the temporal analysis was
+accuracy of 0.73 on the Temporal Section and 0.81 overall. The whole
+system, including data sets, is available at the following url:
+\url{https://github.com/GU-CLASP/FraCoq/tree/iwcs2021}.
+
+One of the things to be looked at is fixing the issues associated with
+parts of the test suite that ``broke'' when the temporal analysis was
 introduced. Some of these have been already mentioned: interaction of
 the temporal variables with anaphora.
 
