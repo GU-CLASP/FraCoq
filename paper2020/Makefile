@@ -1,4 +1,4 @@
-all: paper.pdf
+all: talk.pdf paper.pdf
 
 UNAME_S := $(shell uname -s)
 
@@ -8,6 +8,9 @@ ifeq ($(UNAME_S),Linux)
 else
 	open $<
 endif
+
+talk.pdf: talk.tex
+	xelatex $<
 
 paper.pdf: paper.tex ../PaperTools/bibtex/jp.bib
 	nix-shell --run "latexmk paper -pdf"
