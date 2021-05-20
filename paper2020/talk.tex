@@ -26,6 +26,7 @@
 \usetikzlibrary{fadings}
 \usetikzlibrary{arrows,automata}
 \usetikzlibrary{intersections}
+\usetikzlibrary{positioning}
 
 \title[Temporal/FraCaS]{Applied Temporal Analysis: A Complete Run of the FraCaS Test Suite}
 \author{Jean-Philippe Bernardy and Stergios Chatzikyriakidis}
@@ -45,13 +46,13 @@
 \begin{frame}
   \begin{itemize}
   \item 
-    Our starting point is the FraCoq system (Presented by the same authors at IWCS 2017 with updates at NoDaliDa 2019):
-    
+    Our starting point is the FraCoq system (Presented by the same authors at IWCS 2017 with updates at NoDaliDa 2019): \\
+    \bigskip
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=4.2cm,
-                    semithick,scale=0.65, every node/.style={transform shape}]
+                    semithick,scale=0.63, every node/.style={transform shape},inputnode/.style={draw=black,text=black,shape=rectangle,rounded corners=1mm}]
   \tikzstyle{every state}=[draw=black,text=black,shape=rectangle]
 
- \node[state]         (txt)                {Textual Problem};
+ \node[inputnode]         (txt)                {Textual Problem};
  \node[state]         (ast) [right of=txt] {AST};
  \node[state]         (pp)  [right of=ast] {Logic Form};
  \node[state]         (math)    [right of=pp]  {Checked result};
@@ -60,10 +61,15 @@
        (ast) edge              node (Hask) {\alert{Semantics}} (pp);
  \path  (pp) edge               node (Coq) {Coq} (math);
 
- \node[state]         (proof) [above of=Coq]  {Proof};
+ \node[inputnode]         (proof) [above of=Coq,node distance=2cm]  {Proof};
  \path  (proof) edge                (Coq);
+ \node               (peter) [above of=GF,node distance=3cm]  {[Ljunglöf 2011]};
+ \path  (peter) edge                (GF);
+ \node               (cooper) [above of=txt,node distance=2cm]  {[Cooper \textit{et al.} 1996]};
+ \path  (cooper) edge                (txt);
        
 \end{tikzpicture}
+    \medskip
 \item
 In this paper we update the \alert{Semantics} with {Temporal Semantics}. We achieve coverage of 329 out of 337 problems in the FraCaS test suite, with an accuracy of 81\%.
   \end{itemize}
