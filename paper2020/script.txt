@@ -1,29 +1,29 @@
 
-<slide 1>
-
 My name is Jean-Philippe Bernardy, and this is joint work with
 Stergios Chatzikyriakidis at University of Gothenburg.
 
 <slide 2>
 
-This work is an extension of the FraCoq system to support Temporal
+This work is an extension of the FraCoq system that supports Temporal
 Semantics.
 
-The FraCoq system aims at covering the whole test suite invented by
-for the FraCaS system. 
+The FraCoq system aims to cover the whole of the FraCaS test suite. 
 
-We start with abstract syntax trees, and apply a semantic interpretation. This is a montegovian
-semantics augmented with dynamic semantics. It yields logical
-formula.
-We then check if they admit a proof or not, using the Coq proof assistant.
+We start with abstract syntax trees.
+They are interpreted using a montagovian semantics augmented with dynamic semantics.
+This yields logical formulas in a type-theory.
+
+We then check if these formulas admit a proof or not, using the Coq proof assistant.
 
 In this paper we add temporal semantics to the system.
 
 
 <slide 3>
 
-This is done by adding temporal parameters to every propositions. The
-temporal information comes from the interpretation of temporal
-expressions, as we explain in detail in the paper.
+What we do is to add temporal parameters to every proposition.
+
+The temporal information comes from the interpretation of temporal
+expressions.
+We explain all of this in detail in the paper.
 
 
