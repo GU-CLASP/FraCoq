@@ -4,26 +4,27 @@ Stergios Chatzikyriakidis at University of Gothenburg.
 
 <slide 2>
 
-This work is an extension of the FraCoq system that supports Temporal
+This work is an implementation of Temporal
 Semantics.
 
-The FraCoq system aims to cover the whole of the FraCaS test suite. 
+It is based on FraCoq, which is a our natural language semantics
+system.
 
+Our target is the FraCaS test suite.
 We start with abstract syntax trees.
-They are interpreted using a montagovian semantics augmented with dynamic semantics.
-This yields logical formulas in a type-theory.
+Then we interpret them using a montagovian semantics, plus a dynamic semantics.
+This gives us logical formulas in a type-theory.
+And then we check if these formulas admit a proof or not, using the "Coq" proof assistant.
+ 
+[PAUSE 1sec]
 
-We then check if these formulas admit a proof or not, using the Coq proof assistant.
-
-In this paper we add temporal semantics to the system.
+In this paper we add support for _temporal semantics_ to the system.
 
 
 <slide 3>
 
-What we do is to add temporal parameters to every proposition.
+How do we do that? Well you _will_ have to read the paper to find out.
 
-The temporal information comes from the interpretation of temporal
-expressions.
-We explain all of this in detail in the paper.
-
+But just to give an idea, and perhaps catch your attention, here are a
+couple of examples from the testsuite.
 
